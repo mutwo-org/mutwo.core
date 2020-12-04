@@ -1,17 +1,17 @@
-from mutwo.events.abc.complex_event import ComplexEvent
+from mutwo.events import abc
 from mutwo.utilities import tools
 
 
-class SequentialEvent(ComplexEvent):
+class SequentialEvent(abc.ComplexEvent):
     @property
     def duration(self):
-        return sum(element.duration for element in self)
+        return sum(event.duration for event in self)
 
     @duration.setter
     def duration(self, new_duration):
-        new_durations = tools.scale_sum((s.duration for s in self), new_duration)
+        new_durations = tools.scale_sum((event.duration for event in self), new_duration)
         # TODO this is shit. we want a more general approach manipulation attributes of sequences
-        for nd, element in zip(new_durations, self):
-            element.duration = nd
+        for new_duration, event in zip(new_durations, self):
+            event.duration = new_duration
 
     # TODO we need inspect absolute timepoints or get absolute times (or both)

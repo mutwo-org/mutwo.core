@@ -1,8 +1,11 @@
-from mutwo.events.abc.event import Event
+from mutwo.events import abc
 
 
-class SimpleEvent(Event):
+class SimpleEvent(abc.Event):
     """Event-Object, which doesn't contain other Event-Objects."""
+
+    def __init__(self, new_duration):
+        self.duration = new_duration
 
     # TODO double
     @classmethod
@@ -14,5 +17,5 @@ class SimpleEvent(Event):
         return self._duration
 
     @duration.setter
-    def duration(self, dur):
-        self._duration = dur
+    def duration(self, new_duration):
+        self._duration = new_duration

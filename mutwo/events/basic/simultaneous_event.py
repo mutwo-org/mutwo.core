@@ -1,13 +1,12 @@
-from mutwo.events.abc.complex_event import ComplexEvent
-
+from mutwo.events import abc
 
 # TODO still interesting. is this a set?
-class SimultaneousEvent(ComplexEvent):
+class SimultaneousEvent(abc.ComplexEvent):
     @property
     def duration(self):
-        return max(tuple(element.duration for element in self))
+        return max(tuple(event.duration for event in self))
 
     @duration.setter
     def duration(self, new_duration):
-        for element in self:
-            element.duration = new_duration
+        for event in self:
+            event.duration = new_duration

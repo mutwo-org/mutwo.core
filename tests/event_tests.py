@@ -1,14 +1,14 @@
 import unittest
 
-from mutwo import events
+from mutwo.events import abc
 
 
 class EventTest(unittest.TestCase):
     def test_abstract_error(self):
-        self.assertRaises(TypeError, events.Event)
+        self.assertRaises(TypeError, abc.Event)
 
     def test_duration_error(self):
-        self.assertRaises(TypeError, events.Event.duration)
+        self.assertRaises(TypeError, abc.Event.duration)
 
 
 class SimpleEventTest(unittest.TestCase):
@@ -17,7 +17,7 @@ class SimpleEventTest(unittest.TestCase):
 
 class ComplexEventTest(unittest.TestCase):
     def test_abstract_error(self):
-        self.assertRaises(TypeError, events.ComplexEvent)
+        self.assertRaises(TypeError, abc.ComplexEvent)
 
 
 class SequentialEventTest(unittest.TestCase):

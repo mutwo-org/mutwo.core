@@ -1,10 +1,10 @@
 import abc
 
-from mutwo.events.abc.event import Event
+import mutwo.events.abc as events_abc
 
 
 # TODO does this already get a constructor? so we can express that this consists only of EVENTS
-class ComplexEvent(Event):
+class ComplexEvent(events_abc.Event):
     """Event-Object, which might contain other Event-Objects."""
 
     # TODO double
