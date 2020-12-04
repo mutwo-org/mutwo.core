@@ -1,5 +1,5 @@
 from .complex_event import ComplexEvent
-from ..utility import tools
+from ..utilities import tools
 
 
 class SequentialEvent(ComplexEvent):

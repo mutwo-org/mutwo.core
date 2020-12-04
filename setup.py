@@ -10,8 +10,8 @@ setup(
     url="https://github.com/mutwo-org/mutwo",
     packages=[
         "mutwo",
-        "mutwo.event",
-        "mutwo.utility",
+        "mutwo.events",
+        "mutwo.utilities",
     ],
     setup_requires=[""],
     tests_require=["nose"],
