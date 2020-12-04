@@ -1,5 +1,6 @@
 from mutwo.events import abc
 
+
 # TODO still interesting. is this a set?
 class SimultaneousEvent(abc.ComplexEvent):
     @property

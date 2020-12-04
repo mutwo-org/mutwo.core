@@ -7,11 +7,6 @@ class SimpleEvent(abc.Event):
     def __init__(self, new_duration):
         self.duration = new_duration
 
-    # TODO double
-    @classmethod
-    def is_rest(cls) -> bool:
-        return False
-
     @property
     def duration(self):
         return self._duration

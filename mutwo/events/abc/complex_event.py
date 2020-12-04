@@ -1,20 +1,11 @@
 import abc
+import typing
 
 import mutwo.events.abc as events_abc
 
 
-# TODO does this already get a constructor? so we can express that this consists only of EVENTS
-class ComplexEvent(events_abc.Event):
+class ComplexEvent(events_abc.Event, list):
     """Event-Object, which might contain other Event-Objects."""
 
-    # TODO double
-    @classmethod
-    def is_rest(cls) -> bool:
-        return False
-
-    @abc.abstractmethod
-    def __iter__(self):
-        raise NotImplementedError
-
-    # TODO we nee append, concatenation etc, or?
-    # we need also the get parameter iterator shit
+    def __init__(self, iterable: typing.Iterable[events_abc.Event]):
+        list.__init__(iterable)
