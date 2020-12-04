@@ -17,5 +17,5 @@ setup(
     tests_require=["nose"],
     install_requires=[""],
     extras_require={},
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )
