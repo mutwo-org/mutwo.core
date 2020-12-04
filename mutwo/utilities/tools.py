@@ -1,7 +1,14 @@
-from collections import abc
+import typing
 import numbers
 
 
-def scale_sum(iterable: abc.Iterable, new_sum: numbers.Number) -> abc.Iterable:
-    old_sum = sum(iterable)
-    return type(iterable)((i / old_sum) * new_sum for i in iterable)
+def scale(
+    value: numbers.Number,
+    old_min: numbers.Number,
+    old_max: numbers.Number,
+    new_min: numbers.Number,
+    new_max: numbers.Number,
+) -> numbers.Number:
+    """Scale a value from one range to another range."""
+    assert old_min <= value <= old_max
+    return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
