@@ -4,8 +4,9 @@ import abc
 class Event(abc.ABC):
 
     # TODO is this the right way?
-    @abc.abstractclassmethod
-    def is_rest(self) -> bool:
+    @classmethod
+    @abc.abstractmethod
+    def is_rest(cls) -> bool:
         raise NotImplementedError
 
     # TODO so now the big question is: how do we want to type duration?

@@ -1,5 +1,5 @@
-from .complex_event import ComplexEvent
-from ..utilities import tools
+from mutwo.events.abc.complex_event import ComplexEvent
+from mutwo.utilities import tools
 
 
 class SequentialEvent(ComplexEvent):

@@ -1,4 +1,4 @@
-from .complex_event import ComplexEvent
+from mutwo.events.abc.complex_event import ComplexEvent
 
 
 # TODO still interesting. is this a set?

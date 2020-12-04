@@ -1,4 +1,4 @@
-from .event import Event
+from mutwo.events.abc.event import Event
 
 
 class SimpleEvent(Event):
