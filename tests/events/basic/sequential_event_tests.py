@@ -14,9 +14,9 @@ class SequentialEventTest(unittest.TestCase):
 
     def test_set_duration(self):
         self.sequence.duration = 3
-        self.assertEqual(self.sequence[0], 0.5)
-        self.assertEqual(self.sequence[1], 1)
-        self.assertEqual(self.sequence[2], 1.5)
+        self.assertEqual(self.sequence[0].duration, 0.5)
+        self.assertEqual(self.sequence[1].duration, 1)
+        self.assertEqual(self.sequence[2].duration, 1.5)
 
 
 if __name__ == "__main__":
