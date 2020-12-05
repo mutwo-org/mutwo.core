@@ -1,4 +1,5 @@
 from mutwo.events import abc
+from mutwo.utils import tools
 
 
 class SequentialEvent(abc.ComplexEvent):
@@ -8,4 +9,7 @@ class SequentialEvent(abc.ComplexEvent):
     def duration(self):
         return sum(event.duration for event in self)
 
-    # TODO we need inspect absolute timepoints or get absolute times (or both)
+    @property
+    def absolute_points(self) -> tuple:
+        """Return absolute point in time for each event."""
+        return tools.accumulate_from_zero((event.duration for event in self))
