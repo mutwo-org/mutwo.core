@@ -12,6 +12,9 @@ class ComplexEvent(events_abc.Event, list):
     def __init__(self, iterable: typing.Iterable[events_abc.Event]):
         super().__init__(iterable)
 
+    def __repr__(self) -> str:
+        return "{}({})".format(type(self).__name__, super().__repr__())
+
     @events_abc.Event.duration.setter
     def duration(self, new_duration) -> None:
         old_duration = self.duration
