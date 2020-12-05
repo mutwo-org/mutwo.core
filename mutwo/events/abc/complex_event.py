@@ -17,6 +17,7 @@ class ComplexEvent(events_abc.Event, list):
         return "{}({})".format(type(self).__name__, super().__repr__())
 
     def copy(self) -> "ComplexEvent":
+        """Return a deep copy of the ComplexEvent."""
         return copy.deepcopy(self)
 
     def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> events_abc.Event:
