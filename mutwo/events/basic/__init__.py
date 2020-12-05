@@ -1,3 +1,3 @@
-from .sequential_event import SequentialEvent
-from .simple_event import SimpleEvent
-from .simultaneous_event import SimultaneousEvent
+from .SequentialEvent import SequentialEvent
+from .SimpleEvent import SimpleEvent
+from .SimultaneousEvent import SimultaneousEvent
