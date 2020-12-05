@@ -1,3 +1,4 @@
+import copy
 import typing
 
 # here it is not possible to write 'from mutwo import events; events.abc'
@@ -14,6 +15,15 @@ class ComplexEvent(events_abc.Event, list):
 
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
+
+    def copy(self) -> "ComplexEvent":
+        return copy.deepcopy(self)
+
+    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> events_abc.Event:
+        event = super().__getitem__(index_or_slice)
+        if isinstance(index_or_slice, slice):
+            return type(self)(event)
+        return event
 
     @events_abc.Event.duration.setter
     def duration(self, new_duration) -> None:
