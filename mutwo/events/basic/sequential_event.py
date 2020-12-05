@@ -1,9 +1,9 @@
 from mutwo.events import abc
-from mutwo.utils import tools
+from mutwo.utilities import tools
 
 
 class SequentialEvent(abc.ComplexEvent):
-    """Event-Object, which contains other Event-Objects, which happen one after another."""
+    """Event-Object which contains other Event-Objects which happen in a linear order."""
 
     @abc.ComplexEvent.duration.getter
     def duration(self):
