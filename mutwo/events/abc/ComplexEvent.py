@@ -20,8 +20,8 @@ class ComplexEvent(events_abc.Event, list):
         """Return a deep copy of the ComplexEvent."""
         return copy.deepcopy(self)
 
-    def __add__(self, other: "ComplexEvent") -> "ComplexEvent":
-        return type(self)(super().__add__(other))
+    def __add__(self, event: "ComplexEvent") -> "ComplexEvent":
+        return type(self)(super().__add__(event))
 
     def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> events_abc.Event:
         event = super().__getitem__(index_or_slice)
