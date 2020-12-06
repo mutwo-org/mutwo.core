@@ -1,3 +1,5 @@
+import typing
+
 from mutwo import events
 from mutwo.utilities import tools
 
@@ -10,6 +12,6 @@ class SequentialEvent(events.abc.ComplexEvent):
         return sum(event.duration for event in self)
 
     @property
-    def absolute_points(self) -> tuple:
+    def absolute_points(self) -> typing.Iterable:
         """Return absolute point in time for each event."""
         return tools.accumulate_from_zero((event.duration for event in self))

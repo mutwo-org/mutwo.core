@@ -15,11 +15,11 @@ def scale(
     return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
 
 
-def accumulate_from_n(iterable: typing.Iterable, n: numbers.Number) -> tuple:
+def accumulate_from_n(iterable: typing.Iterable, n: numbers.Number) -> typing.Iterable:
     """Accumulates iterable starting with value n."""
-    return tuple(itertools.accumulate((n,) + (tuple(iterable))))
+    return itertools.accumulate(itertools.chain((n,), iterable))
 
 
-def accumulate_from_zero(iterable: typing.Iterable) -> tuple:
+def accumulate_from_zero(iterable: typing.Iterable) -> typing.Iterable:
     """Accumulates iterable starting from 0."""
     return accumulate_from_n(iterable, 0)
