@@ -1,5 +1,6 @@
 import copy
 import typing
+from collections import abc
 
 import mutwo.events.abc as events_abc
 from mutwo.utilities import tools
@@ -38,3 +39,8 @@ class ComplexEvent(events_abc.Event, list):
 
     def get_parameter(self, parameter_name: str) -> typing.Sequence:
         return tuple(getattr(event, parameter_name) for event in self)
+
+    def change_parameter(self, parameter_name: str, func: abc.Callable) -> None:
+        old_parameters = self.get_parameter(parameter_name)
+        for event, old_parameter in zip(self, old_parameters):
+            setattr(event, parameter_name, func(old_parameter))

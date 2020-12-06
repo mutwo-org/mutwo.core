@@ -22,6 +22,10 @@ class SimultaneousEventTest(unittest.TestCase):
         result = self.sequence.get_parameter("duration")
         self.assertEqual(result, (1, 2, 3))
 
+    def test_change_parameter(self):
+        self.sequence.change_parameter("duration", lambda x: 2 * x)
+        self.assertEqual(self.sequence.get_parameter("duration"), (2, 4, 6))
+
 
 if __name__ == "__main__":
     unittest.main()
