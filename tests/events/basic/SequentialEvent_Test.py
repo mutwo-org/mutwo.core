@@ -18,6 +18,14 @@ class SequentialEventTest(unittest.TestCase):
         self.assertEqual(self.sequence[1].duration, 1)
         self.assertEqual(self.sequence[2].duration, 1.5)
 
+    def test_get_absolute_times(self):
+        result = tuple(self.sequence.absolute_times)
+        self.assertEqual(result, (0, 1, 3))
+
+    def test_get_event_at(self):
+        result = self.sequence.get_event_at(1.5)
+        self.assertEquals(result, self.sequence[1])
+
 
 if __name__ == "__main__":
     unittest.main()

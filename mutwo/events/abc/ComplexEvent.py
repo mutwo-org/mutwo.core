@@ -1,8 +1,6 @@
 import copy
 import typing
 
-# here it is not possible to write 'from mutwo import events; events.abc'
-# TODO(find smarter solution)
 import mutwo.events.abc as events_abc
 from mutwo.utilities import tools
 
