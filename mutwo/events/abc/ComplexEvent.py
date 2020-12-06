@@ -35,3 +35,6 @@ class ComplexEvent(events_abc.Event, list):
             event.duration = tools.scale(
                 event.duration, 0, old_duration, 0, new_duration
             )
+
+    def get_parameter(self, parameter_name: str) -> typing.Sequence:
+        return tuple(getattr(event, parameter_name) for event in self)
