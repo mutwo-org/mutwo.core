@@ -1,6 +1,6 @@
+from collections import abc
 import copy
 import typing
-from collections import abc
 
 import mutwo.events.abc as events_abc
 from mutwo.utilities import tools
