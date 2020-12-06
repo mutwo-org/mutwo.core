@@ -31,14 +31,19 @@ class ComplexEvent(events_abc.Event, list):
     @events_abc.Event.duration.setter
     def duration(self, new_duration) -> None:
         old_duration = self.duration
-        # TODO this is shit. we want a more general approach to manipulate attributes of sequences
+        # TODO(this is shit. we want a more general approach to manipulate attributes
+        # of sequences)
         for event in self:
             event.duration = tools.scale(
                 event.duration, 0, old_duration, 0, new_duration
             )
 
-    def get_parameter(self, parameter_name: str) -> typing.Sequence:
-        return tuple(getattr(event, parameter_name) for event in self)
+    def get_parameter(self, parameter_name: str) -> tuple:
+        """Return tuple filled with the value of each event for the asked parameter.
+
+        If an event doesn't posses the asked attribute 'None' will be added.
+        """
+        return tuple(event.get_parameter(parameter_name) for event in self)
 
     def change_parameter(self, parameter_name: str, func: abc.Callable) -> None:
         old_parameters = self.get_parameter(parameter_name)
