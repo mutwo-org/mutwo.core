@@ -6,4 +6,4 @@ class SimultaneousEvent(events.abc.ComplexEvent):
 
     @events.abc.ComplexEvent.duration.getter
     def duration(self):
-        return max(tuple(event.duration for event in self))
+        return max(event.duration for event in self)
