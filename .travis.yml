@@ -5,6 +5,6 @@ install:
   - pip3 install .
   - pip3 install coveralls
 script:
-  - nosetests --with-coverage
+  - nosetests --with-coverage --cover-package=mutwo
 after_success:
   - coveralls
