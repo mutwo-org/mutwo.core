@@ -5,8 +5,7 @@ setup(
     version="0.0.01",
     license="GPL",
     description="representation of timebased events",
-    author="Levin Eric Zimmermann",
-    author_email="levin-eric.zimmermann@folkwang-uni.de",
+    author="Tim Pauli <tim.pauli@folkwang-uni.de>, Levin Zimmermann <levin-eric.zimmermann@folkwang-uni.de>",
     url="https://github.com/mutwo-org/mutwo",
     packages=[
         "mutwo",
