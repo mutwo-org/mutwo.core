@@ -11,7 +11,11 @@ def scale(
     new_max: numbers.Number,
 ) -> numbers.Number:
     """Scale a value from one range to another range."""
-    assert old_min <= value <= old_max
+    try:
+        assert old_min <= value <= old_max
+    except AssertionError:
+        msg = "Input value '{}' has to be in range (old_min, old_max).".format(value)
+        raise ValueError(msg)
     return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
 
 
