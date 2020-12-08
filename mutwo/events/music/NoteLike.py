@@ -4,12 +4,20 @@ import typing
 from mutwo import events
 from mutwo import parameters
 
-PitchOrPitches = typing.Union[parameters.pitches.abc.Pitch, typing.Iterable, numbers.Number, None]
+PitchOrPitches = typing.Union[
+    parameters.pitches.abc.Pitch, typing.Iterable, numbers.Number, None
+]
+
 
 class NoteLike(events.basic.SimpleEvent):
     """NoteLike represents a traditional discreet musical object."""
 
-    def __init__(self, pitch_or_pitches: PitchOrPitches, duration: numbers.Number, dynamic: numbers.Number):
+    def __init__(
+        self,
+        pitch_or_pitches: PitchOrPitches,
+        duration: numbers.Number,
+        dynamic: numbers.Number,
+    ):
         self.pitch_or_pitches = pitch_or_pitches
         super().__init__(duration)
 
