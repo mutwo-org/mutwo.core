@@ -46,7 +46,14 @@ class ComplexEvent(events_abc.Event, list):
         """
         return tuple(event.get_parameter(parameter_name) for event in self)
 
-    def change_parameter(self, parameter_name: str, func: abc.Callable) -> None:
-        old_parameters = self.get_parameter(parameter_name)
-        for event, old_parameter in zip(self, old_parameters):
-            setattr(event, parameter_name, func(old_parameter))
+    def set_parameter(
+        self,
+        parameter_name: str,
+        object_or_function: typing.Union[typing.Callable, typing.Any],
+    ) -> None:
+        [event.set_parameter(parameter_name, object_or_function) for event in self]
+
+    def change_parameter(
+        self, parameter_name: str, function: typing.Union[typing.Callable, typing.Any],
+    ) -> None:
+        [event.change_parameter(parameter_name, function) for event in self]
