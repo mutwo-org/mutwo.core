@@ -1,6 +1,6 @@
-from setuptools import setup
+import setuptools
 
-setup(
+setuptools.setup(
     name="mutwo",
     version="0.0.01",
     license="GPL",
