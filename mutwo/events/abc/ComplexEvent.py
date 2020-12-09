@@ -1,9 +1,9 @@
 from collections import abc
 import copy
-import numbers
 import typing
 
 import mutwo.events.abc as events_abc
+from mutwo.parameters import durations
 from mutwo.utilities import tools
 
 
@@ -30,7 +30,7 @@ class ComplexEvent(events_abc.Event, list):
         return event
 
     @events_abc.Event.duration.setter
-    def duration(self, new_duration: numbers.Number) -> None:
+    def duration(self, new_duration: durations.abc.DurationType) -> None:
         old_duration = self.duration
         # TODO(this is shit. we want a more general approach to manipulate attributes
         # of sequences)

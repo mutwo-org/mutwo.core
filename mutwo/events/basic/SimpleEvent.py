@@ -1,12 +1,11 @@
-import numbers
-
 from mutwo.events import abc
+from mutwo.parameters import durations
 
 
 class SimpleEvent(abc.Event):
     """Event-Object, which doesn't contain other Event-Objects."""
 
-    def __init__(self, new_duration: numbers.Number):
+    def __init__(self, new_duration: durations.abc.DurationType):
         self.duration = new_duration
 
     @property
@@ -14,7 +13,7 @@ class SimpleEvent(abc.Event):
         return self._duration
 
     @duration.setter
-    def duration(self, new_duration: numbers.Number):
+    def duration(self, new_duration: durations.abc.DurationType):
         self._duration = new_duration
 
     def get_parameter(self, parameter_name: str) -> tuple:

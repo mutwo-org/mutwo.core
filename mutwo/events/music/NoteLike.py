@@ -15,7 +15,7 @@ class NoteLike(events.basic.SimpleEvent):
     def __init__(
         self,
         pitch_or_pitches: PitchOrPitches,
-        duration: numbers.Number,
+        duration: parameters.durations.abc.DurationType,
         dynamic: numbers.Number,
     ):
         self.pitch_or_pitches = pitch_or_pitches

@@ -1,5 +1,6 @@
 import abc
-import numbers
+
+from mutwo.parameters import durations
 
 
 class Event(abc.ABC):
@@ -7,7 +8,7 @@ class Event(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def duration(self) -> numbers.Number:
+    def duration(self) -> durations.abc.DurationType:
         raise NotImplementedError
 
     @abc.abstractmethod
