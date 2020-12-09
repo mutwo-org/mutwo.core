@@ -17,9 +17,9 @@ setup(
         "mutwo.parameters",
         "mutwo.utilities",
     ],
-    setup_requires=[""],
+    setup_requires=[],
     tests_require=["nose"],
-    install_requires=[""],
+    install_requires=["expenvelope>=0.6.5"],
     extras_require={},
     python_requires=">=3.7",
 )
