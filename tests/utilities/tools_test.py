@@ -5,7 +5,7 @@ from mutwo.utilities import tools
 
 class ToolsTest(unittest.TestCase):
     def test_scale_out_of_range(self):
-        self.assertRaises(AssertionError, tools.scale, 2, 0, 1, 1, 2)
+        self.assertRaises(ValueError, tools.scale, 2, 0, 1, 1, 2)
 
     def test_scale_easy(self):
         result = tools.scale(0.5, 0, 1, 1, 2)
