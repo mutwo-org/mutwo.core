@@ -1,7 +1,7 @@
 import abc
 import typing
 
-from mutwo.parameters import durations
+from mutwo import parameters
 
 
 class Event(abc.ABC):
@@ -9,21 +9,7 @@ class Event(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def duration(self) -> durations.abc.DurationType:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_parameter(
-        self,
-        parameter_name: str,
-        object_or_function: typing.Union[typing.Callable, typing.Any],
-    ) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def change_parameter(
-        self, parameter_name: str, function: typing.Union[typing.Callable, typing.Any],
-    ) -> None:
+    def duration(self) -> parameters.durations.abc.DurationType:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -34,3 +20,23 @@ class Event(abc.ABC):
         return tuple(
             filter(lambda value: value is not None, self.get_parameter(parameter_name))
         )
+
+    @abc.abstractmethod
+    def set_parameter(
+        self,
+        parameter_name: str,
+        object_or_function: typing.Union[
+            typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
+            typing.Any,
+        ],
+    ) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def change_parameter(
+        self, parameter_name: str,
+        function: typing.Union[
+            typing.Callable[[parameters.abc.Parameter], None], typing.Any
+        ],
+    ) -> None:
+        raise NotImplementedError

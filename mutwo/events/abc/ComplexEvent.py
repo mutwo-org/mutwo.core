@@ -2,7 +2,7 @@ import copy
 import typing
 
 import mutwo.events.abc as events_abc
-from mutwo.parameters import durations
+from mutwo import parameters
 from mutwo.utilities import tools
 
 
@@ -29,7 +29,7 @@ class ComplexEvent(events_abc.Event, list):
         return event
 
     @events_abc.Event.duration.setter
-    def duration(self, new_duration: durations.abc.DurationType) -> None:
+    def duration(self, new_duration: parameters.durations.abc.DurationType) -> None:
         old_duration = self.duration
         # TODO(this is shit. we want a more general approach to manipulate attributes
         # of sequences)
@@ -48,11 +48,17 @@ class ComplexEvent(events_abc.Event, list):
     def set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Union[typing.Callable, typing.Any],
+        object_or_function: typing.Union[
+            typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
+            typing.Any,
+        ],
     ) -> None:
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
     def change_parameter(
-        self, parameter_name: str, function: typing.Union[typing.Callable, typing.Any],
+        self, parameter_name: str,
+        function: typing.Union[
+            typing.Callable[[parameters.abc.Parameter], None], typing.Any
+        ],
     ) -> None:
         [event.change_parameter(parameter_name, function) for event in self]
