@@ -2,3 +2,4 @@
 # otherwise you get a circular import
 from . import abc
 from .MidiFileConverter import MidiFileConverter
+from .TempoConverter import TempoConverter
