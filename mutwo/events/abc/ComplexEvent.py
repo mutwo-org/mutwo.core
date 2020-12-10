@@ -31,12 +31,10 @@ class ComplexEvent(events_abc.Event, list):
     @events_abc.Event.duration.setter
     def duration(self, new_duration: parameters.durations.abc.DurationType) -> None:
         old_duration = self.duration
-        # TODO(this is shit. we want a more general approach to manipulate attributes
-        # of sequences)
-        for event in self:
-            event.duration = tools.scale(
-                event.duration, 0, old_duration, 0, new_duration
-            )
+        self.set_parameter(
+            "duration",
+            lambda event: tools.scale(event.duration, 0, old_duration, 0, new_duration),
+        )
 
     def get_parameter(self, parameter_name: str) -> tuple:
         """Return tuple filled with the value of each event for the asked parameter.
@@ -56,7 +54,8 @@ class ComplexEvent(events_abc.Event, list):
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
     def change_parameter(
-        self, parameter_name: str,
+        self,
+        parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
