@@ -33,7 +33,7 @@ class ComplexEvent(events_abc.Event, list):
         old_duration = self.duration
         self.set_parameter(
             "duration",
-            lambda event: tools.scale(event.duration, 0, old_duration, 0, new_duration),
+            lambda duration: tools.scale(duration, 0, old_duration, 0, new_duration),
         )
 
     def get_parameter(self, parameter_name: str) -> tuple:
