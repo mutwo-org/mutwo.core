@@ -1,15 +1,18 @@
 import numbers
+import typing
 
 from mutwo.events import basic
 from mutwo import parameters
+
+BPM = typing.NewType("BPM", numbers.Number)
 
 
 class TempoEvent(basic.SimpleEvent):
     def __init__(
         self,
         duration: parameters.durations.abc.DurationType,
-        tempo_start,
-        tempo_end=None,
+        tempo_start: BPM,
+        tempo_end: BPM = None,
         curve_shape: float = 0,
         reference: parameters.durations.abc.DurationType = 1,
     ):
@@ -23,11 +26,10 @@ class TempoEvent(basic.SimpleEvent):
         self.curve_shape = curve_shape
         self.reference = reference
 
-    @staticmethod
-    def bpm_to_seconds_per_beat(bpm: numbers.Number) -> float:
-        return 60 / bpm
-
     def __repr__(self) -> str:
-        return "{}({}, {}, {})".format(
+        return "{}({}: {} BPM to {} BPM)".format(
             type(self).__name__, self.duration, self.tempo_start, self.tempo_end
         )
+
+    def is_static(self) -> bool:
+        return self.tempo_start == self.tempo_end

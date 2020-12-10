@@ -18,6 +18,13 @@ class SequentialEvent(events.abc.ComplexEvent):
         durations = (event.duration for event in self)
         return tuple(tools.accumulate_from_zero(durations))[:-1]
 
+    @property
+    def start_and_end_time_per_event(self) -> tuple:
+        """Return start and end time  for each event."""
+        durations = (event.duration for event in self)
+        absolute_times = tuple(tools.accumulate_from_zero(durations))
+        return tuple(zip(absolute_times, absolute_times[1:]))
+
     def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
         absolute_times = self.absolute_times
         after_absolute_time = itertools.dropwhile(

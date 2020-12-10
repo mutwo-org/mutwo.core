@@ -15,10 +15,38 @@ class TempoConverter(converters.abc.Converter):
         self.tempo_events = tempo_events
 
     @staticmethod
+    def bpm_to_seconds_per_beat(bpm) -> float:
+        return 60 / bpm
+
+    @staticmethod
     def make_envelope_from_tempo_events(
         tempo_events: TempoEvents,
     ) -> expenvelope.Envelope:
-        pass
+        """Convert a list of TempoEvents to an Envelope."""
+
+        levels = []
+        durations = []
+        curve_shapes = []
+        is_first = True
+        for tempo_event in tempo_events:
+            if is_first:
+                is_first = False
+            else:
+                durations.append(1e-100)
+                curve_shapes.append(0)
+
+            beat_length_at_start_and_end = tuple(
+                TempoConverter.bpm_to_seconds_per_beat(getattr(tempo_event, tempo))
+                * tempo_event.reference
+                for tempo in ("tempo_start", "tempo_end")
+            )
+            levels.extend(beat_length_at_start_and_end)
+            durations.append(tempo_event.duration - 1e-100)
+            curve_shapes.append(tempo_event.curve_shape)
+
+        return expenvelope.Envelope.from_levels_and_durations(
+            levels, durations, curve_shapes
+        )
 
     @property
     def tempo_events(self) -> events.basic.SequentialEvent:
@@ -38,16 +66,30 @@ class TempoConverter(converters.abc.Converter):
     ) -> events.basic.SequentialEvent:
         # copy event before applying tempo curve
         sequential_event = copy.deepcopy(sequential_event)
+        start_and_end_time_per_event = sequential_event.start_and_end_time_per_event
+        for event_index, start_and_end_time in enumerate(start_and_end_time_per_event):
+            sequential_event[event_index].duration = self.envelope.integrate_interval(
+                *start_and_end_time
+            )
+
         return sequential_event
 
     def _convert_simple_event(
         self, simple_event: events.basic.SequentialEvent
     ) -> events.basic.SimpleEvent:
-        raise NotImplementedError
+        # copy event before applying tempo curve
+        simple_event = copy.deepcopy(simple_event)
+        simple_event.duration = self.envelope.integrate_interval(
+            0, simple_event.duration
+        )
+        return simple_event
 
     def _convert_simultaneous_event(
         self, simultaneous_event: events.basic.SimultaneousEvent
     ) -> events.basic.SimultaneousEvent:
+        # TODO(write conversion function for simultaneous events..
+        # shall we just apply the same method that has been used in
+        # the _convert_simple_event method?)
         raise NotImplementedError
 
     def _convert(self, event: events.abc.Event) -> events.abc.Event:
