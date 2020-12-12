@@ -3,7 +3,7 @@ from mutwo import events
 
 
 class MidiFileConverter(converters.abc.Converter):
-    def convert(self, events_to_convert: events.abc.Event):
+    def _convert(self, event: events.abc.Event):
         raise NotImplementedError
 
 
