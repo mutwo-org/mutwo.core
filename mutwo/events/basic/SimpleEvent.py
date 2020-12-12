@@ -43,7 +43,7 @@ class SimpleEvent(abc.Event):
             new_parameter = object_or_function
         setattr(self, parameter_name, new_parameter)
 
-    def change_parameter(
+    def mutate_parameter(
         self,
         parameter_name: str,
         function: typing.Union[

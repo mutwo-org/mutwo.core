@@ -33,7 +33,7 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def change_parameter(
+    def mutate_parameter(
         self, parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
