@@ -23,6 +23,21 @@ class ToolsTest(unittest.TestCase):
         result = tuple(tools.accumulate_from_zero((1, 2, 3)))
         self.assertEqual(result, (0, 1, 3, 6))
 
+    def test_insert_next_to_positive(self):
+        result = [1, 2, 3]
+        tools.insert_next_to(result, 2, 1, 4)
+        self.assertEqual(result, [1, 2, 4, 3])
+
+    def test_insert_next_to_zero(self):
+        result = [1, 2, 3]
+        tools.insert_next_to(result, 2, 0, 4)
+        self.assertEqual(result, [1, 4, 3])
+
+    def test_insert_next_to_negative(self):
+        result = [1, 2, 3]
+        tools.insert_next_to(result, 2, -1, 4)
+        self.assertEqual(result, [1, 4, 2, 3])
+
 
 if __name__ == "__main__":
     unittest.main()
