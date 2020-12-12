@@ -25,6 +25,7 @@ setuptools.setup(
         "mutwo.parameters.dynamics",
         "mutwo.parameters.pitches",
         "mutwo.parameters.pitches.abc",
+        "mutwo.parameters.pitches.constants",
         "mutwo.utilities",
     ],
     setup_requires=[],
