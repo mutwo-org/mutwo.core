@@ -11,6 +11,7 @@ except ImportError:
     import fractions
 
 from mutwo import parameters
+from mutwo.utilities import tools
 
 
 @functools.total_ordering
@@ -41,6 +42,20 @@ class Pitch(parameters.abc.Parameter):
         """Converts a cent value to its respective frequency ratio."""
         return fractions.Fraction(10 ** (cents / Pitch._cent_calculation_constant))
 
+    @staticmethod
+    def hertz_to_midi_pitch_number(frequency: float) -> float:
+        closest_frequency_index = tools.find_closest_index(
+            frequency, parameters.pitches.constants.MidiPitchFrequencies
+        )
+        closest_frequency = parameters.pitches.constants.MidiPitchFrequencies[
+            closest_frequency_index
+        ]
+        closest_midi_pitch_number = parameters.pitches.constants.MidiPitchNumbers[
+            closest_frequency_index
+        ]
+        difference_in_cents = Pitch.hertz_to_cents(frequency, closest_frequency)
+        return closest_midi_pitch_number + (difference_in_cents / 100)
+
     # properties
     @property
     @abc.abstractmethod
@@ -48,9 +63,8 @@ class Pitch(parameters.abc.Parameter):
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
-    def midi(self) -> float:
-        raise NotImplementedError
+    def midi_pitch_number(self) -> float:
+        return self.hertz_to_midi_pitch_number(self.frequency)
 
     # comparison methods
     def __lt__(self, other: "Pitch") -> bool:
