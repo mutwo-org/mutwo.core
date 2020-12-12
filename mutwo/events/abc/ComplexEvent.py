@@ -53,11 +53,11 @@ class ComplexEvent(events_abc.Event, list):
     ) -> None:
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
-    def change_parameter(
+    def mutate_parameter(
         self,
         parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
     ) -> None:
-        [event.change_parameter(parameter_name, function) for event in self]
+        [event.mutate_parameter(parameter_name, function) for event in self]
