@@ -3,7 +3,6 @@ import bisect
 import functools
 import math
 import operator
-import os
 import warnings
 
 try:
@@ -12,11 +11,6 @@ except ImportError:
     import fractions
 
 from mutwo import parameters
-
-# TODO(make constants file with 12-edo frequencies)
-__directory = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(__directory, "", "12edo"), "r") as f:
-    _12edo_freq = tuple(float(line[:-1]) for line in f.readlines())
 
 
 @functools.total_ordering
@@ -89,9 +83,7 @@ class Pitch(parameters.abc.Parameter):
             return tuple(zip(indices, differences))
 
         def detect_steps(difference):
-            closest_s0 = find_lower_and_higher(
-                Pitch._midi_tuning_table0, difference
-            )
+            closest_s0 = find_lower_and_higher(Pitch._midi_tuning_table0, difference)
             closest_s1 = find_lower_and_higher(
                 Pitch._midi_tuning_table1, closest_s0[0][1]
             )
@@ -105,8 +97,15 @@ class Pitch(parameters.abc.Parameter):
 
         frequency = self.frequency
         if frequency:
-            closest = bisect.bisect_right(_12edo_freq, frequency) - 1
-            diff = self.hertz_to_cents(_12edo_freq[closest], frequency)
+            closest = (
+                bisect.bisect_right(
+                    parameters.pitches.constants.MidiPitchFrequencies, frequency
+                )
+                - 1
+            )
+            diff = self.hertz_to_cents(
+                parameters.pitches.constants.MidiPitchFrequencies[closest], frequency
+            )
             steps0, steps1, diff = detect_steps(diff)
             if diff >= 5:
                 msg = "Closest midi-pitch of {0} ({1} Hz) ".format(self, frequency)
