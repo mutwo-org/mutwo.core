@@ -38,6 +38,26 @@ class ToolsTest(unittest.TestCase):
         tools.insert_next_to(result, 2, -1, 4)
         self.assertEqual(result, [1, 4, 2, 3])
 
+    def test_find_closest_index_before(self):
+        data = (1, 2, 3, 4, 5)
+        self.assertEqual(tools.find_closest_index(-100, data), 0)
+
+    def test_find_closest_index_after(self):
+        data = (1, 2, 3, 4, 5)
+        self.assertEqual(tools.find_closest_index(100, data), 4)
+
+    def test_find_closest_index_in_between(self):
+        data = (1, 2, 3, 4, 5)
+        self.assertEqual(tools.find_closest_index(2.4, data), 1)
+
+    def test_find_closest_index_in_unsorted_iterable(self):
+        data = (4, 1, 2, 3, 100, 5)
+        self.assertEqual(tools.find_closest_index(102, data), 4)
+
+    def test_find_closest_item(self):
+        data = (100, 200, 300)
+        self.assertEqual(tools.find_closest_item(1000, data), 300)
+
 
 if __name__ == "__main__":
     unittest.main()
