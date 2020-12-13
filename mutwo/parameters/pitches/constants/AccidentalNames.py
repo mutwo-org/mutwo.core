@@ -1,1 +1,1 @@
-AccidentalNames = "flat sharp".split(" ")
+AccidentalNames = tuple("flat sharp".split(" "))
