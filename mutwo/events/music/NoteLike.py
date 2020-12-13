@@ -16,9 +16,10 @@ class NoteLike(events.basic.SimpleEvent):
         self,
         pitch_or_pitches: PitchOrPitches,
         duration: parameters.durations.abc.DurationType,
-        dynamic: numbers.Number,
+        volume: numbers.Number,
     ):
         self.pitch_or_pitches = pitch_or_pitches
+        self.volume = volume
         super().__init__(duration)
 
     @property

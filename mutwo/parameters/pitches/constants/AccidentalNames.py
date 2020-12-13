@@ -1,1 +1,0 @@
-AccidentalNames = "flat sharp".split(" ")
