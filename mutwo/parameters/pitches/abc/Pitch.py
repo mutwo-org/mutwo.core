@@ -37,12 +37,12 @@ class Pitch(parameters.abc.Parameter):
     @staticmethod
     def hertz_to_midi_pitch_number(frequency: float) -> float:
         closest_frequency_index = tools.find_closest_index(
-            frequency, parameters.pitches.constants.MidiPitchFrequencies
+            frequency, parameters.pitches.constants.MIDI_PITCH_FREQUENCIES
         )
-        closest_frequency = parameters.pitches.constants.MidiPitchFrequencies[
+        closest_frequency = parameters.pitches.constants.MIDI_PITCH_FREQUENCIES[
             closest_frequency_index
         ]
-        closest_midi_pitch_number = parameters.pitches.constants.MidiPitchNumbers[
+        closest_midi_pitch_number = parameters.pitches.constants.MIDI_PITCH_NUMBERS[
             closest_frequency_index
         ]
         difference_in_cents = Pitch.hertz_to_cents(frequency, closest_frequency)
