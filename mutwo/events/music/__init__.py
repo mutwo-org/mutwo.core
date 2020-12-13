@@ -1,1 +1,1 @@
-from . import NoteLike
+from .NoteLike import NoteLike
