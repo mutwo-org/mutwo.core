@@ -106,7 +106,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def ratio(self) -> fractions.Fraction:
         """Return the JustIntonationPitch transformed to a Ratio.
 
-        >>> m0 = JustIntonationPitch((0, 1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 0, 1,))
         >>> m0.ratio
         fractions.Fraction(5, 4)
         >>> m0 = JustIntonationPitch.from_ratio(3, 2)
@@ -154,7 +154,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def factorised(self) -> tuple:
         """Return factorised / decomposed version of itsef.
 
-        >>> m0 = JustIntonationPitch((0, 1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 0, 1,))
         >>> m0.factorised
         (2, 2, 5)
         >>> m1 = JustIntonationPitch.from_ratio(7, 6)
@@ -564,7 +564,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         between the first subharmonic in the and any other
         pitch of the subharmonic scale.
 
-        >>> m0 = JustIntonationPitch((1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 1))
         >>> m0.ratio
         fractions.Fraction(3, 2)
         >>> m0.harmonic
@@ -611,10 +611,10 @@ class JustIntonationPitch(pitches.abc.Pitch):
         A higher number means a less consonant interval /
         a more complicated harmony.
         euler(1/1) is definied as 1.
-        >>> m0 = JustIntonationPitch((1,), border=2)
-        >>> m1 = JustIntonationPitch([], border=2)
-        >>> m2 = JustIntonationPitch((0, 1,), border=2)
-        >>> m3 = JustIntonationPitch((0, -1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 1,))
+        >>> m1 = JustIntonationPitch()
+        >>> m2 = JustIntonationPitch((0, 0, 1,))
+        >>> m3 = JustIntonationPitch((0, 0, -1,))
         >>> m0.harmonicity_euler
         4
         >>> m1.harmonicity_euler
@@ -640,10 +640,10 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
         barlow(1/1) is definied as infinite.
 
-        >>> m0 = JustIntonationPitch((1,), border=2)
-        >>> m1 = JustIntonationPitch([], border=2)
-        >>> m2 = JustIntonationPitch((0, 1,), border=2)
-        >>> m3 = JustIntonationPitch((0, -1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 1,))
+        >>> m1 = JustIntonationPitch()
+        >>> m2 = JustIntonationPitch((0, 0, 1,))
+        >>> m3 = JustIntonationPitch((0, 0, -1,))
         >>> m0.harmonicity_barlow
         0.27272727272727276
         >>> m1.harmonicity_barlow # 1/1 is infinite harmonic
@@ -677,10 +677,10 @@ class JustIntonationPitch(pitches.abc.Pitch):
         only positive numbers are returned and that (1/1) is
         defined as 1 instead of infinite.
 
-        >>> m0 = JustIntonationPitch((1,), border=2)
-        >>> m1 = JustIntonationPitch([], border=2)
-        >>> m2 = JustIntonationPitch((0, 1,), border=2)
-        >>> m3 = JustIntonationPitch((0, -1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 1,))
+        >>> m1 = JustIntonationPitch()
+        >>> m2 = JustIntonationPitch((0, 0, 1,))
+        >>> m3 = JustIntonationPitch((0, 0, -1,))
         >>> m0.harmonicity_simplified_barlow
         0.27272727272727276
         >>> m1.harmonicity_simplified_barlow # 1/1 is not infinite but 1
@@ -706,10 +706,10 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
         tenney(1/1) is definied as 0.
 
-        >>> m0 = JustIntonationPitch((1,), border=2)
-        >>> m1 = JustIntonationPitch([], border=2)
-        >>> m2 = JustIntonationPitch((0, 1,), border=2)
-        >>> m3 = JustIntonationPitch((0, -1,), border=2)
+        >>> m0 = JustIntonationPitch((0, 1,))
+        >>> m1 = JustIntonationPitch()
+        >>> m2 = JustIntonationPitch((0, 0, 1,))
+        >>> m3 = JustIntonationPitch((0, 0, -1,))
         >>> m0.harmonicity_tenney
         2.584962500721156
         >>> m1.harmonicity_tenney
@@ -775,7 +775,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     def inverse(self, axis=None) -> "JustIntonationPitch":
         if axis is None:
-            return type(self)(list(map(lambda x: -x, self)), self.border)
+            return type(self)(list(map(lambda x: -x, self)), self.concert_pitch)
         else:
             distance = self - axis
             return axis - distance
