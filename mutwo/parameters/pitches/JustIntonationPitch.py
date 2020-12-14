@@ -559,7 +559,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
         May be positive for harmonic and negative for
         subharmonic pitches. If the return - primesue is 0,
-        the interprimes may occur neither between the first harmonic
+        the interval may occur neither between the first harmonic
         and any other pitch of the harmonic scale nor
         between the first subharmonic in the and any other
         pitch of the subharmonic scale.
@@ -608,7 +608,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def harmonicity_euler(self) -> int:
         """Return the 'gradus suavitatis' of euler.
 
-        A higher number means a less consonant interprimes /
+        A higher number means a less consonant interval /
         a more complicated harmony.
         euler(1/1) is definied as 1.
         >>> m0 = JustIntonationPitch((1,), border=2)
@@ -630,12 +630,12 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def harmonicity_barlow(self) -> float:
-        r"""Calculate the barlow-harmonicity of an interprimes.
+        r"""Calculate the barlow-harmonicity of an interval.
 
         This implementation follows Clarence Barlows definition, given
         in 'The Ratio Book' (1992).
 
-        A higher number means a more consonant interprimes / a less
+        A higher number means a more consonant interval / a less
         complicated harmony.
 
         barlow(1/1) is definied as infinite.
@@ -670,7 +670,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def harmonicity_simplified_barlow(self) -> float:
-        r"""Calculate a simplified barlow-harmonicity of an interprimes.
+        r"""Calculate a simplified barlow-harmonicity of an interval.
 
         This implementation follows Clarence Barlows definition, given
         in 'The Ratio Book' (1992), with the difference that
@@ -698,10 +698,10 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def harmonicity_tenney(self) -> float:
-        r"""Calculate Tenneys harmonic distance of an interprimes
+        r"""Calculate Tenneys harmonic distance of an interval
 
         A higher number
-        means a more consonant interprimes / a less
+        means a more consonant interval / a less
         complicated harmony.
 
         tenney(1/1) is definied as 0.
