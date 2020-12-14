@@ -12,6 +12,7 @@ except ImportError:
     import fractions
 
 import primesieve
+from primesieve import numpy as primesieve_numpy
 
 
 from mutwo.parameters import pitches
@@ -75,7 +76,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         (2, 3, 5, 7, 11)
         """
 
-        return tuple(primesieve.n_primes(len(self.exponents)))
+        return tuple(primesieve_numpy.n_primes(len(self.exponents)))
 
     @property
     def occupied_primes(self) -> tuple:
