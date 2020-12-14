@@ -27,8 +27,6 @@ setuptools.setup(
         "mutwo.parameters.pitches.constants",
         "mutwo.parameters.volume",
         "mutwo.utilities",
-        "mutwo.utilities.tools",
-        "mutwo.utilities.prime_factors",
     ],
     setup_requires=[],
     tests_require=["nose"],
