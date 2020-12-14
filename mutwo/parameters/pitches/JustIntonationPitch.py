@@ -220,7 +220,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         return "JustIntonationPitch({})".format(self.ratio)
 
     @staticmethod
-    def adjust_exponentss(exponents0: tuple, exponents1: tuple) -> tuple:
+    def adjust_exponent_lengths(exponents0: tuple, exponents1: tuple) -> tuple:
         r"""Adjust two exponents, e.g. make their length equal.
 
         The length of the longer JustIntonationPitch is the reference.
@@ -230,7 +230,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
             * exponents1: second exponents to adjust
         >>> v0 = (1, 0, -1)
         >>> v1 = (1,)
-        >>> v0_adjusted, v1_adjusted = JustIntonationPitch.adjust_exponentss(v0, v1)
+        >>> v0_adjusted, v1_adjusted = JustIntonationPitch.adjust_exponent_lengths(v0, v1)
         >>> v0_adjusted
         (1, 0, -1)
         >>> v1_adjusted
@@ -744,7 +744,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def _math(
         self, other: "JustIntonationPitch", operation: typing.Callable
     ) -> "JustIntonationPitch":
-        exponents0, exponents1 = JustIntonationPitch.adjust_exponentss(
+        exponents0, exponents1 = JustIntonationPitch.adjust_exponent_lengths(
             self.exponents, other.exponents
         )
         return JustIntonationPitch(
