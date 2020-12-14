@@ -42,3 +42,7 @@ class PitchTest(unittest.TestCase):
     def test_hertz_to_midi_pitch_number(self):
         self.assertEqual(69, pitches.abc.Pitch.hertz_to_midi_pitch_number(440))
         self.assertEqual(60, round(pitches.abc.Pitch.hertz_to_midi_pitch_number(261)))
+
+
+if __name__ == "__main__":
+    unittest.main()
