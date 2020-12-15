@@ -751,7 +751,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     # ###################################################################### #
 
     @decorators.add_return_option
-    def register(self, octave: int) -> "JustIntonationPitch":
+    def register(self, octave: int) -> typing.Union[None, "JustIntonationPitch"]:
         normalized_just_intonation_pitch = self.normalize(mutate=False)
         factor = 2 ** abs(octave)
         if octave < 1:
