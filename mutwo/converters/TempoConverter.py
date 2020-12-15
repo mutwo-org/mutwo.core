@@ -1,4 +1,5 @@
 import copy
+import numbers
 import typing
 
 import expenvelope
@@ -15,8 +16,8 @@ class TempoConverter(converters.abc.MutwoEventConverter):
         self.tempo_events = tempo_events
 
     @staticmethod
-    def bpm_to_seconds_per_beat(bpm) -> float:
-        return 60 / bpm
+    def beats_per_minute_to_seconds_per_beat(beats_per_minute: numbers.Number) -> float:
+        return 60 / beats_per_minute
 
     @staticmethod
     def make_envelope_from_tempo_events(
@@ -36,7 +37,9 @@ class TempoConverter(converters.abc.MutwoEventConverter):
                 curve_shapes.append(0)
 
             beat_length_at_start_and_end = tuple(
-                TempoConverter.bpm_to_seconds_per_beat(getattr(tempo_event, tempo))
+                TempoConverter.beats_per_minute_to_seconds_per_beat(
+                    getattr(tempo_event, tempo)
+                )
                 * tempo_event.reference
                 for tempo in ("tempo_start", "tempo_end")
             )
