@@ -330,22 +330,22 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def __repr__(self) -> str:
         return "JustIntonationPitch({})".format(self.ratio)
 
+    @decorators.add_return_option
     def _math(
         self, other: "JustIntonationPitch", operation: typing.Callable
     ) -> "JustIntonationPitch":
         exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
             self.exponents, other.exponents
         )
-        return JustIntonationPitch(
+        self.exponents = (
             tuple(operation(x, y) for x, y in zip(exponents0, exponents1)),
-            self.concert_pitch,
         )
 
     def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
-        return self._math(other, operator.add)
+        return self._math(other, operator.add, mutate=False)
 
     def __sub__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
-        return self._math(other, operator.sub)
+        return self._math(other, operator.sub, mutate=False)
 
     def __abs__(self):
         if self.numerator > self.denominator:
@@ -796,3 +796,15 @@ class JustIntonationPitch(pitches.abc.Pitch):
             distance = self - axis
             exponents = (axis - distance).exponents
         self.exponents = exponents
+
+    @decorators.add_return_option
+    def add(
+        self, other: "JustIntonationPitch"
+    ) -> typing.Union[None, "JustIntonationPitch"]:
+        self._math(other, operator.add)
+
+    @decorators.add_return_option
+    def subtract(
+        self, other: "JustIntonationPitch"
+    ) -> typing.Union[None, "JustIntonationPitch"]:
+        self._math(other, operator.sub)
