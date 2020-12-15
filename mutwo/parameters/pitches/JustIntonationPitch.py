@@ -14,8 +14,8 @@ except ImportError:
 import primesieve
 from primesieve import numpy as primesieve_numpy
 
-
 from mutwo.parameters import pitches
+from mutwo.utilities import decorators
 from mutwo.utilities import prime_factors
 
 ConcertPitch = typing.Union[numbers.Number, pitches.abc.Pitch]
@@ -750,25 +750,25 @@ class JustIntonationPitch(pitches.abc.Pitch):
     #                            public methods                              #
     # ###################################################################### #
 
+    @decorators.add_return_option
     def register(self, octave: int) -> "JustIntonationPitch":
-        normalized_just_intonation_pitch = self.normalize()
+        normalized_just_intonation_pitch = self.normalize(mutate=False)
         factor = 2 ** abs(octave)
         if octave < 1:
             added = type(self)(fractions.Fraction(1, factor))
         else:
             added = type(self)(fractions.Fraction(factor, 1))
-        registered_just_intonation_pitch = normalized_just_intonation_pitch + added
-        registered_just_intonation_pitch.concert_pitch = self.concert_pitch
-        return registered_just_intonation_pitch
+        self.exponents = (normalized_just_intonation_pitch + added).exponents
 
+    @decorators.add_return_option
     def move_to_closest_register(
         self, reference: "JustIntonationPitch"
-    ) -> "JustIntonationPitch":
+    ) -> typing.Union[None, "JustIntonationPitch"]:
         reference_register = reference.octave
 
         best = None
         for adaption in range(-1, 2):
-            candidate = self.register(reference_register + adaption)
+            candidate = self.register(reference_register + adaption, mutate=False)
             difference = abs((candidate - reference).cents)
             set_best = True
             if best and difference > best[1]:
@@ -777,21 +777,22 @@ class JustIntonationPitch(pitches.abc.Pitch):
             if set_best:
                 best = (candidate, difference)
 
-        best[0].concert_pitch = self.concert_pitch
-        return best[0]
+        self.exponents = best[0].exponent
 
-    def normalize(self, prime: int = 2) -> "JustIntonationPitch":
+    @decorators.add_return_option
+    def normalize(self, prime: int = 2) -> typing.Union[None, "JustIntonationPitch"]:
+        """Normalize JustIntonationPitch."""
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
-        return type(self)(adjusted, concert_pitch=self.concert_pitch)
+        self.exponents = adjusted
 
+    @decorators.add_return_option
     def inverse(
         self, axis: typing.Union[None, "JustIntonationPitch"] = None
-    ) -> "JustIntonationPitch":
+    ) -> typing.Union[None, "JustIntonationPitch"]:
         if axis is None:
-            return type(self)(
-                list(map(lambda x: -x, self.exponents)), self.concert_pitch
-            )
+            exponents = list(map(lambda x: -x, self.exponents))
         else:
             distance = self - axis
-            return axis - distance
+            exponents = (axis - distance).exponents
+        self.exponents = exponents

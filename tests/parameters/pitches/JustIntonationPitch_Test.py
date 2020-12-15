@@ -127,7 +127,7 @@ class JustIntonationPitchTest(unittest.TestCase):
     def test_normalize(self):
         p0 = pitches.JustIntonationPitch((0, 1))
         p1 = pitches.JustIntonationPitch((-1, 1))
-        self.assertEqual(p0.normalize(2), p1)
+        self.assertEqual(p0.normalize(2, mutate=False), p1)
 
     def test__indigestibility(self):
         self.assertEqual(pitches.JustIntonationPitch._indigestibility(1), 0)
