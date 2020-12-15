@@ -1,12 +1,8 @@
 import abc
-
-from mutwo import events
+import typing
 
 
 class Converter(abc.ABC):
     @abc.abstractmethod
-    def _convert(self, event: events.abc.Event):
+    def convert(self, event_or_parameter_to_convert: typing.Any) -> typing.Any:
         raise NotImplementedError
-
-    def convert(self, *events_to_convert) -> tuple:
-        return tuple(self._convert(event) for event in events_to_convert)

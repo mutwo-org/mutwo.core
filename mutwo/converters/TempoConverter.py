@@ -10,7 +10,7 @@ from mutwo import events
 TempoEvents = typing.Iterable[events.basic.TempoEvent]
 
 
-class TempoConverter(converters.abc.Converter):
+class TempoConverter(converters.abc.MutwoEventConverter):
     def __init__(self, tempo_events: TempoEvents):
         self.tempo_events = tempo_events
 
@@ -92,19 +92,19 @@ class TempoConverter(converters.abc.Converter):
         # the _convert_simple_event method?)
         raise NotImplementedError
 
-    def _convert(self, event: events.abc.Event) -> events.abc.Event:
-        if isinstance(event, events.basic.SequentialEvent):
-            converted_event = self._convert_sequential_event(event)
+    def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
+        if isinstance(event_to_convert, events.basic.SequentialEvent):
+            converted_event = self._convert_sequential_event(event_to_convert)
 
-        elif isinstance(event, events.basic.SimultaneousEvent,):
-            converted_event = self._convert_simultaneous_event(event)
+        elif isinstance(event_to_convert, events.basic.SimultaneousEvent,):
+            converted_event = self._convert_simultaneous_event(event_to_convert)
 
-        elif isinstance(event, events.basic.SimpleEvent,):
-            converted_event = self._convert_simple_event(event)
+        elif isinstance(event_to_convert, events.basic.SimpleEvent,):
+            converted_event = self._convert_simple_event(event_to_convert)
 
         else:
             msg = "Can't apply tempo curve on object '{}' of type '{}'.".format(
-                event, type(event)
+                event_to_convert, type(event_to_convert)
             )
             raise TypeError(msg)
 
