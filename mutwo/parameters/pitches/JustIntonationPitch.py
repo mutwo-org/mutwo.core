@@ -736,7 +736,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         return math.log(num * de, 2)
 
     @property
-    def lv(self) -> int:
+    def level(self) -> int:
         if self.primes:
             return abs(
                 functools.reduce(
