@@ -302,7 +302,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     @staticmethod
     def _indigestibility_of_factorised(decomposed):
         decomposed = collections.Counter(decomposed)
-        decomposed = zip(decomposed.primesues(), decomposed.keys())
+        decomposed = zip(decomposed.values(), decomposed.keys())
         summed = ((power * pow(prime - 1, 2)) / prime for power, prime in decomposed)
         return 2 * sum(summed)
 
@@ -337,7 +337,8 @@ class JustIntonationPitch(pitches.abc.Pitch):
             self.exponents, other.exponents
         )
         return JustIntonationPitch(
-            (operation for x, y in zip(exponents0, exponents1)), self.concert_pitch
+            tuple(operation(x, y) for x, y in zip(exponents0, exponents1)),
+            self.concert_pitch,
         )
 
     def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
@@ -345,15 +346,6 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     def __sub__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
         return self._math(other, operator.sub)
-
-    def __mul__(self, other) -> "JustIntonationPitch":
-        return self._math(other, operator.mul)
-
-    def __div__(self, other) -> "JustIntonationPitch":
-        return self._math(other, operator.div)
-
-    def __pow__(self, other) -> "JustIntonationPitch":
-        return self._math(other, lambda x, y: x ** y)
 
     def __abs__(self):
         if self.numerator > self.denominator:
@@ -443,7 +435,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         >>> jip0 = JustIntonationPitch((0, 0, 1,))
         >>> jip0.ratio
         fractions.Fraction(5, 4)
-        >>> jip0 = JustIntonationPitch.from_ratio(3, 2)
+        >>> jip0 = JustIntonationPitch("3/2")
         >>> jip0.ratio
         fractions.Fraction(3, 2)
         """
@@ -491,16 +483,15 @@ class JustIntonationPitch(pitches.abc.Pitch):
         >>> jip0 = JustIntonationPitch((0, 0, 1,))
         >>> jip0.factorised
         (2, 2, 5)
-        >>> jip1 = JustIntonationPitch.from_ratio(7, 6)
+        >>> jip1 = JustIntonationPitch("7/6")
         >>> jip1.factorised
         (2, 3, 7)
         """
 
         exponents = self.exponents
         primes = self.primes
-        border = self.border
         exponents_adjusted, primes_adjusted = type(self)._adjust_exponents(
-            exponents, primes, border
+            exponents, primes, 1
         )
         decomposed = ([p] * abs(e) for p, e in zip(primes_adjusted, exponents_adjusted))
         return tuple(functools.reduce(operator.add, decomposed))
@@ -525,11 +516,11 @@ class JustIntonationPitch(pitches.abc.Pitch):
         )
 
     @property
-    def blueprint(self, ignore: tuple = (2,)) -> tuple:
+    def blueprint(self, ignore: typing.Sequence[int] = (2,)) -> tuple:
         blueprint = []
         for factorised in self.factorised_numerator_and_denominator:
             factorised = tuple(fac for fac in factorised if fac not in ignore)
-            counter = collections.Counter(collections.Counter(factorised).primesues())
+            counter = collections.Counter(collections.Counter(factorised).values())
             if counter:
                 maxima = max(counter.keys())
                 blueprint.append(tuple(counter[idx + 1] for idx in range(maxima)))
@@ -748,7 +739,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def lv(self) -> int:
         if self.primes:
             return abs(
-                functools.reduce(math.gcd, tuple(filter(lambda x: x != 0, self)))
+                functools.reduce(
+                    math.gcd, tuple(filter(lambda x: x != 0, self.exponents))
+                )
             )
         else:
             return 1
@@ -761,9 +754,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
         normalized_just_intonation_pitch = self.normalize()
         factor = 2 ** abs(octave)
         if octave < 1:
-            added = type(self).from_ratio(1, factor)
+            added = type(self)(fractions.Fraction(1, factor))
         else:
-            added = type(self).from_ratio(factor, 1)
+            added = type(self)(fractions.Fraction(factor, 1))
         registered_just_intonation_pitch = normalized_just_intonation_pitch + added
         registered_just_intonation_pitch.concert_pitch = self.concert_pitch
         return registered_just_intonation_pitch
@@ -790,15 +783,15 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def normalize(self, prime: int = 2) -> "JustIntonationPitch":
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
-        return type(self).from_ratio(
-            adjusted.numerator, adjusted.denominator, concert_pitch=self.concert_pitch
-        )
+        return type(self)(adjusted, concert_pitch=self.concert_pitch)
 
     def inverse(
         self, axis: typing.Union[None, "JustIntonationPitch"] = None
     ) -> "JustIntonationPitch":
         if axis is None:
-            return type(self)(list(map(lambda x: -x, self)), self.concert_pitch)
+            return type(self)(
+                list(map(lambda x: -x, self.exponents)), self.concert_pitch
+            )
         else:
             distance = self - axis
             return axis - distance
