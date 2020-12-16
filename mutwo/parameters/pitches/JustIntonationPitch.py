@@ -311,7 +311,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
     # ###################################################################### #
 
     def __float__(self) -> float:
-        """Return the float of a JustIntonationPitch or JIPitch - object.
+        """Return the float of a JustIntonationPitch - object.
 
         These are the same:
             float(myJustIntonationPitch.ratio) == float(myJustIntonationPitch).
@@ -442,7 +442,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def numerator(self) -> int:
-        """Return the numerator of a JustIntonationPitch or JIPitch - object.
+        """Return the numerator of a JustIntonationPitch - object.
 
         >>> jip0 = JustIntonationPitch((0, -1,))
         >>> jip0.numerator
@@ -457,7 +457,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def denominator(self) -> int:
-        """Return the denominator of a JustIntonationPitch or JIPitch - object.
+        """Return the denominator of a JustIntonationPitch - object.
 
         >>> jip0 = JustIntonationPitch((0, 1,))
         >>> jip0.denominator
@@ -538,9 +538,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
 
     @property
     def tonality(self) -> bool:
-        """Return the tonality (bool) of a JustIntonationPitch or JIPitch - object.
+        """Return the tonality (bool) of a JustIntonationPitch - object.
 
-        The tonality of a JustIntonationPitch or JIPitch - may be True (otonality) if
+        The tonality of a JustIntonationPitch   - may be True (otonality) if
         the exponent of the highest occurring prime number is a
         positive number and False if the exponent is a
         negative number (utonality).
