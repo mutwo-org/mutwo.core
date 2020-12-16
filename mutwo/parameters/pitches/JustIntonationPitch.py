@@ -286,7 +286,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         The implementation follows Clarence Barlows definition
         given in 'The Ratio Book' (1992).
         Arguments:
-            * num -> integer, whose _indigestibility primesue shall be calculated
+            * num -> integer, whose _indigestibility value shall be calculated
 
         >>> JustIntonationPitch._indigestibility(1)
         0
@@ -574,7 +574,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         """Return the nth - harmonic / subharmonic the pitch may represent.
 
         May be positive for harmonic and negative for
-        subharmonic pitches. If the return - primesue is 0,
+        subharmonic pitches. If the return - value is 0,
         the interval may occur neither between the first harmonic
         and any other pitch of the harmonic scale nor
         between the first subharmonic in the and any other
@@ -705,7 +705,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         1
         >>> jip2.harmonicity_simplified_barlow
         0.11904761904761904
-        >>> jip3.harmonicity_simplified_barlow # positive return primesue
+        >>> jip3.harmonicity_simplified_barlow # positive return value
         0.10638297872340426
         """
 
