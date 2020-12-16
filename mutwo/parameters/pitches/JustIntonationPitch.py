@@ -337,9 +337,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
             self.exponents, other.exponents
         )
-        self.exponents = (
-            tuple(operation(x, y) for x, y in zip(exponents0, exponents1)),
-        )
+        self.exponents = tuple(operation(x, y) for x, y in zip(exponents0, exponents1))
 
     def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
         return self._math(other, operator.add, mutate=False)
@@ -351,7 +349,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         if self.numerator > self.denominator:
             return copy.deepcopy(self)
         else:
-            exponents = tuple(-v for v in iter(self))
+            exponents = tuple(-v for v in iter(self.exponents))
             return type(self)(exponents, self.concert_pitch)
 
     # ###################################################################### #
@@ -514,6 +512,16 @@ class JustIntonationPitch(pitches.abc.Pitch):
             functools.reduce(operator.add, decomposed)
             for decomposed in numerator_denominator
         )
+
+    @property
+    def octave(self) -> int:
+        ct = self.cents
+        ref, exp = 1200, 0
+        while ref * exp <= ct:
+            exp += 1
+        while ref * exp > ct:
+            exp -= 1
+        return exp
 
     @property
     def blueprint(self, ignore: typing.Sequence[int] = (2,)) -> tuple:
@@ -777,7 +785,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
             if set_best:
                 best = (candidate, difference)
 
-        self.exponents = best[0].exponent
+        self.exponents = best[0].exponents
 
     @decorators.add_return_option
     def normalize(self, prime: int = 2) -> typing.Union[None, "JustIntonationPitch"]:

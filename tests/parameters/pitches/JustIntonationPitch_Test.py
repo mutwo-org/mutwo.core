@@ -98,6 +98,22 @@ class JustIntonationPitchTest(unittest.TestCase):
             ratio2 * concert_pitch2,
         )
 
+    def test_octave(self):
+        jip0 = pitches.JustIntonationPitch("3/1")
+        jip1 = pitches.JustIntonationPitch("1/1")
+        jip2 = pitches.JustIntonationPitch("5/8")
+        jip3 = pitches.JustIntonationPitch("5/16")
+        jip4 = pitches.JustIntonationPitch("15/8")
+        jip5 = pitches.JustIntonationPitch("2/1")
+        jip6 = pitches.JustIntonationPitch("1/2")
+        self.assertEqual(jip0.octave, 1)
+        self.assertEqual(jip1.octave, 0)
+        self.assertEqual(jip2.octave, -1)
+        self.assertEqual(jip3.octave, -2)
+        self.assertEqual(jip4.octave, 0)
+        self.assertEqual(jip5.octave, 1)
+        self.assertEqual(jip6.octave, -1)
+
     def test_harmonic(self):
         jip0 = pitches.JustIntonationPitch([-1, 1])
         jip1 = pitches.JustIntonationPitch([-2, 0, 1])
@@ -124,12 +140,7 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip3.tonality, True)
         self.assertEqual(jip4.tonality, True)
 
-    def test_normalize(self):
-        p0 = pitches.JustIntonationPitch((0, 1))
-        p1 = pitches.JustIntonationPitch((-1, 1))
-        self.assertEqual(p0.normalize(2, mutate=False), p1)
-
-    def test__indigestibility(self):
+    def test_indigestibility(self):
         self.assertEqual(pitches.JustIntonationPitch._indigestibility(1), 0)
         self.assertEqual(pitches.JustIntonationPitch._indigestibility(2), 1)
         self.assertEqual(pitches.JustIntonationPitch._indigestibility(4), 2)
@@ -188,6 +199,126 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip1.harmonicity_wilson, 1)
         self.assertEqual(jip2.harmonicity_wilson, 5)
         self.assertEqual(jip3.harmonicity_wilson, 5)
+
+    def test_operator_overload_add(self):
+        jip0 = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/4")
+        jip2 = pitches.JustIntonationPitch("3/1")
+        jip0plus1 = pitches.JustIntonationPitch("15/8")
+        jip0plus2 = pitches.JustIntonationPitch("9/2")
+        jip1plus2 = pitches.JustIntonationPitch("15/4")
+        self.assertEqual(jip0 + jip1, jip0plus1)
+        self.assertEqual(jip0 + jip2, jip0plus2)
+        self.assertEqual(jip1 + jip2, jip1plus2)
+
+    def test_operator_overload_sub(self):
+        jip0 = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/4")
+        jip2 = pitches.JustIntonationPitch("3/1")
+        jip0minus1 = pitches.JustIntonationPitch("6/5")
+        jip0minus2 = pitches.JustIntonationPitch("1/2")
+        jip1minus2 = pitches.JustIntonationPitch("5/12")
+        self.assertEqual(jip0 - jip1, jip0minus1)
+        self.assertEqual(jip0 - jip2, jip0minus2)
+        self.assertEqual(jip1 - jip2, jip1minus2)
+
+    def test_operator_overload_abs(self):
+        jip0 = pitches.JustIntonationPitch("1/3")
+        jip0_abs = pitches.JustIntonationPitch("3/1")
+        jip1 = pitches.JustIntonationPitch("5/7")
+        jip1_abs = pitches.JustIntonationPitch("7/5")
+        self.assertEqual(abs(jip0), jip0_abs)
+        self.assertEqual(abs(jip1), jip1_abs)
+
+    def test_add(self):
+        jip0 = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/4")
+        jip2 = pitches.JustIntonationPitch("3/1")
+        jip0.add(jip1)
+        jip1.add(jip2)
+        jip0plus1 = pitches.JustIntonationPitch("15/8")
+        jip1plus2 = pitches.JustIntonationPitch("15/4")
+        self.assertEqual(jip0, jip0plus1)
+        self.assertEqual(jip1, jip1plus2)
+
+    def test_subtract(self):
+        jip0 = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/4")
+        jip2 = pitches.JustIntonationPitch("3/1")
+        jip0.subtract(jip1)
+        jip1.subtract(jip2)
+        jip0minus1 = pitches.JustIntonationPitch("6/5")
+        jip1minus2 = pitches.JustIntonationPitch("5/12")
+        self.assertEqual(jip0, jip0minus1)
+        self.assertEqual(jip1, jip1minus2)
+
+    def test_inverse(self):
+        jip0 = pitches.JustIntonationPitch("3/2")
+        jip0inverse = pitches.JustIntonationPitch("2/3")
+        jip1 = pitches.JustIntonationPitch("7/1")
+        jip1inverse = pitches.JustIntonationPitch("1/7")
+        jip2 = pitches.JustIntonationPitch("9/11")
+        jip2inverse = pitches.JustIntonationPitch("11/9")
+
+        jip0.inverse()
+        jip1.inverse()
+
+        self.assertEqual(jip0, jip0inverse)
+        self.assertEqual(jip1, jip1inverse)
+        self.assertEqual(jip2.inverse(mutate=False), jip2inverse)
+
+    def test_normalize(self):
+        jip0 = pitches.JustIntonationPitch("3/1")
+        jip0normalized = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/6")
+        jip1normalized = pitches.JustIntonationPitch("5/3")
+        jip2 = pitches.JustIntonationPitch("27/7")
+        jip2normalized = pitches.JustIntonationPitch("27/14")
+
+        jip0.normalize()
+        jip1.normalize()
+
+        self.assertEqual(jip0, jip0normalized)
+        self.assertEqual(jip1, jip1normalized)
+        self.assertEqual(jip2.normalize(mutate=False), jip2normalized)
+
+    def test_register(self):
+        jip0 = pitches.JustIntonationPitch("3/1")
+        jip0registered = pitches.JustIntonationPitch("3/2")
+        jip1 = pitches.JustIntonationPitch("5/3")
+        jip1registered = pitches.JustIntonationPitch("5/12")
+        jip2 = pitches.JustIntonationPitch("1/1")
+        jip2registered = pitches.JustIntonationPitch("4/1")
+
+        jip0.register(0)
+        jip1.register(-2)
+
+        self.assertEqual(jip0, jip0registered)
+        self.assertEqual(jip1, jip1registered)
+        self.assertEqual(jip2.register(2, mutate=False), jip2registered)
+
+    def test_move_to_closest_register(self):
+        jip0 = pitches.JustIntonationPitch("3/1")
+        jip0_reference = pitches.JustIntonationPitch("5/4")
+        jip0_closest = pitches.JustIntonationPitch("3/2")
+
+        jip1 = pitches.JustIntonationPitch("7/1")
+        jip1_reference = pitches.JustIntonationPitch("1/1")
+        jip1_closest = pitches.JustIntonationPitch("7/8")
+
+        jip2 = pitches.JustIntonationPitch("1/1")
+        jip2_reference = pitches.JustIntonationPitch("7/4")
+        jip2_closest = pitches.JustIntonationPitch("2/1")
+
+        jip2.move_to_closest_register(jip2_reference)
+
+        self.assertEqual(
+            jip0.move_to_closest_register(jip0_reference, mutate=False), jip0_closest
+        )
+        self.assertEqual(
+            jip1.move_to_closest_register(jip1_reference, mutate=False), jip1_closest
+        )
+        self.assertEqual(jip2, jip2_closest)
 
 
 if __name__ == "__main__":
