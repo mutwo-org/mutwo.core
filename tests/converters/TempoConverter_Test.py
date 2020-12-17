@@ -59,6 +59,21 @@ class TempoConverterTest(unittest.TestCase):
             converted_sequential_event.get_parameter("duration"), expected_durations
         )
 
+    def test_convert_simultaneous_event(self):
+        tempo_events = basic.SequentialEvent([basic.TempoEvent(4, 30, 60)])
+        simple_event0 = basic.SimpleEvent(4)
+        simple_event1 = basic.SimpleEvent(8)
+        simultaneous_event = basic.SimultaneousEvent(
+            [simple_event0, simple_event0, simple_event1]
+        )
+        converter = converters.TempoConverter(tempo_events)
+        converted_simultaneous_event = converter.convert(simultaneous_event)
+        expected_duration0 = simultaneous_event[0].duration * 1.5
+        expected_duration1 = 10
+        self.assertEqual(converted_simultaneous_event[0].duration, expected_duration0)
+        self.assertEqual(converted_simultaneous_event[1].duration, expected_duration0)
+        self.assertEqual(converted_simultaneous_event[2].duration, expected_duration1)
+
 
 if __name__ == "__main__":
     unittest.main()

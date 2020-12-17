@@ -13,6 +13,10 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def destructive_copy(self) -> "Event":
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_parameter(self, parameter_name: str) -> typing.Union[tuple, typing.Any]:
         raise NotImplementedError
 

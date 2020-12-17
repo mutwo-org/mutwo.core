@@ -1,4 +1,3 @@
-import copy
 import numbers
 import typing
 
@@ -6,6 +5,7 @@ import expenvelope
 
 from mutwo import converters
 from mutwo import events
+from mutwo import parameters
 
 
 TempoEvents = typing.Iterable[events.basic.TempoEvent]
@@ -64,51 +64,64 @@ class TempoConverter(converters.abc.MutwoEventConverter):
     def envelope(self) -> expenvelope.Envelope:
         return self._envelope
 
-    def _convert_sequential_event(
-        self, sequential_event: events.basic.SequentialEvent
-    ) -> events.basic.SequentialEvent:
-        # copy event before applying tempo curve
-        sequential_event = copy.deepcopy(sequential_event)
-        start_and_end_time_per_event = sequential_event.start_and_end_time_per_event
-        for event_index, start_and_end_time in enumerate(start_and_end_time_per_event):
-            sequential_event[event_index].duration = self.envelope.integrate_interval(
-                *start_and_end_time
+    def _apply_tempo_envelope_on_event(
+        self,
+        event_to_process: events.abc.Event,
+        absolute_entry_delay: parameters.durations.abc.DurationType,
+    ) -> None:
+        if isinstance(event_to_process, events.basic.SequentialEvent):
+            self._apply_tempo_envelope_on_sequential_event(
+                event_to_process, absolute_entry_delay
             )
 
-        return sequential_event
+        elif isinstance(event_to_process, events.basic.SimultaneousEvent,):
+            self._apply_tempo_envelope_on_simultaneous_event(
+                event_to_process, absolute_entry_delay
+            )
 
-    def _convert_simple_event(
-        self, simple_event: events.basic.SequentialEvent
-    ) -> events.basic.SimpleEvent:
-        # copy event before applying tempo curve
-        simple_event = copy.deepcopy(simple_event)
-        simple_event.duration = self.envelope.integrate_interval(
-            0, simple_event.duration
-        )
-        return simple_event
-
-    def _convert_simultaneous_event(
-        self, simultaneous_event: events.basic.SimultaneousEvent
-    ) -> events.basic.SimultaneousEvent:
-        # TODO(write conversion function for simultaneous events..
-        # shall we just apply the same method that has been used in
-        # the _convert_simple_event method?)
-        raise NotImplementedError
-
-    def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
-        if isinstance(event_to_convert, events.basic.SequentialEvent):
-            converted_event = self._convert_sequential_event(event_to_convert)
-
-        elif isinstance(event_to_convert, events.basic.SimultaneousEvent,):
-            converted_event = self._convert_simultaneous_event(event_to_convert)
-
-        elif isinstance(event_to_convert, events.basic.SimpleEvent,):
-            converted_event = self._convert_simple_event(event_to_convert)
+        elif isinstance(event_to_process, events.basic.SimpleEvent,):
+            self._apply_tempo_envelope_on_simple_event(
+                event_to_process, absolute_entry_delay
+            )
 
         else:
             msg = "Can't apply tempo curve on object '{}' of type '{}'.".format(
-                event_to_convert, type(event_to_convert)
+                event_to_process, type(event_to_process)
             )
             raise TypeError(msg)
 
-        return converted_event
+    def _apply_tempo_envelope_on_sequential_event(
+        self,
+        sequential_event: events.basic.SequentialEvent,
+        absolute_entry_delay: parameters.durations.abc.DurationType,
+    ) -> None:
+        for event_index, additional_delay in enumerate(sequential_event.absolute_times):
+            self._apply_tempo_envelope_on_event(
+                sequential_event[event_index], absolute_entry_delay + additional_delay
+            )
+
+    def _apply_tempo_envelope_on_simple_event(
+        self,
+        simple_event: events.basic.SequentialEvent,
+        absolute_entry_delay: parameters.durations.abc.DurationType,
+    ) -> None:
+        simple_event.duration = self.envelope.integrate_interval(
+            absolute_entry_delay, simple_event.duration + absolute_entry_delay
+        )
+
+    def _apply_tempo_envelope_on_simultaneous_event(
+        self,
+        simultaneous_event: events.basic.SimultaneousEvent,
+        absolute_entry_delay: parameters.durations.abc.DurationType,
+    ) -> None:
+        [
+            self._apply_tempo_envelope_on_event(
+                event, absolute_entry_delay
+            )
+            for event in simultaneous_event
+        ]
+
+    def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
+        copied_event_to_convert = event_to_convert.destructive_copy()
+        self._apply_tempo_envelope_on_event(copied_event_to_convert, 0)
+        return copied_event_to_convert

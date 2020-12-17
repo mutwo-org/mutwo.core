@@ -1,3 +1,4 @@
+import copy
 import typing
 
 from mutwo.events import abc
@@ -17,6 +18,9 @@ class SimpleEvent(abc.Event):
     @duration.setter
     def duration(self, new_duration: parameters.durations.abc.DurationType):
         self._duration = new_duration
+
+    def destructive_copy(self) -> "SimpleEvent":
+        return copy.deepcopy(self)
 
     def get_parameter(self, parameter_name: str) -> tuple:
         """Return tuple filled with the value of each event for the asked parameter.
