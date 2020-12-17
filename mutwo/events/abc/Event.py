@@ -20,6 +20,26 @@ class Event(abc.ABC):
         the same object in compound objects. Instead of reproducing the original
         structure of the compound object that shall be copied, every repetition
         of the same reference will return a new unique independent object.
+
+        The following example shall illustrate the difference between copy.deepcopy
+        and destructive_copy:
+        >>> import copy
+        >>> from mutwo.events import basic
+        >>> my_simple_event_0 = basic.SimpleEvent(2)
+        >>> my_simple_event_1 = basic.SimpleEvent(3)
+        >>> my_sequential_event = basic.SequentialEvent(
+                [my_simple_event_0, my_simple_event_1, my_simple_event_0])
+        >>> deepcopied_event = copy.deepcopy(my_sequential_event)
+        >>> destructivecopied_event = my_sequential_event.destructive_copy()
+        >>> deepcopied_event[0].duration = 10  # setting the duration of the first event
+        >>> destructivecopied_event[0].duration = 10
+        >>> # return True because the first and the third objects share the same
+        >>> # reference (both are the same copy of 'my_simple_event_0')
+        >>> deepcopied_event[0].duration == deepcopied_event[2].duration
+        True
+        >>> # return False because destructive_copy forgets the shared reference
+        >>> destructivecopied_event[0].duration == destructivecopied_event[2].duration
+        False
         """
         raise NotImplementedError
 
