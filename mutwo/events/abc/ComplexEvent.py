@@ -3,6 +3,7 @@ import typing
 
 import mutwo.events.abc as events_abc
 from mutwo import parameters
+from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
 
@@ -46,6 +47,7 @@ class ComplexEvent(events_abc.Event, list):
         """
         return tuple(event.get_parameter(parameter_name) for event in self)
 
+    @decorators.add_return_option
     def set_parameter(
         self,
         parameter_name: str,
@@ -56,6 +58,7 @@ class ComplexEvent(events_abc.Event, list):
     ) -> None:
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
+    @decorators.add_return_option
     def mutate_parameter(
         self,
         parameter_name: str,

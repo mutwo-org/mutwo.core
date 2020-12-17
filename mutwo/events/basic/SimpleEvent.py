@@ -3,6 +3,7 @@ import typing
 
 from mutwo.events import abc
 from mutwo import parameters
+from mutwo.utilities import decorators
 
 
 class SimpleEvent(abc.Event):
@@ -32,6 +33,7 @@ class SimpleEvent(abc.Event):
         except AttributeError:
             return None
 
+    @decorators.add_return_option
     def set_parameter(
         self,
         parameter_name: str,
@@ -47,6 +49,7 @@ class SimpleEvent(abc.Event):
             new_parameter = object_or_function
         setattr(self, parameter_name, new_parameter)
 
+    @decorators.add_return_option
     def mutate_parameter(
         self,
         parameter_name: str,
