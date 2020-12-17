@@ -29,7 +29,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
         ] = "1/1",
         concert_pitch: ConcertPitch = 440,
     ):
-        self.exponents = ratio_or_exponents
+        self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
+            ratio_or_exponents
+        )
         self.concert_pitch = concert_pitch
 
     # ###################################################################### #
@@ -307,6 +309,44 @@ class JustIntonationPitch(pitches.abc.Pitch):
         return 2 * sum(summed)
 
     # ###################################################################### #
+    #                            private methods                             #
+    # ###################################################################### #
+
+    def _translate_ratio_or_fractions_argument_to_exponents(
+        self,
+        ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
+    ):
+        if isinstance(ratio_or_exponents, str):
+            numerator, denominator = ratio_or_exponents.split("/")
+            exponents = self._ratio_to_exponents(
+                fractions.Fraction(int(numerator), int(denominator))
+            )
+        elif isinstance(ratio_or_exponents, typing.Iterable):
+            exponents = tuple(ratio_or_exponents)
+        elif isinstance(ratio_or_exponents, fractions.Fraction):
+            exponents = self._ratio_to_exponents(
+                fractions.Fraction(
+                    ratio_or_exponents.numerator, ratio_or_exponents.denominator
+                )
+            )
+        else:
+            message = (
+                "Unknown type '{}' of object '{}' for 'ratio_or_exponents' argument."
+                .format(type(ratio_or_exponents), ratio_or_exponents)
+            )
+            raise NotImplementedError(message)
+        return exponents
+
+    @decorators.add_return_option
+    def _math(
+        self, other: "JustIntonationPitch", operation: typing.Callable
+    ) -> "JustIntonationPitch":
+        exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
+            self.exponents, other.exponents
+        )
+        self.exponents = tuple(operation(x, y) for x, y in zip(exponents0, exponents1))
+
+    # ###################################################################### #
     #                            magic methods                               #
     # ###################################################################### #
 
@@ -330,15 +370,6 @@ class JustIntonationPitch(pitches.abc.Pitch):
     def __repr__(self) -> str:
         return "JustIntonationPitch({})".format(self.ratio)
 
-    @decorators.add_return_option
-    def _math(
-        self, other: "JustIntonationPitch", operation: typing.Callable
-    ) -> "JustIntonationPitch":
-        exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
-            self.exponents, other.exponents
-        )
-        self.exponents = tuple(operation(x, y) for x, y in zip(exponents0, exponents1))
-
     def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
         return self._math(other, operator.add, mutate=False)
 
@@ -361,30 +392,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         return self._exponents
 
     @exponents.setter
-    def exponents(
-        self,
-        ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
-    ) -> None:
-        if isinstance(ratio_or_exponents, str):
-            numerator, denominator = ratio_or_exponents.split("/")
-            exponents = self._ratio_to_exponents(
-                fractions.Fraction(int(numerator), int(denominator))
-            )
-        elif isinstance(ratio_or_exponents, typing.Iterable):
-            exponents = tuple(ratio_or_exponents)
-        elif isinstance(ratio_or_exponents, fractions.Fraction):
-            exponents = self._ratio_to_exponents(
-                fractions.Fraction(
-                    ratio_or_exponents.numerator, ratio_or_exponents.denominator
-                )
-            )
-        else:
-            message = (
-                "Unknown type '{}' of object '{}' for 'ratio_or_exponents' argument."
-                .format(type(ratio_or_exponents), ratio_or_exponents)
-            )
-            raise NotImplementedError(message)
-
+    def exponents(self, exponents: typing.Iterable[int],) -> None:
         self._exponents = self._discard_nulls(exponents)
 
     @property
@@ -792,7 +800,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
         """Normalize JustIntonationPitch."""
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
-        self.exponents = adjusted
+        self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
+            adjusted
+        )
 
     @decorators.add_return_option
     def inverse(
