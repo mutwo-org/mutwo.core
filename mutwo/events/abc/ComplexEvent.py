@@ -28,9 +28,6 @@ class ComplexEvent(events_abc.Event, list):
             return type(self)(event)
         return event
 
-    def destructive_copy(self) -> "ComplexEvent":
-        return type(self)([event.destructive_copy() for event in self])
-
     @events_abc.Event.duration.setter
     def duration(self, new_duration: parameters.durations.abc.DurationType) -> None:
         old_duration = self.duration
@@ -38,6 +35,9 @@ class ComplexEvent(events_abc.Event, list):
             "duration",
             lambda duration: tools.scale(duration, 0, old_duration, 0, new_duration),
         )
+
+    def destructive_copy(self) -> "ComplexEvent":
+        return type(self)([event.destructive_copy() for event in self])
 
     def get_parameter(self, parameter_name: str) -> tuple:
         """Return tuple filled with the value of each event for the asked parameter.
