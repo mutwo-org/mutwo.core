@@ -24,7 +24,7 @@ class SequentialEventTest(unittest.TestCase):
 
     def test_get_event_at(self):
         result = self.sequence.get_event_at(1.5)
-        self.assertEquals(result, self.sequence[1])
+        self.assertEqual(result, self.sequence[1])
 
 
 if __name__ == "__main__":
