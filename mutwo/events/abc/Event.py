@@ -47,11 +47,6 @@ class Event(abc.ABC):
     def get_parameter(self, parameter_name: str) -> typing.Union[tuple, typing.Any]:
         raise NotImplementedError
 
-    def get_allocated_parameter(self, parameter_name: str) -> tuple:
-        return tuple(
-            filter(lambda value: value is not None, self.get_parameter(parameter_name))
-        )
-
     @abc.abstractmethod
     def set_parameter(
         self,
