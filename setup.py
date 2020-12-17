@@ -32,7 +32,7 @@ setuptools.setup(
     ],
     setup_requires=[],
     tests_require=["nose"],
-    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0"],
+    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "mido>=1.2.9"],
     extras_require={},
     python_requires=">=3.7",
 )
