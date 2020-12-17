@@ -11,7 +11,7 @@ class TempoConverterTest(unittest.TestCase):
         tempo_events = basic.SequentialEvent(
             [basic.TempoEvent(4, 60), basic.TempoEvent(3, 50, 60, curve_shape=1)]
         )
-        envelope = converters.TempoConverter.make_envelope_from_tempo_events(
+        envelope = converters.mutwo.TempoConverter.make_envelope_from_tempo_events(
             tempo_events
         )
         expected_envelope = expenvelope.Envelope.from_levels_and_durations(
@@ -21,19 +21,20 @@ class TempoConverterTest(unittest.TestCase):
 
     def test_convert_beats_per_minute_to_seconds_per_beat(self):
         self.assertEqual(
-            converters.TempoConverter.beats_per_minute_to_seconds_per_beat(60), 1
+            converters.mutwo.TempoConverter.beats_per_minute_to_seconds_per_beat(60), 1
         )
         self.assertEqual(
-            converters.TempoConverter.beats_per_minute_to_seconds_per_beat(30), 2
+            converters.mutwo.TempoConverter.beats_per_minute_to_seconds_per_beat(30), 2
         )
         self.assertEqual(
-            converters.TempoConverter.beats_per_minute_to_seconds_per_beat(120), 0.5
+            converters.mutwo.TempoConverter.beats_per_minute_to_seconds_per_beat(120),
+            0.5,
         )
 
     def test_convert_simple_event(self):
         tempo_events = basic.SequentialEvent([basic.TempoEvent(4, 30, 60)])
         simple_event = basic.SimpleEvent(4)
-        converter = converters.TempoConverter(tempo_events)
+        converter = converters.mutwo.TempoConverter(tempo_events)
         converted_simple_event = converter.convert(simple_event)
         expected_duration = 6
         self.assertEqual(converted_simple_event.duration, expected_duration)
@@ -52,7 +53,7 @@ class TempoConverterTest(unittest.TestCase):
                 basic.TempoEvent(2, 30, 60, curve_shape=-10),
             ]
         )
-        converter = converters.TempoConverter(tempo_events)
+        converter = converters.mutwo.TempoConverter(tempo_events)
         converted_sequential_event = converter.convert(sequential_event)
         expected_durations = (4, 3, 3, 3.8000908039820196, 2.1999091960179804)
         self.assertEqual(
@@ -66,7 +67,7 @@ class TempoConverterTest(unittest.TestCase):
         simultaneous_event = basic.SimultaneousEvent(
             [simple_event0, simple_event0, simple_event1]
         )
-        converter = converters.TempoConverter(tempo_events)
+        converter = converters.mutwo.TempoConverter(tempo_events)
         converted_simultaneous_event = converter.convert(simultaneous_event)
         expected_duration0 = simultaneous_event[0].duration * 1.5
         expected_duration1 = 10

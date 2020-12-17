@@ -14,6 +14,8 @@ setuptools.setup(
         "mutwo",
         "mutwo.converters",
         "mutwo.converters.abc",
+        "mutwo.converters.midi",
+        "mutwo.converters.mutwo",
         "mutwo.events",
         "mutwo.events.abc",
         "mutwo.events.basic",
