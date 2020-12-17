@@ -23,10 +23,10 @@ class SimpleEvent(abc.Event):
     def destructive_copy(self) -> "SimpleEvent":
         return copy.deepcopy(self)
 
-    def get_parameter(self, parameter_name: str) -> tuple:
-        """Return tuple filled with the value of each event for the asked parameter.
+    def get_parameter(self, parameter_name: str) -> typing.Any:
+        """Return attribute if it has been assigned to the object.
 
-        If an event doesn't posses the asked attribute, 'None' will be added.
+        Otherwise returns None.
         """
         try:
             return getattr(self, parameter_name)

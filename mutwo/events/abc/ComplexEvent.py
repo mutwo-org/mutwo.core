@@ -56,6 +56,13 @@ class ComplexEvent(events_abc.Event, list):
             typing.Any,
         ],
     ) -> None:
+        """Sets parameter to new value for all children events.
+
+        For setting the parameter either a new value can be passed directly or a
+        function can be passed. The function gets as an argument the previous value
+        that has had been assigned to the respective object and has to return the
+        new value.
+        """
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
     @decorators.add_return_option

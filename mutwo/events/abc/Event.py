@@ -14,7 +14,7 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def destructive_copy(self) -> "Event":
-        """Deep copy method that returns a new object for every leaf.
+        """Adapted deep copy method that returns a new object for every leaf.
 
         It's called 'destructive', because it forgets potential repetitions of
         the same object in compound objects. Instead of reproducing the original
