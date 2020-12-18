@@ -1,5 +1,4 @@
 import numbers
-import typing
 
 import expenvelope
 
@@ -8,7 +7,7 @@ from mutwo import events
 from mutwo import parameters
 
 
-TempoEvents = typing.Iterable[events.basic.TempoEvent]
+TempoEvents = events.basic.SequentialEvent[events.basic.TempoEvent]
 
 
 class TempoConverter(converters.abc.MutwoEventConverter):
