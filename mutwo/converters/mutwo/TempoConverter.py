@@ -92,7 +92,7 @@ class TempoConverter(converters.abc.MutwoEventConverter):
 
     def _apply_tempo_envelope_on_sequential_event(
         self,
-        sequential_event: events.basic.SequentialEvent,
+        sequential_event: events.basic.SequentialEvent[events.abc.Event],
         absolute_entry_delay: parameters.durations.abc.DurationType,
     ) -> None:
         for event_index, additional_delay in enumerate(sequential_event.absolute_times):
@@ -102,7 +102,7 @@ class TempoConverter(converters.abc.MutwoEventConverter):
 
     def _apply_tempo_envelope_on_simple_event(
         self,
-        simple_event: events.basic.SequentialEvent,
+        simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.durations.abc.DurationType,
     ) -> None:
         simple_event.duration = self.envelope.integrate_interval(
@@ -111,7 +111,7 @@ class TempoConverter(converters.abc.MutwoEventConverter):
 
     def _apply_tempo_envelope_on_simultaneous_event(
         self,
-        simultaneous_event: events.basic.SimultaneousEvent,
+        simultaneous_event: events.basic.SimultaneousEvent[events.abc.Event],
         absolute_entry_delay: parameters.durations.abc.DurationType,
     ) -> None:
         [
