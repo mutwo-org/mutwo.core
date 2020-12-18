@@ -27,7 +27,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         ratio_or_exponents: typing.Union[
             str, fractions.Fraction, typing.Iterable[int]
         ] = "1/1",
-        concert_pitch: ConcertPitch = 440,
+        concert_pitch: ConcertPitch = pitches.constants.DEFAULT_CONCERT_PITCH,
     ):
         self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
             ratio_or_exponents
