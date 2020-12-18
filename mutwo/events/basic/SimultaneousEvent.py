@@ -1,8 +1,12 @@
+import typing
+
 from mutwo import events
 from mutwo.parameters import durations
 
+T = typing.TypeVar("T")
 
-class SimultaneousEvent(events.abc.ComplexEvent):
+
+class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
 
     @events.abc.ComplexEvent.duration.getter

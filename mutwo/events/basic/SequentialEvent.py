@@ -1,11 +1,14 @@
 import itertools
 import numbers
+import typing
 
 from mutwo import events
 from mutwo.utilities import tools
 
+T = typing.TypeVar("T")
 
-class SequentialEvent(events.abc.ComplexEvent):
+
+class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Events which happen in a linear order."""
 
     @events.abc.ComplexEvent.duration.getter
