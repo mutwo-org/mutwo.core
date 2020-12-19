@@ -4,12 +4,18 @@ import expenvelope
 
 from mutwo import converters
 from mutwo.events import basic
+from mutwo.parameters import tempos
 
 
 class TempoConverterTest(unittest.TestCase):
     def test_make_envelope(self):
         tempo_events = basic.SequentialEvent(
-            [basic.EnvelopeEvent(4, 60), basic.EnvelopeEvent(3, 50, 60, curve_shape=1)]
+            [
+                basic.EnvelopeEvent(4, tempos.TempoPoint(60)),
+                basic.EnvelopeEvent(
+                    3, tempos.TempoPoint(50), tempos.TempoPoint(60), curve_shape=1
+                ),
+            ]
         )
         envelope = converters.mutwo.TempoConverter.make_envelope_from_tempo_events(
             tempo_events
@@ -45,12 +51,16 @@ class TempoConverterTest(unittest.TestCase):
         )
         tempo_events = basic.SequentialEvent(
             [
-                basic.EnvelopeEvent(2, 30),
-                basic.EnvelopeEvent(1, 60),
-                basic.EnvelopeEvent(1, 30),
-                basic.EnvelopeEvent(2, 30, 60),
-                basic.EnvelopeEvent(2, 30, 60, curve_shape=10),
-                basic.EnvelopeEvent(2, 30, 60, curve_shape=-10),
+                basic.EnvelopeEvent(2, tempos.TempoPoint(30)),
+                basic.EnvelopeEvent(1, tempos.TempoPoint(60)),
+                basic.EnvelopeEvent(1, tempos.TempoPoint(30)),
+                basic.EnvelopeEvent(2, tempos.TempoPoint(30), tempos.TempoPoint(60)),
+                basic.EnvelopeEvent(
+                    2, tempos.TempoPoint(30), tempos.TempoPoint(60), curve_shape=10
+                ),
+                basic.EnvelopeEvent(
+                    2, tempos.TempoPoint(30), tempos.TempoPoint(60), curve_shape=-10
+                ),
             ]
         )
         converter = converters.mutwo.TempoConverter(tempo_events)
