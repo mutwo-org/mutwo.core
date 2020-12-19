@@ -9,7 +9,7 @@ from mutwo.events import basic
 class TempoConverterTest(unittest.TestCase):
     def test_make_envelope(self):
         tempo_events = basic.SequentialEvent(
-            [basic.TempoEvent(4, 60), basic.TempoEvent(3, 50, 60, curve_shape=1)]
+            [basic.EnvelopeEvent(4, 60), basic.EnvelopeEvent(3, 50, 60, curve_shape=1)]
         )
         envelope = converters.mutwo.TempoConverter.make_envelope_from_tempo_events(
             tempo_events
@@ -32,7 +32,7 @@ class TempoConverterTest(unittest.TestCase):
         )
 
     def test_convert_simple_event(self):
-        tempo_events = basic.SequentialEvent([basic.TempoEvent(4, 30, 60)])
+        tempo_events = basic.SequentialEvent([basic.EnvelopeEvent(4, 30, 60)])
         simple_event = basic.SimpleEvent(4)
         converter = converters.mutwo.TempoConverter(tempo_events)
         converted_simple_event = converter.convert(simple_event)
@@ -45,12 +45,12 @@ class TempoConverterTest(unittest.TestCase):
         )
         tempo_events = basic.SequentialEvent(
             [
-                basic.TempoEvent(2, 30),
-                basic.TempoEvent(1, 60),
-                basic.TempoEvent(1, 30),
-                basic.TempoEvent(2, 30, 60),
-                basic.TempoEvent(2, 30, 60, curve_shape=10),
-                basic.TempoEvent(2, 30, 60, curve_shape=-10),
+                basic.EnvelopeEvent(2, 30),
+                basic.EnvelopeEvent(1, 60),
+                basic.EnvelopeEvent(1, 30),
+                basic.EnvelopeEvent(2, 30, 60),
+                basic.EnvelopeEvent(2, 30, 60, curve_shape=10),
+                basic.EnvelopeEvent(2, 30, 60, curve_shape=-10),
             ]
         )
         converter = converters.mutwo.TempoConverter(tempo_events)
@@ -61,7 +61,7 @@ class TempoConverterTest(unittest.TestCase):
         )
 
     def test_convert_simultaneous_event(self):
-        tempo_events = basic.SequentialEvent([basic.TempoEvent(4, 30, 60)])
+        tempo_events = basic.SequentialEvent([basic.EnvelopeEvent(4, 30, 60)])
         simple_event0 = basic.SimpleEvent(4)
         simple_event1 = basic.SimpleEvent(8)
         simultaneous_event = basic.SimultaneousEvent(

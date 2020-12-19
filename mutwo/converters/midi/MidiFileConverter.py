@@ -28,7 +28,7 @@ class MidiFileConverter(converters.abc.FileConverter):
         path: str,
         available_midi_channels: typing.Iterable[int] = tuple(range(16)),
         tempo_events: typing.Union[
-            events.basic.SequentialEvent[events.basic.TempoEvent], None
+            events.basic.SequentialEvent[events.basic.EnvelopeEvent], None
         ] = None,
         maximum_pitch_bend_deviation: Cents = 200,
         ticks_per_beat: int = 700,

@@ -1,4 +1,5 @@
 import numbers
+import warnings
 
 import expenvelope
 
@@ -7,7 +8,7 @@ from mutwo import events
 from mutwo import parameters
 
 
-TempoEvents = events.basic.SequentialEvent[events.basic.TempoEvent]
+TempoEvents = events.basic.SequentialEvent[events.basic.EnvelopeEvent]
 
 
 class TempoConverter(converters.abc.MutwoEventConverter):
@@ -17,6 +18,35 @@ class TempoConverter(converters.abc.MutwoEventConverter):
     @staticmethod
     def beats_per_minute_to_seconds_per_beat(beats_per_minute: numbers.Number) -> float:
         return 60 / beats_per_minute
+
+    @staticmethod
+    def _find_beat_length_at_start_and_end(
+        tempo_event: events.basic.EnvelopeEvent,
+    ) -> list:
+        beat_length_at_start_and_end = []
+        for tempo_point in (tempo_event.object_start, tempo_event.object_stop):
+            try:
+                beats_per_minute = tempo_point.tempo_in_beats_per_minute
+            except AttributeError:
+                beats_per_minute = float(tempo_point)
+
+            try:
+                reference = tempo_point.reference
+            except AttributeError:
+                message = (
+                    "Tempo point {} of type {} doesn't know attribute 'reference'."
+                    .format(tempo_point, type(tempo_point))
+                )
+                message += " Therefore reference has been set to 1."
+                warnings.warn(message)
+                reference = 1
+
+            beat_length_at_start_and_end.append(
+                TempoConverter.beats_per_minute_to_seconds_per_beat(beats_per_minute)
+                * reference
+            )
+
+        return beat_length_at_start_and_end
 
     @staticmethod
     def make_envelope_from_tempo_events(
@@ -35,12 +65,8 @@ class TempoConverter(converters.abc.MutwoEventConverter):
                 durations.append(1e-100)
                 curve_shapes.append(0)
 
-            beat_length_at_start_and_end = tuple(
-                TempoConverter.beats_per_minute_to_seconds_per_beat(
-                    getattr(tempo_event, tempo)
-                )
-                * tempo_event.reference
-                for tempo in ("tempo_start", "tempo_end")
+            beat_length_at_start_and_end = TempoConverter._find_beat_length_at_start_and_end(
+                tempo_event
             )
             levels.extend(beat_length_at_start_and_end)
             durations.append(tempo_event.duration - 1e-100)
@@ -114,9 +140,7 @@ class TempoConverter(converters.abc.MutwoEventConverter):
         absolute_entry_delay: parameters.durations.abc.DurationType,
     ) -> None:
         [
-            self._apply_tempo_envelope_on_event(
-                event, absolute_entry_delay
-            )
+            self._apply_tempo_envelope_on_event(event, absolute_entry_delay)
             for event in simultaneous_event
         ]
 
