@@ -13,7 +13,7 @@ class ReaperFileConverter(abc.FileConverter):
         self.reaper_project = self.create_reaper_project()
 
     @staticmethod
-    def create_reaper_project(self) -> rpp.Element:
+    def create_reaper_project() -> rpp.Element:
         return rpp.Element(
             tag="REAPER_PROJECT",
             attrib=["0.1", "6.16/linux-x86_64", "1607708341"],
