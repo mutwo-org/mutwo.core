@@ -18,6 +18,7 @@ setuptools.setup(
         "primesieve>=2.0.0",
         "mido>=1.2.9",
         "rpp>=0.4",
+        "numpy",
     ],
     extras_require={},
     python_requires=">=3.7",
