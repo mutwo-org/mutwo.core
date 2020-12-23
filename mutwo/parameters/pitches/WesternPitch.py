@@ -16,6 +16,8 @@ PitchClassOrPitchClassName = typing.Union[numbers.Number, str]
 # TODO(add something similar to scamps SpellingPolicy (don't hard code
 # if mutwo shall write a flat or sharp)
 # TODO(add translation from octave number to notated octave (4 -> ', 5 -> '', ..))
+# TODO(just pass an EqualDividedOctave pitch with n_pitch_classes_per_octave=12 instead
+# of passing pitch_class, octave and frequency independent from each other?)
 
 
 class WesternPitch(pitches.EqualDividedOctavePitch):
