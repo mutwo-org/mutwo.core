@@ -7,6 +7,6 @@ import mutwo.parameters.abc as parameters_abc
 class ParameterWithEnvelope(parameters_abc.Parameter):
     @property
     @abc.abstractmethod
-    # def envelope(self) -> events_basic.SequentialEvent:
+    # def envelope(self) -> events_basic.SequentialEvent[events_basic.EnvelopeEvent]:
     def envelope(self) -> tuple:
         raise NotImplementedError
