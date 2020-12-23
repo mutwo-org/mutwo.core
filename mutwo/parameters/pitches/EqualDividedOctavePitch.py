@@ -1,7 +1,9 @@
 import numbers
+import operator
 import typing
 
 from mutwo.parameters import pitches
+from mutwo.utilities import decorators
 
 ConcertPitch = typing.Union[numbers.Number, pitches.abc.Pitch]
 
@@ -89,3 +91,43 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
             distance_to_concert_pitch_in_cents
         )
         return float(self.concert_pitch.frequency * distance_to_concert_pitch_as_factor)
+
+    @decorators.add_return_option
+    def _math(
+        self,
+        other: "EqualDividedOctavePitch",
+        operator: typing.Callable[[numbers.Number, numbers.Number], numbers.Number],
+    ) -> "EqualDividedOctavePitch":
+        try:
+            assert self.n_pitch_classes_per_octave == other.n_pitch_classes_per_octave
+        except AssertionError:
+            message = (
+                "Can't apply mathematical operation on two EqualDividedOctavePitch"
+                " objects with different value for 'n_pitch_classes_per_octave'."
+            )
+            raise ValueError(message)
+
+        new_pitch_class = self.pitch_class + other.pitch_class
+        n_octaves_difference = new_pitch_class // self.n_pitch_classes_per_octave
+        new_pitch_class = new_pitch_class % self.n_pitch_classes_per_octave
+        new_octave = self.octave + other.octave + n_octaves_difference
+        self.pitch_class = new_pitch_class
+        self.octave = new_octave
+
+    def __add__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
+        return self._math(self, other, operator.add, mutate=False)
+
+    def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
+        return self._math(self, other, operator.sub, mutate=False)
+
+    @decorators.add_return_option
+    def add(
+        self, other: "EqualDividedOctavePitch"
+    ) -> typing.Union[None, "EqualDividedOctavePitch"]:
+        self._math(self, other, operator.add)
+
+    @decorators.add_return_option
+    def subtract(
+        self, other: "EqualDividedOctavePitch"
+    ) -> typing.Union[None, "EqualDividedOctavePitch"]:
+        self._math(self, other, operator.sub)
