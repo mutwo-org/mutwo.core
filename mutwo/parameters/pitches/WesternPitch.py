@@ -27,7 +27,7 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
         octave: int = 4,
         concert_pitch_pitch_class: numbers.Number = 9,  # a
         concert_pitch_octave: numbers.Number = 4,  # a'
-        concert_pitch: ConcertPitch = pitches.constants.DEFAULT_CONCERT_PITCH,
+        concert_pitch: ConcertPitch = None,
     ):
         (
             pitch_class,

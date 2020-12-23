@@ -16,8 +16,10 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
         octave: int,
         concert_pitch_pitch_class: numbers.Number,
         concert_pitch_octave: int,
-        concert_pitch: ConcertPitch = pitches.constants.DEFAULT_CONCERT_PITCH,
+        concert_pitch: ConcertPitch = None,
     ):
+        if concert_pitch is None:
+            concert_pitch = pitches.constants.DEFAULT_CONCERT_PITCH
         self._n_pitch_classes_per_octave = n_pitch_classes_per_octave
         self.pitch_class = pitch_class
         self.octave = octave
