@@ -1,7 +1,9 @@
 import bisect
+import importlib
 import itertools
 import numbers
 import typing
+import warnings
 
 
 def scale(
@@ -15,8 +17,9 @@ def scale(
     try:
         assert old_min <= value <= old_max
     except AssertionError:
-        msg = "Input value '{}' has to be in the range of (old_min = {}, old_max = {}).".format(
-            value, old_min, old_max
+        msg = (
+            "Input value '{}' has to be in the range of (old_min = {}, old_max = {})."
+            .format(value, old_min, old_max)
         )
         raise ValueError(msg)
     return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
@@ -76,3 +79,18 @@ def find_closest_index(item: float, data: tuple, key: typing.Callable = None) ->
 def find_closest_item(item: float, data: tuple, key: typing.Callable = None) -> float:
     """Return element in data with smallest difference to item"""
     return data[find_closest_index(item, data, key=key)]
+
+
+def import_module_if_dependency_has_been_installed(
+    module: str, dependency: str
+) -> None:
+    try:
+        importlib.import_module(dependency)
+    except ImportError:
+        message = (
+            "Can't load module '{0}'. Install dependency '{1}' if you want to use"
+            " '{0}'.".format(module, dependency)
+        )
+        warnings.warn(message)
+    else:
+        importlib.import_module(module)

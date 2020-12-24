@@ -109,27 +109,27 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
             )
             raise ValueError(message)
 
-        new_pitch_class = self.pitch_class + other.pitch_class
+        new_pitch_class = operator(self.pitch_class, other.pitch_class)
         n_octaves_difference = new_pitch_class // self.n_pitch_classes_per_octave
         new_pitch_class = new_pitch_class % self.n_pitch_classes_per_octave
-        new_octave = self.octave + other.octave + n_octaves_difference
+        new_octave = operator(self.octave, other.octave) + n_octaves_difference
         self.pitch_class = new_pitch_class
         self.octave = new_octave
 
     def __add__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
-        return self._math(self, other, operator.add, mutate=False)
+        return self._math(other, operator.add, mutate=False)
 
     def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
-        return self._math(self, other, operator.sub, mutate=False)
+        return self._math(other, operator.sub, mutate=False)
 
     @decorators.add_return_option
     def add(
         self, other: "EqualDividedOctavePitch"
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        self._math(self, other, operator.add)
+        self._math(other, operator.add)
 
     @decorators.add_return_option
     def subtract(
         self, other: "EqualDividedOctavePitch"
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        self._math(self, other, operator.sub)
+        self._math(other, operator.sub)
