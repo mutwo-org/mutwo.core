@@ -33,13 +33,13 @@ def accumulate_from_zero(iterable: typing.Iterable) -> typing.Iterator:
 
 
 def insert_next_to(
-    sequence: typing.List,
+    sequence: typing.MutableSequence,
     item_to_find: typing.Any,
     distance: int,
     item_to_insert: typing.Any,
 ):
     """Insert an item into a list relative to the first item equal to a certain value."""
-    index = sequence.index(item_to_find)
+    index = list(sequence).index(item_to_find)
     if distance == 0:
         sequence[index] = item_to_insert
     else:
