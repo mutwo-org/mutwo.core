@@ -2,7 +2,7 @@ language: python
 python:
   - 3.8
 install:
-  - pip3 install .
+  - pip3 install .[all]
   - pip3 install coveralls
 script:
   - nosetests --with-coverage --cover-package=mutwo

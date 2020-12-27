@@ -1,5 +1,9 @@
 import setuptools
 
+extras_require = {"pyo": "pyo>=1.0.3", "midi": "mido>=1.2.9", "reaper": "rpp>=0.4"}
+
+extras_require.update({"all": list(extras_require.values())})
+
 setuptools.setup(
     name="mutwo",
     version="0.0.01",
@@ -13,13 +17,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     setup_requires=[],
     tests_require=["nose"],
-    install_requires=[
-        "expenvelope>=0.6.5",
-        "primesieve>=2.0.0",
-        "mido>=1.2.9",
-        "rpp>=0.4",
-        "numpy",
-    ],
-    extras_require={},
+    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "numpy"],
+    extras_require=extras_require,
     python_requires=">=3.7",
 )
