@@ -9,4 +9,4 @@ for module, dependency in (("midi", "mido"), ("reaper", "rpp"), ("pyo", "pyo")):
         "mutwo.converters.{}".format(module), dependency
     )
 
-del tools
+del module, dependency, tools

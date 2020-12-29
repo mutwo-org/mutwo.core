@@ -82,7 +82,7 @@ def find_closest_item(item: float, data: tuple, key: typing.Callable = None) -> 
 
 
 def import_module_if_dependency_has_been_installed(
-    module: str, dependency: str
+    module: str, dependency: str, import_class: bool = False
 ) -> None:
     try:
         importlib.import_module(dependency)
@@ -93,4 +93,9 @@ def import_module_if_dependency_has_been_installed(
         )
         warnings.warn(message)
     else:
-        importlib.import_module(module)
+        if import_class:
+            class_name = module.split(".")[-1]
+            return getattr(importlib.import_module(module), class_name)
+
+        else:
+            importlib.import_module(module)
