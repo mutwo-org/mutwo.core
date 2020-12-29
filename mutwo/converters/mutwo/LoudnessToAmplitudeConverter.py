@@ -10,10 +10,14 @@ from mutwo import converters
 class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
     """Make an approximation of the needed amplitude for a perceived Loudness.
 
-    The respective values only work with pure sine waves.
+    The converter works best with pure sine waves.
+    The formula takes into account the frequency of the output signal and the
+    frequency response of the loudspeaker. The frequency response is defined
+    with an expenvelope.Envelope object.
     """
 
     # roughly the sound of a mosquito flying 3 m away
+    # (see https://en.wikipedia.org/wiki/Sound_pressure)
     _auditory_threshold_at_1khz = 0.00002
 
     def __init__(
