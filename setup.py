@@ -1,6 +1,11 @@
 import setuptools
 
-extras_require = {"pyo": "pyo>=1.0.3", "midi": "mido>=1.2.9", "reaper": "rpp>=0.4"}
+extras_require = {
+    "pyo": "pyo>=1.0.3",
+    "midi": "mido>=1.2.9",
+    "reaper": "rpp>=0.4",
+    "loudness": "pydsm>=0.14.0.0",
+}
 
 extras_require.update({"all": list(extras_require.values())})
 
