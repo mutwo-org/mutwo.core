@@ -395,8 +395,8 @@ def tabled_B_f(L_p, hfe=False):
     set to 20 uPa RMS).
     """
     B_f = (
-        (0.4 * 10 ** (L_p + tbl_L_U) / 10.0 - 9.0) ** tbl_alpha_f
-        - (0.4 * 10 ** (tbl_T_f + tbl_L_U) / 10.0 - 9.0) ** tbl_alpha_f
+        (0.4 * 10 ** ((L_p + tbl_L_U) / 10.0 - 9.0)) ** tbl_alpha_f
+        - (0.4 * 10 ** ((tbl_T_f + tbl_L_U) / 10.0 - 9.0)) ** tbl_alpha_f
         + 0.005135
     )
     return np.append(B_f, B_f[0]) if hfe else B_f
