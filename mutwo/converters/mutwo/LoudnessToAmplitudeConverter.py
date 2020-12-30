@@ -1,10 +1,10 @@
 import math
 import numbers
-import pydsm
 
 import expenvelope
 
 from mutwo import converters
+from mutwo.third_party import pydsm
 
 
 class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):

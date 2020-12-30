@@ -4,7 +4,6 @@ extras_require = {
     "pyo": "pyo>=1.0.3",
     "midi": "mido>=1.2.9",
     "reaper": "rpp>=0.4",
-    "loudness": "pydsm>=0.14.0.0",
 }
 
 extras_require.update({"all": list(extras_require.values())})
@@ -22,7 +21,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     setup_requires=[],
     tests_require=["nose"],
-    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "numpy"],
+    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "numpy", "scipy"],
     extras_require=extras_require,
     python_requires=">=3.7",
 )
