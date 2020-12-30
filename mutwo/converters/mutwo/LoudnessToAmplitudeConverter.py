@@ -28,9 +28,7 @@ class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
         ),
         interpolation_order: int = 4,
     ):
-        perceived_loudness_in_phon = self.convert_sone_to_phon(
-            perceived_loudness_in_sone
-        )
+        perceived_loudness_in_phon = self.sone_to_phon(perceived_loudness_in_sone)
         self._equal_loudness_contour_interpolation = pydsm.iso226.iso226_spl_itpl(
             perceived_loudness_in_phon, interpolation_order
         )
@@ -40,17 +38,17 @@ class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
         )
 
     @staticmethod
-    def convert_decibel_to_amplitude_ratio(
+    def decibel_to_amplitude_ratio(
         decibel: numbers.Number, reference_amplitude: numbers.Number = 1
     ) -> float:
         return float(reference_amplitude * (10 ** (decibel / 20)))
 
     @staticmethod
-    def convert_decibel_to_power_ratio(decibel: numbers.Number) -> float:
+    def decibel_to_power_ratio(decibel: numbers.Number) -> float:
         return float(10 ** (decibel / 10))
 
     @staticmethod
-    def convert_sone_to_phon(loudness_in_sone: numbers.Number) -> numbers.Number:
+    def sone_to_phon(loudness_in_sone: numbers.Number) -> numbers.Number:
         # formula from http://www.sengpielaudio.com/calculatorSonephon.htm
         if loudness_in_sone >= 1:
             return 40 + (10 * math.log(loudness_in_sone, 2))
@@ -76,7 +74,7 @@ class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
             sound_pressure_level_for_perceived_loudness_based_on_frequency
             + difference_to_maxima
         )
-        amplitude_ratio = self.convert_decibel_to_amplitude_ratio(
+        amplitude_ratio = self.decibel_to_amplitude_ratio(
             sound_pressure_level_for_pereived_loudness_based_on_speaker,
             self._auditory_threshold_at_1khz,
         )
