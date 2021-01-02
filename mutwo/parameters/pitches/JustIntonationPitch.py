@@ -22,6 +22,27 @@ ConcertPitch = typing.Union[numbers.Number, pitches.abc.Pitch]
 
 
 class JustIntonationPitch(pitches.abc.Pitch):
+    """A JustIntonationPitch is defined by a frequency ratio and a reference pitch.
+
+    The resulting frequency is calculated by multiplying the frequency ratio
+    with the respective reference pitch.
+
+    JustIntonationPitch objects can be initialised by either
+        (1) a string that indicates the frequency ratio
+            for instance: "1/1", "3/2", "9/2", etc.
+        (2) a fractions.Fraction (or quicktions.Fraction) object that
+            indicates the frequency ratio for instance:
+            fractions.Fraction(3, 2), fractions.Fraction(7, 4), etc.
+        (3) an Iterable that is filled with integer that represents the exponents
+            of the respective prime numbers of the decomposed frequency ratio.
+            The prime numbers are rising and start with 2. Therefore the tuple
+            (2, 0, -1) would return the frequency ratio 4/5 because
+            (2 ** 2) * (3 ** 0) * (5 ** -1) = 4/5.
+
+    Furthermore the concert_pitch argument can either be another Pitch object or
+    a number to indicate a particular frequency in Hertz.
+    """
+
     def __init__(
         self,
         ratio_or_exponents: typing.Union[
