@@ -21,6 +21,15 @@ PitchClassOrPitchClassName = typing.Union[numbers.Number, str]
 
 
 class WesternPitch(pitches.EqualDividedOctavePitch):
+    """A WesternPitch is a Pitch with traditional Western nomenclature.
+
+    It uses an equal divided octave system in 12 chromatic steps.
+    The nomenclature is English (c, d, e, f, g, a, b).
+    Accidentals are indicated by (s = sharp) and (f = flat) and can be
+    stacked. Further microtonal accidentals are supported (see
+    mutwo.parameters.pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION
+    for all supported accidentals).
+    """
     def __init__(
         self,
         pitch_class_or_pitch_class_name: PitchClassOrPitchClassName = 0,
