@@ -98,6 +98,34 @@ class JustIntonationPitchTest(unittest.TestCase):
             ratio2 * concert_pitch2,
         )
 
+    def test_property_ratio(self):
+        ratio0 = fractions.Fraction(3, 2)
+        ratio1 = fractions.Fraction(25, 1)
+        ratio2 = fractions.Fraction(11, 9)
+        self.assertEqual(
+            pitches.JustIntonationPitch(ratio0).ratio, ratio0,
+        )
+        self.assertEqual(
+            pitches.JustIntonationPitch(ratio1).ratio, ratio1,
+        )
+        self.assertEqual(
+            pitches.JustIntonationPitch(ratio2).ratio, ratio2,
+        )
+
+    def test_conversion_to_float(self):
+        ratio0 = fractions.Fraction(3, 2)
+        ratio1 = fractions.Fraction(25, 1)
+        ratio2 = fractions.Fraction(11, 9)
+        self.assertEqual(
+            float(pitches.JustIntonationPitch(ratio0)), float(ratio0),
+        )
+        self.assertEqual(
+            float(pitches.JustIntonationPitch(ratio1)), float(ratio1),
+        )
+        self.assertEqual(
+            float(pitches.JustIntonationPitch(ratio2)), float(ratio2),
+        )
+
     def test_octave(self):
         jip0 = pitches.JustIntonationPitch("3/1")
         jip1 = pitches.JustIntonationPitch("1/1")

@@ -368,7 +368,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         1.5
         """
 
-        return self._exponents_to_float(self, self.primes)
+        return self._exponents_to_float(self.exponents, self.primes)
 
     def __repr__(self) -> str:
         return "JustIntonationPitch({})".format(self.ratio)
