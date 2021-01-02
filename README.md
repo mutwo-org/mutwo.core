@@ -5,4 +5,6 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+### disclaimer: This framework is still in an early stage of development and the API could still change until the first pypi release.
+
 An event based framework for composing music or other time-based arts in Python.
