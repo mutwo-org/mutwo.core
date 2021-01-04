@@ -3,8 +3,8 @@ import numbers
 
 import expenvelope
 
+import mutwo_third_party
 from mutwo import converters
-from mutwo.third_party import pydsm
 
 
 class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
@@ -29,7 +29,7 @@ class LoudnessToAmplitudeConverter(converters.abc.ParameterConverter):
         interpolation_order: int = 4,
     ):
         perceived_loudness_in_phon = self.sone_to_phon(perceived_loudness_in_sone)
-        self._equal_loudness_contour_interpolation = pydsm.iso226.iso226_spl_itpl(
+        self._equal_loudness_contour_interpolation = mutwo_third_party.pydsm.pydsm.iso226.iso226_spl_itpl(
             perceived_loudness_in_phon, interpolation_order
         )
         self._loudspeaker_frequency_response = loudspeaker_frequency_response
