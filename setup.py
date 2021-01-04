@@ -18,7 +18,9 @@ setuptools.setup(
         " <levin-eric.zimmermann@folkwang-uni.de>"
     ),
     url="https://github.com/mutwo-org/mutwo",
-    packages=setuptools.find_packages(),
+    packages=[
+        package for package in setuptools.find_packages() if package[:5] != "tests"
+    ],
     setup_requires=[],
     tests_require=["nose"],
     install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "numpy", "scipy"],
