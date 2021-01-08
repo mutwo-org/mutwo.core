@@ -1,6 +1,7 @@
 from mutwo.utilities import tools
 
 from . import abc
+from . import csound
 from . import mutwo
 
 # import modules with extra require

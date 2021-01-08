@@ -23,7 +23,13 @@ setuptools.setup(
     ],
     setup_requires=[],
     tests_require=["nose"],
-    install_requires=["expenvelope>=0.6.5", "primesieve>=2.0.0", "numpy", "scipy"],
+    install_requires=[
+        "expenvelope>=0.6.5",
+        "primesieve>=2.0.0",
+        "numpy",
+        "scipy",
+        "natsort>=5.3.3",
+    ],
     extras_require=extras_require,
     python_requires=">=3.7",
 )
