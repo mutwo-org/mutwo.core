@@ -10,14 +10,9 @@ ConcertPitch = typing.Union[numbers.Number, pitches.abc.Pitch]
 PitchClassOrPitchClassName = typing.Union[numbers.Number, str]
 
 
-# TODO(add support for quarter tones and more when initialising
-# via pitch class number)
-# TODO(use constants for accidentals)
 # TODO(add something similar to scamps SpellingPolicy (don't hard code
 # if mutwo shall write a flat or sharp)
 # TODO(add translation from octave number to notated octave (4 -> ', 5 -> '', ..))
-# TODO(just pass an EqualDividedOctave pitch with n_pitch_classes_per_octave=12 instead
-# of passing pitch_class, octave and frequency independent from each other?)
 
 
 class WesternPitch(pitches.EqualDividedOctavePitch):
@@ -28,16 +23,28 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     Accidentals are indicated by (s = sharp) and (f = flat) and can be
     stacked. Further microtonal accidentals are supported (see
     mutwo.parameters.pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION
-    for all supported accidentals).
+    for all supported accidentals). Indications for the specific octave
+    follow the MIDI Standard where 4 is defined as one line.
     """
+
     def __init__(
         self,
         pitch_class_or_pitch_class_name: PitchClassOrPitchClassName = 0,
         octave: int = 4,
-        concert_pitch_pitch_class: numbers.Number = 9,  # a
-        concert_pitch_octave: numbers.Number = 4,  # a'
+        concert_pitch_pitch_class: numbers.Number = None,
+        concert_pitch_octave: numbers.Number = None,
         concert_pitch: ConcertPitch = None,
     ):
+        if concert_pitch_pitch_class is None:
+            concert_pitch_pitch_class = (
+                pitches.constants.DEFAULT_CONCERT_PITCH_PITCH_CLASS_FOR_WESTERN_PITCH
+            )
+
+        if concert_pitch_octave is None:
+            concert_pitch_octave = (
+                pitches.constants.DEFAULT_CONCERT_PITCH_OCTAVE_FOR_WESTERN_PITCH
+            )
+
         (
             pitch_class,
             pitch_class_name,
@@ -84,6 +91,21 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
         found_accidentals = re.findall(
             pitches.constants.ACCIDENTALS_REGEX_PATTERN, accidentals
         )
+
+        # test if any accidentals are unknown
+        unknown_accidentals = tuple(
+            filter(
+                lambda string: bool(string),
+                re.split(pitches.constants.ACCIDENTALS_REGEX_PATTERN, accidentals),
+            )
+        )
+        if unknown_accidentals:
+            message = "Found unknown accidentals {}! Can't initialise".format(
+                unknown_accidentals
+            )
+            message += " WesternPitch with accidental {}.".format(accidentals)
+            raise ValueError(message)
+
         return sum(
             pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION[accidental]
             for accidental in found_accidentals
@@ -106,6 +128,18 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
         return diatonic_pitch_class + pitch_class_modification
 
     @staticmethod
+    def _translate_difference_to_closest_diatonic_pitch_to_accidental(
+        difference_to_closest_diatonic_pitch: numbers.Number,
+    ) -> str:
+        # TODO(add support for microtones)
+        if difference_to_closest_diatonic_pitch > 0:
+            accidental = "s"
+        else:
+            accidental = "f"
+
+        return "".join([accidental] * int(abs(difference_to_closest_diatonic_pitch)))
+
+    @staticmethod
     def _translate_pitch_class_to_pitch_class_name(pitch_class: numbers.Number) -> str:
         diatonic_pitch_classes = tuple(
             pitches.constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
@@ -123,15 +157,11 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
             pitch_class - closest_diatonic_pitch_class
         )
 
-        if difference_to_closest_diatonic_pitch > 0:
-            accidental = "s"
-        else:
-            accidental = "f"
-
-        pitch_class_name = "{}{}".format(
-            closest_diatonic_pitch,
-            "".join([accidental] * int(abs(difference_to_closest_diatonic_pitch))),
+        accidental = WesternPitch._translate_difference_to_closest_diatonic_pitch_to_accidental(
+            difference_to_closest_diatonic_pitch
         )
+
+        pitch_class_name = "{}{}".format(closest_diatonic_pitch, accidental)
         return pitch_class_name
 
     def __repr__(self) -> str:
