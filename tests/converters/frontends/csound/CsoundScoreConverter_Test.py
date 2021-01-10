@@ -123,6 +123,8 @@ class CsoundScoreConverterTest(unittest.TestCase):
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
+    # TODO(figure out why tearDown doesn't work anymore
+    # when running this test)
     # def test_generate_p_field_mapping(self):
     #     pfield_key_to_function_mapping = {
     #         "p1": lambda event: 100,
