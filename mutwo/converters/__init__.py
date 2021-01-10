@@ -1,13 +1,12 @@
-from mutwo.utilities import tools
+"""Module that contains several subpackages to convert data from and to mutwo.
+
+The subpackages differentiate in the conversion mapping:
+    - backends:     external data -> mutwo objects
+    - frontends:    mutwo objects -> external data
+    - symmetrical:  mutwo objects -> mutwo objects
+"""
 
 from . import abc
-from . import csound
-from . import mutwo
-
-# import modules with extra require
-for module, dependency in (("midi", "mido"), ("reaper", "rpp"), ("pyo", "pyo")):
-    tools.import_module_if_dependency_has_been_installed(
-        "mutwo.converters.{}".format(module), dependency
-    )
-
-del module, dependency, tools
+from . import frontends
+from . import backends
+from . import symmetrical
