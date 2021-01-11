@@ -1,5 +1,4 @@
 import numbers
-import re
 import typing
 
 from mutwo.parameters import pitches
@@ -85,45 +84,34 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
         return pitch_class, pitch_class_name
 
     @staticmethod
-    def _translate_accidentals_to_pitch_class_modifications(
-        accidentals: str,
+    def _translate_accidental_to_pitch_class_modifications(
+        accidental: str,
     ) -> numbers.Number:
-        found_accidentals = re.findall(
-            pitches.constants.ACCIDENTALS_REGEX_PATTERN, accidentals
-        )
-
-        # test if any accidentals are unknown
-        unknown_accidentals = tuple(
-            filter(
-                lambda string: bool(string),
-                re.split(pitches.constants.ACCIDENTALS_REGEX_PATTERN, accidentals),
+        try:
+            return pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION[
+                accidental
+            ]
+        except KeyError:
+            message = (
+                "Can't initialise WesternPitch with unknown accidental {}!".format(
+                    accidental
+                )
             )
-        )
-        if unknown_accidentals:
-            message = "Found unknown accidentals {}! Can't initialise".format(
-                unknown_accidentals
-            )
-            message += " WesternPitch with accidental {}.".format(accidentals)
-            raise ValueError(message)
-
-        return sum(
-            pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION[accidental]
-            for accidental in found_accidentals
-        )
+            raise NotImplementedError(message)
 
     @staticmethod
     def _translate_pitch_class_name_to_pitch_class(
         pitch_class_name: str,
     ) -> numbers.Number:
-        diatonic_pitch_class_name, accidentals = (
+        diatonic_pitch_class_name, accidental = (
             pitch_class_name[0],
             pitch_class_name[1:],
         )
         diatonic_pitch_class = pitches.constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
             diatonic_pitch_class_name
         ]
-        pitch_class_modification = WesternPitch._translate_accidentals_to_pitch_class_modifications(
-            accidentals
+        pitch_class_modification = WesternPitch._translate_accidental_to_pitch_class_modifications(
+            accidental
         )
         return diatonic_pitch_class + pitch_class_modification
 
@@ -131,13 +119,15 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     def _translate_difference_to_closest_diatonic_pitch_to_accidental(
         difference_to_closest_diatonic_pitch: numbers.Number,
     ) -> str:
-        # TODO(add support for microtones)
-        if difference_to_closest_diatonic_pitch > 0:
-            accidental = "s"
-        else:
-            accidental = "f"
-
-        return "".join([accidental] * int(abs(difference_to_closest_diatonic_pitch)))
+        closest_accidental = pitches.constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+            tools.find_closest_item(
+                difference_to_closest_diatonic_pitch,
+                tuple(
+                    pitches.constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME.keys()
+                ),
+            )
+        ]
+        return closest_accidental
 
     @staticmethod
     def _translate_pitch_class_to_pitch_class_name(pitch_class: numbers.Number) -> str:

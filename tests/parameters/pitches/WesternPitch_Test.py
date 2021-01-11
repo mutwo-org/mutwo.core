@@ -24,13 +24,14 @@ class WesternPitchTest(unittest.TestCase):
     def test_constructor_from_float(self):
         pitch0 = pitches.WesternPitch(0)
         pitch1 = pitches.WesternPitch(1)
-        # SMALLER THAN ONE HALF STEP DOESN'T WORK YET
-        # pitch2 = pitches.WesternPitch(2.25)
-        # pitch3 = pitches.WesternPitch(-0.5)
+        pitch2 = pitches.WesternPitch(2.25)
+        pitch3 = pitches.WesternPitch(-0.5)
+        pitch4 = pitches.WesternPitch(7.166, 5)
         self.assertEqual(pitch0.name, "c4")
         self.assertEqual(pitch1.name, "df4")
-        # self.assertEqual(pitch2.name, "des")
-        # self.assertEqual(pitch3.name, "cqf")
+        self.assertEqual(pitch2.name, "des4")
+        self.assertEqual(pitch3.name, "cqf4")
+        self.assertEqual(pitch4.name, "gts5")
 
     def test_property_frequency(self):
         pitch0 = pitches.WesternPitch("a", 4)

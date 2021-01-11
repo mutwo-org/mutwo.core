@@ -70,7 +70,7 @@ def find_closest_index(item: float, data: tuple, key: typing.Callable = None) ->
 
     else:
         indices = (solution, solution - 1)
-        differences = tuple(abs(item - research_data[n]) for n in indices)
+        differences = tuple(abs(item - sorted_research_data[n]) for n in indices)
         index = indices[differences.index(min(differences))]
 
     return research_data.index(sorted_research_data[index])
