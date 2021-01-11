@@ -9,6 +9,10 @@ ConcertPitch = typing.Union[numbers.Number, pitches.abc.Pitch]
 
 
 class EqualDividedOctavePitch(pitches.abc.Pitch):
+    """Class for representing pitches tuned to an Equal divided octave tuning system.
+
+    """
+
     def __init__(
         self,
         n_pitch_classes_per_octave: int,
@@ -20,6 +24,7 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
     ):
         if concert_pitch is None:
             concert_pitch = pitches.constants.DEFAULT_CONCERT_PITCH
+
         self._n_pitch_classes_per_octave = n_pitch_classes_per_octave
         self.pitch_class = pitch_class
         self.octave = octave
@@ -28,6 +33,8 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
         self.concert_pitch = concert_pitch
 
     def _assert_correct_pitch_class(self, pitch_class: numbers.Number) -> None:
+        """Makes sure the respective pitch_class is within the allowed range."""
+
         try:
             assert all(
                 (pitch_class <= self.n_pitch_classes_per_octave - 1, pitch_class >= 0)
@@ -94,42 +101,49 @@ class EqualDividedOctavePitch(pitches.abc.Pitch):
         )
         return float(self.concert_pitch.frequency * distance_to_concert_pitch_as_factor)
 
-    @decorators.add_return_option
-    def _math(
-        self,
-        other: "EqualDividedOctavePitch",
-        operator: typing.Callable[[numbers.Number, numbers.Number], numbers.Number],
-    ) -> "EqualDividedOctavePitch":
+    def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
+        """Calculates the interval between two EqualDividedOctave pitches."""
+
         try:
             assert self.n_pitch_classes_per_octave == other.n_pitch_classes_per_octave
         except AssertionError:
             message = (
-                "Can't apply mathematical operation on two EqualDividedOctavePitch"
-                " objects with different value for 'n_pitch_classes_per_octave'."
+                "Can't calculate the interval between to different"
+                " EqualDividedOctavePitch objects with different value for"
+                " 'n_pitch_classes_per_octave'."
             )
             raise ValueError(message)
 
-        new_pitch_class = operator(self.pitch_class, other.pitch_class)
+        n_pitch_classes_difference = self.pitch_class - other.pitch_class
+        n_octaves_difference = self.octave - other.octave
+        return n_pitch_classes_difference + (
+            n_octaves_difference * self.n_pitch_classes_per_octave
+        )
+
+    def _math(
+        self,
+        n_pitch_classes_difference: numbers.Number,
+        operator: typing.Callable[[numbers.Number, numbers.Number], numbers.Number],
+    ) -> None:
+        new_pitch_class = operator(self.pitch_class, n_pitch_classes_difference)
         n_octaves_difference = new_pitch_class // self.n_pitch_classes_per_octave
         new_pitch_class = new_pitch_class % self.n_pitch_classes_per_octave
-        new_octave = operator(self.octave, other.octave) + n_octaves_difference
+        new_octave = self.octave + n_octaves_difference
         self.pitch_class = new_pitch_class
         self.octave = new_octave
 
-    def __add__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
-        return self._math(other, operator.add, mutate=False)
-
-    def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
-        return self._math(other, operator.sub, mutate=False)
-
     @decorators.add_return_option
     def add(
-        self, other: "EqualDividedOctavePitch"
+        self, n_pitch_classes_difference: numbers.Number
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        self._math(other, operator.add)
+        """Transposes the EqualDividedOctavePitch by n_pitch_classes_difference."""
+
+        self._math(n_pitch_classes_difference, operator.add)
 
     @decorators.add_return_option
     def subtract(
-        self, other: "EqualDividedOctavePitch"
+        self, n_pitch_classes_difference: numbers.Number
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        self._math(other, operator.sub)
+        """Transposes the EqualDividedOctavePitch by n_pitch_classes_difference."""
+
+        self._math(n_pitch_classes_difference, operator.sub)
