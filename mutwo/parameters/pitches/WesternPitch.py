@@ -19,8 +19,8 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
 
     It uses an equal divided octave system in 12 chromatic steps.
     The nomenclature is English (c, d, e, f, g, a, b).
-    Accidentals are indicated by (s = sharp) and (f = flat) and can be
-    stacked. Further microtonal accidentals are supported (see
+    Accidentals are indicated by (s = sharp) and (f = flat).
+    Further microtonal accidentals are supported (see
     mutwo.parameters.pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION
     for all supported accidentals). Indications for the specific octave
     follow the MIDI Standard where 4 is defined as one line.
@@ -65,6 +65,13 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     def _translate_pitch_class_or_pitch_class_name_to_pitch_class_and_pitch_class_name(
         pitch_class_or_pitch_class_name: PitchClassOrPitchClassName,
     ) -> tuple:
+        """Helper function to initialise a WesternPitch from a number or a string.
+
+        A number has to represent the pitch class while the name has to use
+        the Western English nomenclature with the form
+        DIATONICPITCHCLASSNAME-ACCIDENTAL (e.g. "cs" for c-sharp,
+        "gqf" for g-quarter-flat, "b" for b)
+        """
         if isinstance(pitch_class_or_pitch_class_name, numbers.Number):
             pitch_class = float(pitch_class_or_pitch_class_name)
             pitch_class_name = WesternPitch._translate_pitch_class_to_pitch_class_name(
@@ -87,6 +94,11 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     def _translate_accidental_to_pitch_class_modifications(
         accidental: str,
     ) -> numbers.Number:
+        """Helper function to translate an accidental to its pitch class modification.
+
+        Raises an error if the accidental hasn't been defined yet in
+        mutwo.parameters.pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.
+        """
         try:
             return pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION[
                 accidental
@@ -103,6 +115,11 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     def _translate_pitch_class_name_to_pitch_class(
         pitch_class_name: str,
     ) -> numbers.Number:
+        """Helper function to translate a pitch class name to its respective number.
+
+        +/-1 is defined as one chromatic step. Smaller floating point numbers
+        represent microtonal inflections..
+        """
         diatonic_pitch_class_name, accidental = (
             pitch_class_name[0],
             pitch_class_name[1:],
@@ -119,6 +136,7 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
     def _translate_difference_to_closest_diatonic_pitch_to_accidental(
         difference_to_closest_diatonic_pitch: numbers.Number,
     ) -> str:
+        """Helper function to translate a number to the closest known accidental."""
         closest_accidental = pitches.constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
             tools.find_closest_item(
                 difference_to_closest_diatonic_pitch,
@@ -131,6 +149,14 @@ class WesternPitch(pitches.EqualDividedOctavePitch):
 
     @staticmethod
     def _translate_pitch_class_to_pitch_class_name(pitch_class: numbers.Number) -> str:
+        """Helper function to translate a pitch class in number to a string.
+
+        The returned pitch class name uses a Western nomenclature of English
+        diatonic note names. Accidental names are defined in
+        mutwo.parameters.pitches.constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.
+        For floating point numbers the closest accidental will be chosen.
+        """
+
         diatonic_pitch_classes = tuple(
             pitches.constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
         )

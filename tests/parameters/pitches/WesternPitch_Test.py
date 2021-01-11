@@ -33,6 +33,10 @@ class WesternPitchTest(unittest.TestCase):
         self.assertEqual(pitch3.name, "cqf4")
         self.assertEqual(pitch4.name, "gts5")
 
+    def test_representation(self):
+        pitch0 = pitches.WesternPitch("cs", 2)
+        self.assertEqual(repr(pitch0), "WesternPitch(cs2)")
+
     def test_property_frequency(self):
         pitch0 = pitches.WesternPitch("a", 4)
         pitch1 = pitches.WesternPitch("a", 3)
