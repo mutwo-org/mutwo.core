@@ -15,9 +15,6 @@ from mutwo.utilities import tools
 class Pitch(parameters.abc.Parameter):
     """Abstract blueprint for any pitch class."""
 
-    # constant used for cent calculation
-    _cent_calculation_constant = 1200 / (math.log10(2))
-
     # conversion methods between different pitch describing units
     @staticmethod
     def hertz_to_cents(frequency0: float, frequency1: float) -> float:
@@ -27,12 +24,16 @@ class Pitch(parameters.abc.Parameter):
     @staticmethod
     def ratio_to_cents(ratio: fractions.Fraction) -> float:
         """Converts a frequency ratio to its respective cent value."""
-        return Pitch._cent_calculation_constant * math.log10(ratio)
+        return parameters.pitches.constants.CENT_CALCULATION_CONSTANT * math.log10(
+            ratio
+        )
 
     @staticmethod
     def cents_to_ratio(cents: float) -> fractions.Fraction:
         """Converts a cent value to its respective frequency ratio."""
-        return fractions.Fraction(10 ** (cents / Pitch._cent_calculation_constant))
+        return fractions.Fraction(
+            10 ** (cents / parameters.pitches.constants.CENT_CALCULATION_CONSTANT)
+        )
 
     @staticmethod
     def hertz_to_midi_pitch_number(frequency: float) -> float:
