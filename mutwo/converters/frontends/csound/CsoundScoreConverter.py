@@ -30,13 +30,13 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
         - p2 (start time) to the absolute start time of the event
         - p3 (duration) to the duration attribute of the event
 
-    If p2 has to be assigned to the absolute entry delay of the event,
+    If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
 
     All p fields can be overwritten in the following manner:
     >>> my_converter = CsoundScoreConverter(
     >>>     path="my_csound_score.sco",
-    >>>     p1=lambda event: 2,  # sets instrument name to 1
+    >>>     p1=lambda event: 2,  # sets instrument name to 2
     >>>     p4=lambda event: event.pitch.frequency,
     >>>     p5=lambda event: event.volume
     >>> )
