@@ -1,9 +1,6 @@
 import unittest
 
-import expenvelope
-
 from mutwo import converters
-from mutwo.events import basic
 from mutwo.parameters import tempos
 
 
