@@ -1,3 +1,5 @@
+import typing
+
 import expenvelope
 
 from mutwo import converters
@@ -13,6 +15,26 @@ TempoEvents = events.basic.SequentialEvent[events.basic.EnvelopeEvent]
 
 
 class TempoConverter(converters.abc.Converter):
+    """Class for applying tempo curves on mutwo events.
+
+    :param tempo_events: The tempo curve that shall be applied on the
+        mutwo events. This is expected to be a SequentialEvent that is filled
+        with EnvelopeEvent objects. Each EnvelopeEvent can either be initialised
+        via numbers for start and end attributes (the numbers will be interpreted
+        as BPM [beats per minute]) or via mutwo.parameters.tempo.TempoPoint objects.
+
+    Example:
+        >>> from mutwo.converters import symmetrical
+        >>> from mutwo.events import basic
+        >>> from mutwo.parameters import tempos
+        >>> tempo_events = basic.SequentialEvent(
+        >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
+        >>>      basic.EnvelopeEvent(2, 30, 50),                 # acc. from 30 to 50
+        >>>      basic.EnvelopeEvent(5, 50)]                     # stay on bpm = 50
+        >>> )
+        >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
+    """
+
     _tempo_point_converter = converters_symmetrical_TempoPointConverter()
 
     def __init__(self, tempo_events: TempoEvents):
@@ -21,7 +43,10 @@ class TempoConverter(converters.abc.Converter):
     @staticmethod
     def _find_beat_length_at_start_and_end(
         tempo_event: events.basic.EnvelopeEvent,
-    ) -> list:
+    ) -> typing.Tuple[float]:
+        """Extracts the beat-length-in-seconds at start and end of a TempoEvent.
+
+        """
         beat_length_at_start_and_end = []
         for tempo_point in (tempo_event.object_start, tempo_event.object_stop):
             beat_length_at_start_and_end.append(
@@ -76,6 +101,11 @@ class TempoConverter(converters.abc.Converter):
         event_to_process: events.abc.Event,
         absolute_entry_delay: parameters.durations.abc.DurationType,
     ) -> None:
+        """Applies tempo envelope on any object that inherits from events.abc.Event.
+
+        Make type checks to differentiate between different timing structures
+        of SequentialEvent, SimultaneousEvent and SimpleEvent.
+        """
         if isinstance(event_to_process, events.basic.SequentialEvent):
             self._apply_tempo_envelope_on_sequential_event(
                 event_to_process, absolute_entry_delay
@@ -127,6 +157,17 @@ class TempoConverter(converters.abc.Converter):
         ]
 
     def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
+        """Apply tempo curve of the converter to the entered event.
+
+        The method doesn't change the original event, but returns a copied
+        version with different values for its duration attributes depending
+        on the tempo curve.
+
+        :param event_to_convert: The event to convert. Can be any object
+            that inherits from mutwo.events.abc.Event. If the event to convert
+            is longer than tempo curve of the TempoConverter, the last tempo
+            of the curve will be hold.
+        """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._apply_tempo_envelope_on_event(copied_event_to_convert, 0)
         return copied_event_to_convert

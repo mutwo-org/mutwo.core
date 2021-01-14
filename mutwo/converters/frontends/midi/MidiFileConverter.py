@@ -557,6 +557,8 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         (for midi_file_type = 0).
         """
 
+        # TODO(split this method, make it more readable!)
+
         available_midi_channels_per_sequential_event = self._find_available_midi_channels_per_sequential_event(
             simultaneous_event
         )
