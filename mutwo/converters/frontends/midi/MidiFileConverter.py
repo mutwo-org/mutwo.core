@@ -34,7 +34,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     or his individual needs.
 
     Disclaimer:
-        The current implementation doesn't yet support glissandi (only static pitches),
+        The current implementation doesn't support glissandi yet (only static pitches),
         time-signatures (the written time signature is always 4/4 for now) and
         dynamically changing tempo (ritardando or accelerando).
 
@@ -213,7 +213,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             raise ValueError(message)
 
     @staticmethod
-    def _convert_volume_to_velocity(volume: numbers.Number) -> int:
+    def _volume_to_velocity(volume: numbers.Number) -> int:
         """Convert volume (floating point number from 0 to 1) to midi velocity.
 
         The method clips values that are higher than 1 / lower than 0.
@@ -252,7 +252,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             available_midi_channels_per_sequential_event = tuple(
                 tuple(
                     next(available_midi_channels_cycle)
-                    for _ in self._n_midi_channels_per_track
+                    for _ in range(self._n_midi_channels_per_track)
                 )
                 for _ in simultaneous_event
             )
@@ -264,10 +264,10 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return available_midi_channels_per_sequential_event
 
-    def _convert_beats_to_ticks(self, absolute_time: numbers.Number,) -> int:
+    def _beats_to_ticks(self, absolute_time: numbers.Number,) -> int:
         return int(self._ticks_per_beat * absolute_time)
 
-    def _convert_cent_deviation_to_pitch_bending_number(
+    def _cent_deviation_to_pitch_bending_number(
         self, cent_deviation: numbers.Number,
     ) -> int:
         if abs(cent_deviation) > 0.15:
@@ -309,12 +309,12 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             parameters.pitches.constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
             frequency,
         )
-        pitch_bending_number = self._convert_cent_deviation_to_pitch_bending_number(
+        pitch_bending_number = self._cent_deviation_to_pitch_bending_number(
             difference_in_cents_to_closest_midi_pitch
         )
 
         if absolute_tick_start != 0:
-            # one tick earlier to avoid glitches
+            # if possible add bending one tick earlier to avoid glitches
             absolute_tick_start -= 1
 
         pitch_bending_message = mido.Message(
@@ -330,16 +330,17 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     #             methods for converting mutwo data to midi data             #
     # ###################################################################### #
 
-    def _convert_tempo_events_to_midi_messages(
+    def _tempo_events_to_midi_messages(
         self, tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent]
     ) -> typing.Tuple[mido.MetaMessage]:
         midi_messages = []
         for absolute_time, tempo_event in zip(
             tempo_events.absolute_times, tempo_events
         ):
-            absolute_tick = self._convert_beats_to_ticks(absolute_time)
+            absolute_tick = self._beats_to_ticks(absolute_time)
             beat_length_in_seconds = int(
-                self._tempo_point_converter.convert(tempo_event.object_start) * 1000000
+                self._tempo_point_converter.convert(tempo_event.object_start)
+                * midi.constants.MIDI_TEMPO_FACTOR
             )
 
             if beat_length_in_seconds >= midi.constants.MAXIMUM_MICROSECONDS_PER_BEAT:
@@ -358,7 +359,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return tuple(midi_messages)
 
-    def _convert_note_information_to_midi_messages(
+    def _note_information_to_midi_messages(
         self,
         absolute_tick_start: int,
         absolute_tick_end: int,
@@ -389,7 +390,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return tuple(midi_messages)
 
-    def _convert_extracted_data_to_midi_messages(
+    def _extracted_data_to_midi_messages(
         self,
         absolute_time: numbers.Number,
         duration: numbers.Number,
@@ -399,9 +400,9 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         control_messages: typing.Tuple[mido.Message],
     ) -> typing.Tuple[mido.Message]:
 
-        absolute_tick_start = self._convert_beats_to_ticks(absolute_time)
-        absolute_tick_end = absolute_tick_start + self._convert_beats_to_ticks(duration)
-        velocity = self._convert_volume_to_velocity(volume)
+        absolute_tick_start = self._beats_to_ticks(absolute_time)
+        absolute_tick_end = absolute_tick_start + self._beats_to_ticks(duration)
+        velocity = self._volume_to_velocity(volume)
 
         midi_messages = []
 
@@ -413,7 +414,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         # add note related messages
         for pitch in pitch_or_pitches:
             midi_messages.extend(
-                self._convert_note_information_to_midi_messages(
+                self._note_information_to_midi_messages(
                     absolute_tick_start,
                     absolute_tick_end,
                     velocity,
@@ -424,7 +425,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return tuple(midi_messages)
 
-    def _convert_simple_event_to_midi_messages(
+    def _simple_event_to_midi_messages(
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_time: numbers.Number,
@@ -450,7 +451,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             return tuple([])
 
         # otherwise generate midi messages from the extracted data
-        midi_messages = self._convert_extracted_data_to_midi_messages(
+        midi_messages = self._extracted_data_to_midi_messages(
             absolute_time,
             simple_event.duration,
             available_midi_channels_cycle,
@@ -458,7 +459,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         )
         return tuple(midi_messages)
 
-    def _convert_sequential_event_to_midi_messages(
+    def _sequential_event_to_midi_messages(
         self,
         sequential_event: events.basic.SequentialEvent[events.basic.SimpleEvent],
         available_midi_channels: typing.Tuple[int],
@@ -477,14 +478,14 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         for absolute_time, simple_event in zip(
             sequential_event.absolute_times, sequential_event
         ):
-            midi_messages = self._convert_simple_event_to_midi_messages(
+            midi_messages = self._simple_event_to_midi_messages(
                 simple_event, absolute_time, available_midi_channels_cycle
             )
             midi_data.extend(midi_messages)
 
         return tuple(midi_data)
 
-    def _convert_midi_messages_to_midi_track(
+    def _midi_messages_to_midi_track(
         self, midi_data: typing.Tuple[mido.Message], is_first_track: bool = False
     ) -> mido.MidiTrack:
         """Convert unsorted midi message with absolute timing to a midi track.
@@ -499,7 +500,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         if is_first_track:
             # standard time signature 4/4
             track.append(mido.MetaMessage("time_signature", numerator=4, denominator=4))
-            midi_data += self._convert_tempo_events_to_midi_messages(self._tempo_events)
+            midi_data += self._tempo_events_to_midi_messages(self._tempo_events)
 
         # sort midi data
         sorted_midi_data = sorted(midi_data, key=lambda message: message.time)
@@ -561,7 +562,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         )
 
         midi_data_per_sequential_event = tuple(
-            self._convert_sequential_event_to_midi_messages(
+            self._sequential_event_to_midi_messages(
                 sequential_event, available_midi_channels
             )
             for sequential_event, available_midi_channels in zip(
@@ -574,7 +575,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             midi_data_for_one_track = functools.reduce(
                 operator.add, midi_data_per_sequential_event
             )
-            midi_track = self._convert_midi_messages_to_midi_track(
+            midi_track = self._midi_messages_to_midi_track(
                 midi_data_for_one_track, is_first_track=True
             )
             midi_file.tracks.append(midi_track)
@@ -582,7 +583,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         # midi file type 1
         else:
             midi_tracks = (
-                self._convert_midi_messages_to_midi_track(
+                self._midi_messages_to_midi_track(
                     midi_data, is_first_track=nth_midi_data == 0
                 )
                 for nth_midi_data, midi_data in enumerate(
@@ -591,9 +592,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             )
             midi_file.tracks.extend(midi_tracks)
 
-    def _convert_event_to_midi_file(
-        self, event_to_convert: ConvertableEvents
-    ) -> mido.MidiFile:
+    def _event_to_midi_file(self, event_to_convert: ConvertableEvents) -> mido.MidiFile:
         """Convert mutwo event object to mido MidiFile object."""
 
         midi_file = mido.MidiFile(
@@ -630,7 +629,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         Disclaimer: when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
         converter classes (like TempoConverter) MidiFileConverter can't
-        convert infinite nested structures (due to the particular
+        convert infinitely nested structures (due to the particular
         way how Midi files are defined). The deepest potential structure
         is a SimultaneousEvent (representing the complete MidiFile) that
         contains SequentialEvents (where each SequentialEvent represents
@@ -642,5 +641,5 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         note_off) inside one MidiTrack inside one MidiFile.
         """
 
-        midi_file = self._convert_event_to_midi_file(event_to_convert)
+        midi_file = self._event_to_midi_file(event_to_convert)
         midi_file.save(filename=self.path)
