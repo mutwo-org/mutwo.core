@@ -25,26 +25,6 @@ class TempoConverterTest(unittest.TestCase):
         )
         self.assertEqual(envelope, expected_envelope)
 
-    def test_convert_beats_per_minute_to_seconds_per_beat(self):
-        self.assertEqual(
-            converters.symmetrical.TempoConverter.beats_per_minute_to_seconds_per_beat(
-                60
-            ),
-            1,
-        )
-        self.assertEqual(
-            converters.symmetrical.TempoConverter.beats_per_minute_to_seconds_per_beat(
-                30
-            ),
-            2,
-        )
-        self.assertEqual(
-            converters.symmetrical.TempoConverter.beats_per_minute_to_seconds_per_beat(
-                120
-            ),
-            0.5,
-        )
-
     def test_convert_simple_event(self):
         tempo_events = basic.SequentialEvent([basic.EnvelopeEvent(4, 30, 60)])
         simple_event = basic.SimpleEvent(4)

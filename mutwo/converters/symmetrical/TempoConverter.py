@@ -1,23 +1,22 @@
-import numbers
-import warnings
-
 import expenvelope
 
 from mutwo import converters
 from mutwo import events
 from mutwo import parameters
 
+from mutwo.converters.symmetrical.TempoPointConverter import (
+    TempoPointConverter as converters_symmetrical_TempoPointConverter,
+)
+
 
 TempoEvents = events.basic.SequentialEvent[events.basic.EnvelopeEvent]
 
 
 class TempoConverter(converters.abc.Converter):
+    _tempo_point_converter = converters_symmetrical_TempoPointConverter()
+
     def __init__(self, tempo_events: TempoEvents):
         self.tempo_events = tempo_events
-
-    @staticmethod
-    def beats_per_minute_to_seconds_per_beat(beats_per_minute: numbers.Number) -> float:
-        return 60 / beats_per_minute
 
     @staticmethod
     def _find_beat_length_at_start_and_end(
@@ -25,25 +24,8 @@ class TempoConverter(converters.abc.Converter):
     ) -> list:
         beat_length_at_start_and_end = []
         for tempo_point in (tempo_event.object_start, tempo_event.object_stop):
-            try:
-                beats_per_minute = tempo_point.tempo_in_beats_per_minute
-            except AttributeError:
-                beats_per_minute = float(tempo_point)
-
-            try:
-                reference = tempo_point.reference
-            except AttributeError:
-                message = (
-                    "Tempo point {} of type {} doesn't know attribute 'reference'."
-                    .format(tempo_point, type(tempo_point))
-                )
-                message += " Therefore reference has been set to 1."
-                warnings.warn(message)
-                reference = 1
-
             beat_length_at_start_and_end.append(
-                TempoConverter.beats_per_minute_to_seconds_per_beat(beats_per_minute)
-                * reference
+                TempoConverter._tempo_point_converter.convert(tempo_point)
             )
 
         return beat_length_at_start_and_end
