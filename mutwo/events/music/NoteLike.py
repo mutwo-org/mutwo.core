@@ -22,6 +22,11 @@ class NoteLike(events.basic.SimpleEvent):
         self.volume = volume
         super().__init__(duration)
 
+    def __repr__(self) -> str:
+        return "{}({}, {}, {})".format(
+            type(self).__name__, self.pitch_or_pitches, self.duration, self.volume
+        )
+
     @property
     def pitch_or_pitches(self) -> list:
         return self._pitch_or_pitches
