@@ -2,10 +2,11 @@ import abc
 import typing
 
 from mutwo import parameters
+from mutwo.utilities import decorators
 
 
 class Event(abc.ABC):
-    """abstract Event-Object"""
+    """Abstract Event-Object"""
 
     @property
     @abc.abstractmethod
@@ -65,4 +66,21 @@ class Event(abc.ABC):
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
     ) -> None:
+        raise NotImplementedError
+
+    @decorators.add_return_option
+    @abc.abstractmethod
+    def cut_up(
+        self,
+        start: parameters.durations.abc.DurationType,
+        end: parameters.durations.abc.DurationType,
+    ) -> typing.Union[None, "Event"]:
+        """Time-based slicing of the respective event.
+
+        :param start: number that indicates the point when the
+            cut up shall start.
+        :param end: number that indicates the point when the cut
+            up shall end.
+        """
+
         raise NotImplementedError

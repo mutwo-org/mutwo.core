@@ -64,6 +64,29 @@ class SimultaneousEventTest(unittest.TestCase):
 
             self.assertEqual(event.get_parameter("pitch_or_pitches"), expected_pitch)
 
+    def test_cut_up(self):
+        result = basic.SimultaneousEvent([basic.SimpleEvent(0.5) for _ in range(3)])
+
+        self.assertEqual(
+            [event.duration for event in result],
+            [event.duration for event in self.sequence.cut_up(0.5, 1, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result],
+            [event.duration for event in self.sequence.cut_up(0, 0.5, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result],
+            [
+                event.duration
+                for event in self.sequence.cut_up(0.25, 0.75, mutate=False)
+            ],
+        )
+
+        # this will raise an error because the simultaneous event contains simple events
+        # where some simple event aren't long enough for the following cut up arguments.
+        self.assertRaises(ValueError, lambda: self.sequence.cut_up(2, 3))
+
 
 if __name__ == "__main__":
     unittest.main()

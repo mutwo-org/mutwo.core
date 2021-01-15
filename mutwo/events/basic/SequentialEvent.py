@@ -3,6 +3,8 @@ import numbers
 import typing
 
 from mutwo import events
+from mutwo import parameters
+from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
 T = typing.TypeVar("T")
@@ -35,3 +37,35 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             zip(reversed(absolute_times), reversed(self)),
         )
         return next(after_absolute_time)[1]
+
+    @decorators.add_return_option
+    def cut_up(
+        self,
+        start: parameters.durations.abc.DurationType,
+        end: parameters.durations.abc.DurationType,
+    ) -> typing.Union[None, "SequentialEvent"]:
+        cut_up_events = []
+
+        for event_start, event in zip(self.absolute_times, self):
+            event_end = event_start + event.duration
+            appendable_conditions = (
+                event_start >= start and event_start < end,
+                event_end <= end and event_end > start,
+                event_start <= start and event_end >= end,
+            )
+
+            appendable = any(appendable_conditions)
+            if appendable:
+                cut_up_start = 0
+                cut_up_end = event.duration
+
+                if event_start < start:
+                    cut_up_start += start - event_start
+
+                if event_end > end:
+                    cut_up_end -= event_end - end
+
+                event = event.cut_up(cut_up_start, cut_up_end, mutate=False)
+                cut_up_events.append(event)
+
+        self[:] = cut_up_events

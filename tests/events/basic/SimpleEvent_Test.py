@@ -35,6 +35,31 @@ class SimpleEventTest(unittest.TestCase):
             new_unknown_parameter,
         )
 
+    def test_cut_up(self):
+        event0 = basic.SimpleEvent(4)
+        cut_up_event0 = basic.SimpleEvent(2)
+
+        event1 = basic.SimpleEvent(10)
+        cut_up_event1 = basic.SimpleEvent(5)
+
+        event2 = basic.SimpleEvent(5)
+        cut_up_event2 = basic.SimpleEvent(1)
+
+        event2.cut_up(2, 3)
+
+        self.assertEqual(
+            event0.cut_up(2, 4, mutate=False).duration, cut_up_event0.duration
+        )
+        self.assertEqual(
+            event1.cut_up(0, 5, mutate=False).duration, cut_up_event1.duration
+        )
+        self.assertEqual(event2.duration, cut_up_event2.duration)
+
+        # this will raise an error because the simple event isn't within the
+        # asked range.
+        self.assertRaises(ValueError, lambda: event0.cut_up(4, 5))
+        self.assertRaises(ValueError, lambda: event0.cut_up(-2, -1))
+
 
 if __name__ == "__main__":
     unittest.main()

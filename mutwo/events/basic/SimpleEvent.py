@@ -60,3 +60,29 @@ class SimpleEvent(abc.Event):
         parameter = self.get_parameter(parameter_name)
         if parameter is not None:
             function(parameter)
+
+    @decorators.add_return_option
+    def cut_up(
+        self,
+        start: parameters.durations.abc.DurationType,
+        end: parameters.durations.abc.DurationType,
+    ) -> typing.Union[None, "SimpleEvent"]:
+        duration = self.duration
+
+        difference_to_duration = 0
+
+        if start > 0:
+            difference_to_duration += start
+        if end < duration:
+            difference_to_duration += duration - end
+
+        try:
+            assert difference_to_duration < duration
+        except AssertionError:
+            message = (
+                "Can't cut up SimpleEvent '{}' with duration '{}' from (start = {} to"
+                " end = {}).".format(self, duration, start, end)
+            )
+            raise ValueError(message)
+
+        self.duration -= difference_to_duration
