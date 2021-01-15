@@ -1,3 +1,5 @@
+"""This module contains several general unsorted utility functions."""
+
 import bisect
 import importlib
 import itertools
