@@ -347,7 +347,9 @@ class JustIntonationPitch(pitches.abc.Pitch):
             )
         elif isinstance(ratio_or_exponents, typing.Iterable):
             exponents = tuple(ratio_or_exponents)
-        elif isinstance(ratio_or_exponents, fractions.Fraction):
+        elif hasattr(ratio_or_exponents, "numerator") and hasattr(
+            ratio_or_exponents, "denominator"
+        ):
             exponents = self._ratio_to_exponents(
                 fractions.Fraction(
                     ratio_or_exponents.numerator, ratio_or_exponents.denominator
@@ -699,7 +701,7 @@ class JustIntonationPitch(pitches.abc.Pitch):
         >>> jip2.harmonicity_barlow
         0.11904761904761904
         >>> jip3.harmonicity_barlow
-        -0.10638297872340426 """
+        -0.10638297872340426"""
 
         def sign(x):
             return (1, -1)[x < 0]
