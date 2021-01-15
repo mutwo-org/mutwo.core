@@ -36,18 +36,18 @@ def accumulate_from_zero(iterable: typing.Iterable) -> typing.Iterator:
 
 
 def insert_next_to(
-    sequence: typing.MutableSequence,
+    iterableuence: typing.MutableSequence,
     item_to_find: typing.Any,
     distance: int,
     item_to_insert: typing.Any,
 ):
     """Insert an item into a list relative to the first item equal to a certain value."""
-    index = list(sequence).index(item_to_find)
+    index = list(iterableuence).index(item_to_find)
     if distance == 0:
-        sequence[index] = item_to_insert
+        iterableuence[index] = item_to_insert
     else:
         real_distance = distance + 1 if distance < 0 else distance
-        sequence.insert(index + real_distance, item_to_insert)
+        iterableuence.insert(index + real_distance, item_to_insert)
 
 
 def find_closest_index(item: float, data: tuple, key: typing.Callable = None) -> int:
@@ -99,3 +99,31 @@ def import_module_if_dependency_has_been_installed(
 
         else:
             importlib.import_module(module)
+
+
+def uniqify_iterable(
+    iterable: typing.Iterable,
+    sort_key: typing.Callable[[typing.Any], numbers.Number] = None,
+    group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
+) -> typing.Iterable:
+    """Not-Order preserving function to uniqify any iterable with non-hashable objects.
+
+    :param iterable: The iterable which items shall be uniqified.
+
+    :return iterable: Return uniqified version of the entered iterable.
+        The function will try to return the same type of the passed
+        iterable. If Python raises an error during initialisation of
+        the original iterable type, the function will simply return
+        a tuple.
+    """
+
+    sorted_iterable = sorted(iterable, key=sort_key)
+    result = (
+        key for key, group in itertools.groupby(sorted_iterable, key=group_by_key)
+    )
+
+    try:
+        return type(iterable)(result)
+
+    except Exception:
+        return tuple(result)
