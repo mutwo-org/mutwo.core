@@ -61,12 +61,32 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def mutate_parameter(
-        self, parameter_name: str,
+        self,
+        parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
     ) -> None:
         raise NotImplementedError
+
+    @staticmethod
+    def _assert_correct_start_and_end_values(
+        start: parameters.durations.abc.DurationType,
+        end: parameters.durations.abc.DurationType,
+    ):
+        """Helper method to make sure that start < end.
+
+        Can be used within the different cut_up methods.
+        """
+        try:
+            assert end > start
+        except AssertionError:
+            message = (
+                "Invalid values for start and end property (start = '{}' and end ="
+                " '{}')!".format(start, end)
+            )
+            message += " Value for end has to be bigger than value for start."
+            raise ValueError(message)
 
     @decorators.add_return_option
     @abc.abstractmethod

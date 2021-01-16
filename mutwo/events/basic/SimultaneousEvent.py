@@ -19,6 +19,7 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def cut_up(
         self, start: durations.abc.DurationType, end: durations.abc.DurationType,
     ) -> typing.Union[None, "SimultaneousEvent"]:
+        self._assert_correct_start_and_end_values(start, end)
         cut_up_events = []
 
         for event in self:

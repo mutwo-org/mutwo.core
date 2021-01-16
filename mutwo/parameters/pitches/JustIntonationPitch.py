@@ -701,7 +701,8 @@ class JustIntonationPitch(pitches.abc.Pitch):
         >>> jip2.harmonicity_barlow
         0.11904761904761904
         >>> jip3.harmonicity_barlow
-        -0.10638297872340426"""
+        -0.10638297872340426
+        """
 
         def sign(x):
             return (1, -1)[x < 0]

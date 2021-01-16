@@ -67,6 +67,8 @@ class SimpleEvent(abc.Event):
         start: parameters.durations.abc.DurationType,
         end: parameters.durations.abc.DurationType,
     ) -> typing.Union[None, "SimpleEvent"]:
+        self._assert_correct_start_and_end_values(start, end)
+
         duration = self.duration
 
         difference_to_duration = 0

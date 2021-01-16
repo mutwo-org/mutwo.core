@@ -44,6 +44,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         start: parameters.durations.abc.DurationType,
         end: parameters.durations.abc.DurationType,
     ) -> typing.Union[None, "SequentialEvent"]:
+        self._assert_correct_start_and_end_values(start, end)
+
         cut_up_events = []
 
         for event_start, event in zip(self.absolute_times, self):
@@ -65,7 +67,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
                 if event_end > end:
                     cut_up_end -= event_end - end
 
-                event = event.cut_up(cut_up_start, cut_up_end, mutate=False)
-                cut_up_events.append(event)
+                if cut_up_start < cut_up_end:
+                    event = event.cut_up(cut_up_start, cut_up_end, mutate=False)
+                    cut_up_events.append(event)
 
         self[:] = cut_up_events
