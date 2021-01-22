@@ -2,7 +2,6 @@ import abc
 import typing
 
 from mutwo import parameters
-from mutwo.utilities import decorators
 
 
 class Event(abc.ABC):
@@ -88,7 +87,6 @@ class Event(abc.ABC):
             message += " Value for end has to be bigger than value for start."
             raise ValueError(message)
 
-    @decorators.add_return_option
     @abc.abstractmethod
     def cut_up(
         self,
