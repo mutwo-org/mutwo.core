@@ -35,6 +35,23 @@ class SimpleEventTest(unittest.TestCase):
             new_unknown_parameter,
         )
 
+    def test_equality_check(self):
+        simple_event0 = basic.SimpleEvent(2)
+        simple_event1 = basic.SimpleEvent(3)
+        simple_event2 = basic.SimpleEvent(2)
+        simple_event3 = basic.SimpleEvent(2.3)
+
+        self.assertEqual(simple_event0, simple_event2)
+        self.assertEqual(simple_event2, simple_event0)  # different order
+        self.assertEqual(simple_event0, simple_event0)
+        self.assertEqual(simple_event2, simple_event2)
+
+        self.assertNotEqual(simple_event0, simple_event1)
+        self.assertNotEqual(simple_event1, simple_event0)  # different order
+        self.assertNotEqual(simple_event0, simple_event3)
+        self.assertNotEqual(simple_event2, simple_event3)
+        self.assertNotEqual(simple_event2, simple_event2.duration)
+
     def test_cut_up(self):
         event0 = basic.SimpleEvent(4)
         cut_up_event0 = basic.SimpleEvent(2)

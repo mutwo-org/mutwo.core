@@ -1,4 +1,5 @@
 import copy
+import types
 import typing
 
 from mutwo.events import abc
@@ -11,6 +12,49 @@ class SimpleEvent(abc.Event):
 
     def __init__(self, new_duration: parameters.durations.abc.DurationType):
         self.duration = new_duration
+
+    def __eq__(self, other: typing.Any) -> bool:
+        """Test for checking if two objects are equal."""
+        try:
+            return self._is_equal(other) and other._is_equal(self)
+        except AttributeError:
+            return False
+
+    def _is_equal(self, other: typing.Any) -> bool:
+        """Helper function to inspect if two SimpleEvent objects are equal."""
+
+        for parameter_to_compare in self._parameters_to_compare:
+            try:
+                # if the assigned values of the specific parameter aren't
+                # equal, both objects can't be equal
+                if getattr(self, parameter_to_compare) != getattr(
+                    other, parameter_to_compare
+                ):
+                    return False
+
+            # if the other object doesn't know the essential parameter
+            # mutwo assumes that both objects can't be equal
+            except AttributeError:
+                return False
+
+        # if all compared parameters are equal, return True
+        return True
+
+    @property
+    def _parameters_to_compare(self) -> typing.Tuple[str]:
+        """Return tuple of attribute names which values define the SimpleEvent.
+
+        The returned attribute names are used for equality check between two
+        SimpleEvent objects.
+        """
+        return tuple(
+            attribute
+            for attribute in dir(self)
+            # no private attributes
+            if attribute[0] != "_"
+            # no methods
+            and not isinstance(getattr(self, attribute), types.MethodType)
+        )
 
     @property
     def duration(self):
