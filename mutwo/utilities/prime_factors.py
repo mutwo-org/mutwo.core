@@ -1,21 +1,26 @@
+"""Module for prime number calculations.
+
+The functions "factorise" and "factors" are copied from the pyprimes - library
+(https://github.com/uzumaxy/pyprimes/blob/master/src/pyprimes/factors.py).
+In mutwo the function pyprimes.primes has been replaced by primesieve.Iterator(),
+which improves speed by a factor of 10.
 """
-factorise and factors - function from the pyprimes - library.
-(https://github.com/uzumaxy/pyprimes/blob/master/src/pyprimes/factors.py)
-replaced pyprimes.primes by primesieve.Iterator(), which improves
-speed about a factor of 10.
-"""
+
+import typing
 
 import primesieve
 
 
-class Prime_Generator(object):
+class PrimeGenerator(object):
+    """Generator that yields the rising series of primes starting from 2."""
+
     def __init__(self):
         self.it = primesieve.Iterator()
 
-    def __next__(self):
+    def __next__(self) -> int:
         return self.it.next_prime()
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator:
         return self
 
 
@@ -48,31 +53,24 @@ def factors(n: int):
     is given as the only factor. For all other integer n, all of the factors
     returned are prime.
     """
-    # if n < 900000 - 1:
-    if False:
-        # pre = __PRECALCULATED_FACTORS[n]
-        # for fac in pre:
-        #     yield fac
+    if n in (0, 1, -1):
+        yield (n, 1)
         return
-    else:
-        if n in (0, 1, -1):
-            yield (n, 1)
-            return
-        elif n < 0:
-            yield (-1, 1)
-            n = -n
-        assert n >= 2
-        for p in Prime_Generator():
-            if p * p > n:
-                break
-            count = 0
-            while n % p == 0:
-                count += 1
-                n //= p
-            if count:
-                yield (p, count)
-        if n != 1:
-            yield (n, 1)
+    elif n < 0:
+        yield (-1, 1)
+        n = -n
+    assert n >= 2
+    for p in PrimeGenerator():
+        if p * p > n:
+            break
+        count = 0
+        while n % p == 0:
+            count += 1
+            n //= p
+        if count:
+            yield (p, count)
+    if n != 1:
+        yield (n, 1)
 
 
 def is_prime(n: int) -> bool:
