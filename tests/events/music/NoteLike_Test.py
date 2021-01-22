@@ -16,6 +16,13 @@ class NoteLikeTest(unittest.TestCase):
         pitches = [100, 200, 300]
         self.assertEqual(pitches, music.NoteLike(pitches, 1, 1).pitch_or_pitches)
 
+    def test_parameters_to_compare(self):
+        note_like = music.NoteLike([30], 1, 1)
+        expected_parameters_to_compare = ("duration", "pitch_or_pitches", "volume")
+        self.assertEqual(
+            note_like._parameters_to_compare, expected_parameters_to_compare
+        )
+
     def test_equality_check(self):
         note_like0 = music.NoteLike([30], 1, 1)
         note_like1 = music.NoteLike([30], 1, 1)
