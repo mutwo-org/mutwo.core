@@ -20,6 +20,13 @@ class SimpleEvent(abc.Event):
         except AttributeError:
             return False
 
+    def __repr__(self) -> str:
+        attributes = (
+            "{} = {}".format(attribute, getattr(self, attribute))
+            for attribute in self._parameters_to_compare
+        )
+        return "{}({})".format(type(self).__name__, ", ".join(attributes))
+
     def _is_equal(self, other: typing.Any) -> bool:
         """Helper function to inspect if two SimpleEvent objects are equal."""
 
