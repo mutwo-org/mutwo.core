@@ -6,8 +6,8 @@ from mutwo import events
 from mutwo import parameters
 
 
-class SimpleEventWithPitchAttribute(events.basic.SimpleEvent):
-    """SimpleEvent with additional pitch attribute.
+class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
+    """SimpleEvent with additional pitch and path attributes.
 
     Only for testing purposes.
     """
@@ -16,29 +16,37 @@ class SimpleEventWithPitchAttribute(events.basic.SimpleEvent):
         self,
         pitch: parameters.pitches.abc.Pitch,
         duration: parameters.durations.abc.DurationType,
+        path: str,
     ):
         super().__init__(duration)
         self.pitch = pitch
+        self.path = path
 
 
 class CsoundScoreConverterTest(unittest.TestCase):
-    def setUp(self):
-        self.converter = converters.frontends.csound.CsoundScoreConverter(
-            "tests/converters/frontends/csound/test.sco", p4=lambda event: event.pitch.frequency
+    @classmethod
+    def setUpClass(cls):
+        cls.converter = converters.frontends.csound.CsoundScoreConverter(
+            "tests/converters/frontends/csound/test.sco",
+            p4=lambda event: event.pitch.frequency,
+            p5=lambda event: event.path,
         )
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         # remove score files
-        os.remove(self.converter.path)
+        os.remove(cls.converter.path)
 
     def test_convert_simple_event(self):
         duration = 2
-        event_to_convert = SimpleEventWithPitchAttribute(
-            parameters.pitches.JustIntonationPitch(), duration
+        event_to_convert = SimpleEventWithPitchAndPathAttribute(
+            parameters.pitches.JustIntonationPitch(), duration, "flute_sample.wav",
         )
         self.converter.convert(event_to_convert)
-        expected_line = "i 1 0 {} {}".format(
-            duration, float(parameters.pitches.constants.DEFAULT_CONCERT_PITCH)
+        expected_line = 'i 1 0 {} {} "{}"'.format(
+            duration,
+            float(parameters.pitches.constants.DEFAULT_CONCERT_PITCH),
+            event_to_convert.path,
         )
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_line)
@@ -49,19 +57,25 @@ class CsoundScoreConverterTest(unittest.TestCase):
             for ratio in ("3/2", "5/4", "1/2", "10/1", "8/1", "1/100")
         )
         durations = (2, 4, 3, 6.25, 8, 1)
+        paths = tuple(
+            "flute_sample{}.wav".format(nth_sample)
+            for nth_sample, pitch in enumerate(pitches)
+        )
         event_to_convert = events.basic.SequentialEvent(
             [
-                SimpleEventWithPitchAttribute(pitch, duration)
-                for pitch, duration in zip(pitches, durations)
+                SimpleEventWithPitchAndPathAttribute(pitch, duration, path)
+                for pitch, duration, path in zip(pitches, durations, paths)
             ]
         )
         self.converter.convert(event_to_convert)
 
         expected_lines = "\n".join(
             [
-                "i 1 {} {} {}".format(absolute_entry_delay, duration, pitch.frequency)
-                for absolute_entry_delay, duration, pitch in zip(
-                    event_to_convert.absolute_times, durations, pitches
+                'i 1 {} {} {} "{}"'.format(
+                    absolute_entry_delay, duration, pitch.frequency, path
+                )
+                for absolute_entry_delay, duration, pitch, path in zip(
+                    event_to_convert.absolute_times, durations, pitches, paths
                 )
             ]
         )
@@ -69,18 +83,19 @@ class CsoundScoreConverterTest(unittest.TestCase):
             self.assertEqual(f.read(), expected_lines)
 
     def test_convert_sequential_event_with_rests(self):
+        path = "flute.wav"
         event_to_convert = events.basic.SequentialEvent(
             [
-                SimpleEventWithPitchAttribute(
-                    parameters.pitches.JustIntonationPitch(), 2
+                SimpleEventWithPitchAndPathAttribute(
+                    parameters.pitches.JustIntonationPitch(), 2, path
                 ),
                 events.basic.SimpleEvent(2),
-                SimpleEventWithPitchAttribute(
-                    parameters.pitches.JustIntonationPitch(), 1
+                SimpleEventWithPitchAndPathAttribute(
+                    parameters.pitches.JustIntonationPitch(), 1, path
                 ),
                 events.basic.SimpleEvent(3.5),
-                SimpleEventWithPitchAttribute(
-                    parameters.pitches.JustIntonationPitch(), 4
+                SimpleEventWithPitchAndPathAttribute(
+                    parameters.pitches.JustIntonationPitch(), 4, path
                 ),
             ]
         )
@@ -88,8 +103,8 @@ class CsoundScoreConverterTest(unittest.TestCase):
 
         expected_lines = "\n".join(
             [
-                "i 1 {} {} {}".format(
-                    absolute_entry_delay, event.duration, event.pitch.frequency
+                'i 1 {} {} {} "{}"'.format(
+                    absolute_entry_delay, event.duration, event.pitch.frequency, path
                 )
                 for absolute_entry_delay, event in zip(
                     event_to_convert.absolute_times, event_to_convert
@@ -106,37 +121,54 @@ class CsoundScoreConverterTest(unittest.TestCase):
             for ratio in ("3/2", "5/4", "1/2", "10/1", "8/1", "1/100")
         )
         durations = (2, 4, 3, 6.25, 8, 1)
+        paths = tuple(
+            "flute_sample{}.wav".format(nth_sample)
+            for nth_sample, pitch in enumerate(pitches)
+        )
         event_to_convert = events.basic.SimultaneousEvent(
             [
-                SimpleEventWithPitchAttribute(pitch, duration)
-                for pitch, duration in zip(pitches, durations)
+                SimpleEventWithPitchAndPathAttribute(pitch, duration, path)
+                for pitch, duration, path in zip(pitches, durations, paths)
             ]
         )
         self.converter.convert(event_to_convert)
 
         expected_lines = "\n".join(
             [
-                "i 1 0 {} {}".format(duration, pitch.frequency)
-                for duration, pitch in zip(durations, pitches)
+                'i 1 0 {} {} "{}"'.format(duration, pitch.frequency, path)
+                for duration, pitch, path in zip(durations, pitches, paths)
             ]
         )
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
-    # TODO(figure out why tearDown doesn't work anymore
-    # when running this test)
-    # def test_generate_p_field_mapping(self):
-    #     pfield_key_to_function_mapping = {
-    #         "p1": lambda event: 100,
-    #         "p2": None,
-    #         "p3": lambda event: event.duration,
-    #         "p6": lambda event: event.duration / 2,
-    #         "p5": lambda event: event.duration * 2,
-    #     }
-    #     pfields = converters.frontends.csound.CsoundScoreConverter._generate_pfield_mapping(
-    #         pfield_key_to_function_mapping
-    #     )
-    #     self.assertEqual(len(pfields), len(pfield_key_to_function_mapping) + 1)
+    def test_generate_p_field_mapping(self):
+        pfield_key_to_function_mapping = {
+            "p1": lambda event: 100,
+            "p2": None,
+            "p3": lambda event: event.duration,
+            "p6": lambda event: event.duration / 2,
+            "p5": lambda event: event.duration * 2,
+        }
+        pfields = self.converter._generate_pfield_mapping(
+            pfield_key_to_function_mapping
+        )
+        self.assertEqual(len(pfields), len(pfield_key_to_function_mapping) + 1)
+
+    def test_ignore_p_field_with_unsupported_type(self):
+        # convert simple event with unspported type (set) for path argument
+        duration = 2
+        event_to_convert = SimpleEventWithPitchAndPathAttribute(
+            parameters.pitches.JustIntonationPitch(), duration, set([1, 2, 3]),
+        )
+        self.converter.convert(event_to_convert)
+        expected_line = "i 1 0 {} {}".format(
+            duration,
+            float(parameters.pitches.constants.DEFAULT_CONCERT_PITCH),
+            event_to_convert.path,
+        )
+        with open(self.converter.path, "r") as f:
+            self.assertEqual(f.read(), expected_line)
 
 
 if __name__ == "__main__":
