@@ -25,7 +25,7 @@ ConvertableEvents = typing.Union[
 
 
 class MidiFileConverter(converters_frontends_abc.FileConverter):
-    """Class for rendering standard midi files from mutwo data.
+    """Class for rendering standard midi files (SMF) from mutwo data.
 
     Mutwo offers a wide range of options how the respective Midi file shall
     be rendered and how mutwo data shall be translated. This is necessary due
@@ -119,6 +119,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         instrument_name: str = None,
         tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent] = None,
     ):
+        # TODO(find a less redundant way of setting default values)
         # set current default values if parameters aren't defined
         if midi_file_type is None:
             midi_file_type = midi.constants.DEFAULT_MIDI_FILE_TYPE
@@ -638,7 +639,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         one MidiTrack) that contains SimpleEvents (where each SimpleEvent
         or NoteLike object represents one midi note). If only one
         SequentialEvent is send, this SequentialEvent will be read as
-        one MidiTrack in a MidiFile. Of only one SimpleEvent get passed,
+        one MidiTrack in a MidiFile. If only one SimpleEvent get passed,
         this SimpleEvent will be interpreted as one MidiEvent (note_on and
         note_off) inside one MidiTrack inside one MidiFile.
         """
