@@ -1,6 +1,7 @@
-"""This module contains several general unsorted utility functions."""
+"""This module contains several generic utility functions."""
 
 import bisect
+import functools
 import importlib
 import itertools
 import numbers
@@ -129,3 +130,18 @@ def uniqify_iterable(
 
     except Exception:
         return tuple(result)
+
+
+def cyclic_permutations(iterable: typing.Iterable[typing.Any]) -> typing.Generator:
+    """Cyclic permutation of an iterable. Return a generator object.
+
+    Adapted function from the reply of Paritosh Singh here
+    https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531
+    """
+
+    def reorder_from_index(index: int, iterable: tuple) -> tuple:
+        return iterable[index:] + iterable[:index]
+
+    return (
+        functools.partial(reorder_from_index, i)(iterable) for i in range(len(iterable))
+    )

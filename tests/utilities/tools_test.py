@@ -97,6 +97,14 @@ class ToolsTest(unittest.TestCase):
         self.assertEqual(type(expected_result0), type(unique0))
         self.assertEqual(type(expected_result2), type(unique2))
 
+    def test_cyclic_permutations(self):
+        tuple_to_permute = (1, 2, 3)
+        expected_permutations = ((1, 2, 3), (2, 3, 1), (3, 1, 2))
+
+        permutation_generator = tools.cyclic_permutations(tuple_to_permute)
+        for expected_permutation in expected_permutations:
+            self.assertEqual(next(permutation_generator), expected_permutation)
+
 
 if __name__ == "__main__":
     unittest.main()
