@@ -3,7 +3,7 @@ import unittest
 from mutwo.generators import gray
 
 
-class Gray_Test(unittest.TestCase):
+class GrayTest(unittest.TestCase):
     def test_reflected_binary_code(self):
         code0 = ((0, 0),)
         code1 = ((0, 0), (0, 1), (1, 1), (1, 0))
