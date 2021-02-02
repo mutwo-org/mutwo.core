@@ -2,6 +2,7 @@ import functools
 import itertools
 import operator
 
+from mutwo.generators import edwards
 from mutwo.utilities import tools
 
 
@@ -23,70 +24,7 @@ class ActivityLevel(object):
     (see https://michael-edwards.org/sc/robodoc/activity-levels_lsp.html#robo23)
     """
 
-    # tuples are copied from
-    # github.com/mdedwards/slippery-chicken/blob/master/activity-levels.lsp
-    __activity_levels = (
-        # 0
-        ((0,), (0,), (0,)),
-        # 1
-        (
-            (1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-            (0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
-            (0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-        ),
-        # 2
-        (
-            (1, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-            (0, 0, 0, 1, 0, 1, 0, 0, 0, 0),
-            (0, 0, 0, 0, 0, 0, 1, 1, 0, 0),
-        ),
-        # 3
-        (
-            (1, 0, 0, 0, 1, 0, 1, 0, 0, 0),
-            (0, 0, 0, 1, 0, 1, 1, 0, 0, 0),
-            (0, 0, 1, 0, 0, 0, 1, 1, 0, 0),
-        ),
-        # 4
-        (
-            (1, 0, 0, 0, 1, 0, 1, 1, 0, 0),
-            (0, 1, 0, 1, 0, 1, 1, 0, 0, 0),
-            (0, 0, 1, 0, 0, 0, 1, 1, 0, 1),
-        ),
-        # 5
-        (
-            (1, 1, 0, 0, 1, 0, 1, 1, 0, 0),
-            (0, 1, 0, 1, 0, 1, 1, 0, 0, 1),
-            (0, 0, 1, 0, 1, 0, 1, 1, 0, 1),
-        ),
-        # 6
-        (
-            (1, 1, 0, 1, 1, 0, 1, 1, 0, 0),
-            (0, 1, 0, 1, 0, 1, 1, 0, 1, 1),
-            (0, 1, 1, 0, 1, 0, 1, 1, 0, 1),
-        ),
-        # 7
-        (
-            (1, 1, 0, 1, 1, 0, 1, 1, 0, 1),
-            (1, 1, 0, 1, 0, 1, 1, 0, 1, 1),
-            (1, 1, 1, 0, 1, 0, 1, 1, 0, 1),
-        ),
-        # 8
-        (
-            (1, 1, 0, 1, 1, 1, 1, 1, 0, 1),
-            (1, 1, 1, 1, 0, 1, 1, 0, 1, 1),
-            (1, 1, 1, 0, 1, 1, 1, 1, 0, 1),
-        ),
-        # 9
-        (
-            (1, 1, 0, 1, 1, 1, 1, 1, 1, 1),
-            (1, 1, 1, 1, 0, 1, 1, 1, 1, 1),
-            (1, 1, 1, 1, 1, 1, 1, 1, 0, 1),
-        ),
-        # 10
-        ((1,), (1,), (1,)),
-    )
-
-    __allowed_range = tuple(range(11))
+    _allowed_range = tuple(range(len(edwards.constants.ACTIVITY_LEVELS)))
 
     def __init__(self, start_at: int = 0) -> None:
         try:
@@ -96,13 +34,13 @@ class ActivityLevel(object):
             msg += "because there are only three different tuples defined per level."
             raise ValueError(msg)
 
-        self.__activity_level_cycles = tuple(
+        self._activity_level_cycles = tuple(
             itertools.cycle(
                 functools.reduce(
                     operator.add, tuple(tools.cyclic_permutations(levels))[start_at]
                 )
             )
-            for levels in self.__activity_levels
+            for levels in edwards.constants.ACTIVITY_LEVELS
         )
 
     def __repr__(self) -> str:
@@ -116,11 +54,11 @@ class ActivityLevel(object):
         """
 
         try:
-            assert level in self.__allowed_range
+            assert level in self._allowed_range
         except AssertionError:
             msg = "level is '{}' but has to be in range '{}'!".format(
-                level, self.__allowed_range
+                level, self._allowed_range
             )
             raise ValueError(msg)
 
-        return bool(next(self.__activity_level_cycles[level]))
+        return bool(next(self._activity_level_cycles[level]))
