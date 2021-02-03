@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.events.abc.Event &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mutwo.events.abc.Event</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">from</span> <span class="nn">mutwo</span> <span class="k">import</span> <span class="n">parameters</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract Event-Object&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">parameters</span><span class="o">.</span><span class="n">durations</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">DurationType</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="Event.destructive_copy"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event.destructive_copy">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">destructive_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Event&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adapted deep copy method that returns a new object for every leaf.</span>
+
+<span class="sd">        It&#39;s called &#39;destructive&#39;, because it forgets potential repetitions of</span>
+<span class="sd">        the same object in compound objects. Instead of reproducing the original</span>
+<span class="sd">        structure of the compound object that shall be copied, every repetition</span>
+<span class="sd">        of the same reference will return a new unique independent object.</span>
+
+<span class="sd">        The following example shall illustrate the difference between copy.deepcopy</span>
+<span class="sd">        and destructive_copy:</span>
+<span class="sd">        &gt;&gt;&gt; import copy</span>
+<span class="sd">        &gt;&gt;&gt; from mutwo.events import basic</span>
+<span class="sd">        &gt;&gt;&gt; my_simple_event_0 = basic.SimpleEvent(2)</span>
+<span class="sd">        &gt;&gt;&gt; my_simple_event_1 = basic.SimpleEvent(3)</span>
+<span class="sd">        &gt;&gt;&gt; my_sequential_event = basic.SequentialEvent(</span>
+<span class="sd">                [my_simple_event_0, my_simple_event_1, my_simple_event_0])</span>
+<span class="sd">        &gt;&gt;&gt; deepcopied_event = copy.deepcopy(my_sequential_event)</span>
+<span class="sd">        &gt;&gt;&gt; destructivecopied_event = my_sequential_event.destructive_copy()</span>
+<span class="sd">        &gt;&gt;&gt; deepcopied_event[0].duration = 10  # setting the duration of the first event</span>
+<span class="sd">        &gt;&gt;&gt; destructivecopied_event[0].duration = 10</span>
+<span class="sd">        &gt;&gt;&gt; # return True because the first and the third objects share the same</span>
+<span class="sd">        &gt;&gt;&gt; # reference (both are the same copy of &#39;my_simple_event_0&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; deepcopied_event[0].duration == deepcopied_event[2].duration</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; # return False because destructive_copy forgets the shared reference</span>
+<span class="sd">        &gt;&gt;&gt; destructivecopied_event[0].duration == destructivecopied_event[2].duration</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="Event.get_parameter"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event.get_parameter">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="Event.set_parameter"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event.set_parameter">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_parameter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">object_or_function</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span>
+            <span class="n">typing</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">parameters</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">parameters</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span>
+            <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="Event.mutate_parameter"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event.mutate_parameter">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">mutate_parameter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span>
+            <span class="n">typing</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">parameters</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span>
+        <span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_assert_correct_start_and_end_values</span><span class="p">(</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">durations</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">DurationType</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">durations</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">DurationType</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method to make sure that start &lt; end.</span>
+
+<span class="sd">        Can be used within the different cut_up methods.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">start</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Invalid values for start and end property (start = &#39;</span><span class="si">{}</span><span class="s2">&#39; and end =&quot;</span>
+                <span class="s2">&quot; &#39;</span><span class="si">{}</span><span class="s2">&#39;)!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; Value for end has to be bigger than value for start.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Event.cut_up"><a class="viewcode-back" href="../../../../mutwo.events.abc.html#mutwo.events.abc.Event.Event.cut_up">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">cut_up</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">durations</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">DurationType</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="n">parameters</span><span class="o">.</span><span class="n">durations</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">DurationType</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Event&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Time-based slicing of the respective event.</span>
+
+<span class="sd">        :param start: number that indicates the point when the</span>
+<span class="sd">            cut up shall start.</span>
+<span class="sd">        :param end: number that indicates the point when the cut</span>
+<span class="sd">            up shall end.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">mutwo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

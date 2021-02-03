@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.converters.symmetrical.LoudnessToAmplitudeConverter &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mutwo.converters.symmetrical.LoudnessToAmplitudeConverter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+
+<span class="kn">import</span> <span class="nn">expenvelope</span>
+
+<span class="kn">import</span> <span class="nn">mutwo_third_party</span>
+<span class="kn">from</span> <span class="nn">mutwo</span> <span class="k">import</span> <span class="n">converters</span>
+
+
+<div class="viewcode-block" id="LoudnessToAmplitudeConverter"><a class="viewcode-back" href="../../../../mutwo.converters.symmetrical.html#mutwo.converters.symmetrical.LoudnessToAmplitudeConverter.LoudnessToAmplitudeConverter">[docs]</a><span class="k">class</span> <span class="nc">LoudnessToAmplitudeConverter</span><span class="p">(</span><span class="n">converters</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Converter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make an approximation of the needed amplitude for a perceived Loudness.</span>
+
+<span class="sd">    The converter works best with pure sine waves.</span>
+<span class="sd">    The formula takes into account the frequency of the output signal and the</span>
+<span class="sd">    frequency response of the loudspeaker. The frequency response is defined</span>
+<span class="sd">    with an expenvelope.Envelope object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># roughly the sound of a mosquito flying 3 m away</span>
+    <span class="c1"># (see https://en.wikipedia.org/wiki/Sound_pressure)</span>
+    <span class="n">_auditory_threshold_at_1khz</span> <span class="o">=</span> <span class="mf">0.00002</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">perceived_loudness_in_sone</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span>
+        <span class="n">loudspeaker_frequency_response</span><span class="p">:</span> <span class="n">expenvelope</span><span class="o">.</span><span class="n">Envelope</span> <span class="o">=</span> <span class="n">expenvelope</span><span class="o">.</span><span class="n">Envelope</span><span class="o">.</span><span class="n">from_points</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">80</span><span class="p">),</span> <span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">interpolation_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">perceived_loudness_in_phon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sone_to_phon</span><span class="p">(</span><span class="n">perceived_loudness_in_sone</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_equal_loudness_contour_interpolation</span> <span class="o">=</span> <span class="n">mutwo_third_party</span><span class="o">.</span><span class="n">pydsm</span><span class="o">.</span><span class="n">pydsm</span><span class="o">.</span><span class="n">iso226</span><span class="o">.</span><span class="n">iso226_spl_itpl</span><span class="p">(</span>
+            <span class="n">perceived_loudness_in_phon</span><span class="p">,</span> <span class="n">interpolation_order</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loudspeaker_frequency_response</span> <span class="o">=</span> <span class="n">loudspeaker_frequency_response</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loudspeaker_frequency_response_maxima</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">loudspeaker_frequency_response</span><span class="o">.</span><span class="n">max_level</span><span class="p">()</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio"><a class="viewcode-back" href="../../../../mutwo.converters.symmetrical.html#mutwo.converters.symmetrical.LoudnessToAmplitudeConverter.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">decibel_to_amplitude_ratio</span><span class="p">(</span>
+        <span class="n">decibel</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span> <span class="n">reference_amplitude</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">reference_amplitude</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">decibel</span> <span class="o">/</span> <span class="mi">20</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="LoudnessToAmplitudeConverter.decibel_to_power_ratio"><a class="viewcode-back" href="../../../../mutwo.converters.symmetrical.html#mutwo.converters.symmetrical.LoudnessToAmplitudeConverter.LoudnessToAmplitudeConverter.decibel_to_power_ratio">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">decibel_to_power_ratio</span><span class="p">(</span><span class="n">decibel</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">decibel</span> <span class="o">/</span> <span class="mi">10</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="LoudnessToAmplitudeConverter.sone_to_phon"><a class="viewcode-back" href="../../../../mutwo.converters.symmetrical.html#mutwo.converters.symmetrical.LoudnessToAmplitudeConverter.LoudnessToAmplitudeConverter.sone_to_phon">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sone_to_phon</span><span class="p">(</span><span class="n">loudness_in_sone</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">:</span>
+        <span class="c1"># formula from http://www.sengpielaudio.com/calculatorSonephon.htm</span>
+        <span class="k">if</span> <span class="n">loudness_in_sone</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">40</span> <span class="o">+</span> <span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">loudness_in_sone</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">40</span> <span class="o">*</span> <span class="p">(</span><span class="n">loudness_in_sone</span> <span class="o">+</span> <span class="mf">0.0005</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.35</span></div>
+
+<div class="viewcode-block" id="LoudnessToAmplitudeConverter.convert"><a class="viewcode-back" href="../../../../mutwo.converters.symmetrical.html#mutwo.converters.symmetrical.LoudnessToAmplitudeConverter.LoudnessToAmplitudeConverter.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frequency</span><span class="p">:</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">:</span>
+        <span class="c1"># (1) calculates necessary sound pressure level depending on the frequency</span>
+        <span class="c1">#     and loudness (to get the same loudness over all frequencies)</span>
+        <span class="n">sound_pressure_level_for_perceived_loudness_based_on_frequency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_equal_loudness_contour_interpolation</span><span class="p">(</span><span class="n">frequency</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># (2) figure out the produced soundpressure of the loudspeaker depending</span>
+        <span class="c1">#     on the frequency</span>
+        <span class="n">produced_soundpressure_for_1_watt_1_meter_depending_on_loudspeaker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loudspeaker_frequency_response</span><span class="o">.</span><span class="n">value_at</span><span class="p">(</span>
+            <span class="n">frequency</span>
+        <span class="p">)</span>
+        <span class="n">difference_to_maxima</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_loudspeaker_frequency_response_maxima</span>
+            <span class="o">-</span> <span class="n">produced_soundpressure_for_1_watt_1_meter_depending_on_loudspeaker</span>
+        <span class="p">)</span>
+        <span class="n">sound_pressure_level_for_pereived_loudness_based_on_speaker</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">sound_pressure_level_for_perceived_loudness_based_on_frequency</span>
+            <span class="o">+</span> <span class="n">difference_to_maxima</span>
+        <span class="p">)</span>
+        <span class="n">amplitude_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decibel_to_amplitude_ratio</span><span class="p">(</span>
+            <span class="n">sound_pressure_level_for_pereived_loudness_based_on_speaker</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_auditory_threshold_at_1khz</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">amplitude_ratio</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">mutwo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

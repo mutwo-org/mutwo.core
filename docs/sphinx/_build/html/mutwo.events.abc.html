@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.events.abc package &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mutwo.events.basic package" href="mutwo.events.basic.html" />
+    <link rel="prev" title="mutwo.events package" href="mutwo.events.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mutwo-events-abc-package">
+<h1>mutwo.events.abc package<a class="headerlink" href="#mutwo-events-abc-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mutwo.events.abc.ComplexEvent">
+<span id="mutwo-events-abc-complexevent-module"></span><h2>mutwo.events.abc.ComplexEvent module<a class="headerlink" href="#module-mutwo.events.abc.ComplexEvent" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.events.abc.ComplexEvent.</code><code class="sig-name descname">ComplexEvent</code><span class="sig-paren">(</span><em class="sig-param">iterable: Iterable[mutwo.events.abc.Event.Event]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mutwo.events.abc.Event.Event" title="mutwo.events.abc.Event.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">mutwo.events.abc.Event.Event</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+<p>Event-Object, which contains other Event-Objects.</p>
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; mutwo.events.abc.ComplexEvent.ComplexEvent<a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a deep copy of the ComplexEvent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.destructive_copy">
+<code class="sig-name descname">destructive_copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; mutwo.events.abc.ComplexEvent.ComplexEvent<a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent.destructive_copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.destructive_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapted deep copy method that returns a new object for every leaf.</p>
+<p>It’s called ‘destructive’, because it forgets potential repetitions of
+the same object in compound objects. Instead of reproducing the original
+structure of the compound object that shall be copied, every repetition
+of the same reference will return a new unique independent object.</p>
+<p>The following example shall illustrate the difference between copy.deepcopy
+and destructive_copy:
+&gt;&gt;&gt; import copy
+&gt;&gt;&gt; from mutwo.events import basic
+&gt;&gt;&gt; my_simple_event_0 = basic.SimpleEvent(2)
+&gt;&gt;&gt; my_simple_event_1 = basic.SimpleEvent(3)
+&gt;&gt;&gt; my_sequential_event = basic.SequentialEvent(</p>
+<blockquote>
+<div><p>[my_simple_event_0, my_simple_event_1, my_simple_event_0])</p>
+</div></blockquote>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">my_sequential_event</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span> <span class="o">=</span> <span class="n">my_sequential_event</span><span class="o">.</span><span class="n">destructive_copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># setting the duration of the first event</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># return True because the first and the third objects share the same</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># reference (both are the same copy of &#39;my_simple_event_0&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">==</span> <span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># return False because destructive_copy forgets the shared reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">==</span> <span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.duration">
+<em class="property">abstract property </em><code class="sig-name descname">duration</code><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.duration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.get_parameter">
+<code class="sig-name descname">get_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str</em><span class="sig-paren">)</span> &#x2192; Tuple[Any]<a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent.get_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.get_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return tuple filled with the value of each event for the asked parameter.</p>
+<p>If an event doesn’t posses the asked attribute ‘None’ will be added.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.mutate_parameter">
+<code class="sig-name descname">mutate_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str, function: Union[Callable[[mutwo.parameters.abc.Parameter.Parameter], None], Any]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent.mutate_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.mutate_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.ComplexEvent.ComplexEvent.set_parameter">
+<code class="sig-name descname">set_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str, object_or_function: Union[Callable[[mutwo.parameters.abc.Parameter.Parameter], mutwo.parameters.abc.Parameter.Parameter], Any]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/events/abc/ComplexEvent.html#ComplexEvent.set_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.ComplexEvent.ComplexEvent.set_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets parameter to new value for all children events.</p>
+<p>For setting the parameter either a new value can be passed directly or a
+function can be passed. The function gets as an argument the previous value
+that has had been assigned to the respective object and has to return the
+new value.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.events.abc.Event">
+<span id="mutwo-events-abc-event-module"></span><h2>mutwo.events.abc.Event module<a class="headerlink" href="#module-mutwo.events.abc.Event" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.events.abc.Event.Event">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.events.abc.Event.</code><code class="sig-name descname">Event</code><a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract Event-Object</p>
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.cut_up">
+<em class="property">abstract </em><code class="sig-name descname">cut_up</code><span class="sig-paren">(</span><em class="sig-param">start: Union[numbers.Number, mutwo.parameters.durations.abc.Duration.Duration], end: Union[numbers.Number, mutwo.parameters.durations.abc.Duration.Duration]</em><span class="sig-paren">)</span> &#x2192; Union[None, mutwo.events.abc.Event.Event]<a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event.cut_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event.cut_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time-based slicing of the respective event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – number that indicates the point when the
+cut up shall start.</p></li>
+<li><p><strong>end</strong> – number that indicates the point when the cut
+up shall end.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.destructive_copy">
+<em class="property">abstract </em><code class="sig-name descname">destructive_copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; mutwo.events.abc.Event.Event<a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event.destructive_copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event.destructive_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapted deep copy method that returns a new object for every leaf.</p>
+<p>It’s called ‘destructive’, because it forgets potential repetitions of
+the same object in compound objects. Instead of reproducing the original
+structure of the compound object that shall be copied, every repetition
+of the same reference will return a new unique independent object.</p>
+<p>The following example shall illustrate the difference between copy.deepcopy
+and destructive_copy:
+&gt;&gt;&gt; import copy
+&gt;&gt;&gt; from mutwo.events import basic
+&gt;&gt;&gt; my_simple_event_0 = basic.SimpleEvent(2)
+&gt;&gt;&gt; my_simple_event_1 = basic.SimpleEvent(3)
+&gt;&gt;&gt; my_sequential_event = basic.SequentialEvent(</p>
+<blockquote>
+<div><p>[my_simple_event_0, my_simple_event_1, my_simple_event_0])</p>
+</div></blockquote>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">my_sequential_event</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span> <span class="o">=</span> <span class="n">my_sequential_event</span><span class="o">.</span><span class="n">destructive_copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># setting the duration of the first event</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># return True because the first and the third objects share the same</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># reference (both are the same copy of &#39;my_simple_event_0&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">==</span> <span class="n">deepcopied_event</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># return False because destructive_copy forgets the shared reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span> <span class="o">==</span> <span class="n">destructivecopied_event</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.duration">
+<em class="property">abstract property </em><code class="sig-name descname">duration</code><a class="headerlink" href="#mutwo.events.abc.Event.Event.duration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.get_parameter">
+<em class="property">abstract </em><code class="sig-name descname">get_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str</em><span class="sig-paren">)</span> &#x2192; Union[tuple, Any]<a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event.get_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event.get_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.mutate_parameter">
+<em class="property">abstract </em><code class="sig-name descname">mutate_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str, function: Union[Callable[[mutwo.parameters.abc.Parameter.Parameter], None], Any]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event.mutate_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event.mutate_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.events.abc.Event.Event.set_parameter">
+<em class="property">abstract </em><code class="sig-name descname">set_parameter</code><span class="sig-paren">(</span><em class="sig-param">parameter_name: str, object_or_function: Union[Callable[[mutwo.parameters.abc.Parameter.Parameter], mutwo.parameters.abc.Parameter.Parameter], Any]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/events/abc/Event.html#Event.set_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.events.abc.Event.Event.set_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.events.abc">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mutwo.events.abc" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">mutwo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mutwo.html">mutwo package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mutwo.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="mutwo.converters.html">mutwo.converters package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="mutwo.events.html">mutwo.events package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.generators.html">mutwo.generators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.parameters.html">mutwo.parameters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.utilities.html">mutwo.utilities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mutwo.html#module-mutwo">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">mutwo</a><ul>
+  <li><a href="mutwo.html">mutwo package</a><ul>
+  <li><a href="mutwo.events.html">mutwo.events package</a><ul>
+      <li>Previous: <a href="mutwo.events.html" title="previous chapter">mutwo.events package</a></li>
+      <li>Next: <a href="mutwo.events.basic.html" title="next chapter">mutwo.events.basic package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mutwo.events.abc.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

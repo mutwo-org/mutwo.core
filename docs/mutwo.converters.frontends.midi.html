@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.converters.frontends.midi package &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mutwo.converters.frontends.midi.constants package" href="mutwo.converters.frontends.midi.constants.html" />
+    <link rel="prev" title="mutwo.converters.frontends.csound package" href="mutwo.converters.frontends.csound.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mutwo-converters-frontends-midi-package">
+<h1>mutwo.converters.frontends.midi package<a class="headerlink" href="#mutwo-converters-frontends-midi-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html">mutwo.converters.frontends.midi.constants package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.ALLOWED_MIDI_CHANNELS">mutwo.converters.frontends.midi.constants.ALLOWED_MIDI_CHANNELS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_AVAILABLE_MIDI_CHANNELS">mutwo.converters.frontends.midi.constants.DEFAULT_AVAILABLE_MIDI_CHANNELS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_MAXIMUM_PITCH_BEND_DEVIATION_IN_CENTS">mutwo.converters.frontends.midi.constants.DEFAULT_MAXIMUM_PITCH_BEND_DEVIATION_IN_CENTS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_MIDI_FILE_TYPE">mutwo.converters.frontends.midi.constants.DEFAULT_MIDI_FILE_TYPE module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_MIDI_INSTRUMENT_NAME">mutwo.converters.frontends.midi.constants.DEFAULT_MIDI_INSTRUMENT_NAME module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_N_MIDI_CHANNELS_PER_TRACK">mutwo.converters.frontends.midi.constants.DEFAULT_N_MIDI_CHANNELS_PER_TRACK module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_TEMPO_EVENTS">mutwo.converters.frontends.midi.constants.DEFAULT_TEMPO_EVENTS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.DEFAULT_TICKS_PER_BEAT">mutwo.converters.frontends.midi.constants.DEFAULT_TICKS_PER_BEAT module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.MAXIMUM_MICROSECONDS_PER_BEAT">mutwo.converters.frontends.midi.constants.MAXIMUM_MICROSECONDS_PER_BEAT module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.MAXIMUM_PITCH_BEND">mutwo.converters.frontends.midi.constants.MAXIMUM_PITCH_BEND module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.MAXIMUM_VELOCITY">mutwo.converters.frontends.midi.constants.MAXIMUM_VELOCITY module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.MIDI_TEMPO_FACTOR">mutwo.converters.frontends.midi.constants.MIDI_TEMPO_FACTOR module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.MINIMUM_VELOCITY">mutwo.converters.frontends.midi.constants.MINIMUM_VELOCITY module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants.NEUTRAL_PITCH_BEND">mutwo.converters.frontends.midi.constants.NEUTRAL_PITCH_BEND module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.midi.constants.html#module-mutwo.converters.frontends.midi.constants">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mutwo.converters.frontends.midi.MidiFileConverter">
+<span id="mutwo-converters-frontends-midi-midifileconverter-module"></span><h2>mutwo.converters.frontends.midi.MidiFileConverter module<a class="headerlink" href="#module-mutwo.converters.frontends.midi.MidiFileConverter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.converters.frontends.midi.MidiFileConverter.MidiFileConverter">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.converters.frontends.midi.MidiFileConverter.</code><code class="sig-name descname">MidiFileConverter</code><span class="sig-paren">(</span><em class="sig-param">path: str, simple_event_to_pitches: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Tuple[mutwo.parameters.pitches.abc.Pitch.Pitch]] = &lt;function MidiFileConverter.&lt;lambda&gt;&gt;, simple_event_to_volume: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], numbers.Number] = &lt;function MidiFileConverter.&lt;lambda&gt;&gt;, simple_event_to_control_messages: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Tuple[mido.messages.messages.Message]] = &lt;function MidiFileConverter.&lt;lambda&gt;&gt;, midi_file_type: int = None, available_midi_channels: Iterable[int] = None, distribute_midi_channels: bool = False, n_midi_channels_per_track: int = None, maximum_pitch_bend_deviation: NewType.&lt;locals&gt;.new_type = None, ticks_per_beat: int = None, instrument_name: str = None, tempo_events: mutwo.events.basic.SequentialEvent.SequentialEvent[mutwo.events.basic.EnvelopeEvent.EnvelopeEvent][mutwo.events.basic.EnvelopeEvent.EnvelopeEvent] = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mutwo/converters/frontends/midi/MidiFileConverter.html#MidiFileConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.midi.MidiFileConverter.MidiFileConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mutwo.converters.frontends.abc.html#mutwo.converters.frontends.abc.FileConverter.FileConverter" title="mutwo.converters.frontends.abc.FileConverter.FileConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">mutwo.converters.frontends.abc.FileConverter.FileConverter</span></code></a></p>
+<p>Class for rendering standard midi files (SMF) from mutwo data.</p>
+<p>Mutwo offers a wide range of options how the respective Midi file shall
+be rendered and how mutwo data shall be translated. This is necessary due
+to the limited and not always unambiguous nature of musical encodings in
+midi files. In this way the user can tweak the conversion routine to her
+or his individual needs.</p>
+<dl class="simple">
+<dt>Disclaimer:</dt><dd><p>The current implementation doesn’t support glissandi yet (only static pitches),
+time-signatures (the written time signature is always 4/4 for now) and
+dynamically changing tempo (ritardando or accelerando).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – where to write the MidiFile. The typical file type extension ‘.mid’ is
+recommended, but not necessary.</p></li>
+<li><p><strong>simple_event_to_pitches</strong> – Function to extract from a SimpleEvent a tuple
+that contains pitch objects. By default it asks the Event for its
+‘pitch_or_pitches’ attribute (because by default mutwo.events.music.NoteLike
+objects are expected). When using different Event classes than NoteLike with
+a different name for their pitch property this argument should be overridden.
+If the function call raises an AttributeError (e.g. if no pitch can be
+extracted) mutwo will interpret the event as a rest.</p></li>
+<li><p><strong>simple_event_to_volume</strong> – Function to extract the volume from a SimpleEvent
+in the purpose of generating midi notes. The volume should be a number from
+0 to 1 (where 0 represents velocity 0 and 1 represents velocity 127).
+Higher and lower values will be clipped. By default it asks the Event for its
+‘volume’ attribute (because by default mutwo.events.music.NoteLike objects are
+expected). When using different Event classes than NoteLike with a different
+name for their volume property this argument should be overridden. If the
+function call raises an AttributeError (e.g. if no volume can be extracted)
+mutwo will interpret the event as a rest.</p></li>
+<li><p><strong>simple_event_to_control_messages</strong> – Function to generate midi control messages
+from a simple event. By default no control messages are generated. If the
+function call raises an AttributeError (e.g. if an expected control value isn’t
+available) mutwo will interpret the event as a rest.</p></li>
+<li><p><strong>midi_file_type</strong> – Can either be 0 (for one-track midi files) or 1 (for
+synchronous multi-track midi files). Mutwo doesn’t offer support for generating
+type 2 midi files (midi files with asynchronous tracks).</p></li>
+<li><p><strong>available_midi_channels</strong> – tuple containing integer where each integer
+represents the number of the used midi channel. Integer can range from 0 to 15.
+Higher numbers of available_midi_channels (like all 16) are recommended when
+rendering microtonal music. It shall be remarked that midi-channel 9 (or midi
+channel 10 when starting to count from 1) is often ignored by several software
+synthesizer, because this channel is reserved for percussion instruments.</p></li>
+<li><p><strong>distribute_midi_channels</strong> – This parameter is only relevant if more than one
+SequentialEvent is passed to the convert method. If set to True each
+SequentialEvent only makes use of exactly n_midi_channel (see next parameter).
+If set to False each converted SequentialEvent is allowed to make use of all
+available channels. If set to True and the amount of necessary MidiTracks is
+higher than the amount of available channels, mutwo will silently cycle through
+the list of available midi channel.</p></li>
+<li><p><strong>n_midi_channels_per_track</strong> – This parameter is only relevant for
+distribute_midi_channels == True. It sets how many midi channels are assigned
+to one SequentialEvent (default to 1). If microtonal chords shall be played by
+one SequentialEvent (via pitch bending messages) a higher number than 1 is
+recommended.</p></li>
+<li><p><strong>maximum_pitch_bend_deviation</strong> – sets the maximum pitch bending range in cents.
+This value depends on the particular used software synthesizer and its settings,
+because it is up to the respective synthesizer how to interpret the pitch
+bending messages. By default mutwo sets the value to 200 cents which
+seems to be the most common interpretation among different manufacturers.</p></li>
+<li><p><strong>ticks_per_beat</strong> – Sets the timing precision of the midi file. From the mido
+documentation: “Typical values range from 96 to 480 but some use even more
+ticks per beat”.</p></li>
+<li><p><strong>instrument_name</strong> – Sets the midi instrument of all channels.</p></li>
+<li><p><strong>tempo_events</strong> – All Midi files should specify their tempo. The default
+value of mutwo is 120 BPM (this is also the value that is assumed by any
+midi-file-reading-software if no tempo has been specified). Tempo changes
+are supported (and will be written to the resulting midi file).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="mutwo.converters.frontends.midi.MidiFileConverter.MidiFileConverter.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">event_to_convert: Union[mutwo.events.music.NoteLike.NoteLike, mutwo.events.basic.SequentialEvent.SequentialEvent[mutwo.events.music.NoteLike.NoteLike][mutwo.events.music.NoteLike.NoteLike], mutwo.events.basic.SimultaneousEvent.SimultaneousEvent[mutwo.events.basic.SequentialEvent.SequentialEvent[mutwo.events.music.NoteLike.NoteLike]][mutwo.events.basic.SequentialEvent.SequentialEvent[mutwo.events.music.NoteLike.NoteLike][mutwo.events.music.NoteLike.NoteLike]]]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/converters/frontends/midi/MidiFileConverter.html#MidiFileConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.midi.MidiFileConverter.MidiFileConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render a Midi file to the converters path attribute from the given event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event_to_convert</strong> – The given event that shall be translated
+to a Midi file.</p>
+</dd>
+</dl>
+<p>Disclaimer: when passing nested structures, make sure that the
+nested object matches the expected type. Unlike other mutwo
+converter classes (like TempoConverter) MidiFileConverter can’t
+convert infinitely nested structures (due to the particular
+way how Midi files are defined). The deepest potential structure
+is a SimultaneousEvent (representing the complete MidiFile) that
+contains SequentialEvents (where each SequentialEvent represents
+one MidiTrack) that contains SimpleEvents (where each SimpleEvent
+or NoteLike object represents one midi note). If only one
+SequentialEvent is send, this SequentialEvent will be read as
+one MidiTrack in a MidiFile. If only one SimpleEvent get passed,
+this SimpleEvent will be interpreted as one MidiEvent (note_on and
+note_off) inside one MidiTrack inside one MidiFile.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.converters.frontends.midi">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mutwo.converters.frontends.midi" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">mutwo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mutwo.html">mutwo package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mutwo.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mutwo.converters.html">mutwo.converters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.events.html">mutwo.events package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.generators.html">mutwo.generators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.parameters.html">mutwo.parameters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.utilities.html">mutwo.utilities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mutwo.html#module-mutwo">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">mutwo</a><ul>
+  <li><a href="mutwo.html">mutwo package</a><ul>
+  <li><a href="mutwo.converters.html">mutwo.converters package</a><ul>
+  <li><a href="mutwo.converters.frontends.html">mutwo.converters.frontends package</a><ul>
+      <li>Previous: <a href="mutwo.converters.frontends.csound.html" title="previous chapter">mutwo.converters.frontends.csound package</a></li>
+      <li>Next: <a href="mutwo.converters.frontends.midi.constants.html" title="next chapter">mutwo.converters.frontends.midi.constants package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mutwo.converters.frontends.midi.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

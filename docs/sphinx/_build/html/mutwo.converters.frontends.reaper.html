@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.converters.frontends.reaper package &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mutwo.converters.frontends.reaper.constants package" href="mutwo.converters.frontends.reaper.constants.html" />
+    <link rel="prev" title="mutwo.converters.frontends.pyo package" href="mutwo.converters.frontends.pyo.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mutwo-converters-frontends-reaper-package">
+<h1>mutwo.converters.frontends.reaper package<a class="headerlink" href="#mutwo-converters-frontends-reaper-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mutwo.converters.frontends.reaper.constants.html">mutwo.converters.frontends.reaper.constants package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.reaper.constants.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.reaper.constants.html#module-mutwo.converters.frontends.reaper.constants.VST_INFOS">mutwo.converters.frontends.reaper.constants.VST_INFOS module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.reaper.constants.html#module-mutwo.converters.frontends.reaper.constants.VstInfo">mutwo.converters.frontends.reaper.constants.VstInfo module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutwo.converters.frontends.reaper.constants.html#module-mutwo.converters.frontends.reaper.constants">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mutwo.converters.frontends.reaper.ReaperFileConverter">
+<span id="mutwo-converters-frontends-reaper-reaperfileconverter-module"></span><h2>mutwo.converters.frontends.reaper.ReaperFileConverter module<a class="headerlink" href="#module-mutwo.converters.frontends.reaper.ReaperFileConverter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.converters.frontends.reaper.ReaperFileConverter.</code><code class="sig-name descname">ReaperFileConverter</code><a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mutwo.converters.frontends.abc.html#mutwo.converters.frontends.abc.FileConverter.FileConverter" title="mutwo.converters.frontends.abc.FileConverter.FileConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">mutwo.converters.frontends.abc.FileConverter.FileConverter</span></code></a></p>
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_fx">
+<em class="property">static </em><code class="sig-name descname">add_fx</code><span class="sig-paren">(</span><em class="sig-param">track: rpp.element.Element</em>, <em class="sig-param">fx_info: mutwo.converters.frontends.reaper.constants.VstInfo.VstInfo</em>, <em class="sig-param">name: str = ''</em><span class="sig-paren">)</span> &#x2192; rpp.element.Element<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.add_fx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_fx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_parameter_envelope">
+<em class="property">static </em><code class="sig-name descname">add_parameter_envelope</code><span class="sig-paren">(</span><em class="sig-param">track: rpp.element.Element</em>, <em class="sig-param">fx: rpp.element.Element</em>, <em class="sig-param">parameter_name: str</em>, <em class="sig-param">envelope_events: mutwo.events.basic.SequentialEvent.SequentialEvent</em><span class="sig-paren">)</span> &#x2192; rpp.element.Element<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.add_parameter_envelope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_parameter_envelope" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_track">
+<code class="sig-name descname">add_track</code><span class="sig-paren">(</span><em class="sig-param">name: str = ''</em><span class="sig-paren">)</span> &#x2192; rpp.element.Element<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.add_track"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.add_track" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">event: mutwo.events.abc.Event.Event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.create_reaper_project">
+<em class="property">static </em><code class="sig-name descname">create_reaper_project</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; rpp.element.Element<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.create_reaper_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.create_reaper_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.get_all_fx">
+<em class="property">static </em><code class="sig-name descname">get_all_fx</code><span class="sig-paren">(</span><em class="sig-param">track</em><span class="sig-paren">)</span> &#x2192; List[rpp.element.Element]<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.get_all_fx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.get_all_fx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.get_track">
+<code class="sig-name descname">get_track</code><span class="sig-paren">(</span><em class="sig-param">name: str</em><span class="sig-paren">)</span> &#x2192; rpp.element.Element<a class="reference internal" href="_modules/mutwo/converters/frontends/reaper/ReaperFileConverter.html#ReaperFileConverter.get_track"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.reaper.ReaperFileConverter.ReaperFileConverter.get_track" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.converters.frontends.reaper">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mutwo.converters.frontends.reaper" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">mutwo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mutwo.html">mutwo package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mutwo.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mutwo.converters.html">mutwo.converters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.events.html">mutwo.events package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.generators.html">mutwo.generators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.parameters.html">mutwo.parameters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.utilities.html">mutwo.utilities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mutwo.html#module-mutwo">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">mutwo</a><ul>
+  <li><a href="mutwo.html">mutwo package</a><ul>
+  <li><a href="mutwo.converters.html">mutwo.converters package</a><ul>
+  <li><a href="mutwo.converters.frontends.html">mutwo.converters.frontends package</a><ul>
+      <li>Previous: <a href="mutwo.converters.frontends.pyo.html" title="previous chapter">mutwo.converters.frontends.pyo package</a></li>
+      <li>Next: <a href="mutwo.converters.frontends.reaper.constants.html" title="next chapter">mutwo.converters.frontends.reaper.constants package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mutwo.converters.frontends.reaper.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>mutwo.converters.frontends.csound package &#8212; mutwo 2021 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mutwo.converters.frontends.midi package" href="mutwo.converters.frontends.midi.html" />
+    <link rel="prev" title="mutwo.converters.frontends.abjad package" href="mutwo.converters.frontends.abjad.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mutwo-converters-frontends-csound-package">
+<h1>mutwo.converters.frontends.csound package<a class="headerlink" href="#mutwo-converters-frontends-csound-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mutwo.converters.frontends.csound.CsoundConverter">
+<span id="mutwo-converters-frontends-csound-csoundconverter-module"></span><h2>mutwo.converters.frontends.csound.CsoundConverter module<a class="headerlink" href="#module-mutwo.converters.frontends.csound.CsoundConverter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.converters.frontends.csound.CsoundConverter.CsoundConverter">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.converters.frontends.csound.CsoundConverter.</code><code class="sig-name descname">CsoundConverter</code><span class="sig-paren">(</span><em class="sig-param">path: str</em>, <em class="sig-param">csound_orchestra_path: str</em>, <em class="sig-param">csound_score_converter: mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter</em>, <em class="sig-param">*flag: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mutwo/converters/frontends/csound/CsoundConverter.html#CsoundConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.csound.CsoundConverter.CsoundConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mutwo.converters.frontends.abc.html#mutwo.converters.frontends.abc.FileConverter.FileConverter" title="mutwo.converters.frontends.abc.FileConverter.FileConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">mutwo.converters.frontends.abc.FileConverter.FileConverter</span></code></a></p>
+<p>Simple converter that helps generating audio files with Csound.</p>
+<dl class="method">
+<dt id="mutwo.converters.frontends.csound.CsoundConverter.CsoundConverter.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">event_to_convert: Union[mutwo.events.basic.SimpleEvent.SimpleEvent, mutwo.events.basic.SequentialEvent.SequentialEvent, mutwo.events.basic.SimultaneousEvent.SimultaneousEvent]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/converters/frontends/csound/CsoundConverter.html#CsoundConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.csound.CsoundConverter.CsoundConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.converters.frontends.csound.CsoundScoreConverter">
+<span id="mutwo-converters-frontends-csound-csoundscoreconverter-module"></span><h2>mutwo.converters.frontends.csound.CsoundScoreConverter module<a class="headerlink" href="#module-mutwo.converters.frontends.csound.CsoundScoreConverter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter">
+<em class="property">class </em><code class="sig-prename descclassname">mutwo.converters.frontends.csound.CsoundScoreConverter.</code><code class="sig-name descname">CsoundScoreConverter</code><span class="sig-paren">(</span><em class="sig-param">path: str, p1: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Union[numbers.Number, str]] = &lt;function CsoundScoreConverter.&lt;lambda&gt;&gt;, p2: Optional[Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Union[numbers.Number, str]]] = None, p3: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Union[numbers.Number, str]] = &lt;function CsoundScoreConverter.&lt;lambda&gt;&gt;, **pfield: Callable[[mutwo.events.basic.SimpleEvent.SimpleEvent], Union[numbers.Number, str]]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mutwo/converters/frontends/csound/CsoundScoreConverter.html#CsoundScoreConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mutwo.converters.frontends.abc.html#mutwo.converters.frontends.abc.FileConverter.FileConverter" title="mutwo.converters.frontends.abc.FileConverter.FileConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">mutwo.converters.frontends.abc.FileConverter.FileConverter</span></code></a></p>
+<p>Class to convert mutwo events to a Csound score file.</p>
+<p>This class helps generating score files for the “domain-specific computer
+programming language for audio programming” Csound (see <a class="reference external" href="http://www.csounds.com/">http://www.csounds.com/</a>).</p>
+<p>CsoundScoreConverter extracts data from mutwo Events and assign it to
+specific p-fields. The mapping of Event attributes to p-field values has
+to be defined by the user via keyword arguments during class initialization.
+By default mutwo already maps the following p-fields to the following values:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>p1 (instrument name) to 1</p></li>
+<li><p>p2 (start time) to the absolute start time of the event</p></li>
+<li><p>p3 (duration) to the duration attribute of the event</p></li>
+</ul>
+</div></blockquote>
+<p>If p2 shall be assigned to the absolute entry delay of the event,
+it has to be set to None.</p>
+<p>The CsoundScoreConverter ignores any p-field that returns
+any unsupported p-field type (anything else than a string
+or a number). If the returned type is a string, CsoundScoreConverter
+automatically adds quotations marks around the string in the score file.</p>
+<p>All p fields can be overwritten in the following manner:
+&gt;&gt;&gt; my_converter = CsoundScoreConverter(
+&gt;&gt;&gt;     path=”my_csound_score.sco”,
+&gt;&gt;&gt;     p1=lambda event: 2,  # sets instrument name to 2
+&gt;&gt;&gt;     p4=lambda event: event.pitch.frequency,
+&gt;&gt;&gt;     p5=lambda event: event.volume
+&gt;&gt;&gt; )</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">param path</dt>
+<dd class="field-odd"><p>The path of the csound score file that shall be generated.</p>
+</dd>
+<dt class="field-even">param <a href="#id1"><span class="problematic" id="id2">**</span></a>pfield</dt>
+<dd class="field-even"><p>p-field / p-field-extraction-function pairs.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="method">
+<dt id="mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">event_to_convert: Union[mutwo.events.basic.SimpleEvent.SimpleEvent, mutwo.events.basic.SequentialEvent.SequentialEvent, mutwo.events.basic.SimultaneousEvent.SimultaneousEvent]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/mutwo/converters/frontends/csound/CsoundScoreConverter.html#CsoundScoreConverter.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter.convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mutwo.converters.frontends.csound">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mutwo.converters.frontends.csound" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">mutwo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">mutwo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mutwo.html">mutwo package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mutwo.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mutwo.converters.html">mutwo.converters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.events.html">mutwo.events package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.generators.html">mutwo.generators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.parameters.html">mutwo.parameters package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mutwo.utilities.html">mutwo.utilities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mutwo.html#module-mutwo">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">mutwo</a><ul>
+  <li><a href="mutwo.html">mutwo package</a><ul>
+  <li><a href="mutwo.converters.html">mutwo.converters package</a><ul>
+  <li><a href="mutwo.converters.frontends.html">mutwo.converters.frontends package</a><ul>
+      <li>Previous: <a href="mutwo.converters.frontends.abjad.html" title="previous chapter">mutwo.converters.frontends.abjad package</a></li>
+      <li>Next: <a href="mutwo.converters.frontends.midi.html" title="next chapter">mutwo.converters.frontends.midi package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mutwo.converters.frontends.csound.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
