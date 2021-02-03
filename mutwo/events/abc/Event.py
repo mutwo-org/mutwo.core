@@ -23,12 +23,12 @@ class Event(abc.ABC):
 
         The following example shall illustrate the difference between copy.deepcopy
         and destructive_copy:
+
         >>> import copy
         >>> from mutwo.events import basic
         >>> my_simple_event_0 = basic.SimpleEvent(2)
         >>> my_simple_event_1 = basic.SimpleEvent(3)
-        >>> my_sequential_event = basic.SequentialEvent(
-                [my_simple_event_0, my_simple_event_1, my_simple_event_0])
+        >>> my_sequential_event = basic.SequentialEvent([my_simple_event_0, my_simple_event_1, my_simple_event_0])
         >>> deepcopied_event = copy.deepcopy(my_sequential_event)
         >>> destructivecopied_event = my_sequential_event.destructive_copy()
         >>> deepcopied_event[0].duration = 10  # setting the duration of the first event
@@ -41,6 +41,7 @@ class Event(abc.ABC):
         >>> destructivecopied_event[0].duration == destructivecopied_event[2].duration
         False
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod

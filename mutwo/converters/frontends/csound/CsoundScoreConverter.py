@@ -20,6 +20,9 @@ ConvertableEvent = typing.Union[
 class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     """Class to convert mutwo events to a Csound score file.
 
+        :param path: The path of the csound score file that shall be generated.
+        :param pfield: p-field / p-field-extraction-function pairs.
+
     This class helps generating score files for the "domain-specific computer
     programming language for audio programming" Csound (see http://www.csounds.com/).
 
@@ -27,9 +30,9 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     specific p-fields. The mapping of Event attributes to p-field values has
     to be defined by the user via keyword arguments during class initialization.
     By default mutwo already maps the following p-fields to the following values:
-        - p1 (instrument name) to 1
-        - p2 (start time) to the absolute start time of the event
-        - p3 (duration) to the duration attribute of the event
+    - p1 (instrument name) to 1
+    - p2 (start time) to the absolute start time of the event
+    - p3 (duration) to the duration attribute of the event
 
     If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
@@ -40,15 +43,8 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     automatically adds quotations marks around the string in the score file.
 
     All p fields can be overwritten in the following manner:
-    >>> my_converter = CsoundScoreConverter(
-    >>>     path="my_csound_score.sco",
-    >>>     p1=lambda event: 2,  # sets instrument name to 2
-    >>>     p4=lambda event: event.pitch.frequency,
-    >>>     p5=lambda event: event.volume
-    >>> )
 
-        :param path: The path of the csound score file that shall be generated.
-        :param **pfield: p-field / p-field-extraction-function pairs.
+    >>> my_converter = CsoundScoreConverter(path="my_csound_score.sco", p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)
     """
 
     def __init__(
