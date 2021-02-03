@@ -18,13 +18,15 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         return sum(event.duration for event in self)
 
     @property
-    def absolute_times(self) -> tuple:
+    def absolute_times(self) -> typing.Tuple[numbers.Number]:
         """Return absolute point in time for each event."""
         durations = (event.duration for event in self)
         return tuple(tools.accumulate_from_zero(durations))[:-1]
 
     @property
-    def start_and_end_time_per_event(self) -> tuple:
+    def start_and_end_time_per_event(
+        self,
+    ) -> typing.Tuple[typing.Tuple[numbers.Number]]:
         """Return start and end time  for each event."""
         durations = (event.duration for event in self)
         absolute_times = tuple(tools.accumulate_from_zero(durations))

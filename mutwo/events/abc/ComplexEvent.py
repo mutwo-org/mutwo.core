@@ -40,7 +40,7 @@ class ComplexEvent(events_abc.Event, list):
     def destructive_copy(self) -> "ComplexEvent":
         return type(self)([event.destructive_copy() for event in self])
 
-    def get_parameter(self, parameter_name: str) -> tuple:
+    def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any]:
         """Return tuple filled with the value of each event for the asked parameter.
 
         If an event doesn't posses the asked attribute 'None' will be added.
