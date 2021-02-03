@@ -30,7 +30,7 @@ def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int]]:
         one rhythm (both rhythms are complementary to each other). The rhythms are
         encoded in absolute time values.
 
-    The paradiddle algorithm has been descriped by Godfried T. Toussaint
+    The paradiddle algorithm has been described by Godfried T. Toussaint
     in his paper 'Generating “Good” Musical Rhythms Algorithmically'.
     """
 
@@ -71,7 +71,7 @@ def alternating_hands(
         one rhythm (both rhythms are complementary to each other). The rhythms are
         encoded in absolute time values.
 
-    The alternating hands algorithm has been descriped by Godfried T. Toussaint
+    The alternating hands algorithm has been described by Godfried T. Toussaint
     in his paper 'Generating “Good” Musical Rhythms Algorithmically'.
     """
 
