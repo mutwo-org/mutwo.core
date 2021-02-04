@@ -33,4 +33,4 @@ pip3 install .[all]
 
 ### Documentation
 
-An experimental API documentation can be found [here](https://mutwo-org.github.io/mutwo/).
+An experimental API documentation can be found [here](https://mutwo.readthedocs.io/en/latest/).
