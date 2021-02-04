@@ -5,24 +5,32 @@
   <head>
     <meta charset="utf-8" />
     <title>mutwo.converters.frontends.csound.CsoundScoreConverter &#8212; mutwo 2021 documentation</title>
-    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css" />
+    
     <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../_static/jquery.js"></script>
     <script src="../../../../../_static/underscore.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="../../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../../search.html" />
-   
-  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">mutwo 2021 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -52,6 +60,9 @@
 <div class="viewcode-block" id="CsoundScoreConverter"><a class="viewcode-back" href="../../../../../mutwo.converters.frontends.csound.html#mutwo.converters.frontends.csound.CsoundScoreConverter.CsoundScoreConverter">[docs]</a><span class="k">class</span> <span class="nc">CsoundScoreConverter</span><span class="p">(</span><span class="n">converters_frontends_abc</span><span class="o">.</span><span class="n">FileConverter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to convert mutwo events to a Csound score file.</span>
 
+<span class="sd">        :param path: The path of the csound score file that shall be generated.</span>
+<span class="sd">        :param pfield: p-field / p-field-extraction-function pairs.</span>
+
 <span class="sd">    This class helps generating score files for the &quot;domain-specific computer</span>
 <span class="sd">    programming language for audio programming&quot; Csound (see http://www.csounds.com/).</span>
 
@@ -59,9 +70,9 @@
 <span class="sd">    specific p-fields. The mapping of Event attributes to p-field values has</span>
 <span class="sd">    to be defined by the user via keyword arguments during class initialization.</span>
 <span class="sd">    By default mutwo already maps the following p-fields to the following values:</span>
-<span class="sd">        - p1 (instrument name) to 1</span>
-<span class="sd">        - p2 (start time) to the absolute start time of the event</span>
-<span class="sd">        - p3 (duration) to the duration attribute of the event</span>
+<span class="sd">    - p1 (instrument name) to 1</span>
+<span class="sd">    - p2 (start time) to the absolute start time of the event</span>
+<span class="sd">    - p3 (duration) to the duration attribute of the event</span>
 
 <span class="sd">    If p2 shall be assigned to the absolute entry delay of the event,</span>
 <span class="sd">    it has to be set to None.</span>
@@ -72,15 +83,8 @@
 <span class="sd">    automatically adds quotations marks around the string in the score file.</span>
 
 <span class="sd">    All p fields can be overwritten in the following manner:</span>
-<span class="sd">    &gt;&gt;&gt; my_converter = CsoundScoreConverter(</span>
-<span class="sd">    &gt;&gt;&gt;     path=&quot;my_csound_score.sco&quot;,</span>
-<span class="sd">    &gt;&gt;&gt;     p1=lambda event: 2,  # sets instrument name to 2</span>
-<span class="sd">    &gt;&gt;&gt;     p4=lambda event: event.pitch.frequency,</span>
-<span class="sd">    &gt;&gt;&gt;     p5=lambda event: event.volume</span>
-<span class="sd">    &gt;&gt;&gt; )</span>
 
-<span class="sd">        :param path: The path of the csound score file that shall be generated.</span>
-<span class="sd">        :param **pfield: p-field / p-field-extraction-function pairs.</span>
+<span class="sd">    &gt;&gt;&gt; my_converter = CsoundScoreConverter(path=&quot;my_csound_score.sco&quot;, p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
@@ -258,30 +262,6 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../../../../index.html">mutwo</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../modules.html">mutwo</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../../../../index.html">Documentation overview</a><ul>
-  <li><a href="../../../../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -296,17 +276,22 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2021, Levin Eric Zimmermann, Tim Pauli.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">mutwo 2021 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Levin Eric Zimmermann, Tim Pauli.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.1.
+    </div>
   </body>
 </html>

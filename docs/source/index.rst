@@ -6,11 +6,15 @@
 Welcome to mutwo's documentation!
 =================================
 
+mutwo is an event based framework for composing music or other time-based arts in Python.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   installation
    modules
+   license
 
 
 Indices and tables
