@@ -51,6 +51,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # autodoc settings
 autodoc_typehints = "description"
+autodoc_member_order = "bysource"
 autodoc_default_options = {
     # "ignore-module-all": True,
     "autosummary": True,
