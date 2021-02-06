@@ -14,8 +14,8 @@ class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
 
     def __init__(
         self,
-        pitch: parameters.pitches.abc.Pitch,
-        duration: parameters.durations.abc.DurationType,
+        pitch: parameters.abc.Pitch,
+        duration: parameters.abc.DurationType,
         path: str,
     ):
         super().__init__(duration)
@@ -45,7 +45,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         self.converter.convert(event_to_convert)
         expected_line = 'i 1 0 {} {} "{}"'.format(
             duration,
-            float(parameters.pitches.constants.DEFAULT_CONCERT_PITCH),
+            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
             event_to_convert.path,
         )
         with open(self.converter.path, "r") as f:
@@ -164,7 +164,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         self.converter.convert(event_to_convert)
         expected_line = "i 1 0 {} {}".format(
             duration,
-            float(parameters.pitches.constants.DEFAULT_CONCERT_PITCH),
+            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
             event_to_convert.path,
         )
         with open(self.converter.path, "r") as f:

@@ -6,7 +6,10 @@ from . import abc
 from . import csound
 
 # import modules with extra require
-for module, dependency in (("midi", "mido"), ("reaper", "rpp"), ("pyo", "pyo")):
+for module, dependency in (
+    ("midi", "mido"),
+    ("reaper", "rpp"),
+):
     tools.import_module_if_dependency_has_been_installed(
         "mutwo.converters.frontends.{}".format(module), dependency
     )

@@ -1,1 +1,0 @@
-DEFAULT_AVAILABLE_MIDI_CHANNELS = tuple(range(16))

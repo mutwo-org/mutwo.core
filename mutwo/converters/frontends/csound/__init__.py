@@ -1,2 +1,0 @@
-from .CsoundScoreConverter import CsoundScoreConverter
-from .CsoundConverter import CsoundConverter

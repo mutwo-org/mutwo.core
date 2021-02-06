@@ -6,6 +6,7 @@ from mutwo.events import music
 
 # converter
 from mutwo.converters.frontends import midi
+from mutwo.converters.frontends import midi_constants
 
 
 # TODO(write tests for the more complex methods!)
@@ -51,7 +52,7 @@ class MidiFileConverterTest(unittest.TestCase):
                 simultaneous_event
             ),
             tuple(
-                midi.constants.DEFAULT_AVAILABLE_MIDI_CHANNELS
+                midi_constants.DEFAULT_AVAILABLE_MIDI_CHANNELS
                 for _ in range(n_sequential_events)
             ),
         )
@@ -61,7 +62,7 @@ class MidiFileConverterTest(unittest.TestCase):
                 simultaneous_event
             ),
             tuple(
-                (nth_channel % len(midi.constants.ALLOWED_MIDI_CHANNELS),)
+                (nth_channel % len(midi_constants.ALLOWED_MIDI_CHANNELS),)
                 for nth_channel in range(n_sequential_events)
             ),
         )
@@ -92,29 +93,29 @@ class MidiFileConverterTest(unittest.TestCase):
         self.assertEqual(converter0._cent_deviation_to_pitch_bending_number(0), 0)
         self.assertEqual(
             converter0._cent_deviation_to_pitch_bending_number(200),
-            midi.constants.NEUTRAL_PITCH_BEND,
+            midi_constants.NEUTRAL_PITCH_BEND,
         )
         self.assertEqual(
             converter0._cent_deviation_to_pitch_bending_number(-200),
-            -midi.constants.NEUTRAL_PITCH_BEND,
+            -midi_constants.NEUTRAL_PITCH_BEND,
         )
         self.assertEqual(
             converter1._cent_deviation_to_pitch_bending_number(-500),
-            -midi.constants.NEUTRAL_PITCH_BEND,
+            -midi_constants.NEUTRAL_PITCH_BEND,
         )
         self.assertEqual(
             converter1._cent_deviation_to_pitch_bending_number(5000),
-            midi.constants.NEUTRAL_PITCH_BEND,
+            midi_constants.NEUTRAL_PITCH_BEND,
         )
 
         # now test values inbetween
         self.assertEqual(
             converter0._cent_deviation_to_pitch_bending_number(100),
-            int(midi.constants.NEUTRAL_PITCH_BEND * 0.5),
+            int(midi_constants.NEUTRAL_PITCH_BEND * 0.5),
         )
         self.assertEqual(
             converter0._cent_deviation_to_pitch_bending_number(200 * 0.3),
-            int(midi.constants.NEUTRAL_PITCH_BEND * 0.3),
+            int(midi_constants.NEUTRAL_PITCH_BEND * 0.3),
         )
 
     def test_tune_pitch(self):

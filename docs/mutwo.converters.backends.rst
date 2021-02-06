@@ -1,17 +1,19 @@
 mutwo.converters.backends package
 =================================
 
-Subpackages
------------
-
-.. toctree::
-
-   mutwo.converters.backends.midi
-
-Module contents
----------------
-
 .. automodule:: mutwo.converters.backends
    :members:
    :undoc-members:
    :show-inheritance:
+
+Submodules
+----------
+
+mutwo.converters.backends.midi module
+-------------------------------------
+
+.. automodule:: mutwo.converters.backends.midi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

@@ -1,6 +1,7 @@
 import unittest
 
 from mutwo.parameters import pitches
+from mutwo.parameters import pitches_constants
 
 
 class WesternPitchTest(unittest.TestCase):
@@ -44,21 +45,21 @@ class WesternPitchTest(unittest.TestCase):
         pitch3 = pitches.WesternPitch("as", 4)
         pitch4 = pitches.WesternPitch("bqs", 4)
         self.assertAlmostEqual(
-            pitch0.frequency, pitches.constants.DEFAULT_CONCERT_PITCH
+            pitch0.frequency, pitches_constants.DEFAULT_CONCERT_PITCH
         )
         self.assertAlmostEqual(
-            pitch1.frequency, pitches.constants.DEFAULT_CONCERT_PITCH * 0.5
+            pitch1.frequency, pitches_constants.DEFAULT_CONCERT_PITCH * 0.5
         )
         self.assertAlmostEqual(
-            pitch2.frequency, pitches.constants.DEFAULT_CONCERT_PITCH * 2
+            pitch2.frequency, pitches_constants.DEFAULT_CONCERT_PITCH * 2
         )
         self.assertAlmostEqual(
             pitch3.frequency,
-            pitches.constants.DEFAULT_CONCERT_PITCH * pitch3.step_factor,
+            pitches_constants.DEFAULT_CONCERT_PITCH * pitch3.step_factor,
         )
         self.assertAlmostEqual(
             pitch4.frequency,
-            pitches.constants.DEFAULT_CONCERT_PITCH * (pitch4.step_factor ** 2.5),
+            pitches_constants.DEFAULT_CONCERT_PITCH * (pitch4.step_factor ** 2.5),
         )
 
 

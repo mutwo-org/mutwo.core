@@ -1,6 +1,11 @@
 mutwo.utilities package
 =======================
 
+.. automodule:: mutwo.utilities
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -28,11 +33,3 @@ mutwo.utilities.tools module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: mutwo.utilities
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,7 @@
-API documentation
-=================
+mutwo
+=====
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
 
    mutwo

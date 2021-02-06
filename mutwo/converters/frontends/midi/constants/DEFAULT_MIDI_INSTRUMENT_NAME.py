@@ -1,1 +1,0 @@
-DEFAULT_MIDI_INSTRUMENT_NAME = "Acoustic Grand Piano"
