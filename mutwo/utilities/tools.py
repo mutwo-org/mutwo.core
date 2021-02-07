@@ -9,6 +9,19 @@ import typing
 import warnings
 
 
+__all__ = (
+    "scale",
+    "accumulate_from_n",
+    "accumulate_from_zero",
+    "insert_next_to",
+    "uniqify_iterable",
+    "cyclic_permutations",
+    # "import_module_if_dependency_has_been_installed",  # not for public use
+    "find_closest_index",
+    "find_closest_item",
+)
+
+
 def scale(
     value: numbers.Number,
     old_min: numbers.Number,
