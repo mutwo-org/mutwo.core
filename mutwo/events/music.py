@@ -1,3 +1,5 @@
+"""This module contains Event classes which are accounted for musical usage."""
+
 import numbers
 import typing
 
@@ -12,7 +14,18 @@ PitchOrPitches = typing.Union[
 
 
 class NoteLike(events.basic.SimpleEvent):
-    """NoteLike represents a traditional discreet musical object."""
+    """NoteLike represents a traditional discreet musical object.
+
+    :param pitch_or_pitches:
+    :param duration:
+    :param volume:
+
+    By default mutwo doesn't differentiate between Tones, Chords and
+    Rests, but rather simply implements one general class which can
+    represent any of the mentioned definitions (e.g. a NoteLike object
+    with several pitches may be called a 'Chord' and a NoteLike object
+    with only one pitch may be called a 'Tone').
+    """
 
     def __init__(
         self,
@@ -26,6 +39,7 @@ class NoteLike(events.basic.SimpleEvent):
 
     @property
     def pitch_or_pitches(self) -> list:
+        """The pitch or pitches of the event."""
         return self._pitch_or_pitches
 
     @pitch_or_pitches.setter
