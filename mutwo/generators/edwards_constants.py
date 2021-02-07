@@ -1,7 +1,4 @@
-# Definition of activity level pattern.
-
-# Pattern are copied from
-# github.com/mdedwards/slippery-chicken/blob/master/activity-levels.lsp
+"""This module adds constants which are used in `mutwo.generators.edwards`."""
 
 ACTIVITY_LEVELS = (
     # 0
@@ -63,3 +60,6 @@ ACTIVITY_LEVELS = (
     # 10
     ((1,), (1,), (1,)),
 )
+"""Definition of activity level pattern. Pattern are copied from
+Michael Edwards Common Lisp composition software 'slippery-chicken'
+(see github.com/mdedwards/slippery-chicken/blob/master/activity-levels.lsp)."""
