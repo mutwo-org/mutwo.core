@@ -17,3 +17,4 @@ The most basic classes are:
 from . import abc
 from . import basic
 from . import music
+from . import general

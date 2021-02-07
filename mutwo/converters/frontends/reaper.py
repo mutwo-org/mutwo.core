@@ -2,11 +2,10 @@ import typing
 
 import rpp
 
+from mutwo import events
 from mutwo.converters.frontends import abc
 from mutwo.converters.frontends import reaper_constants
-from mutwo import events
 from mutwo.utilities import tools
-
 
 __all__ = ("ReaperFileConverter",)
 
@@ -26,7 +25,13 @@ class ReaperFileConverter(abc.FileConverter):
     def add_track(self, name: str = "") -> rpp.Element:
         track = rpp.Element(
             tag="TRACK",
-            children=[["NAME", name], rpp.Element(tag="FXCHAIN", children=[],),],
+            children=[
+                ["NAME", name],
+                rpp.Element(
+                    tag="FXCHAIN",
+                    children=[],
+                ),
+            ],
         )
         self.reaper_project.append(track)
         return track
@@ -60,6 +65,7 @@ class ReaperFileConverter(abc.FileConverter):
         parameter_name: str,
         envelope_events: events.basic.SequentialEvent,
     ) -> rpp.Element:
+        """events need a value attribute"""
         envelope = rpp.Element(
             tag="PARMENV",
             attrib=[parameter_name, "0", "1", "0.5"],
@@ -79,5 +85,5 @@ class ReaperFileConverter(abc.FileConverter):
         return envelope
 
     def convert(self, event: events.abc.Event):
-        with open(self.path) as file:
+        with open(self.path, "w") as file:
             rpp.dump(self.reaper_project, file)
