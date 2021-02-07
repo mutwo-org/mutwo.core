@@ -6,6 +6,8 @@ import typing
 import numpy as np
 from scipy.stats import norm
 
+__all__ = ("random_walk_noise",)
+
 
 def random_walk_noise(
     x0: float,

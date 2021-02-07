@@ -1,6 +1,8 @@
 import abc
 import typing
 
+__all__ = ("Converter",)
+
 
 class Converter(abc.ABC):
     @abc.abstractmethod

@@ -2,6 +2,8 @@
 
 import typing
 
+__all__ = ("reflected_binary_code",)
+
 
 def reflected_binary_code(length: int, modulus: int) -> typing.Tuple[typing.Tuple[int]]:
     """Returns the length-tuple reflected binary code mod modulus.

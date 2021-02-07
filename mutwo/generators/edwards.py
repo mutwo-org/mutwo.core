@@ -7,6 +7,8 @@ import operator
 from mutwo.generators import edwards_constants
 from mutwo.utilities import tools
 
+__all__ = ("ActivityLevel",)
+
 
 class ActivityLevel(object):
     """Python implementation of Michael Edwards activity level algorithm.

@@ -10,6 +10,8 @@ import typing
 
 import primesieve
 
+__all__ = ("factorise", "factors", "is_prime")
+
 
 class PrimeGenerator(object):
     """Generator that yields the rising series of primes starting from 2."""

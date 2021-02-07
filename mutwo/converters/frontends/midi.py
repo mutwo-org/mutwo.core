@@ -15,6 +15,8 @@ from mutwo import events
 from mutwo import parameters
 from mutwo import utilities
 
+__all__ = ("MidiFileConverter",)
+
 Cents = typing.NewType("Cents", numbers.Number)
 
 ConvertableEvents = typing.Union[

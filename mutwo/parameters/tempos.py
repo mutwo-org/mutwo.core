@@ -3,6 +3,8 @@ import typing
 
 from mutwo import parameters
 
+__all__ = ("TempoPoint",)
+
 TempoInBeatsPerMinute = typing.NewType("BPM", numbers.Number)
 
 

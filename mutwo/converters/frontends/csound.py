@@ -15,7 +15,7 @@ from mutwo.converters.frontends import abc as converters_frontends_abc
 from mutwo import events
 from mutwo import parameters
 
-__all__ = ("CsoundScoreConverter",)
+__all__ = ("CsoundScoreConverter", "CsoundConverter")
 
 SupportedPFieldTypes = typing.Union[numbers.Number, str]
 PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]

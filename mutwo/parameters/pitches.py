@@ -39,6 +39,12 @@ from mutwo.utilities import tools
 
 from mutwo import parameters
 
+__all__ = (
+    "DirectPitch",
+    "JustIntonationPitch",
+    "EqualDividedOctavePitch",
+    "WesternPitch",
+)
 
 ConcertPitch = typing.Union[numbers.Number, parameters.abc.Pitch]
 PitchClassOrPitchClassName = typing.Union[numbers.Number, str]

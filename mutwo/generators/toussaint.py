@@ -5,6 +5,8 @@ import typing
 
 from mutwo.utilities import tools
 
+__all__ = ("euclidean", "paradiddle", "alternating_hands")
+
 
 def euclidean(size: int, distribution: int) -> typing.Tuple[int]:
     """Return euclidean rhythm as described in a 2005 paper by Godfried Toussaint.

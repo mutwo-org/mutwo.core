@@ -4,6 +4,8 @@ import copy
 import functools
 import typing
 
+__all__ = ("add_return_option",)
+
 
 def add_return_option(function: typing.Callable) -> typing.Callable:
     """This decorator adds a return option for object mutating methods.
