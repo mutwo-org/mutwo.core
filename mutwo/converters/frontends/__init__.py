@@ -3,15 +3,17 @@
 from mutwo.utilities import tools
 
 from . import abc
+from . import csound_constants
 from . import csound
 
 # import modules with extra require
-for module, dependency in (
-    ("midi", "mido"),
-    ("reaper", "rpp"),
+for modules, dependency in (
+    (("midi_constants", "midi"), "mido"),
+    (("reaper",), "rpp"),
 ):
-    tools.import_module_if_dependency_has_been_installed(
-        "mutwo.converters.frontends.{}".format(module), dependency
-    )
+    for module in modules:
+        tools.import_module_if_dependency_has_been_installed(
+            "mutwo.converters.frontends.{}".format(module), dependency
+        )
 
 del module, dependency, tools
