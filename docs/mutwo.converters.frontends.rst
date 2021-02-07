@@ -25,6 +25,14 @@ mutwo.converters.frontends.csound module
    :undoc-members:
    :show-inheritance:
 
+mutwo.converters.frontends.csound\_constants module
+---------------------------------------------------
+
+.. automodule:: mutwo.converters.frontends.csound_constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 mutwo.converters.frontends.midi module
 --------------------------------------
 
