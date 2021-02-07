@@ -1,3 +1,5 @@
+"""This file contains abstract base classes for the event module."""
+
 import abc
 import copy
 import typing
@@ -15,6 +17,14 @@ class Event(abc.ABC):
     @property
     @abc.abstractmethod
     def duration(self) -> parameters.abc.DurationType:
+        """Return the duration of an event (which can be any number).
+
+        The unit of the duration is up to the interpretation of the user
+        and the respective conversion routine that will be used. For
+        instance when using the CsoundScoreConverter, the duration will be
+        understood as seconds, while the MidiFileConverter will read duration
+        as beats.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -51,6 +61,19 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def get_parameter(self, parameter_name: str) -> typing.Union[tuple, typing.Any]:
+        """Return event attribute with the entered name.
+
+        :parameter_name: The name of the attribute that shall be returned.
+        :returns: Return tuple containing the assigned values for each contained
+            event. If an event doesn't posses the asked parameter, mutwo will simply
+            add None to the tuple for the respective event.
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event.get_parameter('duration')
+        (2, 3)
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -62,6 +85,21 @@ class Event(abc.ABC):
             typing.Any,
         ],
     ) -> None:
+        """Sets parameter to new value for all children events.
+
+        :param parameter_name: The name of the parameter which values shall be changed.
+        :param object_or_function: For setting the parameter either a new value can be
+            passed directly or a function can be passed. The function gets as an
+            argument the previous value that has had been assigned to the respective
+            object and has to return a new value that will be assigned to the object.
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
+        >>> sequential_event.get_parameter('duration')
+        (4, 6)
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -72,6 +110,28 @@ class Event(abc.ABC):
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
     ) -> None:
+        """Mutate parameter with a function.
+
+        :param parameter_name: The name of the parameter which shall be mutated.
+        :param function: The function which mutates the parameter. The function gets
+            as an input the assigned value for the passed parameter_name of the
+            respective object. The function shouldn't return anything, but simply
+            calls a method of the parameter value.
+
+        This method is useful when a particular parameter has been assigned to objects
+        that know methods which mutate themselves. Then 'mutate_parameter' is a
+        convenient wrapper to call the methods of those parameters for all children
+        events.
+
+        >>> from mutwo.events import basic, music
+        >>> from mutwo.parameters import pitches
+        >>> sequential_event = basic.SequentialEvent([music.NoteLike([pitches.WesternPitch('c', 4), pitches.WesternPitch('e', 4)], 2, 1)])
+        >>> sequential_event.mutate_parameter('pitch_or_pitches', lambda pitch_or_pitches: [pitch.add(12) for pitch in pitch_or_pitches])
+        >>> # now all pitches should be one octave higher (from 4 to 5)
+        >>> sequential_event.get_parameter('pitch_or_pitches')
+        ([WesternPitch(c5), WesternPitch(e5)],)
+        """
+
         raise NotImplementedError
 
     @staticmethod
@@ -102,6 +162,12 @@ class Event(abc.ABC):
             cut up shall start.
         :param end: number that indicates the point when the cut
             up shall end.
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
+        >>> sequential_event.cut_up(1, 4)
+        >>> print(sequential_event)
+        SequentialEvent([SimpleEvent(duration = 2), SimpleEvent(duration = 1)])
         """
 
         raise NotImplementedError
@@ -141,10 +207,6 @@ class ComplexEvent(Event, list):
         return type(self)([event.destructive_copy() for event in self])
 
     def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any]:
-        """Return tuple filled with the value of each event for the asked parameter.
-
-        If an event doesn't posses the asked attribute 'None' will be added.
-        """
         return tuple(event.get_parameter(parameter_name) for event in self)
 
     @decorators.add_return_option
@@ -156,13 +218,6 @@ class ComplexEvent(Event, list):
             typing.Any,
         ],
     ) -> None:
-        """Sets parameter to new value for all children events.
-
-        For setting the parameter either a new value can be passed directly or a
-        function can be passed. The function gets as an argument the previous value
-        that has had been assigned to the respective object and has to return the
-        new value.
-        """
         [event.set_parameter(parameter_name, object_or_function) for event in self]
 
     @decorators.add_return_option

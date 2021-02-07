@@ -1,3 +1,9 @@
+"""This module contains the most basic event classes which can be used.
+
+The different events differ in their timing structure and whether they
+are nested or not:
+"""
+
 import copy
 import itertools
 import numbers
@@ -14,7 +20,15 @@ __all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent", "EnvelopeEvent
 
 
 class SimpleEvent(events.abc.Event):
-    """Event-Object, which doesn't contain other Event-Objects."""
+    """Event-Object, which doesn't contain other Event-Objects.
+
+    :param new_duration: The duration of the SimpleEvent.
+
+    >>> from mutwo.events import basic
+    >>> simple_event = basic.SimpleEvent(2)
+    >>> print(simple_event)
+    SimpleEvent(duration = 2)
+    """
 
     def __init__(self, new_duration: parameters.abc.DurationType):
         self.duration = new_duration
@@ -81,9 +95,12 @@ class SimpleEvent(events.abc.Event):
         return copy.deepcopy(self)
 
     def get_parameter(self, parameter_name: str) -> typing.Any:
-        """Return attribute if it has been assigned to the object.
+        """Return event attribute with the entered name.
 
-        Otherwise returns None.
+        :parameter_name: The name of the attribute that shall be returned.
+        :returns: Return the value that has been assigned to the passed
+            parameter_name. If an event doesn't posses the asked parameter,
+            the method will simply return None.
         """
         try:
             return getattr(self, parameter_name)
@@ -99,6 +116,15 @@ class SimpleEvent(events.abc.Event):
             typing.Any,
         ],
     ) -> None:
+        """Sets event parameter to new value.
+
+        :param parameter_name: The name of the parameter which values shall be changed.
+        :param object_or_function: For setting the parameter either a new value can be
+            passed directly or a function can be passed. The function gets as an
+            argument the previous value that has had been assigned to the respective
+            object and has to return a new value that will be assigned to the object.
+        """
+
         old_parameter = self.get_parameter(parameter_name)
         try:
             new_parameter = object_or_function(old_parameter)
@@ -158,6 +184,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @property
     def absolute_times(self) -> typing.Tuple[numbers.Number]:
         """Return absolute point in time for each event."""
+
         durations = (event.duration for event in self)
         return tuple(tools.accumulate_from_zero(durations))[:-1]
 
@@ -165,12 +192,26 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def start_and_end_time_per_event(
         self,
     ) -> typing.Tuple[typing.Tuple[numbers.Number]]:
-        """Return start and end time  for each event."""
+        """Return start and end time for each event."""
+
         durations = (event.duration for event in self)
         absolute_times = tuple(tools.accumulate_from_zero(durations))
         return tuple(zip(absolute_times, absolute_times[1:]))
 
     def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
+        """Get event which is active at the passed absolute_time.
+
+            :param absolute_time: The absolute time where the method shall search
+                for the active event.
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event.get_event_at(1)
+        SimpleEvent(duration = 2)
+        >>> sequential_event.get_event_at(3)
+        SimpleEvent(duration = 3)
+        """
+
         absolute_times = self.absolute_times
         after_absolute_time = itertools.dropwhile(
             lambda x: absolute_time < x[0],
