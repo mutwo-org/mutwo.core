@@ -56,7 +56,7 @@ autodoc_default_options = {
     # "ignore-module-all": True,
     "autosummary": True,
 }
-add_module_names = True
+add_module_names = False
 
 
 # -- Options for HTML output -------------------------------------------------
