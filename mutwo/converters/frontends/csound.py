@@ -1,3 +1,9 @@
+"""This module adds converter clases to render sound files from mutwo data via Csound.
+
+Csound is a "domain-specific computer programming language for audio programming"
+(see http://www.csounds.com/).
+"""
+
 import numbers
 import os
 import typing
@@ -205,6 +211,11 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
             raise TypeError(msg)
 
     def convert(self, event_to_convert: events.abc.Event) -> None:
+        """Render csound score file (.sco) from the passed event.
+
+        :param event_to_convert: The event that shall be rendered to a csound score file.
+        """
+
         csound_score_lines = []
         # convert events to strings (where each string represents one csound score line)
         self._make_csound_score_lines_from_event(
@@ -216,7 +227,15 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
 
 
 class CsoundConverter(converters_frontends_abc.FileConverter):
-    """Simple converter that helps generating audio files with Csound."""
+    """Simple converter that helps generating audio files with Csound.
+
+    :param path: The path where the sound file shall be written to. File extension
+        'wav' is recommended, but not necessary.
+    :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
+    :param csound_score_converter: The CsoundScoreConverter that shall be used to
+        render the csound score file (.sco) from a mutwo event.
+    :param flag: Flag that shall be added when calling csound.
+    """
 
     def __init__(
         self,
@@ -231,6 +250,11 @@ class CsoundConverter(converters_frontends_abc.FileConverter):
         self.csound_score_converter = csound_score_converter
 
     def convert(self, event_to_convert: events.abc.Event) -> None:
+        """Render .wav sound file from the mutwo event.
+
+        :param event_to_convert: The event that shall be rendered.
+        """
+
         self.csound_score_converter.convert(event_to_convert)
         command = "csound -o {}".format(self.path)
         for flag in self.flags:
