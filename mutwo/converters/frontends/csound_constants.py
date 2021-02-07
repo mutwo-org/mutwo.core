@@ -4,7 +4,7 @@ The flag definitions are documented in
 https://csound.com/docs/manual/CommandFlags.html
 """
 
-SILENT_FLAG = '--nodisplays'
+SILENT_FLAG = '-O null'
 """Flag for preventing Csound from printing any information
 during rendering."""
 
