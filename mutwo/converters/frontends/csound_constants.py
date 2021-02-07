@@ -1,5 +1,9 @@
-# several flags when running csound
-# (see https://csound.com/docs/manual/CommandFlags.html)
+"""This file contains several flags for running csound.
+
+The flag definitions are documented in
+https://csound.com/docs/manual/CommandFlags.html
+"""
+
 SILENT_FLAG = '--no-displays'
 FORMAT_IRCAM = '--format=ircam'
 FORMAT_24BIT = '--format=24bit'
