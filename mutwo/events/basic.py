@@ -20,7 +20,7 @@ __all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent", "EnvelopeEvent
 
 
 class SimpleEvent(events.abc.Event):
-    """Event-Object, which doesn't contain other Event-Objects.
+    """Event-Object, which doesn't contain other Event-Objects (the node or leaf).
 
     :param new_duration: The duration of the SimpleEvent.
 

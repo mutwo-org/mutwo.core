@@ -174,7 +174,7 @@ class Event(abc.ABC):
 
 
 class ComplexEvent(Event, list):
-    """Event-Object, which contains other Event-Objects."""
+    """Abstract Event-Object, which contains other Event-Objects."""
 
     def __init__(self, iterable: typing.Iterable[Event]):
         super().__init__(iterable)
