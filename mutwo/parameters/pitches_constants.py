@@ -1,8 +1,24 @@
+"""This module adds several constants that are used for the different pitch classes.
+
+There are basically two types of constants:
+    1. Default values for initialisation method argument of the different pitch classes.
+    2. Values that are defined by general (cultural, physical, technical) standards
+"""
+
 import fractions
 import math
 
-# constant used for cent calculation in mutwo.parameters.pitches.abc.Pitch
 CENT_CALCULATION_CONSTANT = 1200 / (math.log10(2))
+"""constant used for cent calculation in mutwo.parameters.abc.Pitch"""
+
+DIATONIC_PITCH_NAME_TO_PITCH_CLASS = {
+    diatonic_pitch_name: pitch_class
+    for diatonic_pitch_name, pitch_class in zip(
+        "c d e f g a b".split(" "), (0, 2, 4, 5, 7, 9, 11)
+    )
+}
+"""Mapping of diatonic pitch name to pitch class for the `WesternPitch` class.
+Mutwo uses a chromatic scale where a change of the number 1 is one half tone."""
 
 ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
     # multiply with 2 because the difference of "1" in pitch
@@ -62,30 +78,31 @@ ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
         "": fractions.Fraction(0, 1),
     }.items()
 }
-
+"""Mapping of accidental name to pitch class modification for the
+`WesternPitch` class. When adding new accidentals only this constant
+has to be changed."""
 
 PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME = {
     accidental_value: accidental_name
     for accidental_name, accidental_value in ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.items()
 }
-
+"""Mapping of pitch class modifications name accidental name for the
+`WesternPitch` class. This global variable is defined in reference to
+``ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION``."""
 
 DEFAULT_CONCERT_PITCH = 440
+"""The default concert pitch in frequency."""
 
-# sets octave of default concert pitch for western pitch to one line (')
-# (so that the resulting concert pitch is a' or in midi nomenclature a4)
 DEFAULT_CONCERT_PITCH_OCTAVE_FOR_WESTERN_PITCH = 4
+"""The default value of ``concert_pitch_octave_for_western_pitch`` for
+the `WesternPitch` class. It sets octave of default concert pitch for
+western pitch to one line (') (so that the resulting concert pitch is
+a' or in midi nomenclature a4)"""
 
-# sets pitch class 'a' as default pitch class for the concert pitch of
-# the WesternPitch class
 DEFAULT_CONCERT_PITCH_PITCH_CLASS_FOR_WESTERN_PITCH = 9
-
-DIATONIC_PITCH_NAME_TO_PITCH_CLASS = {
-    diatonic_pitch_name: pitch_class
-    for diatonic_pitch_name, pitch_class in zip(
-        "c d e f g a b".split(" "), (0, 2, 4, 5, 7, 9, 11)
-    )
-}
+"""The default value of``concert_pitch_concert_pitch_class_for_western_pitch``
+for the `WesternPitch` class. It sets pitch class 'a' as the default pitch class
+for the concert pitch of the WesternPitch class."""
 
 MIDI_PITCH_FREQUENCIES = (
     8.175798915643705,
@@ -216,6 +233,7 @@ MIDI_PITCH_FREQUENCIES = (
     11175.303405856122,
     11839.8215267723,
 )
-
+"""A tuple that contains the frequency of each midi pitch (from 1 to 127)."""
 
 MIDI_PITCH_NUMBERS = tuple(range(127))
+"""A tuple that contains all available midi pitch numbers."""
