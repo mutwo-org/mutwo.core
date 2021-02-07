@@ -234,7 +234,8 @@ class CsoundConverter(converters_frontends_abc.FileConverter):
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
     :param csound_score_converter: The CsoundScoreConverter that shall be used to
         render the csound score file (.sco) from a mutwo event.
-    :param flag: Flag that shall be added when calling csound.
+    :param flag: Flag that shall be added when calling csound. Several of the supported
+        csound flags can be found in 'mutwo.converters.frontends.csound_constants'.
     """
 
     def __init__(
