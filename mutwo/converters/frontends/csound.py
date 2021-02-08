@@ -116,7 +116,7 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
         else:
             message = (
                 "Can't assign returned value '{}' of type '{}' to p-field {}.".format(
-                    p_field_value, type(p_field_value), nth_p_field
+                    p_field_value, type(p_field_value), nth_p_field + 1
                 )
             )
             message += " Supported types for p-fields include '{}'. ".format(
