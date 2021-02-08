@@ -1,13 +1,13 @@
-mutwo package
-=============
+API documentation
+=================
 
 .. automodule:: mutwo
    :members:
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
+mutwo subpackages
+-----------------
 
 .. toctree::
    :maxdepth: 2
