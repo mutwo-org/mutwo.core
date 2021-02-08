@@ -114,15 +114,16 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
             return p_field_value
 
         else:
+            ignored_p_field = nth_p_field + 1
             message = (
                 "Can't assign returned value '{}' of type '{}' to p-field {}.".format(
-                    p_field_value, type(p_field_value), nth_p_field + 1
+                    p_field_value, type(p_field_value), ignored_p_field
                 )
             )
             message += " Supported types for p-fields include '{}'. ".format(
                 repr(SupportedPFieldTypes)
             )
-            message += "Ignored p-field {}.".format(nth_p_field)
+            message += "Ignored p-field {}.".format(ignored_p_field)
             warnings.warn(message)
 
     def _make_csound_score_lines_from_simple_event(
