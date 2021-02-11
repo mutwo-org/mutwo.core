@@ -1,5 +1,7 @@
 import unittest
 
+import mido
+
 # events
 from mutwo.events import basic
 from mutwo.events import music
@@ -7,6 +9,9 @@ from mutwo.events import music
 # converter
 from mutwo.converters.frontends import midi
 from mutwo.converters.frontends import midi_constants
+
+# parameters
+from mutwo.parameters import pitches
 
 
 # TODO(write tests for the more complex methods!)
@@ -119,7 +124,43 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
     def test_tune_pitch(self):
-        pass
+        converter = midi.MidiFileConverter("test.mid")
+        data_to_tune_per_test = (
+            # absolute_tick_start, pitch_to_tune, channel
+            (0, pitches.WesternPitch("c", 4), 0),
+            (0, pitches.WesternPitch("c", 4), 1),
+            (1, pitches.WesternPitch("c", 4), 0),
+            (1, pitches.WesternPitch("a", 4), 1),
+            (7, pitches.WesternPitch("c", 3), 10),
+            (4, pitches.WesternPitch("cqs", 3), 10),
+            (4, pitches.WesternPitch("cqf", 3), 10),
+            (0, pitches.WesternPitch("ces", 4), 12),
+        )
+        expected_midi_data_per_test = (
+            # expected midi note, expected pitch bending
+            (60, 0),
+            (60, 0),
+            (60, 0),
+            (69, 0),
+            (48, 0),
+            (48, int(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (47, int(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (60, int(midi_constants.NEUTRAL_PITCH_BEND * 0.125)),
+        )
+        for data_to_tune, expected_midi_data in zip(
+            data_to_tune_per_test, expected_midi_data_per_test
+        ):
+            expected_midi_data = (
+                expected_midi_data[0],
+                mido.Message(
+                    "pitchwheel",
+                    time=data_to_tune[0] - 1 if data_to_tune[0] > 0 else 0,
+                    channel=data_to_tune[2],
+                    pitch=expected_midi_data[1],
+                ),
+            )
+
+            self.assertEqual(converter._tune_pitch(*data_to_tune), expected_midi_data)
 
     def test_tempo_events_to_midi_messages(self):
         pass

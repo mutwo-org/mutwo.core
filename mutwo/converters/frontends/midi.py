@@ -301,15 +301,15 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         absolute_tick_start: int,
         pitch: parameters.abc.Pitch,
         midi_channel: int,
-    ) -> tuple:
+    ) -> typing.Tuple[int, mido.Message]:
         """This method finds midi data to represent the entered mutwo pitch."""
 
         frequency = pitch.frequency
         closest_midi_pitch = utilities.tools.find_closest_index(
-            frequency, parameters.pitches.constants.MIDI_PITCH_FREQUENCIES
+            frequency, parameters.pitches_constants.MIDI_PITCH_FREQUENCIES
         )
         difference_in_cents_to_closest_midi_pitch = parameters.abc.Pitch.hertz_to_cents(
-            parameters.pitches.constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
+            parameters.pitches_constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
             frequency,
         )
         pitch_bending_number = self._cent_deviation_to_pitch_bending_number(
