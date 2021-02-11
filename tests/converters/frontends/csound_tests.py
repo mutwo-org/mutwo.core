@@ -27,7 +27,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.converter = converters.frontends.csound.CsoundScoreConverter(
-            "tests/converters/frontends/csound/test.sco",
+            "tests/converters/frontends/test.sco",
             p4=lambda event: event.pitch.frequency,
             p5=lambda event: event.path,
         )
