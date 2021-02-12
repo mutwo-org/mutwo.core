@@ -273,9 +273,9 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     def _cent_deviation_to_pitch_bending_number(
         self, cent_deviation: numbers.Number,
     ) -> int:
-        pitch_bend_percent = (
-            cent_deviation + self._maximum_pitch_bend_deviation
-        ) / (self._maximum_pitch_bend_deviation * 2)
+        pitch_bend_percent = (cent_deviation + self._maximum_pitch_bend_deviation) / (
+            self._maximum_pitch_bend_deviation * 2
+        )
 
         if pitch_bend_percent > 1:
             pitch_bend_percent = 1
@@ -293,10 +293,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         return pitch_bending_number
 
     def _tune_pitch(
-        self,
-        absolute_tick_start: int,
-        pitch: parameters.abc.Pitch,
-        midi_channel: int,
+        self, absolute_tick_start: int, pitch: parameters.abc.Pitch, midi_channel: int,
     ) -> typing.Tuple[int, mido.Message]:
         """This method finds midi data to represent the entered mutwo pitch."""
 
@@ -332,6 +329,8 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     def _tempo_events_to_midi_messages(
         self, tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent]
     ) -> typing.Tuple[mido.MetaMessage]:
+        """Converts a SequentialEvent of `EnvelopeEvent` to midi Tempo messages."""
+
         midi_messages = []
         for absolute_time, tempo_event in zip(
             tempo_events.absolute_times, tempo_events
@@ -345,8 +344,13 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             if beat_length_in_seconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
                 beat_length_in_seconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
                 message = (
-                    "TempoPoint '{}' of TempoEvent '{}' is too slow for midi.".format(
-                        tempo_event.object_start, tempo_event
+                    "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
+                    " Files. ".format(tempo_event.object_start, tempo_event)
+                )
+                message += (
+                    "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
+                    " '{0}' BPM.".format(
+                        mido.tempo2bpm(midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT)
                     )
                 )
                 warnings.warn(message)
