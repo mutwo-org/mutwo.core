@@ -273,26 +273,22 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     def _cent_deviation_to_pitch_bending_number(
         self, cent_deviation: numbers.Number,
     ) -> int:
-        if abs(cent_deviation) > 0.15:
-            pitch_bend_percent = (
-                cent_deviation + self._maximum_pitch_bend_deviation
-            ) / (self._maximum_pitch_bend_deviation * 2)
+        pitch_bend_percent = (
+            cent_deviation + self._maximum_pitch_bend_deviation
+        ) / (self._maximum_pitch_bend_deviation * 2)
 
-            if pitch_bend_percent > 1:
-                pitch_bend_percent = 1
-                warnings.warn(self._pitch_bending_warning)
+        if pitch_bend_percent > 1:
+            pitch_bend_percent = 1
+            warnings.warn(self._pitch_bending_warning)
 
-            if pitch_bend_percent < 0:
-                pitch_bend_percent = 0
-                warnings.warn(self._pitch_bending_warning)
+        if pitch_bend_percent < 0:
+            pitch_bend_percent = 0
+            warnings.warn(self._pitch_bending_warning)
 
-            pitch_bending_number = int(
-                midi_constants.MAXIMUM_PITCH_BEND * pitch_bend_percent
-            )
-            pitch_bending_number -= midi_constants.NEUTRAL_PITCH_BEND
-
-        else:
-            pitch_bending_number = 0
+        pitch_bending_number = round(
+            midi_constants.MAXIMUM_PITCH_BEND * pitch_bend_percent
+        )
+        pitch_bending_number -= midi_constants.NEUTRAL_PITCH_BEND
 
         return pitch_bending_number
 

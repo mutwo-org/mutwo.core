@@ -113,6 +113,16 @@ class MidiFileConverterTest(unittest.TestCase):
             midi_constants.NEUTRAL_PITCH_BEND,
         )
 
+        # test too high / too low values
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(250),
+            midi_constants.NEUTRAL_PITCH_BEND,
+        )
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(-250),
+            -midi_constants.NEUTRAL_PITCH_BEND,
+        )
+
         # now test values inbetween
         self.assertEqual(
             converter0._cent_deviation_to_pitch_bending_number(100),
@@ -143,9 +153,9 @@ class MidiFileConverterTest(unittest.TestCase):
             (60, 0),
             (69, 0),
             (48, 0),
-            (48, int(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
-            (47, int(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
-            (60, int(midi_constants.NEUTRAL_PITCH_BEND * 0.125)),
+            (48, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (47, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (60, round(midi_constants.NEUTRAL_PITCH_BEND * 0.125)),
         )
         for data_to_tune, expected_midi_data in zip(
             data_to_tune_per_test, expected_midi_data_per_test
