@@ -182,7 +182,12 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     def _adjust_beat_length_in_seconds(
         tempo_event: events.basic.EnvelopeEvent, beat_length_in_seconds: float
     ) -> float:
-        """This method makes sure that `beat_length_in_seconds` isn't too big."""
+        """This method makes sure that ``beat_length_in_seconds`` isn't too big.
+
+        Standard midi files define a slowest allowed tempo which is around 3.5 BPM.
+        In case the tempo is lower than this slowest allowed tempo, `mutwo` will
+        automatically set the tempo to the lowest allowed tempo.
+        """
 
         if beat_length_in_seconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
             beat_length_in_seconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
