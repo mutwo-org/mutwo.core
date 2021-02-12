@@ -18,6 +18,26 @@ from mutwo.parameters import pitches
 
 
 class MidiFileConverterTest(unittest.TestCase):
+    def test_adjust_beat_length_in_seconds(self):
+        # should return the same number
+        tempo_event0 = basic.EnvelopeEvent(4, mido.bpm2tempo(40))
+        self.assertEqual(
+            midi.MidiFileConverter._adjust_beat_length_in_seconds(
+                tempo_event0, tempo_event0.object_start
+            ),
+            tempo_event0.object_start,
+        )
+
+        # should return MAXIMUM_MICROSECONDS_PER_BEAT, because bpm 3
+        # is already too slow
+        tempo_event1 = basic.EnvelopeEvent(4, mido.bpm2tempo(3))
+        self.assertEqual(
+            midi.MidiFileConverter._adjust_beat_length_in_seconds(
+                tempo_event1, tempo_event1.object_start
+            ),
+            midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT,
+        )
+
     def test_volume_to_velocity(self):
         volume0 = 1
         volume1 = 0

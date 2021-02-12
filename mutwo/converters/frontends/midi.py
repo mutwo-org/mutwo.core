@@ -179,6 +179,28 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     # ###################################################################### #
 
     @staticmethod
+    def _adjust_beat_length_in_seconds(
+        tempo_event: events.basic.EnvelopeEvent, beat_length_in_seconds: float
+    ) -> float:
+        """This method makes sure that `beat_length_in_seconds` isn't too big."""
+
+        if beat_length_in_seconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
+            beat_length_in_seconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
+            message = (
+                "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
+                " Files. ".format(tempo_event.object_start, tempo_event)
+            )
+            message += (
+                "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
+                " '{0}' BPM.".format(
+                    mido.tempo2bpm(midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT)
+                )
+            )
+            warnings.warn(message)
+
+        return beat_length_in_seconds
+
+    @staticmethod
     def _assert_midi_file_type_has_correct_value(midi_file_type: int):
         try:
             assert midi_file_type in (0, 1)
@@ -267,7 +289,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return available_midi_channels_per_sequential_event
 
-    def _beats_to_ticks(self, absolute_time: numbers.Number,) -> int:
+    def _beats_to_ticks(self, absolute_time: numbers.Number) -> int:
         return int(self._ticks_per_beat * absolute_time)
 
     def _cent_deviation_to_pitch_bending_number(
@@ -341,19 +363,9 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
                 * midi_constants.MIDI_TEMPO_FACTOR
             )
 
-            if beat_length_in_seconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
-                beat_length_in_seconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
-                message = (
-                    "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
-                    " Files. ".format(tempo_event.object_start, tempo_event)
-                )
-                message += (
-                    "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
-                    " '{0}' BPM.".format(
-                        mido.tempo2bpm(midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT)
-                    )
-                )
-                warnings.warn(message)
+            beat_length_in_seconds = MidiFileConverter._adjust_beat_length_in_seconds(
+                tempo_event, beat_length_in_seconds
+            )
 
             tempo_message = mido.MetaMessage(
                 "set_tempo", tempo=beat_length_in_seconds, time=absolute_tick
