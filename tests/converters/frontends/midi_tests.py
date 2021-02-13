@@ -18,11 +18,24 @@ from mutwo.parameters import pitches
 
 
 class MidiFileConverterTest(unittest.TestCase):
-    def test_adjust_beat_length_in_seconds(self):
+    def test_bpm_to_beat_length_in_microseconds(self):
+        converter = midi.MidiFileConverter("test.mid")
+        for bpm, beat_length_in_microseconds in (
+            # bpm 60 should take one second per beat
+            (60, 1000000),
+            (30, 2000000),
+            (120, 500000),
+        ):
+            self.assertEqual(
+                converter._bpm_to_beat_length_in_microseconds(bpm),
+                beat_length_in_microseconds,
+            )
+
+    def test_adjust_beat_length_in_microseconds(self):
         # should return the same number
         tempo_event0 = basic.EnvelopeEvent(4, mido.bpm2tempo(40))
         self.assertEqual(
-            midi.MidiFileConverter._adjust_beat_length_in_seconds(
+            midi.MidiFileConverter._adjust_beat_length_in_microseconds(
                 tempo_event0, tempo_event0.object_start
             ),
             tempo_event0.object_start,
@@ -32,7 +45,7 @@ class MidiFileConverterTest(unittest.TestCase):
         # is already too slow
         tempo_event1 = basic.EnvelopeEvent(4, mido.bpm2tempo(3))
         self.assertEqual(
-            midi.MidiFileConverter._adjust_beat_length_in_seconds(
+            midi.MidiFileConverter._adjust_beat_length_in_microseconds(
                 tempo_event1, tempo_event1.object_start
             ),
             midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT,
@@ -193,7 +206,30 @@ class MidiFileConverterTest(unittest.TestCase):
             self.assertEqual(converter._tune_pitch(*data_to_tune), expected_midi_data)
 
     def test_tempo_events_to_midi_messages(self):
-        pass
+        converter = midi.MidiFileConverter("test.mid")
+        tempo_events = basic.SequentialEvent(
+            [
+                basic.EnvelopeEvent(2, 60),
+                basic.EnvelopeEvent(3, 40),
+                basic.EnvelopeEvent(2, 100),
+            ]
+        )
+        midi_messages = tuple(
+            mido.MetaMessage(
+                "set_tempo",
+                tempo=converter._bpm_to_beat_length_in_microseconds(
+                    tempo_event.object_start
+                ),
+                time=absolute_time * midi_constants.DEFAULT_TICKS_PER_BEAT,
+            )
+            for absolute_time, tempo_event in zip(
+                tempo_events.absolute_times, tempo_events
+            )
+        )
+
+        self.assertEqual(
+            converter._tempo_events_to_midi_messages(tempo_events), midi_messages
+        )
 
     def test_note_information_to_midi_messages(self):
         pass

@@ -179,18 +179,18 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     # ###################################################################### #
 
     @staticmethod
-    def _adjust_beat_length_in_seconds(
-        tempo_event: events.basic.EnvelopeEvent, beat_length_in_seconds: float
+    def _adjust_beat_length_in_microseconds(
+        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: float
     ) -> float:
-        """This method makes sure that ``beat_length_in_seconds`` isn't too big.
+        """This method makes sure that ``beat_length_in_microseconds`` isn't too big.
 
         Standard midi files define a slowest allowed tempo which is around 3.5 BPM.
         In case the tempo is lower than this slowest allowed tempo, `mutwo` will
         automatically set the tempo to the lowest allowed tempo.
         """
 
-        if beat_length_in_seconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
-            beat_length_in_seconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
+        if beat_length_in_microseconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
+            beat_length_in_microseconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
             message = (
                 "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
                 " Files. ".format(tempo_event.object_start, tempo_event)
@@ -203,7 +203,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             )
             warnings.warn(message)
 
-        return beat_length_in_seconds
+        return beat_length_in_microseconds
 
     @staticmethod
     def _assert_midi_file_type_has_correct_value(midi_file_type: int):
@@ -261,6 +261,13 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     # ###################################################################### #
     #                         helper methods                                 #
     # ###################################################################### #
+
+    def _bpm_to_beat_length_in_microseconds(self, bpm: numbers.Number) -> int:
+        beat_length_in_seconds = self._tempo_point_converter.convert(bpm)
+        beat_length_in_microseconds = int(
+            beat_length_in_seconds * midi_constants.MIDI_TEMPO_FACTOR
+        )
+        return beat_length_in_microseconds
 
     def _find_available_midi_channels_per_sequential_event(
         self,
@@ -363,17 +370,16 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             tempo_events.absolute_times, tempo_events
         ):
             absolute_tick = self._beats_to_ticks(absolute_time)
-            beat_length_in_seconds = int(
-                self._tempo_point_converter.convert(tempo_event.object_start)
-                * midi_constants.MIDI_TEMPO_FACTOR
+            beat_length_in_microseconds = self._bpm_to_beat_length_in_microseconds(
+                tempo_event.object_start
             )
 
-            beat_length_in_seconds = MidiFileConverter._adjust_beat_length_in_seconds(
-                tempo_event, beat_length_in_seconds
+            beat_length_in_microseconds = MidiFileConverter._adjust_beat_length_in_microseconds(
+                tempo_event, beat_length_in_microseconds
             )
 
             tempo_message = mido.MetaMessage(
-                "set_tempo", tempo=beat_length_in_seconds, time=absolute_tick
+                "set_tempo", tempo=beat_length_in_microseconds, time=absolute_tick
             )
             midi_messages.append(tempo_message)
 
