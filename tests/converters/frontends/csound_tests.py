@@ -156,7 +156,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         self.assertEqual(len(pfields), len(pfield_key_to_function_mapping) + 1)
 
     def test_ignore_p_field_with_unsupported_type(self):
-        # convert simple event with unspported type (set) for path argument
+        # convert simple event with unsupported type (set) for path argument
         duration = 2
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
             parameters.pitches.JustIntonationPitch(), duration, set([1, 2, 3]),
@@ -165,7 +165,6 @@ class CsoundScoreConverterTest(unittest.TestCase):
         expected_line = "i 1 0 {} {}".format(
             duration,
             float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
-            event_to_convert.path,
         )
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_line)
