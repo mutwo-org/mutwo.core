@@ -1,4 +1,4 @@
-"""This module adds converter clases to render sound files from mutwo data via Csound.
+"""This module adds converter classes to render sound files from mutwo data via Csound.
 
 Csound is a "domain-specific computer programming language for audio programming"
 (see http://www.csounds.com/).
@@ -46,7 +46,7 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     or a number). If the returned type is a string, CsoundScoreConverter
     automatically adds quotations marks around the string in the score file.
 
-    All p fields can be overwritten in the following manner:
+    All p-fields can be overwritten in the following manner:
 
     >>> my_converter = CsoundScoreConverter(path="my_csound_score.sco", p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)
     """
