@@ -230,8 +230,7 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
 class CsoundConverter(converters_frontends_abc.FileConverter):
     """Simple converter that helps generating audio files with Csound.
 
-    :param path: The path where the sound file shall be written to. File extension
-        'wav' is recommended, but not necessary.
+    :param path: The path where the sound file shall be written to.
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
     :param csound_score_converter: The `CsoundScoreConverter` that shall be used to
         render the csound score file (.sco) from a mutwo event.
@@ -252,7 +251,7 @@ class CsoundConverter(converters_frontends_abc.FileConverter):
         self.csound_score_converter = csound_score_converter
 
     def convert(self, event_to_convert: events.abc.Event) -> None:
-        """Render .wav sound file from the mutwo event.
+        """Render sound file from the mutwo event.
 
         :param event_to_convert: The event that shall be rendered.
         """
