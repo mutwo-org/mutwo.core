@@ -33,7 +33,9 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     CsoundScoreConverter extracts data from mutwo Events and assign it to
     specific p-fields. The mapping of Event attributes to p-field values has
     to be defined by the user via keyword arguments during class initialization.
-    By default mutwo already maps the following p-fields to the following values:
+
+    By default, mutwo already maps the following p-fields to the following values:
+
     - p1 (instrument name) to 1
     - p2 (start time) to the absolute start time of the event
     - p3 (duration) to the duration attribute of the event
@@ -41,9 +43,9 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
 
-    The CsoundScoreConverter ignores any p-field that returns
+    The `CsoundScoreConverter` ignores any p-field that returns
     any unsupported p-field type (anything else than a string
-    or a number). If the returned type is a string, CsoundScoreConverter
+    or a number). If the returned type is a string, `CsoundScoreConverter`
     automatically adds quotations marks around the string in the score file.
 
     All p-fields can be overwritten in the following manner:

@@ -39,11 +39,6 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     midi files. In this way the user can tweak the conversion routine to her
     or his individual needs.
 
-    Disclaimer:
-        The current implementation doesn't support glissandi yet (only static pitches),
-        time-signatures (the written time signature is always 4/4 for now) and
-        dynamically changing tempo (ritardando or accelerando).
-
     :param path: where to write the MidiFile. The typical file type extension '.mid' is
         recommended, but not necessary.
     :param simple_event_to_pitches: Function to extract from a SimpleEvent a tuple
@@ -100,6 +95,11 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         value of mutwo is 120 BPM (this is also the value that is assumed by any
         midi-file-reading-software if no tempo has been specified). Tempo changes
         are supported (and will be written to the resulting midi file).
+
+    **Disclaimer**:
+        The current implementation doesn't support glissandi yet (only static pitches),
+        time-signatures (the written time signature is always 4/4 for now) and
+        dynamically changing tempo (ritardando or accelerando).
     """
 
     _tempo_point_converter = symmetrical.TempoPointConverter()
@@ -691,7 +691,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         >>> midi_converter = midi.MidiFileConverter('ascending_scale.mid', available_midi_channels=(0,))
         >>> midi_converter.convert(ascending_scale)
 
-        Disclaimer: when passing nested structures, make sure that the
+        **Disclaimer:** when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
         converter classes (like TempoConverter) MidiFileConverter can't
         convert infinitely nested structures (due to the particular
