@@ -2,12 +2,12 @@
 
 'Pitch' is defined as any object that knows a 'frequency' attribute.
 The two major modern tuning systems Just intonation and Equal-divided-octave
-are supported by the JustIntonationPitch and EqualDividedOctavePitch classes.
-For using Western nomenclature (e.g. c, d, e, f, ...) mutwo offers the
-WesternPitch class (which inherits from EqualDividedOctavePitch).
-For a straight frequency-based approach one may use the DirectPitch class.
+are supported by the ``JustIntonationPitch`` and ``EqualDividedOctavePitch`` classes.
+For using Western nomenclature (e.g. c, d, e, f, ...) `mutwo` offers the
+``WesternPitch`` class (which inherits from ``EqualDividedOctavePitch``).
+For a straight frequency-based approach one may use the ``DirectPitch`` class.
 
-If desired the default concert pitch can be adjusted after importing mutwo:
+If desired the default concert pitch can be adjusted after importing `mutwo`:
 
     >>> from mutwo.parameters import pitches_constants
     >>> pitches_constants.DEFAULT_CONCERT_PITCH = 443
@@ -53,9 +53,14 @@ PitchClassOrPitchClassName = typing.Union[numbers.Number, str]
 class DirectPitch(parameters.abc.Pitch):
     """A simple pitch class that gets directly initialised by its frequency.
 
+    :param frequency: The frequency of the ``DirectPitch`` object.
+
     May be used when a converter class needs a pitch object, but there is
     no need or desire for a complex abstraction of the respective pitch
     (that classes like JustIntonationPitch or WesternPitch offer).
+
+    >>> from mutwo.parameters import pitches
+    >>> my_pitch = pitches.DirectPitch(440)
     """
 
     def __init__(self, frequency: float):
@@ -63,6 +68,8 @@ class DirectPitch(parameters.abc.Pitch):
 
     @property
     def frequency(self) -> float:
+        """The frequency of the pitch."""
+
         return self._frequency
 
     def __repr__(self) -> str:
@@ -70,25 +77,33 @@ class DirectPitch(parameters.abc.Pitch):
 
 
 class JustIntonationPitch(parameters.abc.Pitch):
-    """A JustIntonationPitch is defined by a frequency ratio and a reference pitch.
+    """Pitch that is defined by a frequency ratio and a reference pitch.
+
+    :param ratio_or_exponents: The frequency ratio of the ``JustIntonationPitch``.
+        This can either be (A) a string that indicates the frequency ratio (for
+        instance: "1/1", "3/2", "9/2", etc.), or (B) a ``fractions.Fraction``
+        (or ``quicktions.Fraction``) object that indicates the frequency ratio
+        (for instance: ``fractions.Fraction(3, 2)``, ``fractions.Fraction(7, 4)``)
+        or (C) an Iterable that is filled with integer that represents the exponents
+        of the respective prime numbers of the decomposed frequency ratio. The prime
+        numbers are rising and start with 2. Therefore the tuple ``(2, 0, -1)``
+        would return the frequency ratio ``4/5`` because
+        ``(2 ** 2) * (3 ** 0) * (5 ** -1) = 4/5``.
+    :param concert_pitch: The reference pitch of the tuning system (the pitch for a
+        frequency ratio of 1/1). Can either be another ``Pitch`` object or any number
+        to indicate a particular frequency in Hertz.
 
     The resulting frequency is calculated by multiplying the frequency ratio
     with the respective reference pitch.
 
-    JustIntonationPitch objects can be initialised by either
-        (1) a string that indicates the frequency ratio
-            for instance: "1/1", "3/2", "9/2", etc.
-        (2) a fractions.Fraction (or quicktions.Fraction) object that
-            indicates the frequency ratio for instance:
-            fractions.Fraction(3, 2), fractions.Fraction(7, 4), etc.
-        (3) an Iterable that is filled with integer that represents the exponents
-            of the respective prime numbers of the decomposed frequency ratio.
-            The prime numbers are rising and start with 2. Therefore the tuple
-            (2, 0, -1) would return the frequency ratio 4/5 because
-            (2 ** 2) * (3 ** 0) * (5 ** -1) = 4/5.
-
-    Furthermore the concert_pitch argument can either be another Pitch object or
-    a number to indicate a particular frequency in Hertz.
+    >>> from mutwo.parameters import pitches
+    >>> # 3 different variations of initialising the same pitch
+    >>> pitches.JustIntonationPitch('3/2')
+    >>> import fractions
+    >>> pitches.JustIntonationPitch(fractions.Fraction(3, 2))
+    >>> pitches.JustIntonationPitch((-1, 1))
+    >>> # using a different concert pitch
+    >>> pitches.JustIntonationPitch('7/5', concert_pitch=432)
     """
 
     def __init__(
@@ -903,7 +918,23 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
 
 class EqualDividedOctavePitch(parameters.abc.Pitch):
-    """Class for representing pitches tuned to an Equal divided octave tuning system."""
+    """Pitch that is tuned to an Equal divided octave tuning system.
+
+    :param n_pitch_classes_per_octave: how many pitch classes in each octave
+        occur (for instance 12 for a chromatic system, 24 for quartertones, etc.)
+    :param pitch_class: The pitch class of the new ``EqualDividedOctavePitch`` object.
+    :param octave: The octave of the new ``EqualDividedOctavePitch`` object (where 0 is
+        the middle octave, 1 is one octave higher and -1 is one octave lower).
+    :param concert_pitch_pitch_class: The pitch class of the reference pitch (for
+        instance 9 in a chromatic 12 tone system where `a` should be the reference
+        pitch).
+    :param concert_pitch_octave: The octave of the reference pitch.
+    :param concert_pitch: The frequency of the reference pitch (for instance 440 for a).
+
+    >>> from mutwo.parameters import pitches
+    >>> # making a middle `a`
+    >>> pitches.EqualDividedOctavePitch(12, 9, 4, 9, 4, 440)
+    """
 
     def __init__(
         self,
@@ -1047,15 +1078,21 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
 
 class WesternPitch(EqualDividedOctavePitch):
-    """A WesternPitch is a Pitch with traditional Western nomenclature.
+    """Pitch with a traditional Western nomenclature.
 
-    It uses an equal divided octave system in 12 chromatic steps.
-    The nomenclature is English (c, d, e, f, g, a, b).
-    Accidentals are indicated by (s = sharp) and (f = flat).
-    Further microtonal accidentals are supported (see
-    mutwo.parameters.parameters.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION
-    for all supported accidentals). Indications for the specific octave
-    follow the MIDI Standard where 4 is defined as one line.
+    :param pitch_class_or_pitch_class_name: Name or number of the pitch class of the
+        new ``WesternPitch`` object. The nomenclature is English (c, d, e, f, g, a, b).
+        It uses an equal divided octave system in 12 chromatic steps. Accidentals are
+        indicated by (s = sharp) and (f = flat). Further microtonal accidentals are
+        supported (see
+        ``mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION``
+        for all supported accidentals).
+    :param octave: The octave of the new ``WesternPitch`` object. Indications for the
+        specific octave follow the MIDI Standard where 4 is defined as one line.
+
+    >>> from mutwo.parameters import pitches
+    >>> pitches.WesternPitch('cs', 4)  # c-sharp 4
+    >>> pitches.WesternPitch('aqs', 2)  # a-quarter-sharp 2
     """
 
     def __init__(

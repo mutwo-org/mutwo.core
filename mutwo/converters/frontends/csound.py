@@ -43,9 +43,9 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
 
-    The `CsoundScoreConverter` ignores any p-field that returns
+    The ``CsoundScoreConverter`` ignores any p-field that returns
     any unsupported p-field type (anything else than a string
-    or a number). If the returned type is a string, `CsoundScoreConverter`
+    or a number). If the returned type is a string, ``CsoundScoreConverter``
     automatically adds quotations marks around the string in the score file.
 
     All p-fields can be overwritten in the following manner:
@@ -246,10 +246,10 @@ class CsoundConverter(converters_frontends_abc.FileConverter):
 
     :param path: The path where the sound file shall be written to.
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
-    :param csound_score_converter: The `CsoundScoreConverter` that shall be used to
+    :param csound_score_converter: The ``CsoundScoreConverter`` that shall be used to
         render the csound score file (.sco) from a mutwo event.
     :param flag: Flag that shall be added when calling csound. Several of the supported
-        csound flags can be found in `mutwo.converters.frontends.csound_constants`.
+        csound flags can be found in ``mutwo.converters.frontends.csound_constants``.
     """
 
     def __init__(

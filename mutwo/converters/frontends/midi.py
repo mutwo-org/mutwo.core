@@ -374,7 +374,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     def _tempo_events_to_midi_messages(
         self, tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent]
     ) -> typing.Tuple[mido.MetaMessage]:
-        """Converts a SequentialEvent of `EnvelopeEvent` to midi Tempo messages."""
+        """Converts a SequentialEvent of ``EnvelopeEvent`` to midi Tempo messages."""
 
         midi_messages = []
         for absolute_time, tempo_event in zip(
@@ -517,7 +517,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         sequential_event: events.basic.SequentialEvent[events.basic.SimpleEvent],
         available_midi_channels: typing.Tuple[int],
     ) -> typing.Tuple[mido.Message]:
-        """Iterates through the passed SequentialEvent and converts each SimpleEvent.
+        """Iterates through the ``SequentialEvent`` and converts each ``SimpleEvent``.
 
         Return unsorted tuple of Midi messages where the time attribute of each message
         is the absolute time in ticks.
@@ -693,15 +693,15 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         **Disclaimer:** when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
-        converter classes (like `TempoConverter`) `MidiFileConverter` can't
+        converter classes (like ``TempoConverter``) ``MidiFileConverter`` can't
         convert infinitely nested structures (due to the particular
         way how Midi files are defined). The deepest potential structure
-        is a `SimultaneousEvent` (representing the complete MidiFile) that
-        contains `SequentialEvents` (where each `SequentialEvent` represents
-        one MidiTrack) that contains `SimpleEvents` (where each `SimpleEvent`
-        represents one midi note). If only one `SequentialEvent` is send,
-        this `SequentialEvent` will be read as one MidiTrack in a MidiFile.
-        If only one `SimpleEvent` get passed, this `SimpleEvent` will be
+        is a ``SimultaneousEvent`` (representing the complete MidiFile) that
+        contains ``SequentialEvents`` (where each ``SequentialEvent`` represents
+        one MidiTrack) that contains ``SimpleEvents`` (where each ``SimpleEvent``
+        represents one midi note). If only one ``SequentialEvent`` is send,
+        this ``SequentialEvent`` will be read as one MidiTrack in a MidiFile.
+        If only one ``SimpleEvent`` get passed, this ``SimpleEvent`` will be
         interpreted as one MidiEvent (note_on and note_off) inside one
         MidiTrack inside one MidiFile.
         """
