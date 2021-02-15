@@ -24,8 +24,8 @@ PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldType
 class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     """Class to convert mutwo events to a Csound score file.
 
-        :param path: The path of the csound score file that shall be generated.
-        :param pfield: p-field / p-field-extraction-function pairs.
+    :param path: The path of the csound score file that shall be generated.
+    :param pfield: p-field / p-field-extraction-function pairs.
 
     This class helps generating score files for the "domain-specific computer
     programming language for audio programming" Csound (see http://www.csounds.com/).
@@ -51,15 +51,17 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     >>> my_converter = CsoundScoreConverter(path="my_csound_score.sco", p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)
     """
 
-    def __init__(
-        self,
-        path: str,
-        p1: PFieldFunction = lambda event: 1,  # default instrument name "1"
-        p2: typing.Union[PFieldFunction, None] = None,  # default to absolute start time
-        p3: PFieldFunction = lambda event: event.duration,  # default key for duration
-        **pfield: PFieldFunction
-    ):
-        pfield.update({"p1": p1, "p2": p2, "p3": p3})
+    _default_p_fields = {
+        "p1": lambda event: 1,  # default instrument name "1"
+        "p2": None,  # default to absolute start time
+        "p3": lambda event: event.duration,  # default key for duration
+    }
+
+    def __init__(self, path: str, **pfield: PFieldFunction):
+        for default_p_field, default_p_field_function in self._default_p_fields.items():
+            if default_p_field not in pfield:
+                pfield.update({default_p_field: default_p_field_function})
+
         self.pfields = self._generate_pfield_mapping(pfield)
         self.path = path
 
@@ -214,7 +216,17 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     def convert(self, event_to_convert: events.abc.Event) -> None:
         """Render csound score file (.sco) from the passed event.
 
-        :param event_to_convert: The event that shall be rendered to a csound score file.
+        :param event_to_convert: The event that shall be rendered to a csound score
+            file.
+
+        >>> import random
+        >>> from mutwo.parameters import pitches
+        >>> from mutwo.events import basic
+        >>> from mutwo.converters.frontends import csound
+        >>> converter = csound.CsoundScoreConverter(path="score.sco", p4=lambda event: event.pitch.frequency)
+        >>> events = basic.SequentialEvent([basic.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)])
+        >>> for event in events: event.pitch = pitches.DirectPitch(random.uniform(100, 500))
+        >>> converter.convert(events)
         """
 
         csound_score_lines = []
