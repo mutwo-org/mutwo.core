@@ -17,7 +17,7 @@ class Event(abc.ABC):
     @property
     @abc.abstractmethod
     def duration(self) -> parameters.abc.DurationType:
-        """Return the duration of an event (which can be any number).
+        """The duration of an event (which can be any number).
 
         The unit of the duration is up to the interpretation of the user
         and the respective conversion routine that will be used. For
