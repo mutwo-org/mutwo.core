@@ -693,17 +693,17 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         **Disclaimer:** when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
-        converter classes (like TempoConverter) MidiFileConverter can't
+        converter classes (like `TempoConverter`) `MidiFileConverter` can't
         convert infinitely nested structures (due to the particular
         way how Midi files are defined). The deepest potential structure
-        is a SimultaneousEvent (representing the complete MidiFile) that
-        contains SequentialEvents (where each SequentialEvent represents
-        one MidiTrack) that contains SimpleEvents (where each SimpleEvent
-        or NoteLike object represents one midi note). If only one
-        SequentialEvent is send, this SequentialEvent will be read as
-        one MidiTrack in a MidiFile. If only one SimpleEvent get passed,
-        this SimpleEvent will be interpreted as one MidiEvent (note_on and
-        note_off) inside one MidiTrack inside one MidiFile.
+        is a `SimultaneousEvent` (representing the complete MidiFile) that
+        contains `SequentialEvents` (where each `SequentialEvent` represents
+        one MidiTrack) that contains `SimpleEvents` (where each `SimpleEvent`
+        represents one midi note). If only one `SequentialEvent` is send,
+        this `SequentialEvent` will be read as one MidiTrack in a MidiFile.
+        If only one `SimpleEvent` get passed, this `SimpleEvent` will be
+        interpreted as one MidiEvent (note_on and note_off) inside one
+        MidiTrack inside one MidiFile.
         """
 
         midi_file = self._event_to_midi_file(event_to_convert)
