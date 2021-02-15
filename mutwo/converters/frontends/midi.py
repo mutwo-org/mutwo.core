@@ -1,3 +1,7 @@
+"""This module adds converter classes to render midi files (SMF) from mutwo data.
+
+"""
+
 import functools
 import itertools
 import numbers
@@ -179,33 +183,6 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     # ###################################################################### #
 
     @staticmethod
-    def _adjust_beat_length_in_microseconds(
-        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: float
-    ) -> float:
-        """This method makes sure that ``beat_length_in_microseconds`` isn't too big.
-
-        Standard midi files define a slowest allowed tempo which is around 3.5 BPM.
-        In case the tempo is lower than this slowest allowed tempo, `mutwo` will
-        automatically set the tempo to the lowest allowed tempo.
-        """
-
-        if beat_length_in_microseconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
-            beat_length_in_microseconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
-            message = (
-                "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
-                " Files. ".format(tempo_event.object_start, tempo_event)
-            )
-            message += (
-                "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
-                " '{0}' BPM.".format(
-                    mido.tempo2bpm(midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT)
-                )
-            )
-            warnings.warn(message)
-
-        return beat_length_in_microseconds
-
-    @staticmethod
     def _assert_midi_file_type_has_correct_value(midi_file_type: int):
         try:
             assert midi_file_type in (0, 1)
@@ -243,6 +220,33 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             raise ValueError(message)
 
     @staticmethod
+    def _adjust_beat_length_in_microseconds(
+        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: float
+    ) -> float:
+        """This method makes sure that ``beat_length_in_microseconds`` isn't too big.
+
+        Standard midi files define a slowest allowed tempo which is around 3.5 BPM.
+        In case the tempo is lower than this slowest allowed tempo, `mutwo` will
+        automatically set the tempo to the lowest allowed tempo.
+        """
+
+        if beat_length_in_microseconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
+            beat_length_in_microseconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
+            message = (
+                "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
+                " Files. ".format(tempo_event.object_start, tempo_event)
+            )
+            message += (
+                "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
+                " '{0}' BPM.".format(
+                    mido.tempo2bpm(midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT)
+                )
+            )
+            warnings.warn(message)
+
+        return beat_length_in_microseconds
+
+    @staticmethod
     def _volume_to_velocity(volume: numbers.Number) -> int:
         """Convert volume (floating point number from 0 to 1) to midi velocity.
 
@@ -262,8 +266,15 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
     #                         helper methods                                 #
     # ###################################################################### #
 
-    def _bpm_to_beat_length_in_microseconds(self, bpm: numbers.Number) -> int:
-        beat_length_in_seconds = self._tempo_point_converter.convert(bpm)
+    def _beats_per_minute_to_beat_length_in_microseconds(
+        self, beats_per_minute: numbers.Number
+    ) -> int:
+        """Method for converting beats per minute (BPM) to midi tempo.
+
+        Midi tempo is stated in beat length in microseconds.
+        """
+
+        beat_length_in_seconds = self._tempo_point_converter.convert(beats_per_minute)
         beat_length_in_microseconds = int(
             beat_length_in_seconds * midi_constants.MIDI_TEMPO_FACTOR
         )
@@ -370,7 +381,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
             tempo_events.absolute_times, tempo_events
         ):
             absolute_tick = self._beats_to_ticks(absolute_time)
-            beat_length_in_microseconds = self._bpm_to_beat_length_in_microseconds(
+            beat_length_in_microseconds = self._beats_per_minute_to_beat_length_in_microseconds(
                 tempo_event.object_start
             )
 
@@ -393,6 +404,8 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         pitch: parameters.abc.Pitch,
         available_midi_channels_cycle: typing.Iterator,
     ) -> typing.Tuple[mido.Message]:
+        """Generate 'pitch bending', 'note on' and 'note off' messages for one tone."""
+
         midi_channel = next(available_midi_channels_cycle)
         midi_pitch, pitch_bending_message = self._tune_pitch(
             absolute_tick_start, pitch, midi_channel
@@ -425,6 +438,14 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         volume: numbers.Number,
         control_messages: typing.Tuple[mido.Message],
     ) -> typing.Tuple[mido.Message]:
+        """Generates pitch-bend / note-on / note-off messages for each tone in a chord.
+
+        Concatenates the midi messages for every played tone with the global control
+        messages.
+
+        Gets as an input relevant data for midi message generation that has been
+        extracted from a ``mutwo.abc.Event`` object.
+        """
 
         absolute_tick_start = self._beats_to_ticks(absolute_time)
         absolute_tick_end = absolute_tick_start + self._beats_to_ticks(duration)
@@ -457,6 +478,12 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         absolute_time: numbers.Number,
         available_midi_channels_cycle: typing.Iterator,
     ) -> typing.Tuple[mido.Message]:
+        """Converts ``SimpleEvent`` (or any object that inherits from SimpleEvent).
+
+        Return tuple filled with midi messages that represent the mutwo data in the
+        midi format.
+        """
+
         extracted_data = []
 
         # try to extract the relevant data
@@ -653,6 +680,16 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         :param event_to_convert: The given event that shall be translated
             to a Midi file.
+
+        The following example generates a midi file that contains a simple ascending
+        pentatonic scale:
+
+        >>> from mutwo.events import basic, music
+        >>> from mutwo.parameters import pitches
+        >>> from mutwo.converters.frontends import midi
+        >>> ascending_scale = basic.SequentialEvent([music.NoteLike(pitches.WesternPitch(pitch), duration=1, volume=0.5) for pitch in 'c d e g a'.split(' ')])
+        >>> midi_converter = midi.MidiFileConverter('ascending_scale.mid', available_midi_channels=(0,))
+        >>> midi_converter.convert(ascending_scale)
 
         Disclaimer: when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo

@@ -1,3 +1,4 @@
+import itertools
 import unittest
 
 import mido
@@ -14,12 +15,12 @@ from mutwo.converters.frontends import midi_constants
 from mutwo.parameters import pitches
 
 
-# TODO(write tests for the more complex methods!)
-
-
 class MidiFileConverterTest(unittest.TestCase):
-    def test_bpm_to_beat_length_in_microseconds(self):
-        converter = midi.MidiFileConverter("test.mid")
+    @classmethod
+    def setUpClass(cls):
+        cls.converter = midi.MidiFileConverter("tests/converters/frontends/test.mid",)
+
+    def test_beats_per_minute_to_beat_length_in_microseconds(self):
         for bpm, beat_length_in_microseconds in (
             # bpm 60 should take one second per beat
             (60, 1000000),
@@ -27,7 +28,7 @@ class MidiFileConverterTest(unittest.TestCase):
             (120, 500000),
         ):
             self.assertEqual(
-                converter._bpm_to_beat_length_in_microseconds(bpm),
+                self.converter._beats_per_minute_to_beat_length_in_microseconds(bpm),
                 beat_length_in_microseconds,
             )
 
@@ -167,7 +168,6 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
     def test_tune_pitch(self):
-        converter = midi.MidiFileConverter("test.mid")
         data_to_tune_per_test = (
             # absolute_tick_start, pitch_to_tune, channel
             (0, pitches.WesternPitch("c", 4), 0),
@@ -203,10 +203,11 @@ class MidiFileConverterTest(unittest.TestCase):
                 ),
             )
 
-            self.assertEqual(converter._tune_pitch(*data_to_tune), expected_midi_data)
+            self.assertEqual(
+                self.converter._tune_pitch(*data_to_tune), expected_midi_data
+            )
 
     def test_tempo_events_to_midi_messages(self):
-        converter = midi.MidiFileConverter("test.mid")
         tempo_events = basic.SequentialEvent(
             [
                 basic.EnvelopeEvent(2, 60),
@@ -217,7 +218,7 @@ class MidiFileConverterTest(unittest.TestCase):
         midi_messages = tuple(
             mido.MetaMessage(
                 "set_tempo",
-                tempo=converter._bpm_to_beat_length_in_microseconds(
+                tempo=self.converter._beats_per_minute_to_beat_length_in_microseconds(
                     tempo_event.object_start
                 ),
                 time=absolute_time * midi_constants.DEFAULT_TICKS_PER_BEAT,
@@ -228,13 +229,238 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            converter._tempo_events_to_midi_messages(tempo_events), midi_messages
+            self.converter._tempo_events_to_midi_messages(tempo_events), midi_messages
         )
 
     def test_note_information_to_midi_messages(self):
-        pass
+        # loop only channel 0
+        midi_channel = 0
+        available_midi_channels_cycle = itertools.cycle((midi_channel,))
+        for note_information in (
+            (0, 100, 127, pitches.WesternPitch("c", 4)),
+            (200, 300, 0, pitches.WesternPitch("ds", 3)),
+            (121, 122, 42, pitches.JustIntonationPitch("7/4")),
+            (101221, 120122, 100, pitches.DirectPitch(443)),
+            (12, 14, 122, pitches.DirectPitch(2)),
+        ):
+            start, end, velocity, pitch = note_information
+
+            midi_pitch, pitch_bending_message = self.converter._tune_pitch(
+                start, pitch, midi_channel
+            )
+            note_on_message = mido.Message(
+                "note_on",
+                note=midi_pitch,
+                velocity=velocity,
+                time=start,
+                channel=midi_channel,
+            )
+            note_off_message = mido.Message(
+                "note_off",
+                note=midi_pitch,
+                velocity=velocity,
+                time=end,
+                channel=midi_channel,
+            )
+            expected_midi_messages = (
+                pitch_bending_message,
+                note_on_message,
+                note_off_message,
+            )
+
+            self.assertEqual(
+                self.converter._note_information_to_midi_messages(
+                    start, end, velocity, pitch, available_midi_channels_cycle
+                ),
+                expected_midi_messages,
+            )
 
     def test_extracted_data_to_midi_messages(self):
+        # TODO(is this really a test (just using the same code or code structure
+        # that is used in the tested method)?)
+
+        # loop only channel 0
+        midi_channel = 0
+        available_midi_channels_cycle = itertools.cycle((midi_channel,))
+        for extracted_data in (
+            (0, 10, (pitches.WesternPitch("c", 4),), 1, tuple([])),
+            (
+                101,
+                232,
+                (pitches.WesternPitch("ds", 2), pitches.JustIntonationPitch("3/7")),
+                0.1212,
+                (mido.Message("control_change", channel=0, value=100, time=22),),
+            ),
+        ):
+            (
+                absolute_time,
+                duration,
+                pitch_or_pitches,
+                volume,
+                control_messages,
+            ) = extracted_data
+            start = self.converter._beats_to_ticks(absolute_time)
+            end = self.converter._beats_to_ticks(duration) + start
+            velocity = self.converter._volume_to_velocity(volume)
+            expected_midi_messages = list(control_messages)
+            for control_message in expected_midi_messages:
+                control_message.time = start
+
+            for pitch in pitch_or_pitches:
+                expected_midi_messages.extend(
+                    self.converter._note_information_to_midi_messages(
+                        start, end, velocity, pitch, available_midi_channels_cycle
+                    )
+                )
+
+            self.assertEqual(
+                self.converter._extracted_data_to_midi_messages(
+                    absolute_time,
+                    duration,
+                    available_midi_channels_cycle,
+                    pitch_or_pitches,
+                    volume,
+                    control_messages,
+                ),
+                tuple(expected_midi_messages),
+            )
+
+    def test_simple_event_to_midi_messages(self):
+        # loop only channel 2
+        midi_channel = 2
+        available_midi_channels_cycle = itertools.cycle((midi_channel,))
+
+        # ########################### #
+        #         test a rest         #
+        # ########################### #
+
+        # a rest shouldn't produce any messages
+        rest = basic.SimpleEvent(2)
+        self.assertEqual(
+            self.converter._simple_event_to_midi_messages(
+                rest, 0, available_midi_channels_cycle
+            ),
+            tuple([]),
+        )
+
+        # ########################### #
+        #         test a tone         #
+        # ########################### #
+
+        tone = music.NoteLike(pitches.WesternPitch("c", 4), 2, 1)
+        absolute_time1 = 32
+        absolute_time1_in_ticks = self.converter._beats_to_ticks(absolute_time1)
+        self.assertEqual(
+            self.converter._simple_event_to_midi_messages(
+                tone, absolute_time1, available_midi_channels_cycle
+            ),
+            (
+                mido.Message(
+                    "pitchwheel",
+                    channel=midi_channel,
+                    pitch=0,
+                    time=absolute_time1_in_ticks - 1,
+                ),
+                mido.Message(
+                    "note_on",
+                    note=60,
+                    velocity=127,
+                    time=absolute_time1_in_ticks,
+                    channel=midi_channel,
+                ),
+                mido.Message(
+                    "note_off",
+                    note=60,
+                    velocity=127,
+                    time=absolute_time1_in_ticks
+                    + self.converter._beats_to_ticks(tone.duration),
+                    channel=midi_channel,
+                ),
+            ),
+        )
+
+        # ########################### #
+        #         test a chord        #
+        # ########################### #
+
+        # use two different channels
+        midi_channels = 2, 3
+        available_midi_channels_cycle = itertools.cycle(midi_channels)
+
+        chord = music.NoteLike(
+            [pitches.WesternPitch("c", 4), pitches.WesternPitch("aqs", 4)], 2, 0.5
+        )
+        absolute_time2 = 2
+        absolute_time2_in_ticks = self.converter._beats_to_ticks(absolute_time2)
+        self.assertEqual(
+            self.converter._simple_event_to_midi_messages(
+                chord, absolute_time2, available_midi_channels_cycle
+            ),
+            (
+                mido.Message(
+                    "pitchwheel",
+                    channel=midi_channels[0],
+                    pitch=0,
+                    time=absolute_time2_in_ticks - 1,
+                ),
+                mido.Message(
+                    "note_on",
+                    note=60,
+                    velocity=64,
+                    time=absolute_time2_in_ticks,
+                    channel=midi_channels[0],
+                ),
+                mido.Message(
+                    "note_off",
+                    note=60,
+                    velocity=64,
+                    time=absolute_time2_in_ticks
+                    + self.converter._beats_to_ticks(tone.duration),
+                    channel=midi_channels[0],
+                ),
+                mido.Message(
+                    "pitchwheel",
+                    channel=midi_channels[1],
+                    pitch=2048,
+                    time=absolute_time2_in_ticks - 1,
+                ),
+                mido.Message(
+                    "note_on",
+                    note=69,
+                    velocity=64,
+                    time=absolute_time2_in_ticks,
+                    channel=midi_channels[1],
+                ),
+                mido.Message(
+                    "note_off",
+                    note=69,
+                    velocity=64,
+                    time=absolute_time2_in_ticks
+                    + self.converter._beats_to_ticks(tone.duration),
+                    channel=midi_channels[1],
+                ),
+            ),
+        )
+
+    def test_sequential_event_to_midi_messages(self):
+        pass
+
+    def test_midi_messages_to_midi_track(self):
+        pass
+
+    def test_add_simple_event_to_midi_file(self):
+        pass
+
+    def test_add_sequential_event_to_midi_file(self):
+        pass
+
+    def test_add_simultaneous_event_to_midi_file(self):
+        pass
+
+    def test_event_to_midi_file(self):
+        pass
+
+    def test_convert(self):
         pass
 
 
