@@ -1,4 +1,5 @@
 import itertools
+import os
 import unittest
 
 import mido
@@ -18,7 +19,22 @@ from mutwo.parameters import pitches
 class MidiFileConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.converter = midi.MidiFileConverter("tests/converters/frontends/test.mid",)
+        cls.midi_file_path = "tests/converters/frontends/test.mid"
+        cls.converter = midi.MidiFileConverter(cls.midi_file_path)
+        cls.sequential_event = basic.SequentialEvent(
+            [
+                music.NoteLike(pitches.WesternPitch(pitch), 1, 1)
+                for pitch in "c d e f g a b".split(" ")
+            ]
+        )
+        cls.simultaneous_event = basic.SimultaneousEvent(
+            [cls.sequential_event, cls.sequential_event]
+        )
+
+    # ########################################################### #
+    # tests to make sure that the methods return the expected     #
+    # results.                                                    #
+    # ########################################################### #
 
     def test_beats_per_minute_to_beat_length_in_microseconds(self):
         for bpm, beat_length_in_microseconds in (
@@ -460,8 +476,49 @@ class MidiFileConverterTest(unittest.TestCase):
     def test_event_to_midi_file(self):
         pass
 
-    def test_convert(self):
-        pass
+    # ########################################################### #
+    # tests to make sure that the different init arguments do     #
+    # work correctly                                              #
+    # ########################################################### #
+
+    def test_correct_midi_file_type(self):
+        # make sure generated midi file has the correct midi file type
+
+        converter0 = midi.MidiFileConverter(self.midi_file_path, midi_file_type=0)
+        converter1 = midi.MidiFileConverter(self.midi_file_path, midi_file_type=1)
+
+        for converter in (converter0, converter1):
+            for event in (self.sequential_event, self.simultaneous_event):
+                converter.convert(self.simultaneous_event)
+                midi_file = mido.MidiFile(converter.path)
+                self.assertEqual(midi_file.type, converter._midi_file_type)
+                os.remove(converter.path)
+
+    def test_overriding_simple_event_to_arguments(self):
+        # make sure generated midi file has the correct midi file type
+
+        constant_pitch = pitches.WesternPitch("c")
+        constant_volume = 1
+        constant_control_message = mido.Message("control_change", value=100)
+        converter = midi.MidiFileConverter(
+            self.midi_file_path,
+            simple_event_to_pitches=lambda event: (constant_pitch,),
+            simple_event_to_volume=lambda event: constant_volume,
+            simple_event_to_control_messages=lambda event: (constant_control_message,),
+        )
+
+        converter.convert(self.simultaneous_event)
+        midi_file = mido.MidiFile(converter.path)
+        for message in midi_file:
+            if message.type == "note_on":
+                self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
+                self.assertEqual(
+                    message.velocity, converter._volume_to_velocity(constant_volume)
+                )
+            elif message.type == "control_change":
+                self.assertEqual(message.value, constant_control_message.value)
+
+        os.remove(converter.path)
 
 
 if __name__ == "__main__":

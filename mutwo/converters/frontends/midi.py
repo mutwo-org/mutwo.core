@@ -100,6 +100,11 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         The current implementation doesn't support glissandi yet (only static pitches),
         time-signatures (the written time signature is always 4/4 for now) and
         dynamically changing tempo (ritardando or accelerando).
+
+    >>> from mutwo.converters.frontends import midi
+    >>> from mutwo.parameters import pitches
+    >>> # midi file converter that assign a middle c to all events
+    >>> midi_converter = midi.MidiFileConverter('test.mid', simple_event_to_pitches=lambda event: (pitches.WesternPitch('c'),))
     """
 
     _tempo_point_converter = symmetrical.TempoPointConverter()
