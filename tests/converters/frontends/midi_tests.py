@@ -507,8 +507,9 @@ class MidiFileConverterTest(unittest.TestCase):
             simple_event_to_control_messages=lambda event: (constant_control_message,),
         )
 
-        converter.convert(self.simultaneous_event)
+        converter.convert(self.sequential_event)
         midi_file = mido.MidiFile(converter.path)
+        n_control_message = 0
         for message in midi_file:
             if message.type == "note_on":
                 self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
@@ -517,6 +518,9 @@ class MidiFileConverterTest(unittest.TestCase):
                 )
             elif message.type == "control_change":
                 self.assertEqual(message.value, constant_control_message.value)
+                n_control_message += 1
+
+        self.assertEqual(n_control_message, len(self.sequential_event))
 
         os.remove(converter.path)
 
