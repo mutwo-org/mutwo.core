@@ -24,7 +24,7 @@ class MidiFileConverterTest(unittest.TestCase):
         cls.sequential_event = basic.SequentialEvent(
             [
                 music.NoteLike(pitches.WesternPitch(pitch), 1, 1)
-                for pitch in "c d e f g a b".split(" ")
+                for pitch in "c d e f g a b a g f e d c".split(" ")
             ]
         )
         cls.simultaneous_event = basic.SimultaneousEvent(
@@ -510,19 +510,48 @@ class MidiFileConverterTest(unittest.TestCase):
         converter.convert(self.sequential_event)
         midi_file = mido.MidiFile(converter.path)
         n_control_message = 0
+        n_note_on_messages = 0
         for message in midi_file:
             if message.type == "note_on":
                 self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
                 self.assertEqual(
                     message.velocity, converter._volume_to_velocity(constant_volume)
                 )
+                n_note_on_messages += 1
             elif message.type == "control_change":
                 self.assertEqual(message.value, constant_control_message.value)
                 n_control_message += 1
 
+        self.assertEqual(n_note_on_messages, len(self.sequential_event))
         self.assertEqual(n_control_message, len(self.sequential_event))
 
         os.remove(converter.path)
+
+    def test_available_midi_channels_argument(self):
+        # make sure mutwo only writes notes to midi channel that are
+        # available and furthermore cycles through all available midi
+        # channels!
+
+        for available_midi_channels in ((0,), (0, 1, 2, 3), (0, 3, 4), (2, 11,)):
+            converter = midi.MidiFileConverter(
+                self.midi_file_path, available_midi_channels=available_midi_channels
+            )
+            converter.convert(self.sequential_event)
+            midi_file = mido.MidiFile(converter.path)
+            available_midi_channels_cycle = itertools.cycle(available_midi_channels)
+            for message in midi_file:
+                if message.type == "note_on":
+                    self.assertEqual(
+                        message.channel, next(available_midi_channels_cycle)
+                    )
+            os.remove(converter.path)
+
+    def test_distribute_midi_channels_argument(self):
+        # makes sure mutwo distributes midi channels on different
+        # sequential events according to the behaviour that is written
+        # in the MidiFileConverter docstring
+
+        pass
 
 
 if __name__ == "__main__":
