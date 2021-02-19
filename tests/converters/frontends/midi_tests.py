@@ -36,6 +36,24 @@ class MidiFileConverterTest(unittest.TestCase):
     # results.                                                    #
     # ########################################################### #
 
+    def test_assert_midi_file_type_has_correct_type(self):
+        for wrong_midi_file_type in ("hi", 2, 100, -10, 1.3, pitches.WesternPitch()):
+            self.assertRaises(
+                ValueError,
+                lambda: self.converter._assert_midi_file_type_has_correct_value(
+                    wrong_midi_file_type
+                ),
+            )
+
+    def test_assert_available_midi_channels_have_correct_value(self):
+        for problematic_available_midi_channels in ((0, 14, 19), (100,), ("hi", 12)):
+            self.assertRaises(
+                ValueError,
+                lambda: self.converter._assert_available_midi_channels_have_correct_value(
+                    problematic_available_midi_channels
+                ),
+            )
+
     def test_beats_per_minute_to_beat_length_in_microseconds(self):
         for bpm, beat_length_in_microseconds in (
             # bpm 60 should take one second per beat
