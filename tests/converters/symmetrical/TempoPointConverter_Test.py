@@ -7,19 +7,19 @@ from mutwo.parameters import tempos
 class TempoPointConverterTest(unittest.TestCase):
     def test_convert_beats_per_minute_to_seconds_per_beat(self):
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.beats_per_minute_to_seconds_per_beat(
+            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 60
             ),
             1,
         )
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.beats_per_minute_to_seconds_per_beat(
+            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 30
             ),
             2,
         )
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.beats_per_minute_to_seconds_per_beat(
+            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 120
             ),
             0.5,
@@ -30,7 +30,7 @@ class TempoPointConverterTest(unittest.TestCase):
     ):
         tempo_point = tempos.TempoPoint(40, 2)
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.extract_beats_per_minute_and_reference_from_tempo_point(
+            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, tempo_point.reference),
@@ -41,7 +41,7 @@ class TempoPointConverterTest(unittest.TestCase):
     ):
         tempo_point = tempos.TempoPoint(40)
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.extract_beats_per_minute_and_reference_from_tempo_point(
+            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, 1),
@@ -50,7 +50,7 @@ class TempoPointConverterTest(unittest.TestCase):
     def test_extract_beats_per_minute_and_reference_from_number(self):
         tempo_point = 60
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter.extract_beats_per_minute_and_reference_from_tempo_point(
+            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (60, 1),

@@ -17,7 +17,7 @@ class TempoConverterTest(unittest.TestCase):
                 ),
             ]
         )
-        envelope = converters.symmetrical.TempoConverter.make_envelope_from_tempo_events(
+        envelope = converters.symmetrical.TempoConverter._make_envelope_from_tempo_events(
             tempo_events
         )
         expected_envelope = expenvelope.Envelope.from_levels_and_durations(

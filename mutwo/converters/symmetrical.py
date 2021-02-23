@@ -28,23 +28,30 @@ __all__ = (
 
 
 class TempoPointConverter(converters.abc.Converter):
-    """Simple class to convert a TempoPoint to beat-length-in-seconds.
+    """Class to convert a ``TempoPoint`` to beat-length-in-seconds.
 
-    A TempoPoint is defined as an object that has a particular tempo in
+    A ``TempoPoint`` is defined as an object that has a particular tempo in
     beats per seconds (BPM) and a reference value (1 for a quarter note, 4
-    for a whole note, etc.). Besides elaborate mutwo.parameters.tempo.TempoPoint
-    objects, any number can also be interpreted as a TempoPoint. In this case
+    for a whole note, etc.). Besides elaborate ``mutwo.parameters.tempo.TempoPoint``
+    objects, any number can also be interpreted as a ``TempoPoint``. In this case
     the number simply represents the BPM number and the reference will be set to 1.
     The returned beat-length-in-seconds always indicates the length for one quarter
     note.
+
+    **Example:**
+
+    >>> from mutwo.converters import symmetrical
+    >>> tempo_point_converter = symmetrical.TempoPointConverter()
     """
 
     @staticmethod
-    def beats_per_minute_to_seconds_per_beat(beats_per_minute: numbers.Number) -> float:
+    def _beats_per_minute_to_seconds_per_beat(
+        beats_per_minute: numbers.Number,
+    ) -> float:
         return 60 / beats_per_minute
 
     @staticmethod
-    def extract_beats_per_minute_and_reference_from_tempo_point(
+    def _extract_beats_per_minute_and_reference_from_tempo_point(
         tempo_point: TempoPoint,
     ) -> typing.Tuple[numbers.Number]:
         try:
@@ -67,16 +74,32 @@ class TempoPointConverter(converters.abc.Converter):
         return beats_per_minute, reference
 
     def convert(self, tempo_point_to_convert: TempoPoint) -> float:
-        """Converts a TempoPoint to beat-length-in-seconds."""
+        """Converts a ``TempoPoint`` to beat-length-in-seconds.
+
+        :param tempo_point_to_convert: A tempo point defines the active tempo
+            from which the beat-length-in-seconds shall be calculated. The argument
+            can either be any number (which will be interpreted as beats per
+            minute [BPM]) or a ``mutwo.parameters.tempos.TempoPoint`` object.
+        :return: The duration of one beat in seconds within the passed tempo.
+
+        **Example:**
+
+        >>> from mutwo.converters import symmetrical
+        >>> converter = symmetrical.TempoPointConverter()
+        >>> converter.convert(60)  # one beat in tempo 60 bpm takes 1 second
+        1
+        >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
+        0.5
+        """
 
         (
             beats_per_minute,
             reference,
-        ) = self.extract_beats_per_minute_and_reference_from_tempo_point(
+        ) = self._extract_beats_per_minute_and_reference_from_tempo_point(
             tempo_point_to_convert
         )
         return (
-            TempoPointConverter.beats_per_minute_to_seconds_per_beat(beats_per_minute)
+            TempoPointConverter._beats_per_minute_to_seconds_per_beat(beats_per_minute)
             / reference
         )
 
@@ -93,16 +116,17 @@ class TempoConverter(converters.abc.Converter):
         via numbers for start and end attributes (the numbers will be interpreted
         as BPM [beats per minute]) or via mutwo.parameters.tempo.TempoPoint objects.
 
-    Example:
-        >>> from mutwo.converters import symmetrical
-        >>> from mutwo.events import basic
-        >>> from mutwo.parameters import tempos
-        >>> tempo_events = basic.SequentialEvent(
-        >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
-        >>>      basic.EnvelopeEvent(2, 30, 50),                 # acc. from 30 to 50
-        >>>      basic.EnvelopeEvent(5, 50)]                     # stay on bpm = 50
-        >>> )
-        >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
+    **Example:**
+
+    >>> from mutwo.converters import symmetrical
+    >>> from mutwo.events import basic
+    >>> from mutwo.parameters import tempos
+    >>> tempo_events = basic.SequentialEvent(
+    >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
+    >>>      basic.EnvelopeEvent(2, 30, 50),                 # acc. from 30 to 50
+    >>>      basic.EnvelopeEvent(5, 50)]                     # stay on bpm = 50
+    >>> )
+    >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
     """
 
     _tempo_point_converter = TempoPointConverter()
@@ -124,7 +148,7 @@ class TempoConverter(converters.abc.Converter):
         return beat_length_at_start_and_end
 
     @staticmethod
-    def make_envelope_from_tempo_events(
+    def _make_envelope_from_tempo_events(
         tempo_events: TempoEvents,
     ) -> expenvelope.Envelope:
         """Convert a list of TempoEvents to an Envelope."""
@@ -158,7 +182,7 @@ class TempoConverter(converters.abc.Converter):
     @tempo_events.setter
     def tempo_events(self, tempo_events: TempoEvents):
         self._tempo_events = events.basic.SequentialEvent(tempo_events)
-        self._envelope = self.make_envelope_from_tempo_events(self.tempo_events)
+        self._envelope = self._make_envelope_from_tempo_events(self.tempo_events)
 
     @property
     def envelope(self) -> expenvelope.Envelope:
@@ -232,9 +256,26 @@ class TempoConverter(converters.abc.Converter):
         on the tempo curve.
 
         :param event_to_convert: The event to convert. Can be any object
-            that inherits from mutwo.events.abc.Event. If the event to convert
-            is longer than tempo curve of the TempoConverter, the last tempo
-            of the curve will be hold.
+            that inherits from ``mutwo.events.abc.Event``. If the event that
+            shall be converted is longer than the tempo curve of the
+            ``TempoConverter``, then the last tempo of the curve will be hold.
+        :return: A new ``Event`` object which duration property has been adapted
+            by the tempo curve of the ``TempoConverter``.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> from mutwo.parameters import tempos
+        >>> from mutwo.converters import symmetrical
+        >>> tempo_events = basic.SequentialEvent(
+        >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
+        >>>      basic.EnvelopeEvent(2, 60, 120),                # acc. from 60 to 120
+        >>>      basic.EnvelopeEvent(5, 120)]                    # stay on bpm = 120
+        >>> )
+        >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
+        >>> my_events = basic.SequentialEvent([basic.SimpleEvent(d) for d in (3, 2, 5)])
+        >>> my_tempo_converter.convert(my_events)
+        SequentialEvent([SimpleEvent(duration = 3.0), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2.5)])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._apply_tempo_envelope_on_event(copied_event_to_convert, 0)
@@ -290,6 +331,14 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
             return 40 * (loudness_in_sone + 0.0005) ** 0.35
 
     def convert(self, frequency: numbers.Number) -> numbers.Number:
+        """Calculates the needed amplitude to reach a particular loudness for the entered frequency.
+
+        :param frequency: A frequency in Hertz for which the necessary amplitude
+            shall be calculated.
+        :return: Return the amplitude for a sine tone to reach the converters
+            loudness when played with the entered frequency.
+        """
+
         # (1) calculates necessary sound pressure level depending on the frequency
         #     and loudness (to get the same loudness over all frequencies)
         sound_pressure_level_for_perceived_loudness_based_on_frequency = float(
@@ -374,7 +423,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
         return sum(r_sum)
 
     def convert(
-        self, rhythmical_strata_to_convert: typing.Tuple[int]
+        self, rhythmical_strata_to_convert: typing.Iterable[int]
     ) -> typing.Tuple[int]:
         """Convert indispensability for each beat of a particular metre.
 
@@ -384,6 +433,11 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
             amount of available beats within the particular metre. Earlier
             prime numbers in the rhythmical strata are considered to be more
             important than later prime numbers.
+        :return: A tuple of a integer for each beat of the respective metre where
+            each integer describes how accented the particular beat is (the higher the
+            number, the more important the beat).
+
+        **Example:**
 
         >>> from mutwo.converters import symmetrical
         >>> metricity_converter = symmetrical.RhythmicalStrataToIndispensabilityConverter()
