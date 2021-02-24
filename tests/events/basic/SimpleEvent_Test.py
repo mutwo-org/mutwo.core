@@ -29,7 +29,9 @@ class SimpleEventTest(unittest.TestCase):
         simple_event = basic.SimpleEvent(1)
         new_unknown_parameter = 10
         new_unknown_parameter_name = "new"
-        simple_event.set_parameter("new", new_unknown_parameter)
+        simple_event.set_parameter(
+            "new", new_unknown_parameter, set_unassigned_parameter=True
+        )
         self.assertEqual(
             simple_event.get_parameter(new_unknown_parameter_name),
             new_unknown_parameter,

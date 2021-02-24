@@ -94,6 +94,11 @@ class Event(abc.ABC):
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
             object and has to return a new value that will be assigned to the object.
+        :param set_unassigned_parameter: If set to False a new parameter will only be
+            assigned to an Event if the Event already has a attribute with the
+            respective `parameter_name`. If the Event doesn't know the attribute yet
+            and `set_unassigned_parameter` is False, the method call will simply be
+            ignored.
 
         **Example:**
 
@@ -225,8 +230,16 @@ class ComplexEvent(Event, list):
             typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
             typing.Any,
         ],
+        set_unassigned_parameter: bool = True,
     ) -> None:
-        [event.set_parameter(parameter_name, object_or_function) for event in self]
+        [
+            event.set_parameter(
+                parameter_name,
+                object_or_function,
+                set_unassigned_parameter=set_unassigned_parameter,
+            )
+            for event in self
+        ]
 
     @decorators.add_return_option
     def mutate_parameter(

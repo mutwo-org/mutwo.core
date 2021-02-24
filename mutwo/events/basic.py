@@ -125,6 +125,7 @@ class SimpleEvent(events.abc.Event):
             typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
             typing.Any,
         ],
+        set_unassigned_parameter: bool = True,
     ) -> None:
         """Sets event parameter to new value.
 
@@ -133,6 +134,11 @@ class SimpleEvent(events.abc.Event):
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
             object and has to return a new value that will be assigned to the object.
+        :param set_unassigned_parameter: If set to False a new parameter will only be
+            assigned to an Event if the Event already has a attribute with the
+            respective `parameter_name`. If the Event doesn't know the attribute yet
+            and `set_unassigned_parameter` is False, the method call will simply be
+            ignored.
 
         **Example:**
 
@@ -144,17 +150,21 @@ class SimpleEvent(events.abc.Event):
         >>> simple_event.set_parameter('duration', 3)
         >>> simple_event.duration
         3
-        >>> simple_event.set_parameter('unknown_parameter', 10)  # this will be ignored
+        >>> simple_event.set_parameter('unknown_parameter', 10, set_unassigned_parameter=False)  # this will be ignored
         >>> simple_event.unknown_parameter
         AttributeError: 'SimpleEvent' object has no attribute 'unknown_parameter'
+        >>> simple_event.set_parameter('unknown_parameter', 10, set_unassigned_parameter=True)  # this will be written
+        >>> simple_event.unknown_parameter
+        10
         """
 
         old_parameter = self.get_parameter(parameter_name)
-        try:
-            new_parameter = object_or_function(old_parameter)
-        except TypeError:
-            new_parameter = object_or_function
-        setattr(self, parameter_name, new_parameter)
+        if set_unassigned_parameter or old_parameter is not None:
+            if isinstance(object_or_function, typing.Callable):
+                new_parameter = object_or_function(old_parameter)
+            else:
+                new_parameter = object_or_function
+            setattr(self, parameter_name, new_parameter)
 
     @decorators.add_return_option
     def mutate_parameter(
