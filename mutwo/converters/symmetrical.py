@@ -337,6 +337,15 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
             shall be calculated.
         :return: Return the amplitude for a sine tone to reach the converters
             loudness when played with the entered frequency.
+
+        **Example:**
+
+        >>> from mutwo.converters import symmetrical
+        >>> loudness_converter = symmetrical.LoudnessToAmplitudeConverter(1)
+        >>> loudness_converter.convert(200)
+        0.009364120303317933
+        >>> loudness_converter.convert(50)
+        0.15497924558613232
         """
 
         # (1) calculates necessary sound pressure level depending on the frequency
@@ -368,10 +377,10 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
     """Builds metrical indispensability for a rhythmical strata.
 
     This technique has been described by Clarence Barlow in `On the Quantification
-    of Harmony and Metre` (1992). The technique aims to describe the weight
+    of Harmony and Metre` (1992). The technique aims to model the weight
     of single beats in a particular metre. It allocates each beat of a metre
-    to a specific value that describes the `indispensability` of a beat. Please note
-    that the higher the assigned value, the more accented the beat.
+    to a specific value that describes the `indispensability` of a beat: the higher the
+    assigned value, the more accented the beat.
     """
 
     @staticmethod
@@ -395,7 +404,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
 
     @staticmethod
     def _indispensability_of_nth_beat(
-        beat_index: int, rhythmical_strata: typing.Tuple[int]
+        beat_index: int, rhythmical_strata: typing.Iterable[int]
     ) -> int:
         """Calculate indispensability for the nth beat of a metre.
 
@@ -429,7 +438,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
 
         :param rhythmical_strata_to_convert: The rhythmical strata defines
             the metre for which the indispensability shall be calculated. The
-            rhythmical strata is a list of prime numbers that product is the
+            rhythmical strata is a list of prime numbers which product is the
             amount of available beats within the particular metre. Earlier
             prime numbers in the rhythmical strata are considered to be more
             important than later prime numbers.

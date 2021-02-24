@@ -17,9 +17,11 @@ class NoteLike(events.basic.SimpleEvent):
     """NoteLike represents a traditional discreet musical object.
 
     :param pitch_or_pitches: The pitch or pitches of the event. This can
-        be a pitch object (any class that inherits from mutwo.parameters.abc.Pitch),
-        a list of pitch objects or a string.
-    :param duration: The duration of the event.
+        be a pitch object (any class that inherits from ``mutwo.parameters.abc.Pitch``)
+        or a list of pitch objects.
+    :param new_duration: The duration of ``NoteLike``. This can be any number.
+        The unit of the duration is up to the interpretation of the user and the
+        respective converter routine that will be used.
     :param volume: The volume of the event.
 
     By default mutwo doesn't differentiate between Tones, Chords and
@@ -27,6 +29,13 @@ class NoteLike(events.basic.SimpleEvent):
     represent any of the mentioned definitions (e.g. a NoteLike object
     with several pitches may be called a 'Chord' and a NoteLike object
     with only one pitch may be called a 'Tone').
+
+    **Example:**
+
+    >>> from mutwo.parameters import pitches
+    >>> from mutwo.events import music
+    >>> tone = music.NoteLike(pitches.WesternPitch('a'), 1, 1)
+    >>> chord = music.NoteLike([pitches.WesternPitch('a'), pitches.JustIntonationPitch('3/2')], 1, 1)
     """
 
     def __init__(
@@ -42,6 +51,7 @@ class NoteLike(events.basic.SimpleEvent):
     @property
     def pitch_or_pitches(self) -> list:
         """The pitch or pitches of the event."""
+
         return self._pitch_or_pitches
 
     @pitch_or_pitches.setter

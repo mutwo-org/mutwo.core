@@ -22,7 +22,11 @@ __all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent", "EnvelopeEvent
 class SimpleEvent(events.abc.Event):
     """Event-Object, which doesn't contain other Event-Objects (the node or leaf).
 
-    :param new_duration: The duration of the SimpleEvent.
+    :param new_duration: The duration of the ``SimpleEvent``. This can be any number.
+        The unit of the duration is up to the interpretation of the user and the
+        respective converter routine that will be used.
+
+    **Example:**
 
     >>> from mutwo.events import basic
     >>> simple_event = basic.SimpleEvent(2)
@@ -235,8 +239,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
         """Get event which is active at the passed absolute_time.
 
-            :param absolute_time: The absolute time where the method shall search
-                for the active event.
+        :param absolute_time: The absolute time where the method shall search
+            for the active event.
 
         **Example:**
 
@@ -310,6 +314,9 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
 
 class EnvelopeEvent(SimpleEvent):
+    """
+    """
+
     def __init__(
         self,
         duration: parameters.abc.DurationType,

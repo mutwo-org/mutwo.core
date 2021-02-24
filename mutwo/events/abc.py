@@ -21,8 +21,8 @@ class Event(abc.ABC):
 
         The unit of the duration is up to the interpretation of the user
         and the respective conversion routine that will be used. For
-        instance when using the CsoundScoreConverter, the duration will be
-        understood as seconds, while the MidiFileConverter will read duration
+        instance when using the ``CsoundScoreConverter``, the duration will be
+        understood as seconds, while the ``MidiFileConverter`` will read duration
         as beats.
         """
         raise NotImplementedError
@@ -63,7 +63,7 @@ class Event(abc.ABC):
     def get_parameter(self, parameter_name: str) -> typing.Union[tuple, typing.Any]:
         """Return event attribute with the entered name.
 
-        :parameter_name: The name of the attribute that shall be returned.
+        :param parameter_name: The name of the attribute that shall be returned.
         :returns: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
             add None to the tuple for the respective event.
