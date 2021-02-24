@@ -238,6 +238,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             :param absolute_time: The absolute time where the method shall search
                 for the active event.
 
+        **Example:**
+
         >>> from mutwo.events import basic
         >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
         >>> sequential_event.get_event_at(1)
