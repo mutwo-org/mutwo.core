@@ -26,6 +26,19 @@ class ActivityLevel(object):
     The second three have two 1s, etc. Activity-levels of 0 and 10 would return
     never active and always active respectively."
     (see https://michael-edwards.org/sc/robodoc/activity-levels_lsp.html#robo23)
+
+    **Example:**
+
+    >>> from mutwo.generators import edwards
+    >>> activity_levels = edwards.ActivityLevel()
+    >>> activity_levels(0)  # activity level 0 will always return False
+    False
+    >>> activity_levels(10)  # activity level 10 will always return True
+    True
+    >>> activity_levels(7)  # activity level 7 will mostly return True
+    True
+    >>> tuple(activity_levels(7) for _ in range(10))
+    (True, False, True, True, False, True, True, False, True, True)
     """
 
     _allowed_range = tuple(range(len(edwards_constants.ACTIVITY_LEVELS)))

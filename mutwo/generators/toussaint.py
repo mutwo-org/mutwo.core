@@ -9,10 +9,19 @@ __all__ = ("euclidean", "paradiddle", "alternating_hands")
 
 
 def euclidean(size: int, distribution: int) -> typing.Tuple[int]:
-    """Return euclidean rhythm as described in a 2005 paper by Godfried Toussaint.
+    """Return euclidean rhythm as described in a 2005 paper by G. T. Toussaint.
 
     :param size: how many beats the rhythm contains
     :param distribution: how many beats are played
+    :return: The rhythm in relative time.
+
+    **Example:**
+
+    >>> from mutwo.generators import toussaint
+    >>> toussaint.euclidean(8, 4)
+    (2, 2, 2, 2)
+    >>> toussaint.euclidean(7, 5)
+    (2, 1, 1, 2, 1)
 
     The title of Toussaints paper is
     "The Euclidean Algorithm Generates Traditional Musical Rhythms".
@@ -37,14 +46,21 @@ def _mirror(pattern: typing.Tuple[bool]) -> typing.Tuple[bool]:
 
 
 def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int]]:
-    """Generates rhythm using the paraddidle method described by G. T. Toussaint.
+    """Generates rhythm using the paradiddle method described by G. T. Toussaint.
 
     :param size: how many beats the resulting rhythm shall last. 'Size' has to be
         divisible by 2 because of the symmetrical structure of the generated rhythm.
-
     :return: Return nested tuple that contains two tuple where each tuple represents
         one rhythm (both rhythms are complementary to each other). The rhythms are
         encoded in absolute time values.
+
+    **Example:**
+
+    >>> from mutwo.generators import toussaint
+    >>> toussaint.paradiddle(8)
+    ((0, 2, 3, 5), (1, 4, 6, 7))
+    >>> toussaint.euclidean(6)
+    ((0, 4, 5), (1, 2, 3))
 
     The paradiddle algorithm has been described by Godfried T. Toussaint
     in his paper 'Generating “Good” Musical Rhythms Algorithmically'.
@@ -82,10 +98,17 @@ def alternating_hands(
     """Generates rhythm using the alternating hands method described by G. T. Toussaint.
 
     :param seed_rhythm: rhythm that shall be distributed on two hands.
-
     :return: Return nested tuple that contains two tuple where each tuple represents
         one rhythm (both rhythms are complementary to each other). The rhythms are
         encoded in absolute time values.
+
+    **Example:**
+
+    >>> from mutwo.generators import toussaint
+    >>> toussaint.alternating_hands((2, 2))
+    ((0, 6), (2, 4))
+    >>> toussaint.alternating_hands((3, 2, 2))
+    ((0, 5, 10), (3, 7, 12))
 
     The alternating hands algorithm has been described by Godfried T. Toussaint
     in his paper 'Generating “Good” Musical Rhythms Algorithmically'.

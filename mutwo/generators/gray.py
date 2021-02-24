@@ -6,10 +6,27 @@ __all__ = ("reflected_binary_code",)
 
 
 def reflected_binary_code(length: int, modulus: int) -> typing.Tuple[typing.Tuple[int]]:
-    """Returns the length-tuple reflected binary code mod modulus.
+    """Make gray code where each tuple has `length` items with `modulus` different numbers.
 
     :param length: how long one code is
     :param modulus: how many different numbers are included
+
+    **Example:**
+
+    >>> from mutwo.generators import gray
+    >>> gray.reflected_binary_code(2, 2)
+    ((0, 0), (0, 1), (1, 1), (1, 0))
+    >>> gray.reflected_binary_code(3, 2)
+    ((0, 0, 0),
+    (0, 0, 1),
+    (0, 1, 1),
+    (0, 1, 0),
+    (1, 1, 0),
+    (1, 1, 1),
+    (1, 0, 1),
+    (1, 0, 0))
+    >>> gray.reflected_binary_code(2, 3)
+    ((0, 0), (0, 1), (0, 2), (1, 2), (1, 1), (1, 0), (2, 0), (2, 1), (2, 2))
 
     Basic code has been copied from:
         https://yetalengthothermodulusathblog.com/tag/gray-codes/
