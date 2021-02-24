@@ -8,7 +8,22 @@
 
 ### disclaimer: This framework is still in an early stage of development and the API could still change until the first pypi release.
 
-An event based framework for composing music or other time-based arts in Python.
+**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python. It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, [csound](http://www.csounds.com/) scores, musical notation with [Lilypond](lilypond.org/) via [abjad](https://github.com/Abjad/abjad)). The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures, the possibility to stay as long as possible implicit (with the option to start explicitly) and an easily extensible and tweakable software design.
+
+The following example generates a short midi file:
+
+```python3
+from mutwo.events import basic, music
+from mutwo.parameters import pitches
+from mutwo.converters import frontends
+simple_melody = basic.SequentialEvent([music.NoteLike(pitches.WesternPitch(pitch_name), duration=0.5, volume=0.75) for pitch_name in ('c', 'a', 'g', 'e')])
+midi_file_converter = frontends.midi.MidiFileConverter('my_simple_melody.mid')
+midi_file_converter.convert(simple_melody)
+```
+
+### Documentation
+
+For more information how to use **mutwo** read the [documentation](https://mutwo.readthedocs.io/en/latest/).
 
 
 ### Installation
@@ -30,8 +45,3 @@ To install all extra requirements simply run:
 ```sh
 pip3 install .[all]
 ```
-
-
-### Documentation
-
-An experimental documentation can be found [here](https://mutwo.readthedocs.io/en/latest/).
