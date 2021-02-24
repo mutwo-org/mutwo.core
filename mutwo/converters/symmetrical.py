@@ -111,10 +111,10 @@ class TempoConverter(converters.abc.Converter):
     """Class for applying tempo curves on mutwo events.
 
     :param tempo_events: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a SequentialEvent that is filled
-        with EnvelopeEvent objects. Each EnvelopeEvent can either be initialised
+        mutwo events. This is expected to be a ``SequentialEvent`` that is filled
+        with ``EnvelopeEvent`` objects. Each ``EnvelopeEvent`` can either be initialised
         via numbers for start and end attributes (the numbers will be interpreted
-        as BPM [beats per minute]) or via mutwo.parameters.tempo.TempoPoint objects.
+        as BPM [beats per minute]) or via ``mutwo.parameters.tempo.TempoPoint`` objects.
 
     **Example:**
 
