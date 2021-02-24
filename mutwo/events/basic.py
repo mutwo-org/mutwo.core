@@ -101,6 +101,16 @@ class SimpleEvent(events.abc.Event):
         :returns: Return the value that has been assigned to the passed
             parameter_name. If an event doesn't posses the asked parameter,
             the method will simply return None.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> simple_event = basic.SimpleEvent(2)
+        >>> simple_event.pitch = 200
+        >>> simple_event.get_parameter('pitch')
+        200
+        >>> simple_event.get_parameter('pitches')
+        None
         """
         try:
             return getattr(self, parameter_name)
@@ -123,6 +133,20 @@ class SimpleEvent(events.abc.Event):
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
             object and has to return a new value that will be assigned to the object.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> simple_event = basic.SimpleEvent(2)
+        >>> simple_event.set_parameter('duration', lambda old_duration: old_duration * 2)
+        >>> simple_event.duration
+        4
+        >>> simple_event.set_parameter('duration', 3)
+        >>> simple_event.duration
+        3
+        >>> simple_event.set_parameter('unknown_parameter', 10)  # this will be ignored
+        >>> simple_event.unknown_parameter
+        AttributeError: 'SimpleEvent' object has no attribute 'unknown_parameter'
         """
 
         old_parameter = self.get_parameter(parameter_name)

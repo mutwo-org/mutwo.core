@@ -68,6 +68,8 @@ class Event(abc.ABC):
             event. If an event doesn't posses the asked parameter, mutwo will simply
             add None to the tuple for the respective event.
 
+        **Example:**
+
         >>> from mutwo.events import basic
         >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
         >>> sequential_event.get_parameter('duration')
@@ -92,6 +94,8 @@ class Event(abc.ABC):
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
             object and has to return a new value that will be assigned to the object.
+
+        **Example:**
 
         >>> from mutwo.events import basic
         >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
@@ -122,6 +126,8 @@ class Event(abc.ABC):
         that know methods which mutate themselves. Then 'mutate_parameter' is a
         convenient wrapper to call the methods of those parameters for all children
         events.
+
+        **Example:**
 
         >>> from mutwo.events import basic, music
         >>> from mutwo.parameters import pitches
@@ -162,6 +168,8 @@ class Event(abc.ABC):
             cut up shall start.
         :param end: number that indicates the point when the cut
             up shall end.
+
+        **Example:**
 
         >>> from mutwo.events import basic
         >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
