@@ -30,7 +30,7 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
     This class helps generating score files for the "domain-specific computer
     programming language for audio programming" Csound (see http://www.csounds.com/).
 
-    CsoundScoreConverter extracts data from mutwo Events and assign it to
+    ``CsoundScoreConverter`` extracts data from mutwo Events and assign it to
     specific p-fields. The mapping of Event attributes to p-field values has
     to be defined by the user via keyword arguments during class initialization.
 
