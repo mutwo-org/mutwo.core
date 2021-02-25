@@ -6,14 +6,14 @@ from mutwo import converters
 class LoudnessToAmplitudeConverterTest(unittest.TestCase):
     def test_decibel_to_amplitude_ratio(self):
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_amplitude_ratio(
                 0
             ),
             1,
         )
         self.assertEqual(
             round(
-                converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio(
+                converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_amplitude_ratio(
                     -6
                 ),
                 2,
@@ -22,7 +22,7 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
         )
         self.assertEqual(
             round(
-                converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio(
+                converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_amplitude_ratio(
                     -12
                 ),
                 2,
@@ -31,13 +31,13 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
         )
         # different reference amplitude
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_amplitude_ratio(
                 0, 0.5
             ),
             0.5,
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_amplitude_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_amplitude_ratio(
                 0, 2
             ),
             2,
@@ -45,19 +45,19 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
 
     def test_decibel_to_power_ratio(self):
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_power_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_power_ratio(
                 0
             ),
             1,
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_power_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_power_ratio(
                 -6
             ),
             0.251188643150958,
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.decibel_to_power_ratio(
+            converters.symmetrical.LoudnessToAmplitudeConverter._decibel_to_power_ratio(
                 6
             ),
             3.9810717055349722,
@@ -65,13 +65,13 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
 
     def test_sone_to_phon(self):
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.sone_to_phon(1), 40
+            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(1), 40
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.sone_to_phon(2), 50
+            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(2), 50
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter.sone_to_phon(0.5),
+            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(0.5),
             31.39434452534506,
         )
 
