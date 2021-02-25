@@ -1,4 +1,4 @@
-"""This module contains several generic utility functions."""
+"""This module contains generic utility functions."""
 
 import bisect
 import functools
@@ -29,7 +29,25 @@ def scale(
     new_min: numbers.Number,
     new_max: numbers.Number,
 ) -> numbers.Number:
-    """Scale a value from one range to another range."""
+    """Scale a value from one range to another range.
+
+    :param value: The value that shall be scaled.
+    :param old_min: The minima of the old range.
+    :param old_max: The maxima of the old range.
+    :param new_min: The minima of the new range.
+    :param new_max: The maxima of the new range.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.scale(1, 0, 1, 0, 100)
+    100
+    >>> tools.scale(0.5, 0, 1, 0, 100)
+    50
+    >>> tools.scale(0.2, 0, 1, 0, 100)
+    20
+    """
+
     try:
         assert old_min <= value <= old_max
     except AssertionError:
@@ -41,33 +59,75 @@ def scale(
     return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
 
 
-def accumulate_from_n(iterable: typing.Iterable, n: numbers.Number) -> typing.Iterator:
-    """Accumulates iterable starting with value n."""
+def accumulate_from_n(
+    iterable: typing.Iterable[numbers.Number], n: numbers.Number
+) -> typing.Iterator:
+    """Accumulates iterable starting with value n.
+
+    :param iterable: The iterable which values shall be accumulated.
+    :param n: The start number from which shall be accumulated.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.accumulate_from_n((4, 2, 3), 0)
+    (0, 4, 6, 9)
+    >>> tools.accumulate_from_n((4, 2, 3), 2)
+    (2, 6, 8, 11)
+    """
     return itertools.accumulate(itertools.chain((n,), iterable))
 
 
-def accumulate_from_zero(iterable: typing.Iterable) -> typing.Iterator:
-    """Accumulates iterable starting from 0."""
+def accumulate_from_zero(iterable: typing.Iterable[numbers.Number]) -> typing.Iterator:
+    """Accumulates iterable starting from 0.
+
+    :param iterable: The iterable which values shall be accumulated.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.accumulate_from_zero((4, 2, 3), 0)
+    (0, 4, 6, 9)
+    """
     return accumulate_from_n(iterable, 0)
 
 
 def insert_next_to(
-    iterableuence: typing.MutableSequence,
+    iterable: typing.MutableSequence,
     item_to_find: typing.Any,
     distance: int,
     item_to_insert: typing.Any,
 ):
     """Insert an item into a list relative to the first item equal to a certain value."""
-    index = list(iterableuence).index(item_to_find)
+
+    index = list(iterable).index(item_to_find)
     if distance == 0:
-        iterableuence[index] = item_to_insert
+        iterable[index] = item_to_insert
     else:
         real_distance = distance + 1 if distance < 0 else distance
-        iterableuence.insert(index + real_distance, item_to_insert)
+        iterable.insert(index + real_distance, item_to_insert)
 
 
-def find_closest_index(item: float, data: tuple, key: typing.Callable = None) -> int:
-    """Return index of element in data with smallest difference to item"""
+def find_closest_index(
+    item: numbers.Number,
+    data: typing.Iterable,
+    key: typing.Callable[[typing.Any], numbers.Number] = None,
+) -> int:
+    """Return index of element in ``data`` with smallest difference to ``item``.
+
+    :param item: The item from which the closest item shall be found.
+    :param data: The data to which the closest item shall be found.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.find_closest_index(2, (1, 4, 5))
+    0
+    >>> tools.find_closest_index(127, (100, 4, 300, 53, 129))
+    4
+    >>> tools.find_closest_index(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
+    0
+    """
 
     if key is not None:
         research_data = tuple(map(key, data))
@@ -92,8 +152,27 @@ def find_closest_index(item: float, data: tuple, key: typing.Callable = None) ->
     return research_data.index(sorted_research_data[index])
 
 
-def find_closest_item(item: float, data: tuple, key: typing.Callable = None) -> float:
-    """Return element in data with smallest difference to item"""
+def find_closest_item(
+    item: numbers.Number,
+    data: typing.Iterable,
+    key: typing.Callable[[typing.Any], numbers.Number] = None,
+) -> float:
+    """Return element in ``data`` with smallest difference to ``item``.
+
+    :param item: The item from which the closest item shall be found.
+    :param data: The data to which the closest item shall be found.
+    :return: The closest number to ``item`` in ``data``.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.find_closest_item(2, (1, 4, 5))
+    1
+    >>> tools.find_closest_item(127, (100, 4, 300, 53, 129))
+    129
+    >>> tools.find_closest_item(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
+    ('hi', 100)
+    """
     return data[find_closest_index(item, data, key=key)]
 
 
@@ -125,12 +204,22 @@ def uniqify_iterable(
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.
 
     :param iterable: The iterable which items shall be uniqified.
-
-    :return iterable: Return uniqified version of the entered iterable.
+    :return: Return uniqified version of the entered iterable.
         The function will try to return the same type of the passed
         iterable. If Python raises an error during initialisation of
         the original iterable type, the function will simply return
         a tuple.
+
+    **Example:**
+
+    >>> from mutwo.parameters import pitches
+    >>> from mutwo.utilities import tools
+    >>> tools.uniqify_iterable([pitches.WesternPitch(pitch_name) for pitch_name in 'c d e c d e e f a c a'.split(' ')])
+    [WesternPitch(c4),
+    WesternPitch(d4),
+    WesternPitch(e4),
+    WesternPitch(f4),
+    WesternPitch(a4)]
     """
 
     sorted_iterable = sorted(iterable, key=sort_key)
@@ -147,6 +236,17 @@ def uniqify_iterable(
 
 def cyclic_permutations(iterable: typing.Iterable[typing.Any]) -> typing.Generator:
     """Cyclic permutation of an iterable. Return a generator object.
+
+    :param iterable: The iterable from which cyclic permutations shall be generated.
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> permutations = tools.cyclic_permutations((1, 2, 3, 4))
+    >>> next(permutations)
+    (2, 3, 4, 1)
+    >>> next(permutations)
+    (3, 4, 1, 2)
 
     Adapted function from the reply of Paritosh Singh here
     https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531
