@@ -28,7 +28,7 @@ __all__ = (
 
 
 class TempoPointConverter(converters.abc.Converter):
-    """Class to convert a ``TempoPoint`` to beat-length-in-seconds.
+    """Convert a ``TempoPoint`` with BPM to beat-length-in-seconds.
 
     A ``TempoPoint`` is defined as an object that has a particular tempo in
     beats per seconds (BPM) and a reference value (1 for a quarter note, 4
@@ -287,7 +287,7 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
 
     :param perceived_loudness_in_sone: The subjectively perceived loudness that
         the resulting signal shall have (in the unit `Sone`).
-    :param loudspeaker_frequency_response: Optionally the Frequency Response
+    :param loudspeaker_frequency_response: Optionally the frequency response
         of the used loudspeaker can be added for balancing out uneven curves in
         the loudspeakers frequency response. The frequency response is defined
         with an ``expenvelope.Envelope`` object.
