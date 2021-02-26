@@ -14,6 +14,7 @@ from mutwo.converters.frontends import midi_constants
 
 # parameters
 from mutwo.parameters import pitches
+from mutwo.parameters import volumes
 
 
 class MidiFileConverterTest(unittest.TestCase):
@@ -84,26 +85,6 @@ class MidiFileConverterTest(unittest.TestCase):
                 tempo_event1, tempo_event1.object_start
             ),
             midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT,
-        )
-
-    def test_volume_to_velocity(self):
-        volume0 = 1
-        volume1 = 0
-        volume2 = 2
-        volume3 = -100
-        volume4 = 0.5
-        volume5 = 0.2
-        self.assertEqual(midi.MidiFileConverter._volume_to_velocity(volume0), 127)
-        self.assertEqual(midi.MidiFileConverter._volume_to_velocity(volume1), 0)
-        self.assertEqual(midi.MidiFileConverter._volume_to_velocity(volume2), 127)
-        self.assertEqual(midi.MidiFileConverter._volume_to_velocity(volume3), 0)
-        self.assertEqual(
-            midi.MidiFileConverter._volume_to_velocity(volume4),
-            int(round(127 * volume4)),
-        )
-        self.assertEqual(
-            midi.MidiFileConverter._volume_to_velocity(volume5),
-            int(round(127 * volume5)),
         )
 
     def test_find_available_midi_channels(self):
@@ -335,7 +316,7 @@ class MidiFileConverterTest(unittest.TestCase):
             ) = extracted_data
             start = self.converter._beats_to_ticks(absolute_time)
             end = self.converter._beats_to_ticks(duration) + start
-            velocity = self.converter._volume_to_velocity(volume)
+            velocity = volumes.DirectVolume.amplitude_to_midi_velocity(volume)
             expected_midi_messages = list(control_messages)
             for control_message in expected_midi_messages:
                 control_message.time = start
@@ -533,7 +514,8 @@ class MidiFileConverterTest(unittest.TestCase):
             if message.type == "note_on":
                 self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
                 self.assertEqual(
-                    message.velocity, converter._volume_to_velocity(constant_volume)
+                    message.velocity,
+                    volumes.DirectVolume.amplitude_to_midi_velocity(constant_volume),
                 )
                 n_note_on_messages += 1
             elif message.type == "control_change":

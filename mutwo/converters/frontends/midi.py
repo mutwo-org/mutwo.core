@@ -253,22 +253,6 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         return beat_length_in_microseconds
 
-    @staticmethod
-    def _volume_to_velocity(volume: numbers.Number) -> int:
-        """Convert volume (floating point number from 0 to 1) to midi velocity.
-
-        The method clips values that are higher than 1 / lower than 0.
-        """
-        velocity = int(round(volume * midi_constants.MAXIMUM_VELOCITY))
-
-        # clip velocity
-        if velocity < midi_constants.MINIMUM_VELOCITY:
-            velocity = midi_constants.MINIMUM_VELOCITY
-        if velocity > midi_constants.MAXIMUM_VELOCITY:
-            velocity = midi_constants.MAXIMUM_VELOCITY
-
-        return velocity
-
     # ###################################################################### #
     #                         helper methods                                 #
     # ###################################################################### #
@@ -456,7 +440,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
 
         absolute_tick_start = self._beats_to_ticks(absolute_time)
         absolute_tick_end = absolute_tick_start + self._beats_to_ticks(duration)
-        velocity = self._volume_to_velocity(volume)
+        velocity = parameters.abc.Volume.amplitude_to_midi_velocity(volume)
 
         midi_messages = []
 

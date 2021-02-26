@@ -12,6 +12,7 @@ except ImportError:
     import fractions
 
 from mutwo.parameters import pitches_constants
+from mutwo.parameters import volumes_constants
 from mutwo.utilities import tools
 
 
@@ -136,5 +137,159 @@ class Pitch(Parameter):
     def __eq__(self, other: "Pitch") -> bool:
         try:
             return self.frequency == other.frequency
+        except AttributeError:
+            return False
+
+
+@functools.total_ordering
+class Volume(Parameter):
+    """Abstract base class for any volume class.
+
+    If the user wants to define a new volume class, the abstract
+    property ``volume`` has to be overridden.
+    """
+
+    @staticmethod
+    def decibel_to_amplitude_ratio(
+        decibel: numbers.Number, reference_amplitude: numbers.Number = 1
+    ) -> float:
+        """Convert decibel to amplitude ratio.
+
+        :param decibel: The decibel number that shall be converted.
+        :param reference_amplitude: The amplitude for decibel == 0.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.decibel_to_amplitude_ratio(0)
+        1
+        >>> abc.Volume.decibel_to_amplitude_ratio(-6)
+        0.5011872336272722
+        >>> abc.Volume.decibel_to_amplitude_ratio(0, reference_amplitude=0.25)
+        0.25
+        """
+        return float(reference_amplitude * (10 ** (decibel / 20)))
+
+    @staticmethod
+    def decibel_to_power_ratio(
+        decibel: numbers.Number, reference_amplitude: numbers.Number = 1
+    ) -> float:
+        """Convert decibel to power ratio.
+
+        :param decibel: The decibel number that shall be converted.
+        :param reference_amplitude: The amplitude for decibel == 0.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.decibel_to_power_ratio(0)
+        1
+        >>> abc.Volume.decibel_to_power_ratio(-6)
+        0.251188643150958
+        >>> abc.Volume.decibel_to_power_ratio(0, reference_amplitude=0.25)
+        0.25
+        """
+        return float(reference_amplitude * (10 ** (decibel / 10)))
+
+    @staticmethod
+    def amplitude_ratio_to_decibel(
+        amplitude: numbers.Number, reference_amplitude: numbers.Number = 1
+    ) -> float:
+        """Convert amplitude ratio to decibel.
+
+        :param amplitude: The amplitude that shall be converted.
+        :param reference_amplitude: The amplitude for decibel == 0.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.amplitude_ratio_to_decibel(1)
+        0
+        >>> abc.Volume.amplitude_ratio_to_decibel(0)
+        inf
+        >>> abc.Volume.amplitude_ratio_to_decibel(0.5)
+        -6.020599913279624
+        """
+        if amplitude == 0:
+            return float("inf")
+        else:
+            return float(20 * math.log10(amplitude / reference_amplitude))
+
+    @staticmethod
+    def power_ratio_to_decibel(
+        amplitude: numbers.Number, reference_amplitude: numbers.Number = 1
+    ) -> float:
+        """Convert power ratio to decibel.
+
+        :param amplitude: The amplitude that shall be converted.
+        :param reference_amplitude: The amplitude for decibel == 0.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.power_ratio_to_decibel(1)
+        0
+        >>> abc.Volume.power_ratio_to_decibel(0)
+        inf
+        >>> abc.Volume.power_ratio_to_decibel(0.5)
+        -3.010299956639812
+        """
+        if amplitude == 0:
+            return float("inf")
+        else:
+            return float(10 * math.log10(amplitude / reference_amplitude))
+
+    @staticmethod
+    def amplitude_to_midi_velocity(amplitude: numbers.Number) -> int:
+        """Convert volume (floating point number from 0 to 1) to midi velocity.
+
+        :param amplitude: A value from 0 to 1 that shall be converted to midi
+            velocity (0 to 127).
+        :return: The midi velocity.
+
+        The method clips values that are higher than 1 / lower than 0.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.amplitude_to_midi_velocity(1)
+        127
+        >>> abc.Volume.amplitude_to_midi_velocity(0)
+        0
+        """
+        velocity = int(round(amplitude * volumes_constants.MAXIMUM_VELOCITY))
+
+        # clip velocity
+        if velocity < volumes_constants.MINIMUM_VELOCITY:
+            velocity = volumes_constants.MINIMUM_VELOCITY
+        if velocity > volumes_constants.MAXIMUM_VELOCITY:
+            velocity = volumes_constants.MAXIMUM_VELOCITY
+
+        return velocity
+
+    # properties
+    @property
+    @abc.abstractmethod
+    def amplitude(self) -> float:
+        """The amplitude of the Volume (a number from 0 to 1)."""
+        raise NotImplementedError
+
+    @property
+    def decibel(self) -> float:
+        """The decibel of the volume (from -120 to 0)"""
+        return self.amplitude_ratio_to_decibel(self.amplitude)
+
+    @property
+    def midi_velocity(self) -> float:
+        """The velocity of the volume (from 0 to 1)."""
+        return self.amplitude_to_midi_velocity(self.amplitude)
+
+    # comparison methods
+    def __lt__(self, other: "Volume") -> bool:
+        return self.amplitude < other.amplitude
+
+    def __eq__(self, other: "Volume") -> bool:
+        try:
+            return self.amplitude == other.amplitude
         except AttributeError:
             return False

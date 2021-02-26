@@ -3,6 +3,7 @@
 """
 
 from . import pitches_constants
+from . import volumes_constants
 
 from . import abc
 from . import pitches

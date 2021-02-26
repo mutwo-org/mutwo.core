@@ -37,12 +37,6 @@ midi file definition)."""
 
 MAXIMUM_MICROSECONDS_PER_BEAT = 16777215
 
-MINIMUM_VELOCITY = 0
-"""the lowest allowed midi velocity value"""
-
-MAXIMUM_VELOCITY = 127
-"""the highest allowed midi velocity value"""
-
 MIDI_TEMPO_FACTOR = 1000000
 """factor to multiply beats-in-seconds to get
 beats-in-microseconds (which is the tempo unit for midi)"""
