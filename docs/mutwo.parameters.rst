@@ -41,3 +41,18 @@ mutwo.parameters.tempos module
    :undoc-members:
    :show-inheritance:
 
+mutwo.parameters.volumes module
+-------------------------------
+
+.. automodule:: mutwo.parameters.volumes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mutwo.parameters.volumes_constants module
+-------------------------------
+
+.. automodule:: mutwo.parameters.volumes_constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
