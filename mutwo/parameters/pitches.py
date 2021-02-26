@@ -973,10 +973,12 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @property
     def n_pitch_classes_per_octave(self) -> int:
+        """Defines in how many different pitch classes one octave get divided."""
         return self._n_pitch_classes_per_octave
 
     @property
     def concert_pitch(self) -> parameters.abc.Pitch:
+        """The referential concert pitch for the respective pitch object."""
         return self._concert_pitch
 
     @concert_pitch.setter
@@ -988,6 +990,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @property
     def concert_pitch_pitch_class(self) -> numbers.Number:
+        """The pitch class of the referential concert pitch."""
         return self._concert_pitch_pitch_class
 
     @concert_pitch_pitch_class.setter
@@ -997,6 +1000,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @property
     def pitch_class(self) -> numbers.Number:
+        """The pitch class of the pitch."""
         return self._pitch_class
 
     @pitch_class.setter
@@ -1006,10 +1010,12 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @property
     def step_factor(self):
+        """The factor with which to multiply a frequency to reach the next pitch."""
         return pow(2, 1 / self.n_pitch_classes_per_octave)
 
     @property
     def n_cents_per_step(self) -> float:
+        """This property describes how many cents are between two adjacent pitches."""
         return self.ratio_to_cents(self.step_factor)
 
     @property
@@ -1027,7 +1033,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         return float(self.concert_pitch.frequency * distance_to_concert_pitch_as_factor)
 
     def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
-        """Calculates the interval between two EqualDividedOctave pitches."""
+        """Calculates the interval between two ``EqualDividedOctave`` pitches."""
 
         try:
             assert self.n_pitch_classes_per_octave == other.n_pitch_classes_per_octave
@@ -1061,7 +1067,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
     def add(
         self, n_pitch_classes_difference: numbers.Number
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        """Transposes the EqualDividedOctavePitch by n_pitch_classes_difference."""
+        """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.add)
 
@@ -1069,7 +1075,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
     def subtract(
         self, n_pitch_classes_difference: numbers.Number
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
-        """Transposes the EqualDividedOctavePitch by n_pitch_classes_difference."""
+        """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.sub)
 
@@ -1256,10 +1262,18 @@ class WesternPitch(EqualDividedOctavePitch):
 
     @property
     def name(self) -> str:
+        """The name of the pitch in Western nomenclature."""
+
         return "{}{}".format(self._pitch_class_name, self.octave)
 
     @property
     def pitch_class_name(self) -> str:
+        """The name of the pitch class in Western nomenclature.
+
+        Mutwo uses the English nomenclature for pitch class names:
+            (c, d, e, f, g, a, b)
+        """
+
         return self._pitch_class_name
 
     @pitch_class_name.setter
