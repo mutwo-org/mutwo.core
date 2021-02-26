@@ -9,13 +9,6 @@ mutwo.converters.frontends package
 Submodules
 ----------
 
-mutwo.converters.frontends.abc module
--------------------------------------
-
-.. automodule:: mutwo.converters.frontends.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 mutwo.converters.frontends.csound module
 ----------------------------------------

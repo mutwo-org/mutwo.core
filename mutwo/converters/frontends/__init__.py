@@ -2,7 +2,6 @@
 
 from mutwo.utilities import tools
 
-from . import abc
 from . import csound_constants
 from . import csound
 

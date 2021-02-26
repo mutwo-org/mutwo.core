@@ -11,8 +11,8 @@ import warnings
 
 import mido
 
-from mutwo.converters.frontends import abc as converters_frontends_abc
 from mutwo.converters.frontends import midi_constants
+from mutwo.converters import abc
 from mutwo.converters import symmetrical
 
 from mutwo import events
@@ -30,7 +30,7 @@ ConvertableEvents = typing.Union[
 ]
 
 
-class MidiFileConverter(converters_frontends_abc.FileConverter):
+class MidiFileConverter(abc.Converter):
     """Class for rendering standard midi files (SMF) from mutwo data.
 
     Mutwo offers a wide range of options how the respective midi file shall

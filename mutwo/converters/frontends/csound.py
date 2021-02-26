@@ -11,7 +11,7 @@ import warnings
 
 import natsort
 
-from mutwo.converters.frontends import abc as converters_frontends_abc
+from mutwo import converters
 from mutwo import events
 from mutwo import parameters
 
@@ -21,7 +21,7 @@ SupportedPFieldTypes = typing.Union[numbers.Number, str]
 PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]
 
 
-class CsoundScoreConverter(converters_frontends_abc.FileConverter):
+class CsoundScoreConverter(converters.abc.Converter):
     """Class to convert mutwo events to a Csound score file.
 
     :param path: The path of the csound score file that shall be generated.
@@ -241,7 +241,7 @@ class CsoundScoreConverter(converters_frontends_abc.FileConverter):
             f.write("\n".join(csound_score_lines))
 
 
-class CsoundConverter(converters_frontends_abc.FileConverter):
+class CsoundConverter(converters.abc.Converter):
     """Simple converter that helps generating audio files with Csound.
 
     :param path: The path where the sound file shall be written to.

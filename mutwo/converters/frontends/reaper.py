@@ -2,15 +2,16 @@ import typing
 
 import rpp
 
-from mutwo import events
-from mutwo.converters.frontends import abc
 from mutwo.converters.frontends import reaper_constants
+
+from mutwo import converters
+from mutwo import events
 from mutwo.utilities import tools
 
 __all__ = ("ReaperFileConverter",)
 
 
-class ReaperFileConverter(abc.FileConverter):
+class ReaperFileConverter(converters.abc.Converter):
     def __init__(self):
         self.reaper_project = self.create_reaper_project()
 
