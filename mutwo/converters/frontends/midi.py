@@ -33,30 +33,30 @@ ConvertableEvents = typing.Union[
 class MidiFileConverter(converters_frontends_abc.FileConverter):
     """Class for rendering standard midi files (SMF) from mutwo data.
 
-    Mutwo offers a wide range of options how the respective Midi file shall
+    Mutwo offers a wide range of options how the respective midi file shall
     be rendered and how mutwo data shall be translated. This is necessary due
     to the limited and not always unambiguous nature of musical encodings in
     midi files. In this way the user can tweak the conversion routine to her
     or his individual needs.
 
-    :param path: where to write the MidiFile. The typical file type extension '.mid' is
-        recommended, but not necessary.
-    :param simple_event_to_pitches: Function to extract from a SimpleEvent a tuple
+    :param path: where to write the midi file. The typical file type extension '.mid'
+        is recommended, but not mandatory.
+    :param simple_event_to_pitches: Function to extract from a ``SimpleEvent`` a tuple
         that contains pitch objects. By default it asks the Event for its
-        'pitch_or_pitches' attribute (because by default mutwo.events.music.NoteLike
-        objects are expected). When using different Event classes than NoteLike with
+        'pitch_or_pitches' attribute (because by default ``mutwo.events.music.NoteLike``
+        objects are expected). When using different Event classes than ``NoteLike`` with
         a different name for their pitch property this argument should be overridden.
         If the function call raises an AttributeError (e.g. if no pitch can be
         extracted) mutwo will interpret the event as a rest.
-    :param simple_event_to_volume: Function to extract the volume from a SimpleEvent
+    :param simple_event_to_volume: Function to extract the volume from a ``SimpleEvent``
         in the purpose of generating midi notes. The volume should be a number from
         0 to 1 (where 0 represents velocity 0 and 1 represents velocity 127).
         Higher and lower values will be clipped. By default it asks the Event for its
-        'volume' attribute (because by default mutwo.events.music.NoteLike objects are
-        expected). When using different Event classes than NoteLike with a different
-        name for their volume property this argument should be overridden. If the
-        function call raises an AttributeError (e.g. if no volume can be extracted)
-        mutwo will interpret the event as a rest.
+        'volume' attribute (because by default ``mutwo.events.music.NoteLike`` objects
+        are expected). When using different Event classes than ``NoteLike`` with a
+        different name for their volume property this argument should be overridden.
+        If the function call raises an AttributeError (e.g. if no volume can be
+        extracted) mutwo will interpret the event as a rest.
     :param simple_event_to_control_messages: Function to generate midi control messages
         from a simple event. By default no control messages are generated. If the
         function call raises an AttributeError (e.g. if an expected control value isn't
@@ -485,7 +485,7 @@ class MidiFileConverter(converters_frontends_abc.FileConverter):
         absolute_time: numbers.Number,
         available_midi_channels_cycle: typing.Iterator,
     ) -> typing.Tuple[mido.Message]:
-        """Converts ``SimpleEvent`` (or any object that inherits from SimpleEvent).
+        """Converts ``SimpleEvent`` (or any object that inherits from ``SimpleEvent``).
 
         Return tuple filled with midi messages that represent the mutwo data in the
         midi format.
