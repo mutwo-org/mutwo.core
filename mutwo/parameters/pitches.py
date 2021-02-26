@@ -57,7 +57,9 @@ class DirectPitch(parameters.abc.Pitch):
 
     May be used when a converter class needs a pitch object, but there is
     no need or desire for a complex abstraction of the respective pitch
-    (that classes like JustIntonationPitch or WesternPitch offer).
+    (that classes like ``JustIntonationPitch`` or ``WesternPitch`` offer).
+
+    **Example:**
 
     >>> from mutwo.parameters import pitches
     >>> my_pitch = pitches.DirectPitch(440)
