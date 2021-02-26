@@ -6,7 +6,7 @@
 Welcome to mutwo's documentation!
 =================================
 
-**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python. It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, `csound <http://www.csounds.com/>`_ scores, musical notation with `Lilypond <lilypond.org/>`_ via `Abjad <https://github.com/Abjad/abjad>`_). The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures, the possibility to stay as long as possible implicit (with the option to start explicitly) and an easily extensible and tweakable software design.
+**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python. It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, `csound <http://www.csounds.com/>`_ scores, musical notation with `Lilypond <lilypond.org/>`_ via `Abjad <https://github.com/Abjad/abjad>`_). The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures and an easily extensible and tweakable software design.
 
 The following example generates a short midi file:
 
