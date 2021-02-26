@@ -15,6 +15,8 @@ from mutwo.parameters import pitches_constants
 from mutwo.parameters import volumes_constants
 from mutwo.utilities import tools
 
+__all__ = ("Pitch", "Volume")
+
 
 class Parameter(abc.ABC):
     """Abstract base class for any parameter class."""

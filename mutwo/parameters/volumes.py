@@ -7,6 +7,8 @@ import numbers
 
 from mutwo import parameters
 
+__all__ = ("DirectVolume",)
+
 
 class DirectVolume(parameters.abc.Volume):
     """A simple volume class that gets directly initialised by its amplitude.
