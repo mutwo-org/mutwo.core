@@ -1,51 +1,29 @@
-mutwo.generators package
-========================
+mutwo.generators: *Generate data for algorithmic art works*
+===========================================================
 
 .. automodule:: mutwo.generators
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+----
 
-mutwo.generators.brown module
------------------------------
+Submodules are:
 
-.. automodule:: mutwo.generators.brown
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-mutwo.generators.edwards module
--------------------------------
+   mutwo.generators.brown
+   mutwo.generators.edwards
+   mutwo.generators.gray
+   mutwo.generators.toussaint
 
-.. automodule:: mutwo.generators.edwards
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
-mutwo.generators.edwards\_constants module
-------------------------------------------
+----
 
-.. automodule:: mutwo.generators.edwards_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Submodules that contain constants are:
 
-mutwo.generators.gray module
-----------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: mutwo.generators.gray
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.generators.toussaint module
----------------------------------
-
-.. automodule:: mutwo.generators.toussaint
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   mutwo.generators.edwards_constants

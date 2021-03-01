@@ -1,60 +1,29 @@
-mutwo.converters.frontends package
-==================================
+mutwo.converters.frontends: *Convert mutwo objects to external data*
+====================================================================
 
 .. automodule:: mutwo.converters.frontends
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+----
 
+Submodules are:
 
-mutwo.converters.frontends.csound module
-----------------------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: mutwo.converters.frontends.csound
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   mutwo.converters.frontends.csound
+   mutwo.converters.frontends.midi
+   mutwo.converters.frontends.reaper
 
-mutwo.converters.frontends.csound\_constants module
----------------------------------------------------
+----
 
-.. automodule:: mutwo.converters.frontends.csound_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Submodules that contain constants are:
 
-mutwo.converters.frontends.midi module
---------------------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: mutwo.converters.frontends.midi
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.converters.frontends.midi\_constants module
--------------------------------------------------
-
-.. automodule:: mutwo.converters.frontends.midi_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.converters.frontends.reaper module
-----------------------------------------
-
-.. automodule:: mutwo.converters.frontends.reaper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.converters.frontends.reaper\_constants module
----------------------------------------------------
-
-.. automodule:: mutwo.converters.frontends.reaper_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   mutwo.converters.frontends.csound_constants
+   mutwo.converters.frontends.midi_constants
+   mutwo.converters.frontends.reaper_constants

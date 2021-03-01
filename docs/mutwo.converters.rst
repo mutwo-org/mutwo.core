@@ -1,36 +1,19 @@
-mutwo.converters package
-========================
+mutwo.converters: *Convert data between different encodings*
+============================================================
 
 .. automodule:: mutwo.converters
    :members:
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
+----
+
+Submodules and Subpackages are
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   mutwo.converters.backends
+   mutwo.converters.abc
+   mutwo.converters.symmetrical
    mutwo.converters.frontends
-
-Submodules
-----------
-
-mutwo.converters.abc module
----------------------------
-
-.. automodule:: mutwo.converters.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.converters.symmetrical module
------------------------------------
-
-.. automodule:: mutwo.converters.symmetrical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   mutwo.converters.backends

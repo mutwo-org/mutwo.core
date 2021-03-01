@@ -1,5 +1,5 @@
-mutwo.converters.backends package
-=================================
+mutwo.converters.backends: *Convert external data to mutwo objects*
+===================================================================
 
 .. automodule:: mutwo.converters.backends
    :members:

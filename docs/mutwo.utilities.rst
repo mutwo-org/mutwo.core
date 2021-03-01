@@ -1,13 +1,11 @@
-mutwo.utilities package
-=======================
+mutwo.utilities: *Make use of utility functions*
+================================================
 
 .. automodule:: mutwo.utilities
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
 
 mutwo.utilities.decorators module
 ---------------------------------

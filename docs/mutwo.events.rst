@@ -1,35 +1,18 @@
-mutwo.events package
-====================
+mutwo.events: *Define events on a time line*
+============================================
 
 .. automodule:: mutwo.events
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+----
 
-mutwo.events.abc module
------------------------
+Submodules are:
 
-.. automodule:: mutwo.events.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-mutwo.events.basic module
--------------------------
-
-.. automodule:: mutwo.events.basic
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.events.music module
--------------------------
-
-.. automodule:: mutwo.events.music
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
+   mutwo.events.abc
+   mutwo.events.basic
+   mutwo.events.music

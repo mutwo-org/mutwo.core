@@ -1,58 +1,29 @@
-mutwo.parameters package
-========================
+mutwo.parameters: *Define parameters for events*
+================================================
 
 .. automodule:: mutwo.parameters
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+----
 
-mutwo.parameters.abc module
----------------------------
+Submodules are:
 
-.. automodule:: mutwo.parameters.abc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-mutwo.parameters.pitches module
--------------------------------
+   mutwo.parameters.abc
+   mutwo.parameters.pitches
+   mutwo.parameters.tempos
+   mutwo.parameters.volumes
 
-.. automodule:: mutwo.parameters.pitches
-   :members:
-   :undoc-members:
-   :show-inheritance:
+----
 
-mutwo.parameters.pitches\_constants module
-------------------------------------------
+Submodules that contain constants are:
 
-.. automodule:: mutwo.parameters.pitches_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-mutwo.parameters.tempos module
-------------------------------
-
-.. automodule:: mutwo.parameters.tempos
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.parameters.volumes module
--------------------------------
-
-.. automodule:: mutwo.parameters.volumes
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mutwo.parameters.volumes_constants module
--------------------------------
-
-.. automodule:: mutwo.parameters.volumes_constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   mutwo.parameters.pitches_constants
+   mutwo.parameters.volumes_constants

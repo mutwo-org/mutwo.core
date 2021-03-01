@@ -27,3 +27,8 @@ class DirectVolume(parameters.abc.Volume):
 
     def __repr__(self) -> str:
         return "DirectVolume({})".format(self.amplitude)
+
+
+class WesternVolume(parameters.abc.Volume):
+    def __init__(self, indication: str):
+        raise NotImplementedError
