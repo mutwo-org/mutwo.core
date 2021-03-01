@@ -1,7 +1,7 @@
 Installation
 ============
 
-As long as **mutwo** isn't released yet as a pypi package, a basic installation can be archived through cloning **mutwo** from github and then moving to **mutwos** path:
+As long as **mutwo** isn't released as a pypi package yet, a basic installation can be archived through cloning **mutwo** from github and then moving to **mutwos** path:
 
 .. code-block:: sh
 
