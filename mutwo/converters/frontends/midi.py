@@ -41,18 +41,18 @@ class MidiFileConverter(abc.Converter):
 
     :param path: where to write the midi file. The typical file type extension '.mid'
         is recommended, but not mandatory.
-    :param simple_event_to_pitches: Function to extract from a ``SimpleEvent`` a tuple
+    :param simple_event_to_pitches: Function to extract from a :class:`mutwo.events.basic.SimpleEvent` a tuple
         that contains pitch objects. By default it asks the Event for its
-        'pitch_or_pitches' attribute (because by default ``mutwo.events.music.NoteLike``
+        'pitch_or_pitches' attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected). When using different Event classes than ``NoteLike`` with
         a different name for their pitch property this argument should be overridden.
         If the function call raises an AttributeError (e.g. if no pitch can be
         extracted) mutwo will interpret the event as a rest.
-    :param simple_event_to_volume: Function to extract the volume from a ``SimpleEvent``
+    :param simple_event_to_volume: Function to extract the volume from a :class:`mutwo.events.basic.SimpleEvent`
         in the purpose of generating midi notes. The volume should be a number from
         0 to 1 (where 0 represents velocity 0 and 1 represents velocity 127).
         Higher and lower values will be clipped. By default it asks the Event for its
-        'volume' attribute (because by default ``mutwo.events.music.NoteLike`` objects
+        'volume' attribute (because by default :class:`mutwo.events.music.NoteLike` objects
         are expected). When using different Event classes than ``NoteLike`` with a
         different name for their volume property this argument should be overridden.
         If the function call raises an AttributeError (e.g. if no volume can be
@@ -435,7 +435,7 @@ class MidiFileConverter(abc.Converter):
         messages.
 
         Gets as an input relevant data for midi message generation that has been
-        extracted from a ``mutwo.abc.Event`` object.
+        extracted from a :class:`mutwo.abc.Event` object.
         """
 
         absolute_tick_start = self._beats_to_ticks(absolute_time)
@@ -684,12 +684,13 @@ class MidiFileConverter(abc.Converter):
 
         **Disclaimer:** when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
-        converter classes (like ``TempoConverter``) ``MidiFileConverter`` can't
-        convert infinitely nested structures (due to the particular
-        way how Midi files are defined). The deepest potential structure
-        is a ``SimultaneousEvent`` (representing the complete MidiFile) that
-        contains ``SequentialEvents`` (where each ``SequentialEvent`` represents
-        one MidiTrack) that contains ``SimpleEvents`` (where each ``SimpleEvent``
+        converter classes (like :class:`mutwo.converters.symmetrical.TempoConverter`)
+        :class:`MidiFileConverter` can't convert infinitely nested structures
+        (due to the particular way how Midi files are defined). The deepest potential
+        structure is a :class:`mutwo.events.basic.SimultaneousEvent` (representing
+        the complete MidiFile) that contains :class:`mutwo.events.basic.SequentialEvent`
+        (where each ``SequentialEvent`` represents one MidiTrack) that contains
+        :class:`mutwo.events.basic.SimpleEvents` (where each ``SimpleEvent``
         represents one midi note). If only one ``SequentialEvent`` is send,
         this ``SequentialEvent`` will be read as one MidiTrack in a MidiFile.
         If only one ``SimpleEvent`` get passed, this ``SimpleEvent`` will be

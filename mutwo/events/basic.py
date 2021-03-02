@@ -1,4 +1,4 @@
-"""This module contains the most basic event classes which can be used.
+"""The most basic event classes which can be used.
 
 The different events differ in their timing structure and whether they
 are nested or not:
@@ -20,7 +20,7 @@ __all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent", "EnvelopeEvent
 
 
 class SimpleEvent(events.abc.Event):
-    """Event-Object, which doesn't contain other Event-Objects (the node or leaf).
+    """Event-Object which doesn't contain other Event-Objects (the node or leaf).
 
     :param new_duration: The duration of the ``SimpleEvent``. This can be any number.
         The unit of the duration is up to the interpretation of the user and the

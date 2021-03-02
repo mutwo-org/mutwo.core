@@ -1,4 +1,4 @@
-"""Module for routines that convert mutwo objects to external data."""
+"""Routines that convert mutwo objects to external data."""
 
 from mutwo.utilities import tools
 

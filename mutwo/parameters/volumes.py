@@ -1,6 +1,6 @@
 """Submodule for the parameter volume.
 
-'Volume' is defined as any object that knows a 'amplitude' attribute.
+'Volume' is defined as any object that knows a :attr:`amplitude` attribute.
 """
 
 import numbers
@@ -13,7 +13,7 @@ __all__ = ("DirectVolume",)
 class DirectVolume(parameters.abc.Volume):
     """A simple volume class that gets directly initialised by its amplitude.
 
-    :param amplitude: The amplitude of the ``DirectVolume`` object.
+    :param amplitude: The amplitude of the :class:`DirectVolume` object.
 
     May be used when a converter class needs a volume object, but there is
     no need or desire for a complex abstraction of the respective volume.

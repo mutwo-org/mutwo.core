@@ -1,4 +1,4 @@
-"""This module contains Event classes which are designated for musical usage."""
+"""Event classes which are designated for musical usage."""
 
 import numbers
 import typing

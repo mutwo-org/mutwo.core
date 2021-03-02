@@ -1,4 +1,4 @@
-"""Module for routines that convert mutwo or generic Python objects to other mutwo or generic Python objects."""
+"""Routines that convert mutwo or generic Python objects to other mutwo or generic Python objects."""
 
 import functools
 import math
@@ -28,12 +28,12 @@ __all__ = (
 
 
 class TempoPointConverter(converters.abc.Converter):
-    """Convert a ``TempoPoint`` with BPM to beat-length-in-seconds.
+    """Convert a :class:`TempoPoint` with BPM to beat-length-in-seconds.
 
-    A ``TempoPoint`` is defined as an object that has a particular tempo in
+    A :class:`TempoPoint` is defined as an object that has a particular tempo in
     beats per seconds (BPM) and a reference value (1 for a quarter note, 4
-    for a whole note, etc.). Besides elaborate ``mutwo.parameters.tempo.TempoPoint``
-    objects, any number can also be interpreted as a ``TempoPoint``. In this case
+    for a whole note, etc.). Besides elaborate :class:`mutwo.parameters.tempos.TempoPoint`
+    objects, any number can also be interpreted as a `TempoPoint`. In this case
     the number simply represents the BPM number and the reference will be set to 1.
     The returned beat-length-in-seconds always indicates the length for one quarter
     note.
@@ -74,7 +74,7 @@ class TempoPointConverter(converters.abc.Converter):
         return beats_per_minute, reference
 
     def convert(self, tempo_point_to_convert: TempoPoint) -> float:
-        """Converts a ``TempoPoint`` to beat-length-in-seconds.
+        """Converts a :class:`TempoPoint` to beat-length-in-seconds.
 
         :param tempo_point_to_convert: A tempo point defines the active tempo
             from which the beat-length-in-seconds shall be calculated. The argument
@@ -111,10 +111,10 @@ class TempoConverter(converters.abc.Converter):
     """Class for applying tempo curves on mutwo events.
 
     :param tempo_events: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a ``SequentialEvent`` that is filled
-        with ``EnvelopeEvent`` objects. Each ``EnvelopeEvent`` can either be initialised
+        mutwo events. This is expected to be a :class:`mutwo.events.basic.SequentialEvent` that is filled
+        with :class:`mutwo.events.basic.EnvelopeEvent` objects. Each :class:`mutwo.events.basic.EnvelopeEvent` can either be initialised
         via numbers for start and end attributes (the numbers will be interpreted
-        as BPM [beats per minute]) or via ``mutwo.parameters.tempo.TempoPoint`` objects.
+        as BPM [beats per minute]) or via :class:`mutwo.parameters.tempos.TempoPoint` objects.
 
     **Example:**
 

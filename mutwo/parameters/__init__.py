@@ -1,4 +1,4 @@
-"""This module adds abstractions for attributes that can be assigned to Event objects.
+"""Abstractions for attributes that can be assigned to Event objects.
 
 """
 

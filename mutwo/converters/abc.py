@@ -1,4 +1,4 @@
-"""This module defines the public api for any converter class."""
+"""Defining the public api for any converter class."""
 
 import abc
 import typing

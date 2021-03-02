@@ -1,4 +1,4 @@
-"""This module adds abstract base classes for different parameters."""
+"""Abstract base classes for different parameters."""
 
 import abc
 import functools
@@ -38,7 +38,7 @@ class Pitch(Parameter):
     """Abstract base class for any pitch class.
 
     If the user wants to define a new pitch class, the abstract
-    property ``frequency`` has to be overridden.
+    property :attr:`frequency` has to be overridden.
     """
 
     # conversion methods between different pitch describing units
@@ -148,7 +148,7 @@ class Volume(Parameter):
     """Abstract base class for any volume class.
 
     If the user wants to define a new volume class, the abstract
-    property ``volume`` has to be overridden.
+    property :attr:`volume` has to be overridden.
     """
 
     @staticmethod

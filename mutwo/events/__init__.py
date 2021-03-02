@@ -1,17 +1,17 @@
-"""This module adds time-based Event abstractions.
+"""Time-based Event abstractions.
 
 Event objects can be understood as the core objects
-of the mutwo framework. They all own a "duration"
+of the :mod:`mutwo` framework. They all own a :attr:`duration`
 attribute (which can be any number). Further more complex
 Event classes with more relevant attributes can be generated
-through inheriting from basic classes. mutwo already offers
+through inheriting from basic classes. :mod:`mutwo` already offers
 support for several more complex representations (for instance
-``mutwo.events.music.NoteLike``).
+:class:`mutwo.events.music.NoteLike`).
 
 The most often used classes may be:
-    - ``mutwo.events.basic.SimpleEvent``
-    - ``mutwo.events.basic.SequentialEvent``
-    - ``mutwo.events.basic.SimultaneousEvent``
+    - :class:`mutwo.events.basic.SimpleEvent`
+    - :class:`mutwo.events.basic.SequentialEvent`
+    - :class:`mutwo.events.basic.SimultaneousEvent`
 """
 
 from . import abc

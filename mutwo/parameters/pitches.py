@@ -1,13 +1,13 @@
 """Submodule for the parameter pitch.
 
-'Pitch' is defined as any object that knows a 'frequency' attribute.
+'Pitch' is defined as any object that knows a :attr:`frequency` attribute.
 The two major modern tuning systems Just intonation and Equal-divided-octave
-are supported by the ``JustIntonationPitch`` and ``EqualDividedOctavePitch`` classes.
-For using Western nomenclature (e.g. c, d, e, f, ...) `mutwo` offers the
-``WesternPitch`` class (which inherits from ``EqualDividedOctavePitch``).
-For a straight frequency-based approach one may use the ``DirectPitch`` class.
+are supported by the :class:`JustIntonationPitch` and :class:`EqualDividedOctavePitch` classes.
+For using Western nomenclature (e.g. c, d, e, f, ...) :mod:`mutwo` offers the
+:class:`WesternPitch` class (which inherits from :class:`EqualDividedOctavePitch`).
+For a straight frequency-based approach one may use :class:`DirectPitch`.
 
-If desired the default concert pitch can be adjusted after importing `mutwo`:
+If desired the default concert pitch can be adjusted after importing :mod:`mutwo`:
 
     >>> from mutwo.parameters import pitches_constants
     >>> pitches_constants.DEFAULT_CONCERT_PITCH = 443
@@ -924,8 +924,8 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     :param n_pitch_classes_per_octave: how many pitch classes in each octave
         occur (for instance 12 for a chromatic system, 24 for quartertones, etc.)
-    :param pitch_class: The pitch class of the new ``EqualDividedOctavePitch`` object.
-    :param octave: The octave of the new ``EqualDividedOctavePitch`` object (where 0 is
+    :param pitch_class: The pitch class of the new :class:`EqualDividedOctavePitch` object.
+    :param octave: The octave of the new :class:`EqualDividedOctavePitch` object (where 0 is
         the middle octave, 1 is one octave higher and -1 is one octave lower).
     :param concert_pitch_pitch_class: The pitch class of the reference pitch (for
         instance 9 in a chromatic 12 tone system where `a` should be the reference
@@ -1093,9 +1093,9 @@ class WesternPitch(EqualDividedOctavePitch):
         It uses an equal divided octave system in 12 chromatic steps. Accidentals are
         indicated by (s = sharp) and (f = flat). Further microtonal accidentals are
         supported (see
-        ``mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION``
+        :const:`mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION`
         for all supported accidentals).
-    :param octave: The octave of the new ``WesternPitch`` object. Indications for the
+    :param octave: The octave of the new :class:`WesternPitch` object. Indications for the
         specific octave follow the MIDI Standard where 4 is defined as one line.
 
     >>> from mutwo.parameters import pitches
