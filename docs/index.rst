@@ -26,7 +26,7 @@ The following example generates a short midi file:
 
    installation
    introduction
-   mutwo
+   apidocumentation
    license
 
 

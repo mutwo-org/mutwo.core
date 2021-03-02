@@ -5,4 +5,5 @@ mutwo.converters.frontends.reaper module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 

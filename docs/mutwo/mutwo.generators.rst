@@ -1,5 +1,5 @@
-mutwo.generators: *Generate data for algorithmic art works*
-===========================================================
+mutwo.generators
+================
 
 .. automodule:: mutwo.generators
    :members:
@@ -10,20 +10,19 @@ mutwo.generators: *Generate data for algorithmic art works*
 
 Submodules are:
 
-.. toctree::
-   :maxdepth: 1
+  
+.. autosummary::
+   :toctree: generators
 
    mutwo.generators.brown
    mutwo.generators.edwards
    mutwo.generators.gray
    mutwo.generators.toussaint
-
-
-----
+  
 
 Submodules that contain constants are:
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generators
 
    mutwo.generators.edwards_constants

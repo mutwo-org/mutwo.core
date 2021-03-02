@@ -1,28 +1,25 @@
-mutwo.converters.frontends: *Convert mutwo objects to external data*
-====================================================================
+mutwo.converters.frontends
+==========================
 
 .. automodule:: mutwo.converters.frontends
-   :members:
-   :undoc-members:
-   :show-inheritance:
+
 
 ----
 
 Submodules are:
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: frontends
 
    mutwo.converters.frontends.csound
    mutwo.converters.frontends.midi
    mutwo.converters.frontends.reaper
 
-----
-
+   
 Submodules that contain constants are:
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: frontends
 
    mutwo.converters.frontends.csound_constants
    mutwo.converters.frontends.midi_constants
