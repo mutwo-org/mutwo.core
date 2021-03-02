@@ -6,9 +6,3 @@ mutwo.events.music
    :undoc-members:
    :show-inheritance:
    :inherited-members: list
-   
-   
-
-   
-   
-   
