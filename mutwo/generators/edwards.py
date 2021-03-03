@@ -1,4 +1,4 @@
-"""Module for algorithms which are related to the British composer Michael Edwards."""
+"""Algorithms which are related to British composer Michael Edwards."""
 
 import functools
 import itertools

@@ -1,4 +1,4 @@
-"""Module for generic decorators that are used within mutwo."""
+"""Generic decorators that are used within :mod:`mutwo`."""
 
 import copy
 import functools

@@ -1,4 +1,4 @@
-"""This module adds converter classes to render midi files (SMF) from mutwo data.
+"""Converter classes to render midi files (SMF) from mutwo data.
 
 """
 
@@ -43,7 +43,7 @@ class MidiFileConverter(abc.Converter):
         is recommended, but not mandatory.
     :param simple_event_to_pitches: Function to extract from a :class:`mutwo.events.basic.SimpleEvent` a tuple
         that contains pitch objects. By default it asks the Event for its
-        'pitch_or_pitches' attribute (because by default :class:`mutwo.events.music.NoteLike`
+        :attr:`pitch_or_pitches` attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected). When using different Event classes than ``NoteLike`` with
         a different name for their pitch property this argument should be overridden.
         If the function call raises an AttributeError (e.g. if no pitch can be
@@ -52,7 +52,7 @@ class MidiFileConverter(abc.Converter):
         in the purpose of generating midi notes. The volume should be a number from
         0 to 1 (where 0 represents velocity 0 and 1 represents velocity 127).
         Higher and lower values will be clipped. By default it asks the Event for its
-        'volume' attribute (because by default :class:`mutwo.events.music.NoteLike` objects
+        :attr:`volume` attribute (because by default :class:`mutwo.events.music.NoteLike` objects
         are expected). When using different Event classes than ``NoteLike`` with a
         different name for their volume property this argument should be overridden.
         If the function call raises an AttributeError (e.g. if no volume can be

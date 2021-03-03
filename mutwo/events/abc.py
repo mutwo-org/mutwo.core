@@ -205,11 +205,11 @@ class Event(abc.ABC):
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "Event"]:
-        """Time-based __del__ of the respective event.
+        """Time-based deletion / shortening of the respective event.
 
-        :param start: number that indicates the point when the
+        :param start: number that indicates absolute time when the
             cut off shall start.
-        :param end: number that indicates the point when the cut
+        :param end: number that indicates the absolute time when the cut
             off shall end.
 
         **Example:**

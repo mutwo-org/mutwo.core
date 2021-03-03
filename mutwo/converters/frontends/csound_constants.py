@@ -1,4 +1,4 @@
-"""This file contains several flags for running csound.
+"""Several flags for running csound.
 
 The flag definitions are documented in
 https://csound.com/docs/manual/CommandFlags.html

@@ -1,4 +1,4 @@
-"""This module contains utility functions."""
+"""Utility functions."""
 
 from . import decorators
 from . import prime_factors

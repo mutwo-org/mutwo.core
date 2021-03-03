@@ -1,7 +1,8 @@
-"""This module adds several constants that are used for the midi converter module.
+"""Several constants which are used for the midi converter module.
 
 There are basically two types of constants:
-    1. Default values for `MidiFileConverter` arguments.
+    1. Default values for :class:`mutwo.converters.frontends.MidiFileConverter`
+       constructor.
     2. Values that are defined by the midi file standard.
 """
 

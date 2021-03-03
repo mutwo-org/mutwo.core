@@ -1,4 +1,4 @@
-"""Module for algorithms which are related to the Scottish botanist Robert Brown."""
+"""Algorithms which are related to Scottish botanist Robert Brown."""
 
 import math
 import typing

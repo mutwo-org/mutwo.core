@@ -1,4 +1,4 @@
-"""This module adds constants which are used in `mutwo.generators.edwards`."""
+"""Constants which are used in :mod:`mutwo.generators.edwards`."""
 
 ACTIVITY_LEVELS = (
     # 0

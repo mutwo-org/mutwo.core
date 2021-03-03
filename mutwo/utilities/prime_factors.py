@@ -1,4 +1,4 @@
-"""Module for prime number calculations.
+"""Prime number calculations.
 
 The functions "factorise" and "factors" are copied from the pyprimes - library
 (https://github.com/uzumaxy/pyprimes/blob/master/src/pyprimes/factors.py).
@@ -26,12 +26,16 @@ class PrimeGenerator(object):
         return self
 
 
-def factorise(n: int) -> list:
+def factorise(n: int) -> typing.List[int]:
     """factorise(integer) -> [list of factors]
 
-    Returns a list of the (mostly) prime factors of integer n. For negative
-    integers, -1 is included as a factor. If n is 0, 1 or -1, [n] is
-    returned as the only factor. Otherwise all the factors will be prime.
+    :param n: The number which shall be factorised.
+    :return: Returns a list of the (mostly) prime factors of integer n. For negative
+        integers, -1 is included as a factor. If n is 0, 1 or -1, [n] is
+        returned as the only factor. Otherwise all the factors will be prime.
+
+    **Example:**
+
     >>> factorise(-693)
     [-1, 3, 3, 7, 11]
     >>> factorise(55614)
@@ -46,14 +50,17 @@ def factorise(n: int) -> list:
 def factors(n: int):
     """factors(integer) -> yield factors of integer lazily
 
-    >>> list(factors(3*7*7*7*11))
-    [(3, 1), (7, 3), (11, 1)]
     Yields tuples of (factor, count) where each factor is unique and usually
     prime, and count is an integer 1 or larger.
     The factors are prime, except under the following circumstances: if the
     argument n is negative, -1 is included as a factor; if n is 0 or 1, it
     is given as the only factor. For all other integer n, all of the factors
     returned are prime.
+
+    **Example:**
+
+    >>> list(factors(3*7*7*7*11))
+    [(3, 1), (7, 3), (11, 1)]
     """
     if n in (0, 1, -1):
         yield (n, 1)
@@ -77,6 +84,9 @@ def factors(n: int):
 
 def is_prime(n: int) -> bool:
     """Test if number is prime or not.
+
+    :param n: The number which shall be tested.
+    :return: True if number is prime and False if number isn't a Prime.
 
     from https://www.geeksforgeeks.org/python-program-to-check-
     whether-a-number-is-prime-or-not/

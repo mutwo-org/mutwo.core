@@ -1,4 +1,4 @@
-"""Module for algorithms which are related to the Canadian computer scientist Godfried Toussaint."""
+"""Algorithms which are related to Canadian computer scientist G. T. Toussaint."""
 
 import itertools
 import typing

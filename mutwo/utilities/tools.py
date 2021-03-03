@@ -1,4 +1,4 @@
-"""This module contains generic utility functions."""
+"""Generic utility functions."""
 
 import bisect
 import functools

@@ -1,4 +1,4 @@
-"""Module for algorithms which are related to the US-American researcher Frank Gray."""
+"""Algorithms which are related to US-American researcher Frank Gray."""
 
 import typing
 
