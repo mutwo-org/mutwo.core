@@ -45,7 +45,7 @@ class Event(abc.ABC):
     ):
         """Helper method to make sure that start < end.
 
-        Can be used within the different cut_up methods.
+        Can be used within the different cut_out methods.
         """
         try:
             assert condition(start, end)
@@ -180,13 +180,13 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def cut_up(
+    def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "Event"]:
         """Time-based slicing of the respective event.
 
         :param start: number that indicates the point when the
-            cut up shall start.
+            cut out shall start.
         :param end: number that indicates the point when the cut
             up shall end.
 
@@ -194,9 +194,31 @@ class Event(abc.ABC):
 
         >>> from mutwo.events import basic
         >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
-        >>> sequential_event.cut_up(1, 4)
+        >>> sequential_event.cut_out(1, 4)
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 2), SimpleEvent(duration = 1)])
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def cut_off(
+        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+    ) -> typing.Union[None, "Event"]:
+        """Time-based __del__ of the respective event.
+
+        :param start: number that indicates the point when the
+            cut off shall start.
+        :param end: number that indicates the point when the cut
+            off shall end.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
+        >>> sequential_event.cut_off(1, 3)
+        >>> print(sequential_event)
+        SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1)])
         """
 
         raise NotImplementedError

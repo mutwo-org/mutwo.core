@@ -199,7 +199,7 @@ class SimpleEvent(events.abc.Event):
             function(parameter)
 
     @decorators.add_return_option
-    def cut_up(
+    def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "SimpleEvent"]:
         self._assert_correct_start_and_end_values(
@@ -219,12 +219,25 @@ class SimpleEvent(events.abc.Event):
             assert difference_to_duration < duration
         except AssertionError:
             message = (
-                "Can't cut up SimpleEvent '{}' with duration '{}' from (start = {} to"
+                "Can't cut out SimpleEvent '{}' with duration '{}' from (start = {} to"
                 " end = {}).".format(self, duration, start, end)
             )
             raise ValueError(message)
 
         self.duration -= difference_to_duration
+
+    @decorators.add_return_option
+    def cut_off(
+        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+    ) -> typing.Union[None, "SimpleEvent"]:
+        self._assert_correct_start_and_end_values(start, end)
+
+        duration = self.duration
+        if start < duration:
+            if end > duration:
+                end = duration
+
+            self.duration -= end - start
 
 
 T = typing.TypeVar("T")
@@ -286,12 +299,12 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         return next(after_absolute_time)[1]
 
     @decorators.add_return_option
-    def cut_up(
+    def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "SequentialEvent"]:
         self._assert_correct_start_and_end_values(start, end)
 
-        cut_up_events = []
+        cut_out_events = []
 
         for event_start, event in zip(self.absolute_times, self):
             event_end = event_start + event.duration
@@ -303,20 +316,48 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
             appendable = any(appendable_conditions)
             if appendable:
-                cut_up_start = 0
-                cut_up_end = event.duration
+                cut_out_start = 0
+                cut_out_end = event.duration
 
                 if event_start < start:
-                    cut_up_start += start - event_start
+                    cut_out_start += start - event_start
 
                 if event_end > end:
-                    cut_up_end -= event_end - end
+                    cut_out_end -= event_end - end
 
-                if cut_up_start < cut_up_end:
-                    event = event.cut_up(cut_up_start, cut_up_end, mutate=False)
-                    cut_up_events.append(event)
+                if cut_out_start < cut_out_end:
+                    event = event.cut_out(cut_out_start, cut_out_end, mutate=False)
+                    cut_out_events.append(event)
 
-        self[:] = cut_up_events
+        self[:] = cut_out_events
+
+    @decorators.add_return_option
+    def cut_off(
+        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+    ):
+        cut_off_duration = end - start
+
+        events_to_delete = []
+        for event_index, event_start, event in zip(
+            range(len(self)), self.absolute_times, self
+        ):
+            event_end = event_start + event.duration
+            if event_start >= start and event_end <= end:
+                events_to_delete.append(event_index)
+
+            elif event_start <= start and event_end >= start:
+                difference_to_event_start = start - event_start
+                event.cut_off(
+                    difference_to_event_start,
+                    difference_to_event_start + cut_off_duration,
+                )
+
+            elif event_start < end and event_end > end:
+                difference_to_event_start = event_start - start
+                event.cut_off(0, cut_off_duration - difference_to_event_start)
+
+        for index in reversed(events_to_delete):
+            del self[index]
 
     @decorators.add_return_option
     def squash_in(
@@ -324,16 +365,13 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Union[None, "SequentialEvent"]:
         self._assert_start_in_range(start)
 
-        new_sequential_event = self.cut_up(0, start, mutate=False)
-        new_sequential_event.append(event_to_squash_in)
+        cut_off_start_of_second_part = start + event_to_squash_in.duration
+        self.cut_off(start, cut_off_start_of_second_part)
 
-        cut_up_start_of_second_part = start + event_to_squash_in.duration
-        self_duration = self.duration
-        if self_duration > cut_up_start_of_second_part:
-            new_sequential_event.extend(
-                self.cut_up(cut_up_start_of_second_part, self.duration, mutate=False)
-            )
-        self[:] = new_sequential_event
+        if start == self.duration:
+            self.append(event_to_squash_in)
+        else:
+            self.insert(self.absolute_times.index(start), event_to_squash_in)
 
 
 class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
@@ -352,16 +390,18 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @decorators.add_return_option
-    def cut_up(
+    def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "SimultaneousEvent"]:
         self._assert_correct_start_and_end_values(start, end)
-        cut_up_events = []
+        [event.cut_out(start, end) for event in self]
 
-        for event in self:
-            cut_up_events.append(event.cut_up(start, end, mutate=False))
-
-        self[:] = cut_up_events
+    @decorators.add_return_option
+    def cut_off(
+        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+    ):
+        self._assert_correct_start_and_end_values(start, end)
+        [event.cut_off(start, end) for event in self]
 
     @decorators.add_return_option
     def squash_in(
@@ -369,12 +409,9 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Union[None, "SimultaneousEvent"]:
         self._assert_start_in_range(start)
 
-        new_simultaneous_event = []
         for event in self:
             try:
-                new_simultaneous_event.append(
-                    event.squash_in(start, event_to_squash_in, mutate=False)
-                )
+                event.squash_in(start, event_to_squash_in)
 
             # simple events don't have a 'squash_in' method
             except AttributeError:
@@ -387,8 +424,6 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
                     )
                 )
                 raise TypeError(message)
-
-        self[:] = new_simultaneous_event
 
 
 class EnvelopeEvent(SimpleEvent):

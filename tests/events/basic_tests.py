@@ -76,20 +76,33 @@ class SimpleEventTest(unittest.TestCase):
         event2 = basic.SimpleEvent(5)
         cut_up_event2 = basic.SimpleEvent(1)
 
-        event2.cut_up(2, 3)
+        event2.cut_out(2, 3)
 
         self.assertEqual(
-            event0.cut_up(2, 4, mutate=False).duration, cut_up_event0.duration
+            event0.cut_out(2, 4, mutate=False).duration, cut_up_event0.duration
         )
         self.assertEqual(
-            event1.cut_up(0, 5, mutate=False).duration, cut_up_event1.duration
+            event1.cut_out(0, 5, mutate=False).duration, cut_up_event1.duration
         )
         self.assertEqual(event2.duration, cut_up_event2.duration)
 
         # this will raise an error because the simple event isn't within the
         # asked range.
-        self.assertRaises(ValueError, lambda: event0.cut_up(4, 5))
-        self.assertRaises(ValueError, lambda: event0.cut_up(-2, -1))
+        self.assertRaises(ValueError, lambda: event0.cut_out(4, 5))
+        self.assertRaises(ValueError, lambda: event0.cut_out(-2, -1))
+
+    def test_cut_off(self):
+        event0 = basic.SimpleEvent(4)
+        cut_off_event0 = basic.SimpleEvent(2)
+
+        event1 = basic.SimpleEvent(10)
+        cut_off_event1 = basic.SimpleEvent(5)
+
+        self.assertEqual(event0.cut_off(0, 2, mutate=False), cut_off_event0)
+        self.assertEqual(event0.cut_off(2, 5, mutate=False), cut_off_event0)
+
+        event1.cut_off(0, 5)
+        self.assertEqual(event1, cut_off_event1)
 
 
 class SequentialEventTest(unittest.TestCase):
@@ -122,11 +135,34 @@ class SequentialEventTest(unittest.TestCase):
         result1 = basic.SequentialEvent([basic.SimpleEvent(1)])
         self.assertEqual(
             [event.duration for event in result0],
-            [event.duration for event in self.sequence.cut_up(0.5, 5, mutate=False)],
+            [event.duration for event in self.sequence.cut_out(0.5, 5, mutate=False)],
         )
         self.assertEqual(
             [event.duration for event in result1],
-            [event.duration for event in self.sequence.cut_up(1, 2, mutate=False)],
+            [event.duration for event in self.sequence.cut_out(1, 2, mutate=False)],
+        )
+
+    def test_cut_off(self):
+        result0 = basic.SequentialEvent(
+            [basic.SimpleEvent(0.5), basic.SimpleEvent(2), basic.SimpleEvent(3)]
+        )
+        result1 = basic.SequentialEvent([basic.SimpleEvent(1)])
+        result2 = basic.SequentialEvent([basic.SimpleEvent(1), basic.SimpleEvent(0.75)])
+        self.assertEqual(
+            [event.duration for event in result0],
+            [event.duration for event in self.sequence.cut_off(0.5, 1, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result1],
+            [event.duration for event in self.sequence.cut_off(1, 6, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result1],
+            [event.duration for event in self.sequence.cut_off(1, 7, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result2],
+            [event.duration for event in self.sequence.cut_off(1.75, 7, mutate=False)],
         )
 
     def test_squash_in(self):
@@ -223,23 +259,40 @@ class SimultaneousEventTest(unittest.TestCase):
 
         self.assertEqual(
             [event.duration for event in result],
-            [event.duration for event in self.sequence.cut_up(0.5, 1, mutate=False)],
+            [event.duration for event in self.sequence.cut_out(0.5, 1, mutate=False)],
         )
         self.assertEqual(
             [event.duration for event in result],
-            [event.duration for event in self.sequence.cut_up(0, 0.5, mutate=False)],
+            [event.duration for event in self.sequence.cut_out(0, 0.5, mutate=False)],
         )
         self.assertEqual(
             [event.duration for event in result],
             [
                 event.duration
-                for event in self.sequence.cut_up(0.25, 0.75, mutate=False)
+                for event in self.sequence.cut_out(0.25, 0.75, mutate=False)
             ],
         )
 
         # this will raise an error because the simultaneous event contains simple events
         # where some simple event aren't long enough for the following cut up arguments.
-        self.assertRaises(ValueError, lambda: self.sequence.cut_up(2, 3))
+        self.assertRaises(ValueError, lambda: self.sequence.cut_out(2, 3))
+
+    def test_cut_off(self):
+        result0 = basic.SimultaneousEvent(
+            [basic.SimpleEvent(duration) for duration in (0.5, 1.5, 2.5)]
+        )
+        result1 = basic.SimultaneousEvent(
+            [basic.SimpleEvent(duration) for duration in (1, 2, 2.5)]
+        )
+
+        self.assertEqual(
+            [event.duration for event in result0],
+            [event.duration for event in self.sequence.cut_off(0, 0.5, mutate=False)],
+        )
+        self.assertEqual(
+            [event.duration for event in result1],
+            [event.duration for event in self.sequence.cut_off(2.5, 3, mutate=False)],
+        )
 
     def test_squash_in(self):
         self.assertRaises(
