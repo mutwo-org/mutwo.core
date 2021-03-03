@@ -6,7 +6,6 @@ are nested or not:
 
 import bisect
 import copy
-import itertools
 import numbers
 import types
 import typing
@@ -352,27 +351,34 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Union[None, "SequentialEvent"]:
         cut_off_duration = end - start
 
-        events_to_delete = []
-        for event_index, event_start, event in zip(
-            range(len(self)), self.absolute_times, self
-        ):
-            event_end = event_start + event.duration
-            if event_start >= start and event_end <= end:
-                events_to_delete.append(event_index)
+        # avoid unnecessary iterations
+        if cut_off_duration > 0:
 
-            elif event_start <= start and event_end >= start:
-                difference_to_event_start = start - event_start
-                event.cut_off(
-                    difference_to_event_start,
-                    difference_to_event_start + cut_off_duration,
-                )
+            # collect events which are only active within the
+            # cut_off - range
+            events_to_delete = []
+            for event_index, event_start, event in zip(
+                range(len(self)), self.absolute_times, self
+            ):
+                event_end = event_start + event.duration
+                if event_start >= start and event_end <= end:
+                    events_to_delete.append(event_index)
 
-            elif event_start < end and event_end > end:
-                difference_to_event_start = event_start - start
-                event.cut_off(0, cut_off_duration - difference_to_event_start)
+                # shorten event which are partly active within the
+                # cut_off - range
+                elif event_start <= start and event_end >= start:
+                    difference_to_event_start = start - event_start
+                    event.cut_off(
+                        difference_to_event_start,
+                        difference_to_event_start + cut_off_duration,
+                    )
 
-        for index in reversed(events_to_delete):
-            del self[index]
+                elif event_start < end and event_end > end:
+                    difference_to_event_start = event_start - start
+                    event.cut_off(0, cut_off_duration - difference_to_event_start)
+
+            for index in reversed(events_to_delete):
+                del self[index]
 
     @decorators.add_return_option
     def squash_in(
@@ -381,6 +387,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         self._assert_start_in_range(start)
 
         cut_off_end = start + event_to_squash_in.duration
+
         self.cut_off(start, cut_off_end)
 
         if start == self.duration:
@@ -388,18 +395,16 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
         else:
             absolute_times = self.absolute_times
-            # in case the event get squashed in between another event,
-            # this other event should be split first
-            if start not in absolute_times:
-                event_index = self.get_event_index_at(start)
-                splitted_event = self[event_index].split_at(
-                    start - absolute_times[event_index]
-                )
-                self[event_index] = splitted_event[1]
-                self.insert(event_index, splitted_event[0])
-                absolute_times = self.absolute_times
+            active_event_index = self.get_event_index_at(start)
+            split_position = start - absolute_times[active_event_index]
+            # potentially split event
+            if split_position > 6e-14:  # avoid floating point errors
+                split_active_event = self[active_event_index].split_at(split_position)
+                self[active_event_index] = split_active_event[1]
+                self.insert(active_event_index, split_active_event[0])
+                active_event_index += 1
 
-            self.insert(absolute_times.index(start), event_to_squash_in)
+            self.insert(active_event_index, event_to_squash_in)
 
 
 class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
