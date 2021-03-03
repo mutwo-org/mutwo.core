@@ -1,4 +1,4 @@
-"""The most basic event classes which can be used.
+"""Generic event classes which can be used in multiple contexts.
 
 The different events differ in their timing structure and whether they
 are nested or not:
@@ -37,6 +37,10 @@ class SimpleEvent(events.abc.Event):
     def __init__(self, new_duration: parameters.abc.DurationType):
         self.duration = new_duration
 
+    # ###################################################################### #
+    #                           magic methods                                #
+    # ###################################################################### #
+
     def __eq__(self, other: typing.Any) -> bool:
         """Test for checking if two objects are equal."""
         try:
@@ -51,25 +55,9 @@ class SimpleEvent(events.abc.Event):
         )
         return "{}({})".format(type(self).__name__, ", ".join(attributes))
 
-    def _is_equal(self, other: typing.Any) -> bool:
-        """Helper function to inspect if two SimpleEvent objects are equal."""
-
-        for parameter_to_compare in self._parameters_to_compare:
-            try:
-                # if the assigned values of the specific parameter aren't
-                # equal, both objects can't be equal
-                if getattr(self, parameter_to_compare) != getattr(
-                    other, parameter_to_compare
-                ):
-                    return False
-
-            # if the other object doesn't know the essential parameter
-            # mutwo assumes that both objects can't be equal
-            except AttributeError:
-                return False
-
-        # if all compared parameters are equal, return True
-        return True
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
 
     @property
     def _parameters_to_compare(self) -> typing.Tuple[str]:
@@ -94,6 +82,34 @@ class SimpleEvent(events.abc.Event):
     @duration.setter
     def duration(self, new_duration: parameters.abc.DurationType):
         self._duration = new_duration
+
+    # ###################################################################### #
+    #                           private methods                              #
+    # ###################################################################### #
+
+    def _is_equal(self, other: typing.Any) -> bool:
+        """Helper function to inspect if two SimpleEvent objects are equal."""
+
+        for parameter_to_compare in self._parameters_to_compare:
+            try:
+                # if the assigned values of the specific parameter aren't
+                # equal, both objects can't be equal
+                if getattr(self, parameter_to_compare) != getattr(
+                    other, parameter_to_compare
+                ):
+                    return False
+
+            # if the other object doesn't know the essential parameter
+            # mutwo assumes that both objects can't be equal
+            except AttributeError:
+                return False
+
+        # if all compared parameters are equal, return True
+        return True
+
+    # ###################################################################### #
+    #                           public methods                               #
+    # ###################################################################### #
 
     def destructive_copy(self) -> "SimpleEvent":
         return copy.deepcopy(self)
@@ -186,7 +202,9 @@ class SimpleEvent(events.abc.Event):
     def cut_up(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Union[None, "SimpleEvent"]:
-        self._assert_correct_start_and_end_values(start, end)
+        self._assert_correct_start_and_end_values(
+            start, end, condition=lambda start, end: start < end
+        )
 
         duration = self.duration
 
@@ -215,6 +233,10 @@ T = typing.TypeVar("T")
 class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Events which happen in a linear order."""
 
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
+
     @events.abc.ComplexEvent.duration.getter
     def duration(self):
         return sum(event.duration for event in self)
@@ -235,6 +257,10 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         durations = (event.duration for event in self)
         absolute_times = tuple(tools.accumulate_from_zero(durations))
         return tuple(zip(absolute_times, absolute_times[1:]))
+
+    # ###################################################################### #
+    #                           public methods                               #
+    # ###################################################################### #
 
     def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
         """Get event which is active at the passed absolute_time.
@@ -292,13 +318,38 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
         self[:] = cut_up_events
 
+    @decorators.add_return_option
+    def squash_in(
+        self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
+    ) -> typing.Union[None, "SequentialEvent"]:
+        self._assert_start_in_range(start)
+
+        new_sequential_event = self.cut_up(0, start, mutate=False)
+        new_sequential_event.append(event_to_squash_in)
+
+        cut_up_start_of_second_part = start + event_to_squash_in.duration
+        self_duration = self.duration
+        if self_duration > cut_up_start_of_second_part:
+            new_sequential_event.extend(
+                self.cut_up(cut_up_start_of_second_part, self.duration, mutate=False)
+            )
+        self[:] = new_sequential_event
+
 
 class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
 
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
+
     @events.abc.ComplexEvent.duration.getter
     def duration(self) -> parameters.abc.DurationType:
         return max(event.duration for event in self)
+
+    # ###################################################################### #
+    #                           public methods                               #
+    # ###################################################################### #
 
     @decorators.add_return_option
     def cut_up(
@@ -312,10 +363,36 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
         self[:] = cut_up_events
 
+    @decorators.add_return_option
+    def squash_in(
+        self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
+    ) -> typing.Union[None, "SimultaneousEvent"]:
+        self._assert_start_in_range(start)
+
+        new_simultaneous_event = []
+        for event in self:
+            try:
+                new_simultaneous_event.append(
+                    event.squash_in(start, event_to_squash_in, mutate=False)
+                )
+
+            # simple events don't have a 'squash_in' method
+            except AttributeError:
+                message = (
+                    "Can't squash '{}' in '{}'. Does the SimultaneousEvent contain"
+                    " events that inherit from SimpleEvent? For being able to"
+                    " squash in, the SimultaneousEvent needs to contain"
+                    " SequentialEvents or SimultaneousEvents.".format(
+                        event_to_squash_in, self
+                    )
+                )
+                raise TypeError(message)
+
+        self[:] = new_simultaneous_event
+
 
 class EnvelopeEvent(SimpleEvent):
-    """
-    """
+    """"""
 
     def __init__(
         self,

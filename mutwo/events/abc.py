@@ -1,7 +1,8 @@
-"""This file contains abstract base classes for the event module."""
+"""Abstract base classes for events (definition of public api)."""
 
 import abc
 import copy
+import numbers
 import typing
 
 from mutwo import parameters
@@ -14,6 +15,10 @@ __all__ = ("Event", "ComplexEvent")
 class Event(abc.ABC):
     """Abstract Event-Object"""
 
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
+
     @property
     @abc.abstractmethod
     def duration(self) -> parameters.abc.DurationType:
@@ -21,11 +26,40 @@ class Event(abc.ABC):
 
         The unit of the duration is up to the interpretation of the user
         and the respective conversion routine that will be used. For
-        instance when using the ``CsoundScoreConverter``, the duration will be
-        understood as seconds, while the ``MidiFileConverter`` will read duration
+        instance when using :class:`CsoundScoreConverter`, the duration will be
+        understood as seconds, while :class:`MidiFileConverter` will read duration
         as beats.
         """
         raise NotImplementedError
+
+    # ###################################################################### #
+    #                           private methods                              #
+    # ###################################################################### #
+
+    @staticmethod
+    def _assert_correct_start_and_end_values(
+        start: parameters.abc.DurationType,
+        end: parameters.abc.DurationType,
+        condition: typing.Callable[[numbers.Number], bool] = lambda start, end: end
+        >= start,
+    ):
+        """Helper method to make sure that start < end.
+
+        Can be used within the different cut_up methods.
+        """
+        try:
+            assert condition(start, end)
+        except AssertionError:
+            message = (
+                "Invalid values for start and end property (start = '{}' and end ="
+                " '{}')!".format(start, end)
+            )
+            message += " Value for end has to be bigger than value for start."
+            raise ValueError(message)
+
+    # ###################################################################### #
+    #                           public methods                               #
+    # ###################################################################### #
 
     @abc.abstractmethod
     def destructive_copy(self) -> "Event":
@@ -145,24 +179,6 @@ class Event(abc.ABC):
 
         raise NotImplementedError
 
-    @staticmethod
-    def _assert_correct_start_and_end_values(
-        start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ):
-        """Helper method to make sure that start < end.
-
-        Can be used within the different cut_up methods.
-        """
-        try:
-            assert end > start
-        except AssertionError:
-            message = (
-                "Invalid values for start and end property (start = '{}' and end ="
-                " '{}')!".format(start, end)
-            )
-            message += " Value for end has to be bigger than value for start."
-            raise ValueError(message)
-
     @abc.abstractmethod
     def cut_up(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
@@ -192,12 +208,12 @@ class ComplexEvent(Event, list):
     def __init__(self, iterable: typing.Iterable[Event]):
         super().__init__(iterable)
 
+    # ###################################################################### #
+    #                           magic methods                                #
+    # ###################################################################### #
+
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
-
-    def copy(self) -> "ComplexEvent":
-        """Return a deep copy of the ComplexEvent."""
-        return copy.deepcopy(self)
 
     def __add__(self, event: "ComplexEvent") -> "ComplexEvent":
         return type(self)(super().__add__(event))
@@ -208,6 +224,10 @@ class ComplexEvent(Event, list):
             return type(self)(event)
         return event
 
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
+
     @Event.duration.setter
     def duration(self, new_duration: parameters.abc.DurationType) -> None:
         old_duration = self.duration
@@ -215,6 +235,33 @@ class ComplexEvent(Event, list):
             "duration",
             lambda duration: tools.scale(duration, 0, old_duration, 0, new_duration),
         )
+
+    # ###################################################################### #
+    #                           private methods                              #
+    # ###################################################################### #
+
+    def _assert_start_in_range(self, start: parameters.abc.DurationType):
+        """Helper method to make sure that start < event.duration.
+
+        Can be used within the different squash_in methods.
+        """
+        try:
+            assert self.duration >= start
+        except AssertionError:
+            message = (
+                "Invalid value for start = '{}' in 'squash_in' call for event with"
+                " duration = '{}'!".format(start, self.duration)
+            )
+            message += " Start has to be equal or smaller than the events duration."
+            raise ValueError(message)
+
+    # ###################################################################### #
+    #                           public methods                               #
+    # ###################################################################### #
+
+    def copy(self) -> "ComplexEvent":
+        """Return a deep copy of the ComplexEvent."""
+        return copy.deepcopy(self)
 
     def destructive_copy(self) -> "ComplexEvent":
         return type(self)([event.destructive_copy() for event in self])
@@ -250,3 +297,26 @@ class ComplexEvent(Event, list):
         ],
     ) -> None:
         [event.mutate_parameter(parameter_name, function) for event in self]
+
+    @abc.abstractmethod
+    def squash_in(
+        self, start: parameters.abc.DurationType, event_to_squash_in: Event
+    ) -> typing.Union[None, Event]:
+        """Time-based insert of a new event into the present event.
+
+        :param start: Absolute time where the event shall be inserted.
+        :param event_to_squash_in: the event that shall be squashed into
+            the present event.
+
+        Squash in a new event to the present event.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
+        >>> sequential_event.squash_in(1, basic.SimpleEvent(1.5))
+        >>> print(sequential_event)
+        SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1.5), SimpleEvent(duration = 0.5)])
+        """
+
+        raise NotImplementedError
