@@ -223,6 +223,29 @@ class Event(abc.ABC):
 
         raise NotImplementedError
 
+    def split_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Tuple["Event"]:
+        """Split event in two events at the absolute_time.
+
+        :param absolute_time: Absolute time where the event shall be split.
+        :return: Two events that result from splitting the present event.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
+        >>> sequential_event.split_at(1)
+        (SequentialEvent([SimpleEvent(duration = 1)]), SequentialEvent([SimpleEvent(duration = 2)]))
+        >>> sequential_event[0].split_at(1)
+        (SimpleEvent(duration = 1), SimpleEvent(duration = 2))
+        """
+
+        return (
+            self.cut_out(0, absolute_time, mutate=False),
+            self.cut_out(absolute_time, self.duration, mutate=False),
+        )
+
 
 class ComplexEvent(Event, list):
     """Abstract Event-Object, which contains other Event-Objects."""

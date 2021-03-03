@@ -104,6 +104,17 @@ class SimpleEventTest(unittest.TestCase):
         event1.cut_off(0, 5)
         self.assertEqual(event1, cut_off_event1)
 
+    def test_split_at(self):
+        event = basic.SimpleEvent(4)
+
+        split0 = (basic.SimpleEvent(1), basic.SimpleEvent(3))
+        split1 = (basic.SimpleEvent(2), basic.SimpleEvent(2))
+        split2 = (basic.SimpleEvent(3), basic.SimpleEvent(1))
+
+        self.assertEqual(event.split_at(1), split0)
+        self.assertEqual(event.split_at(2), split1)
+        self.assertEqual(event.split_at(3), split2)
+
 
 class SequentialEventTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -188,6 +199,12 @@ class SequentialEventTest(unittest.TestCase):
             self.sequence.squash_in(6, basic.SimpleEvent(1), mutate=False),
             basic.SequentialEvent(
                 [basic.SimpleEvent(duration) for duration in (1, 2, 3, 1)]
+            ),
+        )
+        self.assertEqual(
+            self.sequence.squash_in(0.5, basic.SimpleEvent(0.25), mutate=False),
+            basic.SequentialEvent(
+                [basic.SimpleEvent(duration) for duration in (0.5, 0.25, 0.25, 2, 3)]
             ),
         )
         self.assertRaises(

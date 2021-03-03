@@ -4,6 +4,7 @@ The different events differ in their timing structure and whether they
 are nested or not:
 """
 
+import bisect
 import copy
 import itertools
 import numbers
@@ -275,6 +276,25 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
+    def get_event_index_at(self, absolute_time: numbers.Number) -> int:
+        """Get index of event which is active at the passed absolute_time.
+
+        :param absolute_time: The absolute time where the method shall search
+            for the active event.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event.get_event_index_at(1)
+        0
+        >>> sequential_event.get_event_index_at(3)
+        1
+        """
+
+        absolute_times = self.absolute_times
+        return bisect.bisect_right(absolute_times, absolute_time) - 1
+
     def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
         """Get event which is active at the passed absolute_time.
 
@@ -291,12 +311,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         SimpleEvent(duration = 3)
         """
 
-        absolute_times = self.absolute_times
-        after_absolute_time = itertools.dropwhile(
-            lambda x: absolute_time < x[0],
-            zip(reversed(absolute_times), reversed(self)),
-        )
-        return next(after_absolute_time)[1]
+        return self[self.get_event_index_at(absolute_time)]
 
     @decorators.add_return_option
     def cut_out(
@@ -334,7 +349,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @decorators.add_return_option
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ):
+    ) -> typing.Union[None, "SequentialEvent"]:
         cut_off_duration = end - start
 
         events_to_delete = []
@@ -365,13 +380,26 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Union[None, "SequentialEvent"]:
         self._assert_start_in_range(start)
 
-        cut_off_start_of_second_part = start + event_to_squash_in.duration
-        self.cut_off(start, cut_off_start_of_second_part)
+        cut_off_end = start + event_to_squash_in.duration
+        self.cut_off(start, cut_off_end)
 
         if start == self.duration:
             self.append(event_to_squash_in)
+
         else:
-            self.insert(self.absolute_times.index(start), event_to_squash_in)
+            absolute_times = self.absolute_times
+            # in case the event get squashed in between another event,
+            # this other event should be split first
+            if start not in absolute_times:
+                event_index = self.get_event_index_at(start)
+                splitted_event = self[event_index].split_at(
+                    start - absolute_times[event_index]
+                )
+                self[event_index] = splitted_event[1]
+                self.insert(event_index, splitted_event[0])
+                absolute_times = self.absolute_times
+
+            self.insert(absolute_times.index(start), event_to_squash_in)
 
 
 class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
