@@ -1,9 +1,9 @@
 """Prime number calculations.
 
-The functions "factorise" and "factors" are copied from the pyprimes - library
-(https://github.com/uzumaxy/pyprimes/blob/master/src/pyprimes/factors.py).
-In mutwo the function pyprimes.primes has been replaced by primesieve.Iterator(),
-which improves speed by a factor of 10.
+The functions "factorise" and "factors" are copied from the `pyprimes
+library <https://github.com/uzumaxy/pyprimes/blob/master/src/pyprimes/factors.py>`_.
+In mutwo the function :func:`pyprimes.primes` has been replaced by
+:class:`primesieve.Iterator()`, which improves speed by a factor of 10.
 """
 
 import typing
@@ -88,8 +88,9 @@ def is_prime(n: int) -> bool:
     :param n: The number which shall be tested.
     :return: True if number is prime and False if number isn't a Prime.
 
-    from https://www.geeksforgeeks.org/python-program-to-check-
-    whether-a-number-is-prime-or-not/
+    (`has been copied from here
+    <https://www.geeksforgeeks.org/python-program-to-check-
+    whether-a-number-is-prime-or-not/>`_)
     """
 
     # Corner cases

@@ -17,7 +17,7 @@ class ActivityLevel(object):
         either 0, 1 or 2)
 
     Activity Levels is a concept derived from Michael Edwards.
-    Quoting Michael Edwards, Activity Levels are an "object for determining
+    Quoting Michael Edwards, Activity Levels are an `"object for determining
     (deterministically) on a call-by-call basis whether a process is active
     or not (boolean).  This is determined by nine 10-element lists
     (actually three versions of each) of hand-coded 1s and 0s, each list
@@ -25,7 +25,7 @@ class ActivityLevel(object):
     The first three 10-element lists have only one 1 in them, the rest being zeros.
     The second three have two 1s, etc. Activity-levels of 0 and 10 would return
     never active and always active respectively."
-    (see https://michael-edwards.org/sc/robodoc/activity-levels_lsp.html#robo23)
+    <https://michael-edwards.org/sc/robodoc/activity-levels_lsp.html#robo23>`_.
 
     **Example:**
 
@@ -68,6 +68,7 @@ class ActivityLevel(object):
 
         :param level: the activity-level which current state shall be returned
             (should be from 0 to 10)
+        :return: True if active and False if not active.
         """
 
         try:

@@ -248,8 +248,8 @@ def cyclic_permutations(iterable: typing.Iterable[typing.Any]) -> typing.Generat
     >>> next(permutations)
     (3, 4, 1, 2)
 
-    Adapted function from the reply of Paritosh Singh here
-    https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531
+    `Adapted function from the reply of Paritosh Singh
+    <https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531>`_
     """
 
     def reorder_from_index(index: int, iterable: tuple) -> tuple:

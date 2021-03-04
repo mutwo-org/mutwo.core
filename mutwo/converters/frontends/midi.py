@@ -1,4 +1,4 @@
-"""Converter classes to render midi files (SMF) from mutwo data.
+"""Render midi files (SMF) from mutwo data.
 
 """
 
@@ -11,8 +11,8 @@ import warnings
 
 import mido
 
-from mutwo.converters.frontends import midi_constants
 from mutwo.converters import abc
+from mutwo.converters.frontends import midi_constants
 from mutwo.converters import symmetrical
 
 from mutwo import events
@@ -79,9 +79,9 @@ class MidiFileConverter(abc.Converter):
         the list of available midi channel.
     :param n_midi_channels_per_track: This parameter is only relevant for
         distribute_midi_channels == True. It sets how many midi channels are assigned
-        to one SequentialEvent (default to 1). If microtonal chords shall be played by
+        to one SequentialEvent. If microtonal chords shall be played by
         one SequentialEvent (via pitch bending messages) a higher number than 1 is
-        recommended.
+        recommended. Defaults to 1.
     :param maximum_pitch_bend_deviation: sets the maximum pitch bending range in cents.
         This value depends on the particular used software synthesizer and its settings,
         because it is up to the respective synthesizer how to interpret the pitch
@@ -690,7 +690,7 @@ class MidiFileConverter(abc.Converter):
         structure is a :class:`mutwo.events.basic.SimultaneousEvent` (representing
         the complete MidiFile) that contains :class:`mutwo.events.basic.SequentialEvent`
         (where each ``SequentialEvent`` represents one MidiTrack) that contains
-        :class:`mutwo.events.basic.SimpleEvents` (where each ``SimpleEvent``
+        :class:`mutwo.events.basic.SimpleEvent` (where each ``SimpleEvent``
         represents one midi note). If only one ``SequentialEvent`` is send,
         this ``SequentialEvent`` will be read as one MidiTrack in a MidiFile.
         If only one ``SimpleEvent`` get passed, this ``SimpleEvent`` will be

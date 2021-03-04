@@ -60,6 +60,6 @@ ACTIVITY_LEVELS = (
     # 10
     ((1,), (1,), (1,)),
 )
-"""Definition of activity level pattern. Pattern are copied from
+"""Definition of activity level pattern. `Pattern are copied from
 Michael Edwards Common Lisp composition software 'slippery-chicken'
-(see github.com/mdedwards/slippery-chicken/blob/master/activity-levels.lsp)."""
+<https://github.com/mdedwards/slippery-chicken/blob/master/src/activity-levels.lsp>`_."""
