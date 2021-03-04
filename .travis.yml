@@ -1,6 +1,9 @@
 language: python
 python:
   - 3.8
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install csound
 install:
   - pip3 install .[all]
   - pip3 install coveralls
