@@ -59,7 +59,7 @@ def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int]]:
     >>> from mutwo.generators import toussaint
     >>> toussaint.paradiddle(8)
     ((0, 2, 3, 5), (1, 4, 6, 7))
-    >>> toussaint.euclidean(6)
+    >>> toussaint.paradiddle(6)
     ((0, 4, 5), (1, 2, 3))
 
     The paradiddle algorithm has been described by Godfried T. Toussaint
