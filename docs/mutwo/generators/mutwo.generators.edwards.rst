@@ -6,9 +6,4 @@ mutwo.generators.edwards
    :undoc-members:
    :show-inheritance:
    :inherited-members: list
-   :special-members:
-   
-
-   
-   
-   
+   :special-members: __call__
