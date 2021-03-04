@@ -209,5 +209,56 @@ class CsoundScoreConverterTest(unittest.TestCase):
             self.assertEqual(f.read(), expected_line)
 
 
+class CsoundConverterTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        common_path = "tests/converters/frontends"
+        cls.orchestra_path = "{}/test.orc".format(common_path)
+        with open(cls.orchestra_path, "w") as f:
+            f.write(
+                "sr=44100\nksmps=1\n0dbfs=1\nnchnls=1\ninstr 1\nasig poscil3 p5,"
+                " p4\nout asig\nendin"
+            )
+        cls.score_converter = converters.frontends.csound.CsoundScoreConverter(
+            "{}/test.sco".format(common_path),
+            p4=lambda event: event.pitch_or_pitches[0].frequency,
+            p5=lambda event: event.volume.amplitude,
+        )
+        cls.converter = converters.frontends.csound.CsoundConverter(
+            "{}/test.wav".format(common_path), cls.orchestra_path, cls.score_converter
+        )
+
+        cls.event_to_convert = events.music.NoteLike(
+            parameters.pitches.WesternPitch("d"),
+            2,
+            parameters.volumes.DirectVolume(0.85),
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        # remove csound and sound files
+        os.remove(cls.orchestra_path)
+        os.remove(cls.score_converter.path)
+        os.remove(cls.converter.path)
+
+    def test_convert(self):
+        # make sure conversion method run without any errors
+        # (and sound file exists)
+
+        self.converter.convert(self.event_to_convert)
+        self.assertTrue(os.path.isfile(self.converter.path))
+
+    def test_convert_with_remove_score_file(self):
+        # make sure csound converter removes / maintains score file
+
+        self.converter.remove_score_file = True
+        self.converter.convert(self.event_to_convert)
+        self.assertFalse(os.path.isfile(self.score_converter.path))
+
+        self.converter.remove_score_file = False
+        self.converter.convert(self.event_to_convert)
+        self.assertTrue(os.path.isfile(self.score_converter.path))
+
+
 if __name__ == "__main__":
     unittest.main()

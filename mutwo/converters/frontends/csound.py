@@ -50,7 +50,12 @@ class CsoundScoreConverter(converters.abc.Converter):
 
     All p-fields can be overwritten in the following manner:
 
-    >>> my_converter = CsoundScoreConverter(path="my_csound_score.sco", p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)
+    >>> my_converter = CsoundScoreConverter(
+        path="my_csound_score.sco",
+        p1=lambda event: 2,
+        p4=lambda event: event.pitch.frequency,
+        p5=lambda event: event.volume
+    )
 
     For easier debugging of faulty score files, :mod:`mutwo` adds annotations
     when a new :class:`SequentialEvent` or a new :class:`SimultaneousEvent`
@@ -267,14 +272,16 @@ class CsoundScoreConverter(converters.abc.Converter):
 
 
 class CsoundConverter(converters.abc.Converter):
-    """Simple converter that helps generating audio files with Csound.
+    """Generate audio files with Csound.
 
     :param path: The path where the sound file shall be written to.
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
     :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used
         to render the csound score file (.sco) from a mutwo event.
-    :param flag: Flag that shall be added when calling csound. Several of the supported
+    :param *flag: Flag that shall be added when calling csound. Several of the supported
         csound flags can be found in :mod:`mutwo.converters.frontends.csound_constants`.
+    :param remove_score_file: Set to True if :class:`CsoundConverter` shall remove the
+        csound score file after rendering. Defaults to False.
     """
 
     def __init__(
@@ -282,12 +289,14 @@ class CsoundConverter(converters.abc.Converter):
         path: str,
         csound_orchestra_path: str,
         csound_score_converter: CsoundScoreConverter,
-        *flag: str
+        *flag: str,
+        remove_score_file: bool = False
     ):
         self.flags = flag
         self.path = path
         self.csound_orchestra_path = csound_orchestra_path
         self.csound_score_converter = csound_score_converter
+        self.remove_score_file = remove_score_file
 
     def convert(self, event_to_convert: events.abc.Event) -> None:
         """Render sound file from the mutwo event.
@@ -304,3 +313,6 @@ class CsoundConverter(converters.abc.Converter):
         )
 
         os.system(command)
+
+        if self.remove_score_file:
+            os.remove(self.csound_score_converter.path)
