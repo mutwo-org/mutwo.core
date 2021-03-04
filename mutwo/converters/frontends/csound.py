@@ -1,7 +1,7 @@
-"""This module adds converter classes to render sound files from mutwo data via Csound.
+"""Render sound files from mutwo data via Csound.
 
-Csound is a "domain-specific computer programming language for audio programming"
-(see http://www.csounds.com/).
+Csound is a `"domain-specific computer programming language
+for audio programming" <http://www.csounds.com/>`_.
 """
 
 import numbers
@@ -27,8 +27,8 @@ class CsoundScoreConverter(converters.abc.Converter):
     :param path: The path of the csound score file that shall be generated.
     :param pfield: p-field / p-field-extraction-function pairs.
 
-    This class helps generating score files for the "domain-specific computer
-    programming language for audio programming" Csound (see http://www.csounds.com/).
+    This class helps generating score files for the `"domain-specific computer
+    programming language for audio programming" Csound <http://www.csounds.com/>`_.
 
     :class:`CsoundScoreConverter` extracts data from mutwo Events and assign it to
     specific p-fields. The mapping of Event attributes to p-field values has
@@ -51,12 +51,18 @@ class CsoundScoreConverter(converters.abc.Converter):
     All p-fields can be overwritten in the following manner:
 
     >>> my_converter = CsoundScoreConverter(path="my_csound_score.sco", p1=lambda event: 2, p4=lambda event: event.pitch.frequency, p5=lambda event: event.volume)
+
+    For easier debugging of faulty score files, :mod:`mutwo` adds annotations
+    when a new :class:`SequentialEvent` or a new :class:`SimultaneousEvent`
+    starts.
     """
 
     _default_p_fields = {
         "p1": lambda event: 1,  # default instrument name "1"
         "p2": None,  # default to absolute start time
-        "p3": lambda event: event.duration,  # default key for duration
+        "p3": lambda event: event.duration
+        if event.duration > 0
+        else None,  # default key for duration
     }
 
     def __init__(self, path: str, **pfield: PFieldFunction):
@@ -166,6 +172,9 @@ class CsoundScoreConverter(converters.abc.Converter):
         absolute_entry_delay: parameters.abc.DurationType,
         csound_score_lines: list,
     ) -> None:
+        csound_score_lines.append(
+            converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
+        )
         for event_index, additional_delay in enumerate(sequential_event.absolute_times):
             self._make_csound_score_lines_from_event(
                 sequential_event[event_index],
@@ -173,17 +182,33 @@ class CsoundScoreConverter(converters.abc.Converter):
                 csound_score_lines,
             )
 
+        [
+            csound_score_lines.append("")
+            for _ in range(
+                converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+            )
+        ]
+
     def _make_csound_score_lines_from_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
         csound_score_lines: list,
     ) -> None:
+        csound_score_lines.append(
+            converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
+        )
         [
             self._make_csound_score_lines_from_event(
                 event, absolute_entry_delay, csound_score_lines
             )
             for event in simultaneous_event
+        ]
+        [
+            csound_score_lines.append("")
+            for _ in range(
+                converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+            )
         ]
 
     def _make_csound_score_lines_from_event(
@@ -246,8 +271,8 @@ class CsoundConverter(converters.abc.Converter):
 
     :param path: The path where the sound file shall be written to.
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
-    :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used to
-        render the csound score file (.sco) from a mutwo event.
+    :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used
+        to render the csound score file (.sco) from a mutwo event.
     :param flag: Flag that shall be added when calling csound. Several of the supported
         csound flags can be found in :mod:`mutwo.converters.frontends.csound_constants`.
     """

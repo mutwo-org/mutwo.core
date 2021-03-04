@@ -69,7 +69,11 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert)
 
-        expected_lines = "\n".join(
+        expected_lines = [
+            converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
+        ]
+
+        expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
                     absolute_entry_delay, duration, pitch.frequency, path
@@ -79,6 +83,16 @@ class CsoundScoreConverterTest(unittest.TestCase):
                 )
             ]
         )
+        expected_lines.extend(
+            [
+                ""
+                for _ in range(
+                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                )
+            ]
+        )
+        expected_lines = "\n".join(expected_lines)
+
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
@@ -101,7 +115,10 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert)
 
-        expected_lines = "\n".join(
+        expected_lines = [
+            converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
+        ]
+        expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
                     absolute_entry_delay, event.duration, event.pitch.frequency, path
@@ -112,6 +129,16 @@ class CsoundScoreConverterTest(unittest.TestCase):
                 if hasattr(event, "pitch")
             ]
         )
+        expected_lines.extend(
+            [
+                ""
+                for _ in range(
+                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                )
+            ]
+        )
+        expected_lines = "\n".join(expected_lines)
+
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
@@ -133,12 +160,25 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert)
 
-        expected_lines = "\n".join(
+        expected_lines = [
+            converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
+        ]
+        expected_lines.extend(
             [
                 'i 1 0 {} {} "{}"'.format(duration, pitch.frequency, path)
                 for duration, pitch, path in zip(durations, pitches, paths)
             ]
         )
+        expected_lines.extend(
+            [
+                ""
+                for _ in range(
+                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                )
+            ]
+        )
+        expected_lines = "\n".join(expected_lines)
+
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
@@ -163,8 +203,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert)
         expected_line = "i 1 0 {} {}".format(
-            duration,
-            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
+            duration, float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
         )
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_line)
