@@ -554,9 +554,10 @@ class MidiFileConverter(abc.Converter):
             message1.time - message0.time
             for message0, message1 in zip(sorted_midi_data, sorted_midi_data[1:])
         )
-        delta_ticks_per_message = (0,) + delta_ticks_per_message
-        for dt, message in zip(delta_ticks_per_message, sorted_midi_data):
-            message.time = dt
+        if sorted_midi_data:
+            delta_ticks_per_message = (sorted_midi_data[0].time,) + delta_ticks_per_message
+            for dt, message in zip(delta_ticks_per_message, sorted_midi_data):
+                message.time = dt
 
         # add midi data to midi track
         track.extend(sorted_midi_data)
