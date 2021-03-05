@@ -41,22 +41,25 @@ class MidiFileConverter(abc.Converter):
 
     :param path: where to write the midi file. The typical file type extension '.mid'
         is recommended, but not mandatory.
-    :param simple_event_to_pitches: Function to extract from a :class:`mutwo.events.basic.SimpleEvent` a tuple
-        that contains pitch objects. By default it asks the Event for its
-        :attr:`pitch_or_pitches` attribute (because by default :class:`mutwo.events.music.NoteLike`
-        objects are expected). When using different Event classes than ``NoteLike`` with
-        a different name for their pitch property this argument should be overridden.
-        If the function call raises an AttributeError (e.g. if no pitch can be
-        extracted) mutwo will interpret the event as a rest.
-    :param simple_event_to_volume: Function to extract the volume from a :class:`mutwo.events.basic.SimpleEvent`
-        in the purpose of generating midi notes. The volume should be a number from
-        0 to 1 (where 0 represents velocity 0 and 1 represents velocity 127).
-        Higher and lower values will be clipped. By default it asks the Event for its
-        :attr:`volume` attribute (because by default :class:`mutwo.events.music.NoteLike` objects
-        are expected). When using different Event classes than ``NoteLike`` with a
-        different name for their volume property this argument should be overridden.
-        If the function call raises an AttributeError (e.g. if no volume can be
-        extracted) mutwo will interpret the event as a rest.
+    :param simple_event_to_pitches: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
+        (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
+        By default it asks the Event for its :attr:`pitch_or_pitches` attribute
+        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a different name for
+        their pitch property, this argument should be overridden. If the function call
+        raises an :obj:`AttributeError` (e.g. if no pitch can be extracted),
+        mutwo will interpret the event as a rest.
+    :param simple_event_to_volume: Function to extract the volume from a
+        :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating midi notes.
+        The function should return an object that inhertis from
+        :class:`mutwo.parameters.abc.Volume`. By default it asks the Event for
+        its :attr:`volume` attribute (because by default
+        :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a
+        different name for their volume property, this argument should be overridden.
+        If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
+        extracted), mutwo will interpret the event as a rest.
     :param simple_event_to_control_messages: Function to generate midi control messages
         from a simple event. By default no control messages are generated. If the
         function call raises an AttributeError (e.g. if an expected control value isn't
@@ -101,7 +104,10 @@ class MidiFileConverter(abc.Converter):
     >>> from mutwo.converters.frontends import midi
     >>> from mutwo.parameters import pitches
     >>> # midi file converter that assign a middle c to all events
-    >>> midi_converter = midi.MidiFileConverter('test.mid', simple_event_to_pitches=lambda event: (pitches.WesternPitch('c'),))
+    >>> midi_converter = midi.MidiFileConverter(
+        'test.mid',
+        simple_event_to_pitches=lambda event: (pitches.WesternPitch('c'),)
+    )
 
     **Disclaimer**:
         The current implementation doesn't support glissandi yet (only static pitches),
@@ -118,7 +124,7 @@ class MidiFileConverter(abc.Converter):
             [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch]
         ] = lambda event: event.pitch_or_pitches,
         simple_event_to_volume: typing.Callable[
-            [events.basic.SimpleEvent], numbers.Number
+            [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda event: event.volume,
         simple_event_to_control_messages: typing.Callable[
             [events.basic.SimpleEvent], typing.Tuple[mido.Message]
@@ -440,7 +446,7 @@ class MidiFileConverter(abc.Converter):
 
         absolute_tick_start = self._beats_to_ticks(absolute_time)
         absolute_tick_end = absolute_tick_start + self._beats_to_ticks(duration)
-        velocity = parameters.abc.Volume.amplitude_to_midi_velocity(volume)
+        velocity = volume.midi_velocity
 
         midi_messages = []
 
@@ -555,7 +561,9 @@ class MidiFileConverter(abc.Converter):
             for message0, message1 in zip(sorted_midi_data, sorted_midi_data[1:])
         )
         if sorted_midi_data:
-            delta_ticks_per_message = (sorted_midi_data[0].time,) + delta_ticks_per_message
+            delta_ticks_per_message = (
+                sorted_midi_data[0].time,
+            ) + delta_ticks_per_message
             for dt, message in zip(delta_ticks_per_message, sorted_midi_data):
                 message.time = dt
 

@@ -298,12 +298,18 @@ class MidiFileConverterTest(unittest.TestCase):
         midi_channel = 0
         available_midi_channels_cycle = itertools.cycle((midi_channel,))
         for extracted_data in (
-            (0, 10, (pitches.WesternPitch("c", 4),), 1, tuple([])),
+            (
+                0,
+                10,
+                (pitches.WesternPitch("c", 4),),
+                volumes.DecibelVolume(0),
+                tuple([]),
+            ),
             (
                 101,
                 232,
                 (pitches.WesternPitch("ds", 2), pitches.JustIntonationPitch("3/7")),
-                0.1212,
+                volumes.DirectVolume(0.1212),
                 (mido.Message("control_change", channel=0, value=100, time=22),),
             ),
         ):
@@ -316,7 +322,7 @@ class MidiFileConverterTest(unittest.TestCase):
             ) = extracted_data
             start = self.converter._beats_to_ticks(absolute_time)
             end = self.converter._beats_to_ticks(duration) + start
-            velocity = volumes.DirectVolume.amplitude_to_midi_velocity(volume)
+            velocity = volume.midi_velocity
             expected_midi_messages = list(control_messages)
             for control_message in expected_midi_messages:
                 control_message.time = start
@@ -497,7 +503,7 @@ class MidiFileConverterTest(unittest.TestCase):
         # make sure generated midi file has the correct midi file type
 
         constant_pitch = pitches.WesternPitch("c")
-        constant_volume = 1
+        constant_volume = volumes.DirectVolume(1)
         constant_control_message = mido.Message("control_change", value=100)
         converter = midi.MidiFileConverter(
             self.midi_file_path,
@@ -514,8 +520,7 @@ class MidiFileConverterTest(unittest.TestCase):
             if message.type == "note_on":
                 self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
                 self.assertEqual(
-                    message.velocity,
-                    volumes.DirectVolume.amplitude_to_midi_velocity(constant_volume),
+                    message.velocity, constant_volume.midi_velocity,
                 )
                 n_note_on_messages += 1
             elif message.type == "control_change":

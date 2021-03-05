@@ -12,6 +12,8 @@ PitchOrPitches = typing.Union[
     parameters.abc.Pitch, typing.Iterable, numbers.Number, None
 ]
 
+Volume = typing.Union[parameters.abc.Volume, numbers.Number]
+
 
 class NoteLike(events.basic.SimpleEvent):
     """NoteLike represents a traditional discreet musical object.
@@ -22,7 +24,13 @@ class NoteLike(events.basic.SimpleEvent):
     :param new_duration: The duration of ``NoteLike``. This can be any number.
         The unit of the duration is up to the interpretation of the user and the
         respective converter routine that will be used.
-    :param volume: The volume of the event.
+    :param volume: The volume of the event. Can either be a object of
+        :mod:`mutwo.parameters.volumes` or a number. If the number ranges from 0
+        to 1, mutwo automatically generates a `mutwo.parameters.volumes.DirectVolume`
+        object (and the number will be interpreted as the amplitude). If the
+        number is smaller than 0, automatically generates a
+        `mutwo.parameters.volumes.DecibelVolume` object (and the number
+        will be interpreted as decibel).
 
     By default mutwo doesn't differentiate between Tones, Chords and
     Rests, but rather simply implements one general class which can
@@ -35,7 +43,9 @@ class NoteLike(events.basic.SimpleEvent):
     >>> from mutwo.parameters import pitches
     >>> from mutwo.events import music
     >>> tone = music.NoteLike(pitches.WesternPitch('a'), 1, 1)
-    >>> chord = music.NoteLike([pitches.WesternPitch('a'), pitches.JustIntonationPitch('3/2')], 1, 1)
+    >>> chord = music.NoteLike(
+        [pitches.WesternPitch('a'), pitches.JustIntonationPitch('3/2')], 1, 1
+    )
     """
 
     def __init__(
@@ -49,13 +59,13 @@ class NoteLike(events.basic.SimpleEvent):
         super().__init__(duration)
 
     @property
-    def pitch_or_pitches(self) -> list:
+    def pitch_or_pitches(self) -> typing.List[parameters.abc.Pitch]:
         """The pitch or pitches of the event."""
 
         return self._pitch_or_pitches
 
     @pitch_or_pitches.setter
-    def pitch_or_pitches(self, pitch_or_pitches: PitchOrPitches) -> None:
+    def pitch_or_pitches(self, pitch_or_pitches: PitchOrPitches):
         # make sure pitch_or_pitches always become assigned to a list of pitches,
         # to be certain of the returned type
         if not isinstance(pitch_or_pitches, typing.Iterable):
@@ -70,3 +80,28 @@ class NoteLike(events.basic.SimpleEvent):
             pitch_or_pitches = list(pitch_or_pitches)
 
         self._pitch_or_pitches = pitch_or_pitches
+
+    @property
+    def volume(self) -> parameters.abc.Volume:
+        """The volume of the event."""
+
+        return self._volume
+
+    @volume.setter
+    def volume(self, volume: Volume):
+        if isinstance(volume, numbers.Number):
+            if volume >= 0:
+                volume = parameters.volumes.DirectVolume(volume)
+            else:
+                volume = parameters.volumes.DecibelVolume(volume)
+
+        elif not isinstance(volume, parameters.abc.Volume):
+            message = (
+                "Can't initialise '{}' with value '{}' of type '{}' for argument"
+                " 'volume'. The type for 'volume' should be '{}'.".format(
+                    type(self).__name__, volume, type(volume), Volume
+                )
+            )
+            raise TypeError(message)
+
+        self._volume = volume

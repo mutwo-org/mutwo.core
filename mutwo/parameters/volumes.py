@@ -7,7 +7,7 @@ import numbers
 
 from mutwo import parameters
 
-__all__ = ("DirectVolume",)
+__all__ = ("DirectVolume", "DecibelVolume")
 
 
 class DirectVolume(parameters.abc.Volume):
@@ -18,6 +18,7 @@ class DirectVolume(parameters.abc.Volume):
     May be used when a converter class needs a volume object, but there is
     no need or desire for a complex abstraction of the respective volume.
     """
+
     def __init__(self, amplitude: numbers.Number):
         self._amplitude = amplitude
 
@@ -27,6 +28,31 @@ class DirectVolume(parameters.abc.Volume):
 
     def __repr__(self) -> str:
         return "DirectVolume({})".format(self.amplitude)
+
+
+class DecibelVolume(parameters.abc.Volume):
+    """A simple volume class that gets directly initialised by decibel.
+
+    :param decibel: The decibel of the :class:`DecibelVolume` object (should be
+        from -120 to 0).
+
+    May be used when a converter class needs a volume object, but there is
+    no need or desire for a complex abstraction of the respective volume.
+    """
+
+    def __init__(self, decibel: numbers.Number):
+        self._decibel = decibel
+
+    @property
+    def decibel(self) -> numbers.Number:
+        return self._decibel
+
+    @property
+    def amplitude(self) -> numbers.Number:
+        return self.decibel_to_amplitude_ratio(self.decibel)
+
+    def __repr__(self) -> str:
+        return "DecibelVolume({})".format(self.amplitude)
 
 
 class WesternVolume(parameters.abc.Volume):

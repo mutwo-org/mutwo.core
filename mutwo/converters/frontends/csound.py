@@ -38,7 +38,7 @@ class CsoundScoreConverter(converters.abc.Converter):
 
     - p1 (instrument name) to 1
     - p2 (start time) to the absolute start time of the event
-    - p3 (duration) to the duration attribute of the event
+    - p3 (duration) to the :attr:`duration` attribute of the event
 
     If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
