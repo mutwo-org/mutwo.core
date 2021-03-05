@@ -8,3 +8,4 @@ from . import volumes_constants
 from . import abc
 from . import pitches
 from . import tempos
+from . import volumes
