@@ -693,8 +693,15 @@ class MidiFileConverter(abc.Converter):
         >>> from mutwo.events import basic, music
         >>> from mutwo.parameters import pitches
         >>> from mutwo.converters.frontends import midi
-        >>> ascending_scale = basic.SequentialEvent([music.NoteLike(pitches.WesternPitch(pitch), duration=1, volume=0.5) for pitch in 'c d e g a'.split(' ')])
-        >>> midi_converter = midi.MidiFileConverter('ascending_scale.mid', available_midi_channels=(0,))
+        >>> ascending_scale = basic.SequentialEvent(
+            [
+                music.NoteLike(pitches.WesternPitch(pitch), duration=1, volume=0.5)
+                for pitch in 'c d e g a'.split(' ')
+            ]
+        )
+        >>> midi_converter = midi.MidiFileConverter(
+            'ascending_scale.mid', available_midi_channels=(0,)
+        )
         >>> midi_converter.convert(ascending_scale)
 
         **Disclaimer:** when passing nested structures, make sure that the
