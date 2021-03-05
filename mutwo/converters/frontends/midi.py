@@ -536,7 +536,10 @@ class MidiFileConverter(abc.Converter):
         return tuple(midi_data)
 
     def _midi_messages_to_midi_track(
-        self, midi_data: typing.Tuple[mido.Message], is_first_track: bool = False
+        self,
+        midi_data: typing.Tuple[mido.Message],
+        duration: parameters.abc.DurationType,
+        is_first_track: bool = False,
     ) -> mido.MidiTrack:
         """Convert unsorted midi message with absolute timing to a midi track.
 
@@ -555,23 +558,24 @@ class MidiFileConverter(abc.Converter):
         # sort midi data
         sorted_midi_data = sorted(midi_data, key=lambda message: message.time)
 
+        # add end of track message
+        duration_in_ticks = self._beats_to_ticks(duration)
+        sorted_midi_data.append(
+            mido.MetaMessage("end_of_track", time=duration_in_ticks)
+        )
+
         # convert from absolute to relative time
         delta_ticks_per_message = tuple(
             message1.time - message0.time
             for message0, message1 in zip(sorted_midi_data, sorted_midi_data[1:])
         )
-        if sorted_midi_data:
-            delta_ticks_per_message = (
-                sorted_midi_data[0].time,
-            ) + delta_ticks_per_message
-            for dt, message in zip(delta_ticks_per_message, sorted_midi_data):
-                message.time = dt
+        delta_ticks_per_message = (sorted_midi_data[0].time,) + delta_ticks_per_message
+        for dt, message in zip(delta_ticks_per_message, sorted_midi_data):
+            message.time = dt
 
         # add midi data to midi track
         track.extend(sorted_midi_data)
 
-        # add end of track message
-        track.append(mido.MetaMessage("end_of_track"))
         return track
 
     # ###################################################################### #
@@ -625,13 +629,15 @@ class MidiFileConverter(abc.Converter):
             )
         )
 
+        duration = simultaneous_event.duration
+
         # midi file type 0 -> only one track
         if self._midi_file_type == 0:
             midi_data_for_one_track = functools.reduce(
                 operator.add, midi_data_per_sequential_event
             )
             midi_track = self._midi_messages_to_midi_track(
-                midi_data_for_one_track, is_first_track=True
+                midi_data_for_one_track, duration, is_first_track=True
             )
             midi_file.tracks.append(midi_track)
 
@@ -639,7 +645,7 @@ class MidiFileConverter(abc.Converter):
         else:
             midi_tracks = (
                 self._midi_messages_to_midi_track(
-                    midi_data, is_first_track=nth_midi_data == 0
+                    midi_data, duration, is_first_track=nth_midi_data == 0
                 )
                 for nth_midi_data, midi_data in enumerate(
                     midi_data_per_sequential_event
