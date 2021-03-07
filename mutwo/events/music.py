@@ -26,10 +26,11 @@ class NoteLike(events.basic.SimpleEvent):
         respective converter routine that will be used.
     :param volume: The volume of the event. Can either be a object of
         :mod:`mutwo.parameters.volumes` or a number. If the number ranges from 0
-        to 1, mutwo automatically generates a `mutwo.parameters.volumes.DirectVolume`
-        object (and the number will be interpreted as the amplitude). If the
+        to 1, mutwo automatically generates a
+        :class:`mutwo.parameters.volumes.DirectVolume` object (and the number
+        will be interpreted as the amplitude). If the
         number is smaller than 0, automatically generates a
-        `mutwo.parameters.volumes.DecibelVolume` object (and the number
+        :class:`mutwo.parameters.volumes.DecibelVolume` object (and the number
         will be interpreted as decibel).
 
     By default mutwo doesn't differentiate between Tones, Chords and

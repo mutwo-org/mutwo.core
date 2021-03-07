@@ -226,9 +226,9 @@ class Event(abc.ABC):
     def split_at(
         self, absolute_time: parameters.abc.DurationType
     ) -> typing.Tuple["Event"]:
-        """Split event in two events at the absolute_time.
+        """Split event in two events at :attr:`absolute_time`.
 
-        :param absolute_time: Absolute time where the event shall be split.
+        :param absolute_time: where event shall be split
         :return: Two events that result from splitting the present event.
 
         **Example:**
