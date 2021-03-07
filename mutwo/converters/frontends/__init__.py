@@ -1,9 +1,10 @@
-"""Routines that convert mutwo objects to external data."""
+"""Convert mutwo objects to external data."""
 
 from mutwo.utilities import tools
 
 from . import csound_constants
 from . import csound
+from . import isis
 
 # import modules with extra require
 for modules, dependency in (

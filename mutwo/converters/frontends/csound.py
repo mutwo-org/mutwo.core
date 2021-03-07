@@ -24,7 +24,7 @@ PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldType
 class CsoundScoreConverter(converters.abc.Converter):
     """Class to convert mutwo events to a Csound score file.
 
-    :param path: The path of the csound score file that shall be generated.
+    :param path: where to write the csound score file
     :param pfield: p-field / p-field-extraction-function pairs.
 
     This class helps generating score files for the `"domain-specific computer
@@ -51,11 +51,11 @@ class CsoundScoreConverter(converters.abc.Converter):
     All p-fields can be overwritten in the following manner:
 
     >>> my_converter = CsoundScoreConverter(
-        path="my_csound_score.sco",
-        p1=lambda event: 2,
-        p4=lambda event: event.pitch.frequency,
-        p5=lambda event: event.volume
-    )
+    >>>     path="my_csound_score.sco",
+    >>>     p1=lambda event: 2,
+    >>>     p4=lambda event: event.pitch.frequency,
+    >>>     p5=lambda event: event.volume
+    >>> )
 
     For easier debugging of faulty score files, :mod:`mutwo` adds annotations
     when a new :class:`SequentialEvent` or a new :class:`SimultaneousEvent`
@@ -274,7 +274,7 @@ class CsoundScoreConverter(converters.abc.Converter):
 class CsoundConverter(converters.abc.Converter):
     """Generate audio files with Csound.
 
-    :param path: The path where the sound file shall be written to.
+    :param path: where to write the sound file
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
     :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used
         to render the csound score file (.sco) from a mutwo event.
@@ -282,6 +282,9 @@ class CsoundConverter(converters.abc.Converter):
         csound flags can be found in :mod:`mutwo.converters.frontends.csound_constants`.
     :param remove_score_file: Set to True if :class:`CsoundConverter` shall remove the
         csound score file after rendering. Defaults to False.
+
+    **Disclaimer:** Before using the :class:`CsoundConverter`, make sure Csound has been
+    correctly installed on your system.
     """
 
     def __init__(

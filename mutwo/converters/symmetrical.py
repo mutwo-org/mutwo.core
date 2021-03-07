@@ -1,4 +1,4 @@
-"""Routines that convert mutwo or generic Python objects to other mutwo or generic Python objects."""
+"""Convert mutwo or generic Python objects to other mutwo or generic Python objects."""
 
 import functools
 import math
