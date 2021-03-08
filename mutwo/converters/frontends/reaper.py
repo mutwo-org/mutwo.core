@@ -6,9 +6,10 @@ from mutwo.converters.frontends import reaper_constants
 
 from mutwo import converters
 from mutwo import events
+from mutwo import parameters
 from mutwo.utilities import tools
 
-__all__ = ("ReaperFileConverter",)
+__all__ = ("ReaperFileConverter", "ReaperMarkerConverter")
 
 
 class ReaperFileConverter(converters.abc.Converter):
@@ -26,13 +27,7 @@ class ReaperFileConverter(converters.abc.Converter):
     def add_track(self, name: str = "") -> rpp.Element:
         track = rpp.Element(
             tag="TRACK",
-            children=[
-                ["NAME", name],
-                rpp.Element(
-                    tag="FXCHAIN",
-                    children=[],
-                ),
-            ],
+            children=[["NAME", name], rpp.Element(tag="FXCHAIN", children=[],),],
         )
         self.reaper_project.append(track)
         return track
@@ -88,3 +83,41 @@ class ReaperFileConverter(converters.abc.Converter):
     def convert(self, event: events.abc.Event):
         with open(self.path, "w") as file:
             rpp.dump(self.reaper_project, file)
+
+
+class ReaperMarkerConverter(converters.abc.EventConverter):
+    """Make Reaper Marker entries."""
+
+    def __init__(
+        self,
+        simple_event_to_marker_name: typing.Callable[
+            [events.basic.SimpleEvent], str
+        ] = lambda simple_event: simple_event.name,
+        simple_event_to_marker_color: typing.Callable[
+            [events.basic.SimpleEvent], str
+        ] = lambda simple_event: simple_event.color,
+    ):
+        self._simple_event_to_marker_name = simple_event_to_marker_name
+        self._simple_event_to_marker_color = simple_event_to_marker_color
+
+    def _convert_simple_event(
+        self,
+        simple_event: events.basic.SimpleEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> typing.Tuple[str]:
+        try:
+            marker_name = self._simple_event_to_marker_name(simple_event)
+            marker_color = self._simple_event_to_marker_color(simple_event)
+        except AttributeError:
+            return tuple([])
+
+        return ("{} {} {}".format(absolute_entry_delay, marker_name, marker_color),)
+
+    def convert(self, event_to_convert: events.abc.Event) -> str:
+        reaper_marker = tuple(
+            "MARKER {} {}".format(nth_marker, marker_data)
+            for nth_marker, marker_data in enumerate(
+                self._convert_event(event_to_convert, 0)
+            )
+        )
+        return "\n".join(reaper_marker)
