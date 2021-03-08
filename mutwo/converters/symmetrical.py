@@ -107,14 +107,16 @@ class TempoPointConverter(converters.abc.Converter):
 TempoEvents = events.basic.SequentialEvent[events.basic.EnvelopeEvent]
 
 
-class TempoConverter(converters.abc.Converter):
+class TempoConverter(converters.abc.EventConverter):
     """Class for applying tempo curves on mutwo events.
 
     :param tempo_events: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a :class:`mutwo.events.basic.SequentialEvent` that is filled
-        with :class:`mutwo.events.basic.EnvelopeEvent` objects. Each :class:`mutwo.events.basic.EnvelopeEvent` can either be initialised
-        via numbers for start and end attributes (the numbers will be interpreted
-        as BPM [beats per minute]) or via :class:`mutwo.parameters.tempos.TempoPoint` objects.
+        mutwo events. This is expected to be a
+        :class:`mutwo.events.basic.SequentialEvent` that is filled with
+        :class:`mutwo.events.basic.EnvelopeEvent` objects. Each
+        :class:`mutwo.events.basic.EnvelopeEvent` can either be initialised via
+        numbers for start and end attributes (the numbers will be interpreted as BPM
+        [beats per minute]) or via :class:`mutwo.parameters.tempos.TempoPoint` objects.
 
     **Example:**
 
@@ -133,6 +135,10 @@ class TempoConverter(converters.abc.Converter):
 
     def __init__(self, tempo_events: TempoEvents):
         self.tempo_events = tempo_events
+
+    # ###################################################################### #
+    #                          static methods                                #
+    # ###################################################################### #
 
     @staticmethod
     def _find_beat_length_at_start_and_end(
@@ -175,6 +181,10 @@ class TempoConverter(converters.abc.Converter):
             levels, durations, curve_shapes
         )
 
+    # ###################################################################### #
+    #                           properties                                   #
+    # ###################################################################### #
+
     @property
     def tempo_events(self) -> events.basic.SequentialEvent:
         return self._tempo_events
@@ -187,6 +197,10 @@ class TempoConverter(converters.abc.Converter):
     @property
     def envelope(self) -> expenvelope.Envelope:
         return self._envelope
+
+    # ###################################################################### #
+    #                         private methods                                #
+    # ###################################################################### #
 
     def _apply_tempo_envelope_on_event(
         self,
@@ -219,34 +233,19 @@ class TempoConverter(converters.abc.Converter):
             )
             raise TypeError(msg)
 
-    def _apply_tempo_envelope_on_sequential_event(
-        self,
-        sequential_event: events.basic.SequentialEvent[events.abc.Event],
-        absolute_entry_delay: parameters.abc.DurationType,
-    ) -> None:
-        for event_index, additional_delay in enumerate(sequential_event.absolute_times):
-            self._apply_tempo_envelope_on_event(
-                sequential_event[event_index], absolute_entry_delay + additional_delay
-            )
-
-    def _apply_tempo_envelope_on_simple_event(
+    def _convert_simple_event(
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> None:
+    ) -> typing.Tuple:
         simple_event.duration = self.envelope.integrate_interval(
             absolute_entry_delay, simple_event.duration + absolute_entry_delay
         )
+        return tuple([])
 
-    def _apply_tempo_envelope_on_simultaneous_event(
-        self,
-        simultaneous_event: events.basic.SimultaneousEvent[events.abc.Event],
-        absolute_entry_delay: parameters.abc.DurationType,
-    ) -> None:
-        [
-            self._apply_tempo_envelope_on_event(event, absolute_entry_delay)
-            for event in simultaneous_event
-        ]
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
 
     def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
         """Apply tempo curve of the converter to the entered event.
@@ -278,7 +277,7 @@ class TempoConverter(converters.abc.Converter):
         SequentialEvent([SimpleEvent(duration = 3.0), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2.5)])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
-        self._apply_tempo_envelope_on_event(copied_event_to_convert, 0)
+        self._convert_event(copied_event_to_convert, 0)
         return copied_event_to_convert
 
 
@@ -318,6 +317,10 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
             loudspeaker_frequency_response.average_level()
         )
 
+    # ###################################################################### #
+    #                          static methods                                #
+    # ###################################################################### #
+
     @staticmethod
     def _decibel_to_amplitude_ratio(
         decibel: numbers.Number, reference_amplitude: numbers.Number = 1
@@ -335,6 +338,10 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
             return 40 + (10 * math.log(loudness_in_sone, 2))
         else:
             return 40 * (loudness_in_sone + 0.0005) ** 0.35
+
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
 
     def convert(self, frequency: numbers.Number) -> numbers.Number:
         """Calculates the needed amplitude to reach a particular loudness for the entered frequency.
@@ -390,6 +397,10 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
     assigned value, the more accented the beat.
     """
 
+    # ###################################################################### #
+    #                          static methods                                #
+    # ###################################################################### #
+
     @staticmethod
     def _indispensability_of_nth_beat_for_simple_meter(
         beat_index: int, prime_number: int
@@ -437,6 +448,10 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
             )
             r_sum.append(product * base_indispensability)
         return sum(r_sum)
+
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
 
     def convert(
         self, rhythmical_strata_to_convert: typing.Iterable[int]

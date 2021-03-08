@@ -21,7 +21,7 @@ SupportedPFieldTypes = typing.Union[numbers.Number, str]
 PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]
 
 
-class CsoundScoreConverter(converters.abc.Converter):
+class CsoundScoreConverter(converters.abc.EventConverter):
     """Class to convert mutwo events to a Csound score file.
 
     :param path: where to write the csound score file
@@ -77,6 +77,10 @@ class CsoundScoreConverter(converters.abc.Converter):
 
         self.pfields = self._generate_pfield_mapping(pfield)
         self.path = path
+
+    # ###################################################################### #
+    #                          static methods                                #
+    # ###################################################################### #
 
     @staticmethod
     def _generate_pfield_mapping(
@@ -141,12 +145,15 @@ class CsoundScoreConverter(converters.abc.Converter):
             message += "Ignored p-field {}.".format(ignored_p_field)
             warnings.warn(message)
 
-    def _make_csound_score_lines_from_simple_event(
+    # ###################################################################### #
+    #           private methods (conversion of different event types)        #
+    # ###################################################################### #
+
+    def _convert_simple_event(
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-        csound_score_lines: list,
-    ) -> None:
+    ) -> typing.Tuple[str]:
         """Extract p-field data from simple event and write one Csound-Score line."""
 
         csound_score_line = "i"
@@ -161,7 +168,7 @@ class CsoundScoreConverter(converters.abc.Converter):
 
                 except AttributeError:
                     # if attribute couldn't be found, just make a rest
-                    return
+                    return tuple([])
 
                 p_field_value = CsoundScoreConverter._process_p_field_value(
                     nth_p_field, p_field_value
@@ -169,23 +176,19 @@ class CsoundScoreConverter(converters.abc.Converter):
                 if p_field_value is not None:
                     csound_score_line += " {}".format(p_field_value)
 
-        csound_score_lines.append(csound_score_line)
+        return csound_score_line,
 
-    def _make_csound_score_lines_from_sequential_event(
+    def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-        csound_score_lines: list,
-    ) -> None:
-        csound_score_lines.append(
+    ) -> typing.Tuple[str]:
+        csound_score_lines = [
             converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
+        ]
+        csound_score_lines.extend(
+            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
         )
-        for event_index, additional_delay in enumerate(sequential_event.absolute_times):
-            self._make_csound_score_lines_from_event(
-                sequential_event[event_index],
-                absolute_entry_delay + additional_delay,
-                csound_score_lines,
-            )
 
         [
             csound_score_lines.append("")
@@ -194,56 +197,32 @@ class CsoundScoreConverter(converters.abc.Converter):
             )
         ]
 
-    def _make_csound_score_lines_from_simultaneous_event(
+        return tuple(csound_score_lines)
+
+    def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-        csound_score_lines: list,
-    ) -> None:
-        csound_score_lines.append(
+    ) -> typing.Tuple[str]:
+        csound_score_lines = [
             converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
-        )
-        [
-            self._make_csound_score_lines_from_event(
-                event, absolute_entry_delay, csound_score_lines
-            )
-            for event in simultaneous_event
         ]
+        csound_score_lines.extend(
+            super()._convert_simultaneous_event(
+                simultaneous_event, absolute_entry_delay
+            )
+        )
         [
             csound_score_lines.append("")
             for _ in range(
                 converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
             )
         ]
+        return tuple(csound_score_lines)
 
-    def _make_csound_score_lines_from_event(
-        self,
-        event_to_convert: events.abc.Event,
-        absolute_entry_delay: parameters.abc.DurationType,
-        csound_score_lines: list,
-    ):
-        if isinstance(event_to_convert, events.basic.SequentialEvent):
-            self._make_csound_score_lines_from_sequential_event(
-                event_to_convert, absolute_entry_delay, csound_score_lines
-            )
-
-        elif isinstance(event_to_convert, events.basic.SimultaneousEvent,):
-            self._make_csound_score_lines_from_simultaneous_event(
-                event_to_convert, absolute_entry_delay, csound_score_lines
-            )
-
-        elif isinstance(event_to_convert, events.basic.SimpleEvent,):
-            self._make_csound_score_lines_from_simple_event(
-                event_to_convert, absolute_entry_delay, csound_score_lines
-            )
-
-        else:
-            msg = (
-                "Can't convert object '{}' of type '{}' to csound score lines.".format(
-                    event_to_convert, type(event_to_convert)
-                )
-            )
-            raise TypeError(msg)
+    # ###################################################################### #
+    #                             public api                                 #
+    # ###################################################################### #
 
     def convert(self, event_to_convert: events.abc.Event) -> None:
         """Render csound score file (.sco) from the passed event.
@@ -255,17 +234,23 @@ class CsoundScoreConverter(converters.abc.Converter):
         >>> from mutwo.parameters import pitches
         >>> from mutwo.events import basic
         >>> from mutwo.converters.frontends import csound
-        >>> converter = csound.CsoundScoreConverter(path="score.sco", p4=lambda event: event.pitch.frequency)
-        >>> events = basic.SequentialEvent([basic.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)])
-        >>> for event in events: event.pitch = pitches.DirectPitch(random.uniform(100, 500))
+        >>> converter = csound.CsoundScoreConverter(
+        >>>    path="score.sco", p4=lambda event: event.pitch.frequency
+        >>> )
+        >>> events = basic.SequentialEvent(
+        >>>    [
+        >>>        basic.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)
+        >>>    ]
+        >>> )
+        >>> for event in events:
+        >>>     event.pitch = pitches.DirectPitch(random.uniform(100, 500))
         >>> converter.convert(events)
         """
 
-        csound_score_lines = []
-        # convert events to strings (where each string represents one csound score line)
-        self._make_csound_score_lines_from_event(
-            event_to_convert, 0, csound_score_lines
+        csound_score_lines = self._convert_event(
+            event_to_convert, 0
         )
+        # convert events to strings (where each string represents one csound score line)
         # write csound score lines to file
         with open(self.path, "w") as f:
             f.write("\n".join(csound_score_lines))
