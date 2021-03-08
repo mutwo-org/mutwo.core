@@ -75,7 +75,6 @@ class EventConverter(Converter):
     5.994774515210491: 1.1502716523431056
     """
 
-
     @abc.abstractmethod
     def _convert_simple_event(
         event_to_convert: events.basic.SimpleEvent,
