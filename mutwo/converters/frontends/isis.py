@@ -31,7 +31,7 @@ ExtractedData = typing.Tuple[
 
 
 class IsisScoreConverter(converters.abc.EventConverter):
-    """Class to convert mutwo events to a `ISiS <https://forum.ircam.fr/projects/detail/isis/>`_ score file.
+    """Class to convert mutwo events to a `ISiS score file. <https://isis-documentation.readthedocs.io/en/latest/score.html>`_
 
     :param path: where to write the ISiS score file
     :param simple_event_to_pitch: Function to extract an instance of
