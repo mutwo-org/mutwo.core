@@ -13,6 +13,7 @@ import typing
 from mutwo.events import basic
 
 from mutwo import converters
+from mutwo.converters.frontends import isis_constants
 from mutwo import parameters
 
 __all__ = ("IsisScoreConverter", "IsisConverter")
@@ -87,6 +88,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         key_name: str,
         extracted_data_per_event: typing.Tuple[ExtractedData],
         key: typing.Callable[[ExtractedData], typing.Tuple[str]],
+        seperate_with_comma: bool = True,
     ) -> str:
         objects_per_line = [[]]
         for nth_event, extracted_data in enumerate(extracted_data_per_event):
@@ -94,11 +96,13 @@ class IsisScoreConverter(converters.abc.EventConverter):
             if nth_event % self._n_events_per_line == 0:
                 objects_per_line.append([])
 
-        join_string = ",\n{}".format(" " * (len(key_name) + 2))
-        objects = join_string.join(
-            [", ".join(line) for line in objects_per_line if line]
-        )
-        return "{}: {}".format(key_name, objects)
+        object_join_string = ", " if seperate_with_comma else " "
+        lines = [object_join_string.join(line) for line in objects_per_line if line]
+
+        line_join_string = ",\n" if seperate_with_comma else "\n"
+        line_join_string = "{}{}".format(line_join_string, " " * (len(key_name) + 2))
+
+        return "{}: {}".format(key_name, line_join_string.join(lines))
 
     def _make_lyrics_section_from_extracted_data_per_event(
         self, extracted_data_per_event: typing.Tuple[ExtractedData],
@@ -107,6 +111,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
             "xsampa",
             extracted_data_per_event,
             lambda extracted_data: extracted_data[1] + (extracted_data[2],),
+            False,
         )
 
         lyric_section = "[lyrics]\n{}".format(xsampa)
@@ -158,7 +163,13 @@ class IsisScoreConverter(converters.abc.EventConverter):
                         duration,
                         tuple([]),
                         "_",
-                        parameters.pitches.WesternPitch("c", -1),
+                        parameters.pitches.WesternPitch(
+                            "c",
+                            -1,
+                            concert_pitch=440,
+                            concert_pitch_octave=4,
+                            concert_pitch_pitch_class=9,
+                        ),
                         parameters.volumes.DirectVolume(0),
                     ),
                 )
@@ -257,9 +268,7 @@ class IsisConverter(converters.abc.Converter):
 
         self.isis_score_converter.convert(event_to_convert)
         command = "{} -m {} -o {}".format(
-            converters.isis_constants.ISIS_PATH,
-            self.isis_score_converter.path,
-            self.path,
+            isis_constants.ISIS_PATH, self.isis_score_converter.path, self.path,
         )
         for flag in self.flags:
             command += " {} ".format(flag)
