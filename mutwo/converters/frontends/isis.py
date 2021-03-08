@@ -276,4 +276,4 @@ class IsisConverter(converters.abc.Converter):
         os.system(command)
 
         if self.remove_score_file:
-            os.remove(self.csound_score_converter.path)
+            os.remove(self.isis_score_converter.path)
