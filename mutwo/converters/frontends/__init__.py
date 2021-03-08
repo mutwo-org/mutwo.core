@@ -4,7 +4,7 @@ from mutwo.utilities import tools
 
 from . import csound_constants
 from . import csound
-from . import isis
+# from . import isis
 
 # import modules with extra require
 for modules, dependency in (
