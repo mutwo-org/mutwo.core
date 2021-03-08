@@ -15,7 +15,12 @@ The following example generates a short midi file:
     from mutwo.events import basic, music
     from mutwo.parameters import pitches
     from mutwo.converters import frontends
-    simple_melody = basic.SequentialEvent([music.NoteLike(pitches.WesternPitch(pitch_name), duration=0.5, volume=0.75) for pitch_name in ('c', 'a', 'g', 'e')])
+    simple_melody = basic.SequentialEvent(
+        [
+            music.NoteLike(pitches.WesternPitch(pitch_name), duration=0.5, volume=0.75)
+            for pitch_name in ("c", "a", "g", "e")
+        ]
+    )
     midi_file_converter = frontends.midi.MidiFileConverter('my_simple_melody.mid')
     midi_file_converter.convert(simple_melody)
 
