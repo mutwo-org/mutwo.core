@@ -23,5 +23,6 @@ Submodules that contain constants are:
    :toctree: frontends
 
    mutwo.converters.frontends.csound_constants
+   mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants

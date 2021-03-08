@@ -256,8 +256,10 @@ class IsisConverter(converters.abc.Converter):
         """
 
         self.isis_score_converter.convert(event_to_convert)
-        command = "isis.sh -m {} -o {}".format(
-            self.isis_score_converter.path, self.path
+        command = "{} -m {} -o {}".format(
+            converters.isis_constants.ISIS_PATH,
+            self.isis_score_converter.path,
+            self.path,
         )
         for flag in self.flags:
             command += " {} ".format(flag)
