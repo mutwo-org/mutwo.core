@@ -45,7 +45,7 @@ class IsisScoreConverterTest(unittest.TestCase):
         self.converter.convert(simple_event)
 
         expected_score = (
-            "[lyrics]\nxsampa: {}, {}\n\n[score]\nmidiNotes: {}\nglobalTransposition:"
+            "[lyrics]\nxsampa: {} {}\n\n[score]\nmidiNotes: {}\nglobalTransposition:"
             " 0\nrhythm: {}\nloud_accents: {}\ntempo: {}".format(
                 simple_event.consonants[0],
                 simple_event.vowel,
