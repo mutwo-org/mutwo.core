@@ -257,7 +257,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
 
 
 class CsoundConverter(converters.abc.Converter):
-    """Generate audio files with Csound.
+    """Generate audio files with `Csound <http://www.csounds.com/>`_.
 
     :param path: where to write the sound file
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
@@ -268,8 +268,9 @@ class CsoundConverter(converters.abc.Converter):
     :param remove_score_file: Set to True if :class:`CsoundConverter` shall remove the
         csound score file after rendering. Defaults to False.
 
-    **Disclaimer:** Before using the :class:`CsoundConverter`, make sure Csound has been
-    correctly installed on your system.
+    **Disclaimer:** Before using the :class:`CsoundConverter`, make sure
+    `Csound <http://www.csounds.com/>`_ has been correctly installed on
+    your system.
     """
 
     def __init__(
