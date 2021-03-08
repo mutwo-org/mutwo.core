@@ -29,6 +29,7 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.abc
    mutwo.converters.symmetrical
    mutwo.converters.frontends.csound
+   mutwo.converters.frontends.isis
    mutwo.converters.frontends.midi
    mutwo.converters.frontends.reaper
    mutwo.converters.frontends.csound_constants

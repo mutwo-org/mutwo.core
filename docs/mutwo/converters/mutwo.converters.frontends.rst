@@ -12,6 +12,7 @@ Submodules are:
    :toctree: frontends
 
    mutwo.converters.frontends.csound
+   mutwo.converters.frontends.isis
    mutwo.converters.frontends.midi
    mutwo.converters.frontends.reaper
 
