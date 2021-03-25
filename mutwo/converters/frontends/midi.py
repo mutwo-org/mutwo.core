@@ -21,12 +21,12 @@ from mutwo import utilities
 
 __all__ = ("MidiFileConverter",)
 
-Cents = typing.NewType("Cents", numbers.Number)
+Cents = typing.NewType("Cents", numbers.Real)
 
 ConvertableEvents = typing.Union[
-    events.music.NoteLike,
-    events.basic.SequentialEvent[events.music.NoteLike],
-    events.basic.SimultaneousEvent[events.basic.SequentialEvent[events.music.NoteLike]],
+    events.basic.SimpleEvent,
+    events.basic.SequentialEvent[events.basic.SimpleEvent],
+    events.basic.SimultaneousEvent[events.basic.SequentialEvent[events.basic.SimpleEvent]],
 ]
 
 
@@ -264,7 +264,7 @@ class MidiFileConverter(abc.Converter):
     # ###################################################################### #
 
     def _beats_per_minute_to_beat_length_in_microseconds(
-        self, beats_per_minute: numbers.Number
+        self, beats_per_minute: numbers.Real
     ) -> int:
         """Method for converting beats per minute (BPM) to midi tempo.
 
@@ -309,11 +309,11 @@ class MidiFileConverter(abc.Converter):
 
         return available_midi_channels_per_sequential_event
 
-    def _beats_to_ticks(self, absolute_time: numbers.Number) -> int:
+    def _beats_to_ticks(self, absolute_time: parameters.abc.DurationType) -> int:
         return int(self._ticks_per_beat * absolute_time)
 
     def _cent_deviation_to_pitch_bending_number(
-        self, cent_deviation: numbers.Number,
+        self, cent_deviation: numbers.Real,
     ) -> int:
         pitch_bend_percent = (cent_deviation + self._maximum_pitch_bend_deviation) / (
             self._maximum_pitch_bend_deviation * 2
@@ -428,11 +428,11 @@ class MidiFileConverter(abc.Converter):
 
     def _extracted_data_to_midi_messages(
         self,
-        absolute_time: numbers.Number,
-        duration: numbers.Number,
+        absolute_time: numbers.Real,
+        duration: parameters.abc.DurationType,
         available_midi_channels_cycle: typing.Iterator,
         pitch_or_pitches: typing.Tuple[parameters.abc.Pitch],
-        volume: numbers.Number,
+        volume: parameters.abc.Volume,
         control_messages: typing.Tuple[mido.Message],
     ) -> typing.Tuple[mido.Message]:
         """Generates pitch-bend / note-on / note-off messages for each tone in a chord.
@@ -472,7 +472,7 @@ class MidiFileConverter(abc.Converter):
     def _simple_event_to_midi_messages(
         self,
         simple_event: events.basic.SimpleEvent,
-        absolute_time: numbers.Number,
+        absolute_time: numbers.Real,
         available_midi_channels_cycle: typing.Iterator,
     ) -> typing.Tuple[mido.Message]:
         """Converts ``SimpleEvent`` (or any object that inherits from ``SimpleEvent``).
@@ -592,7 +592,7 @@ class MidiFileConverter(abc.Converter):
 
     def _add_sequential_event_to_midi_file(
         self,
-        sequential_event: events.basic.SequentialEvent[events.music.NoteLike],
+        sequential_event: events.basic.SequentialEvent[events.basic.SimpleEvent],
         midi_file: mido.MidiFile,
     ) -> None:
         """Adds sequential event to midi file."""

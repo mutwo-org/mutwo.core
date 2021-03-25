@@ -146,7 +146,7 @@ class SimpleEvent(events.abc.Event):
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> None:
+    ) -> typing.Optional["SimpleEvent"]:
         """Sets event parameter to new value.
 
         :param parameter_name: The name of the parameter which values shall be changed.
@@ -193,7 +193,7 @@ class SimpleEvent(events.abc.Event):
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
-    ) -> None:
+    ) -> typing.Optional["SimpleEvent"]:
         parameter = self.get_parameter(parameter_name)
         if parameter is not None:
             function(parameter)
@@ -201,7 +201,7 @@ class SimpleEvent(events.abc.Event):
     @decorators.add_return_option
     def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "SimpleEvent"]:
+    ) -> typing.Optional["SimpleEvent"]:
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )
@@ -229,7 +229,7 @@ class SimpleEvent(events.abc.Event):
     @decorators.add_return_option
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "SimpleEvent"]:
+    ) -> typing.Optional["SimpleEvent"]:
         self._assert_correct_start_and_end_values(start, end)
 
         duration = self.duration
@@ -240,7 +240,7 @@ class SimpleEvent(events.abc.Event):
             self.duration -= end - start
 
 
-T = typing.TypeVar("T")
+T = typing.TypeVar("T", bound=events.abc.Event)
 
 
 class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
@@ -315,7 +315,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @decorators.add_return_option
     def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "SequentialEvent"]:
+    ) -> typing.Optional["SequentialEvent"]:
         self._assert_correct_start_and_end_values(start, end)
 
         cut_out_events = []
@@ -348,7 +348,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @decorators.add_return_option
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "SequentialEvent"]:
+    ) -> typing.Optional["SequentialEvent"]:
         cut_off_duration = end - start
 
         # avoid unnecessary iterations
@@ -383,7 +383,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @decorators.add_return_option
     def squash_in(
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
-    ) -> typing.Union[None, "SequentialEvent"]:
+    ) -> typing.Optional["SequentialEvent"]:
         self._assert_start_in_range(start)
 
         cut_off_end = start + event_to_squash_in.duration
@@ -425,21 +425,21 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @decorators.add_return_option
     def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "SimultaneousEvent"]:
+    ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_out(start, end) for event in self]
 
     @decorators.add_return_option
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ):
+    ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_off(start, end) for event in self]
 
     @decorators.add_return_option
     def squash_in(
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
-    ) -> typing.Union[None, "SimultaneousEvent"]:
+    ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_start_in_range(start)
 
         for event in self:

@@ -30,7 +30,7 @@ class Duration(Parameter):
     pass
 
 
-DurationType = typing.Union[numbers.Number, Duration]
+DurationType = typing.Union[numbers.Real, Duration]
 
 
 @functools.total_ordering
@@ -153,7 +153,7 @@ class Volume(Parameter):
 
     @staticmethod
     def decibel_to_amplitude_ratio(
-        decibel: numbers.Number, reference_amplitude: numbers.Number = 1
+        decibel: numbers.Real, reference_amplitude: numbers.Real = 1
     ) -> float:
         """Convert decibel to amplitude ratio.
 
@@ -174,7 +174,7 @@ class Volume(Parameter):
 
     @staticmethod
     def decibel_to_power_ratio(
-        decibel: numbers.Number, reference_amplitude: numbers.Number = 1
+        decibel: numbers.Real, reference_amplitude: numbers.Real = 1
     ) -> float:
         """Convert decibel to power ratio.
 
@@ -195,7 +195,7 @@ class Volume(Parameter):
 
     @staticmethod
     def amplitude_ratio_to_decibel(
-        amplitude: numbers.Number, reference_amplitude: numbers.Number = 1
+        amplitude: numbers.Real, reference_amplitude: numbers.Real = 1
     ) -> float:
         """Convert amplitude ratio to decibel.
 
@@ -219,7 +219,7 @@ class Volume(Parameter):
 
     @staticmethod
     def power_ratio_to_decibel(
-        amplitude: numbers.Number, reference_amplitude: numbers.Number = 1
+        amplitude: numbers.Real, reference_amplitude: numbers.Real = 1
     ) -> float:
         """Convert power ratio to decibel.
 
@@ -242,7 +242,7 @@ class Volume(Parameter):
             return float(10 * math.log10(amplitude / reference_amplitude))
 
     @staticmethod
-    def amplitude_to_midi_velocity(amplitude: numbers.Number) -> int:
+    def amplitude_to_midi_velocity(amplitude: numbers.Real) -> int:
         """Convert volume (floating point number from 0 to 1) to midi velocity.
 
         :param amplitude: A value from 0 to 1 that shall be converted to midi
@@ -282,7 +282,7 @@ class Volume(Parameter):
         return self.amplitude_ratio_to_decibel(self.amplitude)
 
     @property
-    def midi_velocity(self) -> float:
+    def midi_velocity(self) -> int:
         """The velocity of the volume (from 0 to 1)."""
         return self.amplitude_to_midi_velocity(self.amplitude)
 
