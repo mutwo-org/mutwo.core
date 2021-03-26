@@ -122,6 +122,15 @@ class SequentialEventTest(unittest.TestCase):
             [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
         )
 
+    def test_magic_method_add(self):
+        self.assertEqual(
+            type(basic.SequentialEvent([]) + basic.SequentialEvent([])),
+            basic.SequentialEvent,
+        )
+
+    def test_magic_method_mul(self):
+        self.assertEqual(type(basic.SequentialEvent([]) * 5), basic.SequentialEvent)
+
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, 6)
 
