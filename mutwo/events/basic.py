@@ -318,32 +318,29 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Optional["SequentialEvent"]:
         self._assert_correct_start_and_end_values(start, end)
 
-        cut_out_events = []
+        remove_nth_event = []
+        for nth_event, event_start, event in zip(
+            range(len(self)), self.absolute_times, self
+        ):
+            event_duration = event.duration
+            event_end = event_start + event_duration
 
-        for event_start, event in zip(self.absolute_times, self):
-            event_end = event_start + event.duration
-            appendable_conditions = (
-                event_start >= start and event_start < end,
-                event_end <= end and event_end > start,
-                event_start <= start and event_end >= end,
-            )
+            cut_out_start = 0
+            cut_out_end = event_duration
 
-            appendable = any(appendable_conditions)
-            if appendable:
-                cut_out_start = 0
-                cut_out_end = event.duration
+            if event_start < start:
+                cut_out_start += start - event_start
 
-                if event_start < start:
-                    cut_out_start += start - event_start
+            if event_end > end:
+                cut_out_end -= event_end - end
 
-                if event_end > end:
-                    cut_out_end -= event_end - end
+            if cut_out_start < cut_out_end:
+                event.cut_out(cut_out_start, cut_out_end)
+            else:
+                remove_nth_event.append(nth_event)
 
-                if cut_out_start < cut_out_end:
-                    event = event.cut_out(cut_out_start, cut_out_end, mutate=False)
-                    cut_out_events.append(event)
-
-        self[:] = cut_out_events
+        for nth_event_to_remove in reversed(remove_nth_event):
+            del self[nth_event_to_remove]
 
     @decorators.add_return_option
     def cut_off(
