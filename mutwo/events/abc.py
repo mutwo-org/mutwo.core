@@ -263,6 +263,9 @@ class ComplexEvent(Event, list):
     def __add__(self, event: "ComplexEvent") -> "ComplexEvent":
         return type(self)(super().__add__(event))
 
+    def __mul__(self, factor: int) -> "ComplexEvent":
+        return type(self)(super().__mul__(factor))
+
     def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> Event:
         event = super().__getitem__(index_or_slice)
         if isinstance(index_or_slice, slice):
