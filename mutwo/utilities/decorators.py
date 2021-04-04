@@ -7,7 +7,10 @@ import typing
 __all__ = ("add_return_option",)
 
 
-def add_return_option(function: typing.Callable) -> typing.Callable:
+F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
+
+
+def add_return_option(function: F) -> F:
     """This decorator adds a return option for object mutating methods.
 
     The 'add_return_option' decorator adds the 'mutate' keyword argument
@@ -29,4 +32,6 @@ def add_return_option(function: typing.Callable) -> typing.Callable:
             function(deep_copied_object, *args, **kwargs)
             return deep_copied_object
 
-    return wrapper
+    wrapped_function = typing.cast(F, wrapper)
+    wrapped_function.__annotations__.update({"mutate": bool})
+    return wrapped_function

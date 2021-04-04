@@ -8,7 +8,7 @@ from mutwo.utilities import tools
 __all__ = ("euclidean", "paradiddle", "alternating_hands")
 
 
-def euclidean(size: int, distribution: int) -> typing.Tuple[int]:
+def euclidean(size: int, distribution: int) -> typing.Tuple[int, ...]:
     """Return euclidean rhythm as described in a 2005 paper by G. T. Toussaint.
 
     :param size: how many beats the rhythm contains
@@ -37,7 +37,7 @@ def euclidean(size: int, distribution: int) -> typing.Tuple[int]:
         return tuple(data)
 
 
-def _mirror(pattern: typing.Tuple[bool]) -> typing.Tuple[bool]:
+def _mirror(pattern: typing.Tuple[bool, ...]) -> typing.Tuple[bool, ...]:
     """Inverse every boolean value inside the tuple.
 
     Helper function for other functions.
@@ -45,7 +45,7 @@ def _mirror(pattern: typing.Tuple[bool]) -> typing.Tuple[bool]:
     return tuple(False if item else True for item in pattern)
 
 
-def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int]]:
+def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int, ...], ...]:
     """Generates rhythm using the paradiddle method described by G. T. Toussaint.
 
     :param size: how many beats the resulting rhythm shall last. 'Size' has to be
@@ -87,14 +87,14 @@ def paradiddle(size: int) -> typing.Tuple[typing.Tuple[int]]:
         raise ValueError(message)
 
     cycle = itertools.cycle((True, False))
-    pattern = list(next(cycle) for n in range(size // 2))
+    pattern = list(next(cycle) for _ in range(size // 2))
     pattern[-1] = pattern[-2]
-    return convert_to_right_left_pattern(tuple(pattern) + _mirror(pattern))
+    return convert_to_right_left_pattern(tuple(pattern) + _mirror(tuple(pattern)))
 
 
 def alternating_hands(
-    seed_rhythm: typing.Tuple[int],
-) -> typing.Tuple[typing.Tuple[int]]:
+    seed_rhythm: typing.Tuple[int, ...],
+) -> typing.Tuple[typing.Tuple[int, ...], ...]:
     """Generates rhythm using the alternating hands method described by G. T. Toussaint.
 
     :param seed_rhythm: rhythm that shall be distributed on two hands.

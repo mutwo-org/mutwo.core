@@ -6,7 +6,7 @@ import operator
 import typing
 import warnings
 
-import expenvelope
+import expenvelope  # type: ignore
 
 import mutwo_third_party
 
@@ -48,19 +48,19 @@ class TempoPointConverter(converters.abc.Converter):
     def _beats_per_minute_to_seconds_per_beat(
         beats_per_minute: constants.Real,
     ) -> float:
-        return 60 / beats_per_minute
+        return float(60 / beats_per_minute)
 
     @staticmethod
     def _extract_beats_per_minute_and_reference_from_tempo_point(
         tempo_point: TempoPoint,
-    ) -> typing.Tuple[constants.Real]:
+    ) -> typing.Tuple[constants.Real, constants.Real]:
         try:
-            beats_per_minute = tempo_point.tempo_in_beats_per_minute
+            beats_per_minute = tempo_point.tempo_in_beats_per_minute  # type: ignore
         except AttributeError:
-            beats_per_minute = float(tempo_point)
+            beats_per_minute = float(tempo_point)  # type: ignore
 
         try:
-            reference = tempo_point.reference
+            reference = tempo_point.reference  # type: ignore
         except AttributeError:
             message = (
                 "Tempo point {} of type {} doesn't know attribute 'reference'.".format(
@@ -143,14 +143,12 @@ class TempoConverter(converters.abc.EventConverter):
     @staticmethod
     def _find_beat_length_at_start_and_end(
         tempo_event: events.basic.EnvelopeEvent,
-    ) -> typing.Tuple[float]:
+    ) -> typing.List[float]:
         """Extracts the beat-length-in-seconds at start and end of a TempoEvent."""
-        beat_length_at_start_and_end = []
-        for tempo_point in (tempo_event.object_start, tempo_event.object_stop):
-            beat_length_at_start_and_end.append(
-                TempoConverter._tempo_point_converter.convert(tempo_point)
-            )
-
+        beat_length_at_start_and_end = [
+            TempoConverter._tempo_point_converter.convert(tempo_point)
+            for tempo_point in (tempo_event.object_start, tempo_event.object_stop)
+        ]
         return beat_length_at_start_and_end
 
     @staticmethod
@@ -159,7 +157,7 @@ class TempoConverter(converters.abc.EventConverter):
     ) -> expenvelope.Envelope:
         """Convert a list of TempoEvents to an Envelope."""
 
-        levels = []
+        levels: typing.List[typing.List[float]] = []
         durations = []
         curve_shapes = []
         is_first = True
@@ -171,11 +169,11 @@ class TempoConverter(converters.abc.EventConverter):
                 curve_shapes.append(0)
 
             beat_length_at_start_and_end = TempoConverter._find_beat_length_at_start_and_end(
-                tempo_event
+                tempo_event  # type: ignore
             )
-            levels.extend(beat_length_at_start_and_end)
+            levels.extend(beat_length_at_start_and_end)  # type: ignore
             durations.append(tempo_event.duration - 1e-100)
-            curve_shapes.append(tempo_event.curve_shape)
+            curve_shapes.append(tempo_event.curve_shape)  # type: ignore
 
         return expenvelope.Envelope.from_levels_and_durations(
             levels, durations, curve_shapes
@@ -186,12 +184,12 @@ class TempoConverter(converters.abc.EventConverter):
     # ###################################################################### #
 
     @property
-    def tempo_events(self) -> events.basic.SequentialEvent:
+    def tempo_events(self) -> TempoEvents:
         return self._tempo_events
 
     @tempo_events.setter
     def tempo_events(self, tempo_events: TempoEvents):
-        self._tempo_events = events.basic.SequentialEvent(tempo_events)
+        self._tempo_events: TempoEvents = events.basic.SequentialEvent(tempo_events)
         self._envelope = self._make_envelope_from_tempo_events(self.tempo_events)
 
     @property
@@ -202,42 +200,11 @@ class TempoConverter(converters.abc.EventConverter):
     #                         private methods                                #
     # ###################################################################### #
 
-    def _apply_tempo_envelope_on_event(
-        self,
-        event_to_process: events.abc.Event,
-        absolute_entry_delay: parameters.abc.DurationType,
-    ) -> None:
-        """Applies tempo envelope on any object that inherits from events.abc.Event.
-
-        Make type checks to differentiate between different timing structures
-        of SequentialEvent, SimultaneousEvent and SimpleEvent.
-        """
-        if isinstance(event_to_process, events.basic.SequentialEvent):
-            self._apply_tempo_envelope_on_sequential_event(
-                event_to_process, absolute_entry_delay
-            )
-
-        elif isinstance(event_to_process, events.basic.SimultaneousEvent,):
-            self._apply_tempo_envelope_on_simultaneous_event(
-                event_to_process, absolute_entry_delay
-            )
-
-        elif isinstance(event_to_process, events.basic.SimpleEvent,):
-            self._apply_tempo_envelope_on_simple_event(
-                event_to_process, absolute_entry_delay
-            )
-
-        else:
-            msg = "Can't apply tempo curve on object '{}' of type '{}'.".format(
-                event_to_process, type(event_to_process)
-            )
-            raise TypeError(msg)
-
     def _convert_simple_event(
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple:
+    ) -> typing.Tuple[typing.Any, ...]:
         simple_event.duration = self.envelope.integrate_interval(
             absolute_entry_delay, simple_event.duration + absolute_entry_delay
         )
@@ -309,7 +276,7 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
         interpolation_order: int = 4,
     ):
         perceived_loudness_in_phon = self._sone_to_phon(perceived_loudness_in_sone)
-        self._equal_loudness_contour_interpolation = mutwo_third_party.pydsm.pydsm.iso226.iso226_spl_itpl(
+        self._equal_loudness_contour_interpolation = mutwo_third_party.pydsm.pydsm.iso226.iso226_spl_itpl(  # type: ignore
             perceived_loudness_in_phon, interpolation_order
         )
         self._loudspeaker_frequency_response = loudspeaker_frequency_response
@@ -422,7 +389,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
 
     @staticmethod
     def _indispensability_of_nth_beat(
-        beat_index: int, rhythmical_strata: typing.Iterable[int]
+        beat_index: int, rhythmical_strata: typing.Tuple[int, ...]
     ) -> int:
         """Calculate indispensability for the nth beat of a metre.
 
@@ -454,8 +421,8 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
     # ###################################################################### #
 
     def convert(
-        self, rhythmical_strata_to_convert: typing.Iterable[int]
-    ) -> typing.Tuple[int]:
+        self, rhythmical_strata_to_convert: typing.Sequence[int]
+    ) -> typing.Tuple[int, ...]:
         """Convert indispensability for each beat of a particular metre.
 
         :param rhythmical_strata_to_convert: The rhythmical strata defines

@@ -1,11 +1,10 @@
-"""Abstract base classes for events (definition of public api)."""
+"""Abstract base classes for events (definition of public API)."""
 
 import abc
 import copy
 import typing
 
 from mutwo import parameters
-from mutwo.utilities import constants
 from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
@@ -40,7 +39,9 @@ class Event(abc.ABC):
     def _assert_correct_start_and_end_values(
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-        condition: typing.Callable[[constants.Real], bool] = lambda start, end: end
+        condition: typing.Callable[
+            [parameters.abc.DurationType, parameters.abc.DurationType], bool
+        ] = lambda start, end: end
         >= start,
     ):
         """Helper method to make sure that start < end.
@@ -117,9 +118,10 @@ class Event(abc.ABC):
         self,
         parameter_name: str,
         object_or_function: typing.Union[
-            typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
+            typing.Callable[[parameters.abc.ParameterType], parameters.abc.ParameterType],
             typing.Any,
         ],
+        set_unassigned_parameter: bool = True,
     ) -> None:
         """Sets parameter to new value for all children events.
 
@@ -182,7 +184,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "Event"]:
+    ) -> typing.Optional["Event"]:
         """Time-based slicing of the respective event.
 
         :param start: number that indicates the point when the
@@ -204,7 +206,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Union[None, "Event"]:
+    ) -> typing.Optional["Event"]:
         """Time-based deletion / shortening of the respective event.
 
         :param start: number that indicates absolute time when the
@@ -225,7 +227,7 @@ class Event(abc.ABC):
 
     def split_at(
         self, absolute_time: parameters.abc.DurationType
-    ) -> typing.Tuple["Event"]:
+    ) -> typing.Tuple["Event", "Event"]:
         """Split event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where event shall be split
@@ -242,12 +244,12 @@ class Event(abc.ABC):
         """
 
         return (
-            self.cut_out(0, absolute_time, mutate=False),
-            self.cut_out(absolute_time, self.duration, mutate=False),
+            self.cut_out(0, absolute_time, mutate=False),  # type: ignore
+            self.cut_out(absolute_time, self.duration, mutate=False),  # type: ignore
         )
 
 
-class ComplexEvent(Event, list):
+class ComplexEvent(Event, typing.List[Event]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
     def __init__(self, iterable: typing.Iterable[Event]):
@@ -260,28 +262,28 @@ class ComplexEvent(Event, list):
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
 
-    def __add__(self, event: "ComplexEvent") -> "ComplexEvent":
+    def __add__(self, event: typing.List[Event]) -> "ComplexEvent":
         return type(self)(super().__add__(event))
 
     def __mul__(self, factor: int) -> "ComplexEvent":
         return type(self)(super().__mul__(factor))
 
-    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> Event:
+    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> Event:  # type: ignore
         event = super().__getitem__(index_or_slice)
         if isinstance(index_or_slice, slice):
-            return type(self)(event)
-        return event
+            event = type(self)(event)  # type: ignore
+        return event  # type: ignore
 
     # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
-    @Event.duration.setter
+    @Event.duration.setter  # type: ignore
     def duration(self, new_duration: parameters.abc.DurationType) -> None:
         old_duration = self.duration
         self.set_parameter(
             "duration",
-            lambda duration: tools.scale(duration, 0, old_duration, 0, new_duration),
+            lambda duration: tools.scale(duration, 0, old_duration, 0, new_duration),  # type: ignore
         )
 
     # ###################################################################### #
@@ -314,19 +316,19 @@ class ComplexEvent(Event, list):
     def destructive_copy(self) -> "ComplexEvent":
         return type(self)([event.destructive_copy() for event in self])
 
-    def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any]:
+    def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any, ...]:
         return tuple(event.get_parameter(parameter_name) for event in self)
 
     @decorators.add_return_option
-    def set_parameter(
+    def set_parameter(  # type: ignore
         self,
         parameter_name: str,
         object_or_function: typing.Union[
-            typing.Callable[[parameters.abc.Parameter], parameters.abc.Parameter],
+            typing.Callable[[parameters.abc.ParameterType], parameters.abc.ParameterType],
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> None:
+    ) -> typing.Optional["ComplexEvent"]:
         [
             event.set_parameter(
                 parameter_name,
@@ -337,13 +339,13 @@ class ComplexEvent(Event, list):
         ]
 
     @decorators.add_return_option
-    def mutate_parameter(
+    def mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
-    ) -> None:
+    ) -> typing.Optional["ComplexEvent"]:
         [event.mutate_parameter(parameter_name, function) for event in self]
 
     @abc.abstractmethod

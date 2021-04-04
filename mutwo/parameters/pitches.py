@@ -25,13 +25,13 @@ import numbers
 import operator
 import typing
 
-import primesieve
+import primesieve  # type: ignore
 from primesieve import numpy as primesieve_numpy
 
 try:
-    import quicktions as fractions
+    import quicktions as fractions  # type: ignore
 except ImportError:
-    import fractions
+    import fractions  # type: ignore
 
 from mutwo.utilities import constants
 from mutwo.utilities import decorators
@@ -66,8 +66,8 @@ class DirectPitch(parameters.abc.Pitch):
     >>> my_pitch = pitches.DirectPitch(440)
     """
 
-    def __init__(self, frequency: float):
-        self._frequency = frequency
+    def __init__(self, frequency: constants.Real):
+        self._frequency = float(frequency)
 
     @property
     def frequency(self) -> float:
@@ -122,7 +122,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
             ratio_or_exponents
         )
-        self.concert_pitch = concert_pitch
+        self.concert_pitch = concert_pitch  # type: ignore
 
     # ###################################################################### #
     #                      static private methods                            #
@@ -235,13 +235,14 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return (1,), (1,)
 
     @staticmethod
-    def _discard_nulls(iterable: typing.Iterable) -> tuple:
+    def _discard_nulls(iterable: typing.Iterable[int]) -> typing.Tuple[int, ...]:
         r"""Discard all zeros after the last not 0 - element of an arbitary iterable.
 
         Return a tuple.
         Arguments:
             * iterable: the iterable, whose 0 - elements shall
               be discarded
+
         >>> tuple0 = (1, 0, 2, 3, 0, 0, 0)
         >>> ls = [1, 3, 5, 0, 0, 0, 2, 0]
         >>> JustIntonationPitch._discard_nulls(tuple0)
@@ -405,7 +406,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def _translate_ratio_or_fractions_argument_to_exponents(
         self,
         ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
-    ):
+    ) -> typing.Tuple[int, ...]:
         if isinstance(ratio_or_exponents, str):
             numerator, denominator = ratio_or_exponents.split("/")
             exponents = self._ratio_to_exponents(
@@ -430,7 +431,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return exponents
 
     @decorators.add_return_option
-    def _math(
+    def _math(  # type: ignore
         self, other: "JustIntonationPitch", operation: typing.Callable
     ) -> "JustIntonationPitch":
         exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
@@ -463,10 +464,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return "JustIntonationPitch({})".format(self.ratio)
 
     def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
-        return self._math(other, operator.add, mutate=False)
+        return self._math(other, operator.add, mutate=False)  # type: ignore
 
     def __sub__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
-        return self._math(other, operator.sub, mutate=False)
+        return self._math(other, operator.sub, mutate=False)  # type: ignore
 
     def __abs__(self):
         if self.numerator > self.denominator:
@@ -601,7 +602,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         exponents_adjusted, primes_adjusted = type(self)._adjust_exponents(
             exponents, primes, 1
         )
-        numerator_denominator = [[[]], [[]]]
+        numerator_denominator: typing.List[typing.List[typing.List[int]]] = [[[]], [[]]]
         for prime, exponent in zip(primes_adjusted, exponents_adjusted):
             if exponent > 0:
                 idx = 0
@@ -624,7 +625,9 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return exp
 
     @property
-    def blueprint(self, ignore: typing.Sequence[int] = (2,)) -> tuple:
+    def blueprint(  # type: ignore
+        self, ignore: typing.Sequence[int] = (2,)
+    ) -> typing.Tuple[typing.Tuple[int, ...], ...]:
         blueprint = []
         for factorised in self.factorised_numerator_and_denominator:
             factorised = tuple(fac for fac in factorised if fac not in ignore)
@@ -848,7 +851,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         if self.primes:
             return abs(
                 functools.reduce(
-                    math.gcd, tuple(filter(lambda x: x != 0, self.exponents))
+                    math.gcd, tuple(filter(lambda x: x != 0, self.exponents))  # type: ignore
                 )
             )
         else:
@@ -859,24 +862,24 @@ class JustIntonationPitch(parameters.abc.Pitch):
     # ###################################################################### #
 
     @decorators.add_return_option
-    def register(self, octave: int) -> typing.Union[None, "JustIntonationPitch"]:
-        normalized_just_intonation_pitch = self.normalize(mutate=False)
+    def register(self, octave: int) -> typing.Optional["JustIntonationPitch"]:  # type: ignore
+        normalized_just_intonation_pitch = self.normalize(mutate=False)  # type: ignore
         factor = 2 ** abs(octave)
         if octave < 1:
             added = type(self)(fractions.Fraction(1, factor))
         else:
             added = type(self)(fractions.Fraction(factor, 1))
-        self.exponents = (normalized_just_intonation_pitch + added).exponents
+        self.exponents = (normalized_just_intonation_pitch + added).exponents  # type: ignore
 
     @decorators.add_return_option
-    def move_to_closest_register(
+    def move_to_closest_register(  # type: ignore
         self, reference: "JustIntonationPitch"
-    ) -> typing.Union[None, "JustIntonationPitch"]:
+    ) -> typing.Optional["JustIntonationPitch"]:
         reference_register = reference.octave
 
         best = None
         for adaption in range(-1, 2):
-            candidate = self.register(reference_register + adaption, mutate=False)
+            candidate: "JustIntonationPitch" = self.register(reference_register + adaption, mutate=False)  # type: ignore
             difference = abs((candidate - reference).cents)
             set_best = True
             if best and difference > best[1]:
@@ -885,10 +888,17 @@ class JustIntonationPitch(parameters.abc.Pitch):
             if set_best:
                 best = (candidate, difference)
 
-        self.exponents = best[0].exponents
+        if best:
+            self.exponents = best[0].exponents
+        else:
+            raise NotImplementedError(
+                "Couldn't find closest register of '{}' to '{}'.".format(
+                    self, reference
+                )
+            )
 
     @decorators.add_return_option
-    def normalize(self, prime: int = 2) -> typing.Union[None, "JustIntonationPitch"]:
+    def normalize(self, prime: int = 2) -> typing.Optional["JustIntonationPitch"]:  # type: ignore
         """Normalize JustIntonationPitch."""
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
@@ -897,26 +907,26 @@ class JustIntonationPitch(parameters.abc.Pitch):
         )
 
     @decorators.add_return_option
-    def inverse(
-        self, axis: typing.Union[None, "JustIntonationPitch"] = None
-    ) -> typing.Union[None, "JustIntonationPitch"]:
+    def inverse(  # type: ignore
+        self, axis: typing.Optional["JustIntonationPitch"] = None
+    ) -> typing.Optional["JustIntonationPitch"]:
         if axis is None:
-            exponents = list(map(lambda x: -x, self.exponents))
+            exponents = tuple(map(lambda x: -x, self.exponents))
         else:
             distance = self - axis
             exponents = (axis - distance).exponents
         self.exponents = exponents
 
     @decorators.add_return_option
-    def add(
+    def add(  # type: ignore
         self, other: "JustIntonationPitch"
-    ) -> typing.Union[None, "JustIntonationPitch"]:
+    ) -> typing.Optional["JustIntonationPitch"]:
         self._math(other, operator.add)
 
     @decorators.add_return_option
-    def subtract(
+    def subtract(  # type: ignore
         self, other: "JustIntonationPitch"
-    ) -> typing.Union[None, "JustIntonationPitch"]:
+    ) -> typing.Optional["JustIntonationPitch"]:
         self._math(other, operator.sub)
 
 
@@ -956,7 +966,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         self.octave = octave
         self.concert_pitch_pitch_class = concert_pitch_pitch_class
         self.concert_pitch_octave = concert_pitch_octave
-        self.concert_pitch = concert_pitch
+        self.concert_pitch = concert_pitch  # type: ignore
 
     def _assert_correct_pitch_class(self, pitch_class: constants.Real) -> None:
         """Makes sure the respective pitch_class is within the allowed range."""
@@ -995,7 +1005,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         return self._concert_pitch_pitch_class
 
     @concert_pitch_pitch_class.setter
-    def concert_pitch_pitch_class(self, pitch_class: constants.Real) -> constants.Real:
+    def concert_pitch_pitch_class(self, pitch_class: constants.Real) -> None:
         self._assert_correct_pitch_class(pitch_class)
         self._concert_pitch_pitch_class = pitch_class
 
@@ -1005,7 +1015,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         return self._pitch_class
 
     @pitch_class.setter
-    def pitch_class(self, pitch_class: constants.Real) -> constants.Real:
+    def pitch_class(self, pitch_class: constants.Real) -> None:
         self._assert_correct_pitch_class(pitch_class)
         self._pitch_class = pitch_class
 
@@ -1033,7 +1043,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         )
         return float(self.concert_pitch.frequency * distance_to_concert_pitch_as_factor)
 
-    def __sub__(self, other: "EqualDividedOctavePitch") -> "EqualDividedOctavePitch":
+    def __sub__(self, other: "EqualDividedOctavePitch") -> constants.Real:
         """Calculates the interval between two ``EqualDividedOctave`` pitches."""
 
         try:
@@ -1062,20 +1072,20 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         new_pitch_class = new_pitch_class % self.n_pitch_classes_per_octave
         new_octave = self.octave + n_octaves_difference
         self.pitch_class = new_pitch_class
-        self.octave = new_octave
+        self.octave = int(new_octave)
 
     @decorators.add_return_option
-    def add(
+    def add(  # type: ignore
         self, n_pitch_classes_difference: constants.Real
-    ) -> typing.Union[None, "EqualDividedOctavePitch"]:
+    ) -> typing.Union[None, "EqualDividedOctavePitch"]:  # type: ignore
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.add)
 
     @decorators.add_return_option
-    def subtract(
+    def subtract(  # type: ignore
         self, n_pitch_classes_difference: constants.Real
-    ) -> typing.Union[None, "EqualDividedOctavePitch"]:
+    ) -> typing.Union[None, "EqualDividedOctavePitch"]:  # type: ignore
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.sub)
@@ -1109,7 +1119,7 @@ class WesternPitch(EqualDividedOctavePitch):
         pitch_class_or_pitch_class_name: PitchClassOrPitchClassName = 0,
         octave: int = 4,
         concert_pitch_pitch_class: constants.Real = None,
-        concert_pitch_octave: constants.Real = None,
+        concert_pitch_octave: int = None,
         concert_pitch: ConcertPitch = None,
     ):
         if concert_pitch_pitch_class is None:
@@ -1190,9 +1200,7 @@ class WesternPitch(EqualDividedOctavePitch):
             raise NotImplementedError(message)
 
     @staticmethod
-    def _translate_pitch_class_name_to_pitch_class(
-        pitch_class_name: str,
-    ) -> constants.Real:
+    def _translate_pitch_class_name_to_pitch_class(pitch_class_name: str,) -> float:
         """Helper function to translate a pitch class name to its respective number.
 
         +/-1 is defined as one chromatic step. Smaller floating point numbers
@@ -1208,20 +1216,22 @@ class WesternPitch(EqualDividedOctavePitch):
         pitch_class_modification = WesternPitch._translate_accidental_to_pitch_class_modifications(
             accidental
         )
-        return diatonic_pitch_class + pitch_class_modification
+        return float(diatonic_pitch_class + pitch_class_modification)
 
     @staticmethod
     def _translate_difference_to_closest_diatonic_pitch_to_accidental(
         difference_to_closest_diatonic_pitch: constants.Real,
     ) -> str:
         """Helper function to translate a number to the closest known accidental."""
+
+        closest_pitch_class_modification: fractions.Fraction = tools.find_closest_item(
+            difference_to_closest_diatonic_pitch,
+            tuple(
+                parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME.keys()
+            ),
+        )
         closest_accidental = parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
-            tools.find_closest_item(
-                difference_to_closest_diatonic_pitch,
-                tuple(
-                    parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME.keys()
-                ),
-            )
+            closest_pitch_class_modification
         ]
         return closest_accidental
 
@@ -1284,7 +1294,7 @@ class WesternPitch(EqualDividedOctavePitch):
         )
         self._pitch_class_name = pitch_class_name
 
-    @EqualDividedOctavePitch.pitch_class.setter
+    @EqualDividedOctavePitch.pitch_class.setter  # type: ignore
     def pitch_class(self, pitch_class: constants.Real):
         self._pitch_class_name = self._translate_pitch_class_to_pitch_class_name(
             pitch_class

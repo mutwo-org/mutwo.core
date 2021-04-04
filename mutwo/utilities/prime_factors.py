@@ -8,7 +8,7 @@ In mutwo the function :func:`pyprimes.primes` has been replaced by
 
 import typing
 
-import primesieve
+import primesieve  # type: ignore
 
 __all__ = ("factorise", "factors", "is_prime")
 

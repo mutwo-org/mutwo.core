@@ -3,8 +3,8 @@
 import math
 import typing
 
-import numpy as np
-from scipy.stats import norm
+import numpy as np  # type: ignore
+from scipy.stats import norm  # type: ignore
 
 __all__ = ("random_walk_noise",)
 
@@ -53,12 +53,12 @@ def random_walk_noise(
         https://scipy-cookbook.readthedocs.io/items/BrownianMotion.html
     """
 
-    x0 = np.asarray(x0)
+    x0_as_array = np.asarray(x0)
 
     # For each element of x0, generate a sample of n numbers from a
     # normal distribution.
     r = norm.rvs(
-        size=x0.shape + (n,), scale=delta * math.sqrt(dt), random_state=random_state
+        size=x0_as_array.shape + (n,), scale=delta * math.sqrt(dt), random_state=random_state
     )
 
     # If `out` was not given, create an output array.
@@ -70,6 +70,6 @@ def random_walk_noise(
     np.cumsum(r, axis=-1, out=out)
 
     # Add the initial condition.
-    out += np.expand_dims(x0, axis=-1)
+    out += np.expand_dims(x0_as_array, axis=-1)
 
     return out

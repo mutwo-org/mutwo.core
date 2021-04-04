@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# type: ignore
+
 # Copyright (c) 2013, Sergio Callegari
 # All rights reserved.
 

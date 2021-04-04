@@ -109,10 +109,13 @@ def insert_next_to(
         iterable.insert(index + real_distance, item_to_insert)
 
 
+T = typing.TypeVar('T', bound=constants.Real)
+
+
 def find_closest_index(
     item: constants.Real,
     data: typing.Iterable,
-    key: typing.Callable[[typing.Any], constants.Real] = None,
+    key: typing.Callable[[typing.Any], T] = lambda item: item,
 ) -> int:
     """Return index of element in ``data`` with smallest difference to ``item``.
 
@@ -130,16 +133,12 @@ def find_closest_index(
     0
     """
 
-    if key is not None:
-        research_data = tuple(map(key, data))
-
-    else:
-        research_data = tuple(data)
-
+    research_data = tuple(map(key, data))
     sorted_research_data = sorted(research_data)
 
     solution = bisect.bisect_left(sorted_research_data, item)
-    if solution == len(data):
+    # make type ignore because data has been converted to tuple (which is sizeable)
+    if solution == len(data):  # type: ignore
         index = solution - 1
 
     elif solution == 0:
@@ -147,17 +146,17 @@ def find_closest_index(
 
     else:
         indices = (solution, solution - 1)
-        differences = tuple(abs(item - sorted_research_data[n]) for n in indices)
-        index = indices[differences.index(min(differences))]
+        differences = tuple(abs(- sorted_research_data[n] + item) for n in indices)
+        index = indices[differences.index(min(differences))]  # type: ignore
 
     return research_data.index(sorted_research_data[index])
 
 
 def find_closest_item(
     item: constants.Real,
-    data: typing.Iterable,
-    key: typing.Callable[[typing.Any], constants.Real] = None,
-) -> float:
+    data: typing.Sequence,
+    key: typing.Callable[[typing.Any], T] = lambda item: item,
+) -> T:
     """Return element in ``data`` with smallest difference to ``item``.
 
     :param item: The item from which the closest item shall be found.
@@ -198,7 +197,7 @@ def import_module_if_dependency_has_been_installed(
 
 
 def uniqify_iterable(
-    iterable: typing.Iterable,
+    iterable: typing.Sequence,
     sort_key: typing.Callable[[typing.Any], constants.Real] = None,
     group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
 ) -> typing.Iterable:
@@ -225,20 +224,20 @@ def uniqify_iterable(
 
     sorted_iterable = sorted(iterable, key=sort_key)
     result = (
-        key for key, group in itertools.groupby(sorted_iterable, key=group_by_key)
+        key for key, _ in itertools.groupby(sorted_iterable, key=group_by_key)
     )
 
     try:
-        return type(iterable)(result)
+        return type(iterable)(result)  # type: ignore
 
     except Exception:
         return tuple(result)
 
 
-def cyclic_permutations(iterable: typing.Iterable[typing.Any]) -> typing.Generator:
+def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generator:
     """Cyclic permutation of an iterable. Return a generator object.
 
-    :param iterable: The iterable from which cyclic permutations shall be generated.
+    :param sequence: The sequence from which cyclic permutations shall be generated.
 
     **Example:**
 
@@ -253,9 +252,9 @@ def cyclic_permutations(iterable: typing.Iterable[typing.Any]) -> typing.Generat
     <https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531>`_
     """
 
-    def reorder_from_index(index: int, iterable: tuple) -> tuple:
-        return iterable[index:] + iterable[:index]
+    def reorder_from_index(index: int, sequence: tuple) -> tuple:
+        return sequence[index:] + sequence[:index]
 
     return (
-        functools.partial(reorder_from_index, i)(iterable) for i in range(len(iterable))
+        functools.partial(reorder_from_index, i)(sequence) for i in range(len(sequence))
     )

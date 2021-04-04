@@ -77,9 +77,10 @@ class EventConverter(Converter):
 
     @abc.abstractmethod
     def _convert_simple_event(
+        self,
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any]:
+    ) -> typing.Tuple[typing.Any, ...]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
         raise NotImplementedError
@@ -88,26 +89,25 @@ class EventConverter(Converter):
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any]:
+    ) -> typing.Tuple[typing.Any, ...]:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
-        data_per_simple_event = []
-        [
+        data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
+
+        for event in simultaneous_event:
             data_per_simple_event.extend(
                 self._convert_event(event, absolute_entry_delay)
             )
-            for event in simultaneous_event
-        ]
         return tuple(data_per_simple_event)
 
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str]:
+    ) -> typing.Tuple[typing.Any, ...]:
         """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
 
-        data_per_simple_event = []
+        data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
         for event_start, event in zip(
             sequential_event.absolute_times, sequential_event
         ):
@@ -120,7 +120,7 @@ class EventConverter(Converter):
         self,
         event_to_convert: events.abc.Event,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any]:
+    ) -> typing.Tuple[typing.Any, ...]:
         """Convert :class:`mutwo.events.abc.Event` of unknown type.
 
         The method calls different subroutines depending on whether

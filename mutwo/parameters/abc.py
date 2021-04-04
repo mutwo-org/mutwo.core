@@ -3,12 +3,11 @@
 import abc
 import functools
 import math
-import typing
 
 try:
-    import quicktions as fractions
+    import quicktions as fractions  # type: ignore
 except ImportError:
-    import fractions
+    import fractions  # type: ignore
 
 from mutwo.parameters import pitches_constants
 from mutwo.parameters import volumes_constants
@@ -24,16 +23,11 @@ class Parameter(abc.ABC):
     pass
 
 
-class Duration(Parameter):
-    """Abstract base class for any duration class."""
-
-    pass
+ParameterType = object
+DurationType = constants.Real
 
 
-DurationType = typing.Union[constants.Real, Duration]
-
-
-@functools.total_ordering
+@functools.total_ordering  # type: ignore
 class Pitch(Parameter):
     """Abstract base class for any pitch class.
 
@@ -43,7 +37,7 @@ class Pitch(Parameter):
 
     # conversion methods between different pitch describing units
     @staticmethod
-    def hertz_to_cents(frequency0: float, frequency1: float) -> float:
+    def hertz_to_cents(frequency0: constants.Real, frequency1: constants.Real) -> float:
         """Calculates the difference in cents between two frequencies.
 
         :param frequency0: The first frequency in Hertz.
@@ -57,7 +51,7 @@ class Pitch(Parameter):
         >>> abc.Pitch.hertz_to_cents(200, 400)
         1200.0
         """
-        return 1200 * math.log(frequency1 / frequency0, 2)
+        return float(1200 * math.log(frequency1 / frequency0, 2))
 
     @staticmethod
     def ratio_to_cents(ratio: fractions.Fraction) -> float:
@@ -136,14 +130,14 @@ class Pitch(Parameter):
     def __lt__(self, other: "Pitch") -> bool:
         return self.frequency < other.frequency
 
-    def __eq__(self, other: "Pitch") -> bool:
+    def __eq__(self, other: object) -> bool:
         try:
-            return self.frequency == other.frequency
+            return self.frequency == other.frequency  # type: ignore
         except AttributeError:
             return False
 
 
-@functools.total_ordering
+@functools.total_ordering  # type: ignore
 class Volume(Parameter):
     """Abstract base class for any volume class.
 
@@ -272,12 +266,12 @@ class Volume(Parameter):
     # properties
     @property
     @abc.abstractmethod
-    def amplitude(self) -> float:
+    def amplitude(self) -> constants.Real:
         """The amplitude of the Volume (a number from 0 to 1)."""
         raise NotImplementedError
 
     @property
-    def decibel(self) -> float:
+    def decibel(self) -> constants.Real:
         """The decibel of the volume (from -120 to 0)"""
         return self.amplitude_ratio_to_decibel(self.amplitude)
 
@@ -290,8 +284,8 @@ class Volume(Parameter):
     def __lt__(self, other: "Volume") -> bool:
         return self.amplitude < other.amplitude
 
-    def __eq__(self, other: "Volume") -> bool:
+    def __eq__(self, other: object) -> bool:
         try:
-            return self.amplitude == other.amplitude
+            return self.amplitude == other.amplitude  # type: ignore
         except AttributeError:
             return False

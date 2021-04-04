@@ -24,7 +24,7 @@ ConvertableEvents = typing.Union[
 ExtractedData = typing.Tuple[
     # duration, consonants, vowel, pitch, volume
     parameters.abc.DurationType,
-    typing.Tuple[str],
+    typing.Tuple[str, ...],
     str,
     parameters.abc.Pitch,
     parameters.abc.Volume,
@@ -51,16 +51,16 @@ class IsisScoreConverter(converters.abc.EventConverter):
         path: str,
         simple_event_to_pitch: typing.Callable[
             [basic.SimpleEvent], parameters.abc.Pitch
-        ] = lambda simple_event: simple_event.pitch_or_pitches[0],
+        ] = lambda simple_event: simple_event.pitch_or_pitches[0],  # type: ignore
         simple_event_to_volume: typing.Callable[
             [basic.SimpleEvent], parameters.abc.Volume
-        ] = lambda simple_event: simple_event.volume,
+        ] = lambda simple_event: simple_event.volume,  # type: ignore
         simple_event_to_vowel: typing.Callable[
             [basic.SimpleEvent], str
-        ] = lambda simple_event: simple_event.vowel,
+        ] = lambda simple_event: simple_event.vowel,  # type: ignore
         simple_event_to_consonants: typing.Callable[
-            [basic.SimpleEvent], typing.Tuple[str]
-        ] = lambda simple_event: simple_event.consonants,
+            [basic.SimpleEvent], typing.Tuple[str, ...]
+        ] = lambda simple_event: simple_event.consonants,  # type: ignore
         tempo: constants.Real = 60,
         global_transposition: int = 0,
         default_sentence_loudness: typing.Union[constants.Real, None] = None,
@@ -87,10 +87,10 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self,
         key_name: str,
         extracted_data_per_event: typing.Tuple[ExtractedData],
-        key: typing.Callable[[ExtractedData], typing.Tuple[str]],
+        key: typing.Callable[[ExtractedData], typing.Tuple[str, ...]],
         seperate_with_comma: bool = True,
     ) -> str:
-        objects_per_line = [[]]
+        objects_per_line: typing.List[typing.List[str]] = [[]]
         for nth_event, extracted_data in enumerate(extracted_data_per_event):
             objects_per_line[-1].extend(key(extracted_data))
             if nth_event % self._n_events_per_line == 0:
@@ -176,7 +176,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
             extracted_data.append(extracted_information)
 
-        return (tuple(extracted_data),)
+        return (tuple(extracted_data),)  # type: ignore
 
     def _convert_simultaneous_event(
         self,
@@ -219,10 +219,10 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
         extracted_data_per_event = self._convert_event(event_to_convert, 0)
         lyrics_section = self._make_lyrics_section_from_extracted_data_per_event(
-            extracted_data_per_event
+            extracted_data_per_event  # type: ignore
         )
         score_section = self._make_score_section_from_extracted_data_per_event(
-            extracted_data_per_event
+            extracted_data_per_event  # type: ignore
         )
         with open(self.path, "w") as f:
             f.write("\n\n".join([lyrics_section, score_section]))

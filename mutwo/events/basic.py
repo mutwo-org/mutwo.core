@@ -60,7 +60,7 @@ class SimpleEvent(events.abc.Event):
     # ###################################################################### #
 
     @property
-    def _parameters_to_compare(self) -> typing.Tuple[str]:
+    def _parameters_to_compare(self) -> typing.Tuple[str, ...]:
         """Return tuple of attribute names which values define the SimpleEvent.
 
         The returned attribute names are used for equality check between two
@@ -138,7 +138,7 @@ class SimpleEvent(events.abc.Event):
             return None
 
     @decorators.add_return_option
-    def set_parameter(
+    def set_parameter(  # type: ignore
         self,
         parameter_name: str,
         object_or_function: typing.Union[
@@ -180,14 +180,14 @@ class SimpleEvent(events.abc.Event):
 
         old_parameter = self.get_parameter(parameter_name)
         if set_unassigned_parameter or old_parameter is not None:
-            if isinstance(object_or_function, typing.Callable):
+            if hasattr(object_or_function, "__call__"):
                 new_parameter = object_or_function(old_parameter)
             else:
                 new_parameter = object_or_function
             setattr(self, parameter_name, new_parameter)
 
     @decorators.add_return_option
-    def mutate_parameter(
+    def mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
         function: typing.Union[
@@ -199,7 +199,7 @@ class SimpleEvent(events.abc.Event):
             function(parameter)
 
     @decorators.add_return_option
-    def cut_out(
+    def cut_out(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SimpleEvent"]:
         self._assert_correct_start_and_end_values(
@@ -208,7 +208,7 @@ class SimpleEvent(events.abc.Event):
 
         duration = self.duration
 
-        difference_to_duration = 0
+        difference_to_duration: constants.Real = 0
 
         if start > 0:
             difference_to_duration += start
@@ -227,7 +227,7 @@ class SimpleEvent(events.abc.Event):
         self.duration -= difference_to_duration
 
     @decorators.add_return_option
-    def cut_off(
+    def cut_off(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SimpleEvent"]:
         self._assert_correct_start_and_end_values(start, end)
@@ -255,7 +255,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         return sum(event.duration for event in self)
 
     @property
-    def absolute_times(self) -> typing.Tuple[constants.Real]:
+    def absolute_times(self) -> typing.Tuple[constants.Real, ...]:
         """Return absolute point in time for each event."""
 
         durations = (event.duration for event in self)
@@ -264,7 +264,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @property
     def start_and_end_time_per_event(
         self,
-    ) -> typing.Tuple[typing.Tuple[constants.Real]]:
+    ) -> typing.Tuple[typing.Tuple[constants.Real, constants.Real], ...]:
         """Return start and end time for each event."""
 
         durations = (event.duration for event in self)
@@ -313,7 +313,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         return self[self.get_event_index_at(absolute_time)]
 
     @decorators.add_return_option
-    def cut_out(
+    def cut_out(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SequentialEvent"]:
         self._assert_correct_start_and_end_values(start, end)
@@ -325,7 +325,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             event_duration = event.duration
             event_end = event_start + event_duration
 
-            cut_out_start = 0
+            cut_out_start: constants.Real = 0
             cut_out_end = event_duration
 
             if event_start < start:
@@ -343,7 +343,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             del self[nth_event_to_remove]
 
     @decorators.add_return_option
-    def cut_off(
+    def cut_off(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SequentialEvent"]:
         cut_off_duration = end - start
@@ -378,7 +378,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
                 del self[index]
 
     @decorators.add_return_option
-    def squash_in(
+    def squash_in(  # type: ignore
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
     ) -> typing.Optional["SequentialEvent"]:
         self._assert_start_in_range(start)
@@ -420,28 +420,28 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @decorators.add_return_option
-    def cut_out(
+    def cut_out(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_out(start, end) for event in self]
 
     @decorators.add_return_option
-    def cut_off(
+    def cut_off(  # type: ignore
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
     ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_off(start, end) for event in self]
 
     @decorators.add_return_option
-    def squash_in(
+    def squash_in(  # type: ignore
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
     ) -> typing.Optional["SimultaneousEvent"]:
         self._assert_start_in_range(start)
 
         for event in self:
             try:
-                event.squash_in(start, event_to_squash_in)
+                event.squash_in(start, event_to_squash_in)  # type: ignore
 
             # simple events don't have a 'squash_in' method
             except AttributeError:
