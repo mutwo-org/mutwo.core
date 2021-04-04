@@ -75,7 +75,7 @@ class Pitch(Parameter):
         return pitches_constants.CENT_CALCULATION_CONSTANT * math.log10(ratio)
 
     @staticmethod
-    def cents_to_ratio(cents: float) -> fractions.Fraction:
+    def cents_to_ratio(cents: constants.Real) -> fractions.Fraction:
         """Converts a cent value to its respective frequency ratio.
 
         :param cents: Cents that shall be converted to a frequency ratio.
@@ -91,7 +91,7 @@ class Pitch(Parameter):
         )
 
     @staticmethod
-    def hertz_to_midi_pitch_number(frequency: float) -> float:
+    def hertz_to_midi_pitch_number(frequency: constants.Real) -> float:
         """Converts a frequency in hertz to its respective midi pitch.
 
         :param frequency: The frequency that shall be translated to a midi pitch
@@ -118,7 +118,7 @@ class Pitch(Parameter):
             closest_frequency_index
         ]
         difference_in_cents = Pitch.hertz_to_cents(frequency, closest_frequency)
-        return closest_midi_pitch_number + (difference_in_cents / 100)
+        return float(closest_midi_pitch_number + (difference_in_cents / 100))
 
     # properties
     @property
