@@ -6,12 +6,12 @@ are nested or not:
 
 import bisect
 import copy
-import numbers
 import types
 import typing
 
 from mutwo import events
 from mutwo import parameters
+from mutwo.utilities import constants
 from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
@@ -255,7 +255,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         return sum(event.duration for event in self)
 
     @property
-    def absolute_times(self) -> typing.Tuple[numbers.Number]:
+    def absolute_times(self) -> typing.Tuple[constants.Real]:
         """Return absolute point in time for each event."""
 
         durations = (event.duration for event in self)
@@ -264,7 +264,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     @property
     def start_and_end_time_per_event(
         self,
-    ) -> typing.Tuple[typing.Tuple[numbers.Number]]:
+    ) -> typing.Tuple[typing.Tuple[constants.Real]]:
         """Return start and end time for each event."""
 
         durations = (event.duration for event in self)
@@ -275,7 +275,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def get_event_index_at(self, absolute_time: numbers.Number) -> int:
+    def get_event_index_at(self, absolute_time: constants.Real) -> int:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
@@ -294,7 +294,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         absolute_times = self.absolute_times
         return bisect.bisect_right(absolute_times, absolute_time) - 1
 
-    def get_event_at(self, absolute_time: numbers.Number) -> events.abc.Event:
+    def get_event_at(self, absolute_time: constants.Real) -> events.abc.Event:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
@@ -465,7 +465,7 @@ class EnvelopeEvent(SimpleEvent):
         object_start: typing.Any,
         object_stop: typing.Any = None,
         curve_shape: float = 0,
-        key: typing.Callable[[typing.Any], numbers.Number] = lambda object_: object_,
+        key: typing.Callable[[typing.Any], constants.Real] = lambda object_: object_,
     ):
         super().__init__(duration)
 
@@ -478,11 +478,11 @@ class EnvelopeEvent(SimpleEvent):
         self.curve_shape = curve_shape
 
     @property
-    def value_start(self) -> numbers.Number:
+    def value_start(self) -> constants.Real:
         return self.key(self.object_start)
 
     @property
-    def value_stop(self) -> numbers.Number:
+    def value_stop(self) -> constants.Real:
         return self.key(self.object_stop)
 
     def __repr__(self) -> str:

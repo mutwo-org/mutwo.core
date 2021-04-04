@@ -5,14 +5,15 @@ import typing
 
 from mutwo import events
 from mutwo import parameters
+from mutwo.utilities import constants
 
 __all__ = ("NoteLike",)
 
 PitchOrPitches = typing.Union[
-    parameters.abc.Pitch, typing.Iterable, numbers.Number, None
+    parameters.abc.Pitch, typing.Iterable, constants.Real, None
 ]
 
-Volume = typing.Union[parameters.abc.Volume, numbers.Number]
+Volume = typing.Union[parameters.abc.Volume, constants.Real]
 
 
 class NoteLike(events.basic.SimpleEvent):
@@ -53,7 +54,7 @@ class NoteLike(events.basic.SimpleEvent):
         self,
         pitch_or_pitches: PitchOrPitches,
         duration: parameters.abc.DurationType,
-        volume: numbers.Number,
+        volume: constants.Real,
     ):
         self.pitch_or_pitches = pitch_or_pitches
         self.volume = volume
@@ -90,7 +91,7 @@ class NoteLike(events.basic.SimpleEvent):
 
     @volume.setter
     def volume(self, volume: Volume):
-        if isinstance(volume, numbers.Number):
+        if isinstance(volume, numbers.Real):
             if volume >= 0:
                 volume = parameters.volumes.DirectVolume(volume)
             else:

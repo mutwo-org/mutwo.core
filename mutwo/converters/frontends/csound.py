@@ -17,7 +17,7 @@ from mutwo import parameters
 
 __all__ = ("CsoundScoreConverter", "CsoundConverter")
 
-SupportedPFieldTypes = typing.Union[numbers.Number, str]
+SupportedPFieldTypes = typing.Union[numbers.Real, str]
 PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]
 
 

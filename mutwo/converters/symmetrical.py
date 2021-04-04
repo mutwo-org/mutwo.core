@@ -2,7 +2,6 @@
 
 import functools
 import math
-import numbers
 import operator
 import typing
 import warnings
@@ -14,9 +13,10 @@ import mutwo_third_party
 from mutwo import converters
 from mutwo import events
 from mutwo import parameters
+from mutwo.utilities import constants
 from mutwo.utilities import prime_factors
 
-TempoPoint = typing.Union[parameters.tempos.TempoPoint, numbers.Number]
+TempoPoint = typing.Union[parameters.tempos.TempoPoint, constants.Real]
 
 
 __all__ = (
@@ -46,14 +46,14 @@ class TempoPointConverter(converters.abc.Converter):
 
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(
-        beats_per_minute: numbers.Number,
+        beats_per_minute: constants.Real,
     ) -> float:
         return 60 / beats_per_minute
 
     @staticmethod
     def _extract_beats_per_minute_and_reference_from_tempo_point(
         tempo_point: TempoPoint,
-    ) -> typing.Tuple[numbers.Number]:
+    ) -> typing.Tuple[constants.Real]:
         try:
             beats_per_minute = tempo_point.tempo_in_beats_per_minute
         except AttributeError:
@@ -302,7 +302,7 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
 
     def __init__(
         self,
-        perceived_loudness_in_sone: numbers.Number,
+        perceived_loudness_in_sone: constants.Real,
         loudspeaker_frequency_response: expenvelope.Envelope = expenvelope.Envelope.from_points(
             (0, 80), (2000, 80)
         ),
@@ -323,16 +323,16 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
 
     @staticmethod
     def _decibel_to_amplitude_ratio(
-        decibel: numbers.Number, reference_amplitude: numbers.Number = 1
+        decibel: constants.Real, reference_amplitude: constants.Real = 1
     ) -> float:
         return float(reference_amplitude * (10 ** (decibel / 20)))
 
     @staticmethod
-    def _decibel_to_power_ratio(decibel: numbers.Number) -> float:
+    def _decibel_to_power_ratio(decibel: constants.Real) -> float:
         return float(10 ** (decibel / 10))
 
     @staticmethod
-    def _sone_to_phon(loudness_in_sone: numbers.Number) -> numbers.Number:
+    def _sone_to_phon(loudness_in_sone: constants.Real) -> constants.Real:
         # formula from http://www.sengpielaudio.com/calculatorSonephon.htm
         if loudness_in_sone >= 1:
             return 40 + (10 * math.log(loudness_in_sone, 2))
@@ -343,7 +343,7 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
     #               public methods for interaction with the user             #
     # ###################################################################### #
 
-    def convert(self, frequency: numbers.Number) -> numbers.Number:
+    def convert(self, frequency: constants.Real) -> constants.Real:
         """Calculates the needed amplitude to reach a particular loudness for the entered frequency.
 
         :param frequency: A frequency in Hertz for which the necessary amplitude

@@ -6,7 +6,6 @@ them from melody and lyrics."
 <https://isis-documentation.readthedocs.io/en/latest/Intro.html#the-isis-command-line>`_.
 """
 
-import numbers
 import os
 import typing
 
@@ -15,6 +14,7 @@ from mutwo.events import basic
 from mutwo import converters
 from mutwo.converters.frontends import isis_constants
 from mutwo import parameters
+from mutwo.utilities import constants
 
 __all__ = ("IsisScoreConverter", "IsisConverter")
 
@@ -61,9 +61,9 @@ class IsisScoreConverter(converters.abc.EventConverter):
         simple_event_to_consonants: typing.Callable[
             [basic.SimpleEvent], typing.Tuple[str]
         ] = lambda simple_event: simple_event.consonants,
-        tempo: numbers.Number = 60,
+        tempo: constants.Real = 60,
         global_transposition: int = 0,
-        default_sentence_loudness: typing.Union[numbers.Number, None] = None,
+        default_sentence_loudness: typing.Union[constants.Real, None] = None,
         n_events_per_line: int = 5,
     ):
         self.path = path

@@ -1,18 +1,18 @@
-import numbers
 import typing
 
 from mutwo import parameters
+from mutwo.utilities import constants
 
 __all__ = ("TempoPoint",)
 
-TempoInBeatsPerMinute = typing.NewType("BPM", numbers.Number)
+TempoInBeatsPerMinute = typing.NewType("BPM", float)
 
 
 class TempoPoint(parameters.abc.Parameter):
     def __init__(
         self,
         tempo_in_beats_per_minute: TempoInBeatsPerMinute,
-        reference: numbers.Number = 1,
+        reference: constants.Real = 1,
     ):
         self.tempo_in_beats_per_minute = tempo_in_beats_per_minute
         self.reference = reference

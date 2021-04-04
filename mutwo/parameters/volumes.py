@@ -3,9 +3,9 @@
 'Volume' is defined as any object that knows a :attr:`amplitude` attribute.
 """
 
-import numbers
 
 from mutwo import parameters
+from mutwo.utilities import constants
 
 __all__ = ("DirectVolume", "DecibelVolume")
 
@@ -19,11 +19,11 @@ class DirectVolume(parameters.abc.Volume):
     no need or desire for a complex abstraction of the respective volume.
     """
 
-    def __init__(self, amplitude: numbers.Number):
+    def __init__(self, amplitude: constants.Real):
         self._amplitude = amplitude
 
     @property
-    def amplitude(self) -> numbers.Number:
+    def amplitude(self) -> constants.Real:
         return self._amplitude
 
     def __repr__(self) -> str:
@@ -40,15 +40,15 @@ class DecibelVolume(parameters.abc.Volume):
     no need or desire for a complex abstraction of the respective volume.
     """
 
-    def __init__(self, decibel: numbers.Number):
+    def __init__(self, decibel: constants.Real):
         self._decibel = decibel
 
     @property
-    def decibel(self) -> numbers.Number:
+    def decibel(self) -> constants.Real:
         return self._decibel
 
     @property
-    def amplitude(self) -> numbers.Number:
+    def amplitude(self) -> constants.Real:
         return self.decibel_to_amplitude_ratio(self.decibel)
 
     def __repr__(self) -> str:

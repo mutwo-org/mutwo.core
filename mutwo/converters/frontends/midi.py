@@ -4,7 +4,6 @@
 
 import functools
 import itertools
-import numbers
 import operator
 import typing
 import warnings
@@ -21,12 +20,14 @@ from mutwo import utilities
 
 __all__ = ("MidiFileConverter",)
 
-Cents = typing.NewType("Cents", numbers.Real)
+Cents = typing.NewType("Cents", float)
 
 ConvertableEvents = typing.Union[
     events.basic.SimpleEvent,
     events.basic.SequentialEvent[events.basic.SimpleEvent],
-    events.basic.SimultaneousEvent[events.basic.SequentialEvent[events.basic.SimpleEvent]],
+    events.basic.SimultaneousEvent[
+        events.basic.SequentialEvent[events.basic.SimpleEvent]
+    ],
 ]
 
 
@@ -264,7 +265,7 @@ class MidiFileConverter(abc.Converter):
     # ###################################################################### #
 
     def _beats_per_minute_to_beat_length_in_microseconds(
-        self, beats_per_minute: numbers.Real
+        self, beats_per_minute: utilities.constants.Real
     ) -> int:
         """Method for converting beats per minute (BPM) to midi tempo.
 
@@ -313,7 +314,7 @@ class MidiFileConverter(abc.Converter):
         return int(self._ticks_per_beat * absolute_time)
 
     def _cent_deviation_to_pitch_bending_number(
-        self, cent_deviation: numbers.Real,
+        self, cent_deviation: utilities.constants.Real,
     ) -> int:
         pitch_bend_percent = (cent_deviation + self._maximum_pitch_bend_deviation) / (
             self._maximum_pitch_bend_deviation * 2
@@ -428,7 +429,7 @@ class MidiFileConverter(abc.Converter):
 
     def _extracted_data_to_midi_messages(
         self,
-        absolute_time: numbers.Real,
+        absolute_time: utilities.constants.Real,
         duration: parameters.abc.DurationType,
         available_midi_channels_cycle: typing.Iterator,
         pitch_or_pitches: typing.Tuple[parameters.abc.Pitch],
@@ -472,7 +473,7 @@ class MidiFileConverter(abc.Converter):
     def _simple_event_to_midi_messages(
         self,
         simple_event: events.basic.SimpleEvent,
-        absolute_time: numbers.Real,
+        absolute_time: utilities.constants.Real,
         available_midi_channels_cycle: typing.Iterator,
     ) -> typing.Tuple[mido.Message]:
         """Converts ``SimpleEvent`` (or any object that inherits from ``SimpleEvent``).

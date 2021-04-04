@@ -14,7 +14,7 @@ If desired the default concert pitch can be adjusted after importing :mod:`mutwo
 
 All pitch objects with a concert pitch attribute that become initialised after
 overriding the default concert pitch value will by default use the new
-overriden default concert pitch value.
+overridden default concert pitch value.
 """
 
 import collections
@@ -33,6 +33,7 @@ try:
 except ImportError:
     import fractions
 
+from mutwo.utilities import constants
 from mutwo.utilities import decorators
 from mutwo.utilities import prime_factors
 from mutwo.utilities import tools
@@ -46,8 +47,8 @@ __all__ = (
     "WesternPitch",
 )
 
-ConcertPitch = typing.Union[numbers.Number, parameters.abc.Pitch]
-PitchClassOrPitchClassName = typing.Union[numbers.Number, str]
+ConcertPitch = typing.Union[constants.Real, parameters.abc.Pitch]
+PitchClassOrPitchClassName = typing.Union[constants.Real, str]
 
 
 class DirectPitch(parameters.abc.Pitch):
@@ -941,9 +942,9 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
     def __init__(
         self,
         n_pitch_classes_per_octave: int,
-        pitch_class: numbers.Number,
+        pitch_class: constants.Real,
         octave: int,
-        concert_pitch_pitch_class: numbers.Number,
+        concert_pitch_pitch_class: constants.Real,
         concert_pitch_octave: int,
         concert_pitch: ConcertPitch = None,
     ):
@@ -957,7 +958,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         self.concert_pitch_octave = concert_pitch_octave
         self.concert_pitch = concert_pitch
 
-    def _assert_correct_pitch_class(self, pitch_class: numbers.Number) -> None:
+    def _assert_correct_pitch_class(self, pitch_class: constants.Real) -> None:
         """Makes sure the respective pitch_class is within the allowed range."""
 
         try:
@@ -989,22 +990,22 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         self._concert_pitch = concert_pitch
 
     @property
-    def concert_pitch_pitch_class(self) -> numbers.Number:
+    def concert_pitch_pitch_class(self) -> constants.Real:
         """The pitch class of the referential concert pitch."""
         return self._concert_pitch_pitch_class
 
     @concert_pitch_pitch_class.setter
-    def concert_pitch_pitch_class(self, pitch_class: numbers.Number) -> numbers.Number:
+    def concert_pitch_pitch_class(self, pitch_class: constants.Real) -> constants.Real:
         self._assert_correct_pitch_class(pitch_class)
         self._concert_pitch_pitch_class = pitch_class
 
     @property
-    def pitch_class(self) -> numbers.Number:
+    def pitch_class(self) -> constants.Real:
         """The pitch class of the pitch."""
         return self._pitch_class
 
     @pitch_class.setter
-    def pitch_class(self, pitch_class: numbers.Number) -> numbers.Number:
+    def pitch_class(self, pitch_class: constants.Real) -> constants.Real:
         self._assert_correct_pitch_class(pitch_class)
         self._pitch_class = pitch_class
 
@@ -1053,8 +1054,8 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     def _math(
         self,
-        n_pitch_classes_difference: numbers.Number,
-        operator: typing.Callable[[numbers.Number, numbers.Number], numbers.Number],
+        n_pitch_classes_difference: constants.Real,
+        operator: typing.Callable[[constants.Real, constants.Real], constants.Real],
     ) -> None:
         new_pitch_class = operator(self.pitch_class, n_pitch_classes_difference)
         n_octaves_difference = new_pitch_class // self.n_pitch_classes_per_octave
@@ -1065,7 +1066,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @decorators.add_return_option
     def add(
-        self, n_pitch_classes_difference: numbers.Number
+        self, n_pitch_classes_difference: constants.Real
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
@@ -1073,7 +1074,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
 
     @decorators.add_return_option
     def subtract(
-        self, n_pitch_classes_difference: numbers.Number
+        self, n_pitch_classes_difference: constants.Real
     ) -> typing.Union[None, "EqualDividedOctavePitch"]:
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
@@ -1107,8 +1108,8 @@ class WesternPitch(EqualDividedOctavePitch):
         self,
         pitch_class_or_pitch_class_name: PitchClassOrPitchClassName = 0,
         octave: int = 4,
-        concert_pitch_pitch_class: numbers.Number = None,
-        concert_pitch_octave: numbers.Number = None,
+        concert_pitch_pitch_class: constants.Real = None,
+        concert_pitch_octave: constants.Real = None,
         concert_pitch: ConcertPitch = None,
     ):
         if concert_pitch_pitch_class is None:
@@ -1149,7 +1150,7 @@ class WesternPitch(EqualDividedOctavePitch):
         DIATONICPITCHCLASSNAME-ACCIDENTAL (e.g. "cs" for c-sharp,
         "gqf" for g-quarter-flat, "b" for b)
         """
-        if isinstance(pitch_class_or_pitch_class_name, numbers.Number):
+        if isinstance(pitch_class_or_pitch_class_name, numbers.Real):
             pitch_class = float(pitch_class_or_pitch_class_name)
             pitch_class_name = WesternPitch._translate_pitch_class_to_pitch_class_name(
                 pitch_class_or_pitch_class_name
@@ -1170,7 +1171,7 @@ class WesternPitch(EqualDividedOctavePitch):
     @staticmethod
     def _translate_accidental_to_pitch_class_modifications(
         accidental: str,
-    ) -> numbers.Number:
+    ) -> constants.Real:
         """Helper function to translate an accidental to its pitch class modification.
 
         Raises an error if the accidental hasn't been defined yet in
@@ -1191,7 +1192,7 @@ class WesternPitch(EqualDividedOctavePitch):
     @staticmethod
     def _translate_pitch_class_name_to_pitch_class(
         pitch_class_name: str,
-    ) -> numbers.Number:
+    ) -> constants.Real:
         """Helper function to translate a pitch class name to its respective number.
 
         +/-1 is defined as one chromatic step. Smaller floating point numbers
@@ -1211,7 +1212,7 @@ class WesternPitch(EqualDividedOctavePitch):
 
     @staticmethod
     def _translate_difference_to_closest_diatonic_pitch_to_accidental(
-        difference_to_closest_diatonic_pitch: numbers.Number,
+        difference_to_closest_diatonic_pitch: constants.Real,
     ) -> str:
         """Helper function to translate a number to the closest known accidental."""
         closest_accidental = parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
@@ -1225,7 +1226,7 @@ class WesternPitch(EqualDividedOctavePitch):
         return closest_accidental
 
     @staticmethod
-    def _translate_pitch_class_to_pitch_class_name(pitch_class: numbers.Number) -> str:
+    def _translate_pitch_class_to_pitch_class_name(pitch_class: constants.Real) -> str:
         """Helper function to translate a pitch class in number to a string.
 
         The returned pitch class name uses a Western nomenclature of English
@@ -1284,7 +1285,7 @@ class WesternPitch(EqualDividedOctavePitch):
         self._pitch_class_name = pitch_class_name
 
     @EqualDividedOctavePitch.pitch_class.setter
-    def pitch_class(self, pitch_class: numbers.Number):
+    def pitch_class(self, pitch_class: constants.Real):
         self._pitch_class_name = self._translate_pitch_class_to_pitch_class_name(
             pitch_class
         )

@@ -4,9 +4,10 @@ import bisect
 import functools
 import importlib
 import itertools
-import numbers
 import typing
 import warnings
+
+from mutwo.utilities import constants
 
 
 __all__ = (
@@ -23,12 +24,12 @@ __all__ = (
 
 
 def scale(
-    value: numbers.Number,
-    old_min: numbers.Number,
-    old_max: numbers.Number,
-    new_min: numbers.Number,
-    new_max: numbers.Number,
-) -> numbers.Number:
+    value: constants.Real,
+    old_min: constants.Real,
+    old_max: constants.Real,
+    new_min: constants.Real,
+    new_max: constants.Real,
+) -> constants.Real:
     """Scale a value from one range to another range.
 
     :param value: The value that shall be scaled.
@@ -60,7 +61,7 @@ def scale(
 
 
 def accumulate_from_n(
-    iterable: typing.Iterable[numbers.Number], n: numbers.Number
+    iterable: typing.Iterable[constants.Real], n: constants.Real
 ) -> typing.Iterator:
     """Accumulates iterable starting with value n.
 
@@ -78,7 +79,7 @@ def accumulate_from_n(
     return itertools.accumulate(itertools.chain((n,), iterable))
 
 
-def accumulate_from_zero(iterable: typing.Iterable[numbers.Number]) -> typing.Iterator:
+def accumulate_from_zero(iterable: typing.Iterable[constants.Real]) -> typing.Iterator:
     """Accumulates iterable starting from 0.
 
     :param iterable: The iterable which values shall be accumulated.
@@ -109,9 +110,9 @@ def insert_next_to(
 
 
 def find_closest_index(
-    item: numbers.Number,
+    item: constants.Real,
     data: typing.Iterable,
-    key: typing.Callable[[typing.Any], numbers.Number] = None,
+    key: typing.Callable[[typing.Any], constants.Real] = None,
 ) -> int:
     """Return index of element in ``data`` with smallest difference to ``item``.
 
@@ -153,9 +154,9 @@ def find_closest_index(
 
 
 def find_closest_item(
-    item: numbers.Number,
+    item: constants.Real,
     data: typing.Iterable,
-    key: typing.Callable[[typing.Any], numbers.Number] = None,
+    key: typing.Callable[[typing.Any], constants.Real] = None,
 ) -> float:
     """Return element in ``data`` with smallest difference to ``item``.
 
@@ -198,7 +199,7 @@ def import_module_if_dependency_has_been_installed(
 
 def uniqify_iterable(
     iterable: typing.Iterable,
-    sort_key: typing.Callable[[typing.Any], numbers.Number] = None,
+    sort_key: typing.Callable[[typing.Any], constants.Real] = None,
     group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
 ) -> typing.Iterable:
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.

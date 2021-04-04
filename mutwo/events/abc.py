@@ -2,10 +2,10 @@
 
 import abc
 import copy
-import numbers
 import typing
 
 from mutwo import parameters
+from mutwo.utilities import constants
 from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
@@ -40,7 +40,7 @@ class Event(abc.ABC):
     def _assert_correct_start_and_end_values(
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-        condition: typing.Callable[[numbers.Number], bool] = lambda start, end: end
+        condition: typing.Callable[[constants.Real], bool] = lambda start, end: end
         >= start,
     ):
         """Helper method to make sure that start < end.

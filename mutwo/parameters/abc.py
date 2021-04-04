@@ -3,7 +3,6 @@
 import abc
 import functools
 import math
-import numbers
 import typing
 
 try:
@@ -13,6 +12,7 @@ except ImportError:
 
 from mutwo.parameters import pitches_constants
 from mutwo.parameters import volumes_constants
+from mutwo.utilities import constants
 from mutwo.utilities import tools
 
 __all__ = ("Pitch", "Volume")
@@ -30,7 +30,7 @@ class Duration(Parameter):
     pass
 
 
-DurationType = typing.Union[numbers.Real, Duration]
+DurationType = typing.Union[constants.Real, Duration]
 
 
 @functools.total_ordering
@@ -153,7 +153,7 @@ class Volume(Parameter):
 
     @staticmethod
     def decibel_to_amplitude_ratio(
-        decibel: numbers.Real, reference_amplitude: numbers.Real = 1
+        decibel: constants.Real, reference_amplitude: constants.Real = 1
     ) -> float:
         """Convert decibel to amplitude ratio.
 
@@ -174,7 +174,7 @@ class Volume(Parameter):
 
     @staticmethod
     def decibel_to_power_ratio(
-        decibel: numbers.Real, reference_amplitude: numbers.Real = 1
+        decibel: constants.Real, reference_amplitude: constants.Real = 1
     ) -> float:
         """Convert decibel to power ratio.
 
@@ -195,7 +195,7 @@ class Volume(Parameter):
 
     @staticmethod
     def amplitude_ratio_to_decibel(
-        amplitude: numbers.Real, reference_amplitude: numbers.Real = 1
+        amplitude: constants.Real, reference_amplitude: constants.Real = 1
     ) -> float:
         """Convert amplitude ratio to decibel.
 
@@ -219,7 +219,7 @@ class Volume(Parameter):
 
     @staticmethod
     def power_ratio_to_decibel(
-        amplitude: numbers.Real, reference_amplitude: numbers.Real = 1
+        amplitude: constants.Real, reference_amplitude: constants.Real = 1
     ) -> float:
         """Convert power ratio to decibel.
 
@@ -242,7 +242,7 @@ class Volume(Parameter):
             return float(10 * math.log10(amplitude / reference_amplitude))
 
     @staticmethod
-    def amplitude_to_midi_velocity(amplitude: numbers.Real) -> int:
+    def amplitude_to_midi_velocity(amplitude: constants.Real) -> int:
         """Convert volume (floating point number from 0 to 1) to midi velocity.
 
         :param amplitude: A value from 0 to 1 that shall be converted to midi
