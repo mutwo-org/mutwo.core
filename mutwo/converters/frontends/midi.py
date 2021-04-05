@@ -8,7 +8,7 @@ import operator
 import typing
 import warnings
 
-import mido
+import mido  # type: ignore
 
 from mutwo.converters import abc
 from mutwo.converters.frontends import midi_constants
@@ -19,8 +19,6 @@ from mutwo import parameters
 from mutwo import utilities
 
 __all__ = ("MidiFileConverter",)
-
-Cents = typing.NewType("Cents", float)
 
 ConvertableEvents = typing.Union[
     events.basic.SimpleEvent,
@@ -122,19 +120,19 @@ class MidiFileConverter(abc.Converter):
         self,
         path: str,
         simple_event_to_pitches: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch]
-        ] = lambda event: event.pitch_or_pitches,
+            [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch, ...]
+        ] = lambda event: event.pitch_or_pitches,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
-        ] = lambda event: event.volume,
+        ] = lambda event: event.volume,  # type: ignore
         simple_event_to_control_messages: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[mido.Message]
+            [events.basic.SimpleEvent], typing.Tuple[mido.Message, ...]
         ] = lambda event: tuple([]),
         midi_file_type: int = None,
-        available_midi_channels: typing.Iterable[int] = None,
+        available_midi_channels: typing.Tuple[int, ...] = None,
         distribute_midi_channels: bool = False,
         n_midi_channels_per_track: int = None,
-        maximum_pitch_bend_deviation: Cents = None,
+        maximum_pitch_bend_deviation: float = None,
         ticks_per_beat: int = None,
         instrument_name: str = None,
         tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent] = None,
@@ -208,7 +206,7 @@ class MidiFileConverter(abc.Converter):
 
     @staticmethod
     def _assert_available_midi_channels_have_correct_value(
-        available_midi_channels: tuple,
+        available_midi_channels: typing.Tuple[int, ...],
     ):
         # check for correct range of each number
         for midi_channel in available_midi_channels:
@@ -235,8 +233,8 @@ class MidiFileConverter(abc.Converter):
 
     @staticmethod
     def _adjust_beat_length_in_microseconds(
-        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: float
-    ) -> float:
+        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: int
+    ) -> int:
         """This method makes sure that ``beat_length_in_microseconds`` isn't too big.
 
         Standard midi files define a slowest allowed tempo which is around 3.5 BPM.
@@ -283,7 +281,7 @@ class MidiFileConverter(abc.Converter):
         simultaneous_event: events.basic.SimultaneousEvent[
             events.basic.SequentialEvent[events.basic.SimpleEvent]
         ],
-    ) -> typing.Tuple[typing.Tuple[int]]:
+    ) -> typing.Tuple[typing.Tuple[int, ...], ...]:
         """Find midi channels for each SequentialEvent.
 
         Depending on whether distribute_midi_channels has been set
@@ -371,8 +369,13 @@ class MidiFileConverter(abc.Converter):
 
     def _tempo_events_to_midi_messages(
         self, tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent]
-    ) -> typing.Tuple[mido.MetaMessage]:
+    ) -> typing.Tuple[mido.MetaMessage, ...]:
         """Converts a SequentialEvent of ``EnvelopeEvent`` to midi Tempo messages."""
+
+        # reveal_type(tempo_events)
+        # reveal_type(tempo_events[0])
+
+        tempo_events[0].object_start
 
         midi_messages = []
         for absolute_time, tempo_event in zip(
@@ -401,7 +404,7 @@ class MidiFileConverter(abc.Converter):
         velocity: int,
         pitch: parameters.abc.Pitch,
         available_midi_channels_cycle: typing.Iterator,
-    ) -> typing.Tuple[mido.Message]:
+    ) -> typing.Tuple[mido.Message, ...]:
         """Generate 'pitch bending', 'note on' and 'note off' messages for one tone."""
 
         midi_channel = next(available_midi_channels_cycle)
@@ -432,10 +435,10 @@ class MidiFileConverter(abc.Converter):
         absolute_time: utilities.constants.Real,
         duration: parameters.abc.DurationType,
         available_midi_channels_cycle: typing.Iterator,
-        pitch_or_pitches: typing.Tuple[parameters.abc.Pitch],
+        pitch_or_pitches: typing.Tuple[parameters.abc.Pitch, ...],
         volume: parameters.abc.Volume,
-        control_messages: typing.Tuple[mido.Message],
-    ) -> typing.Tuple[mido.Message]:
+        control_messages: typing.Tuple[mido.Message, ...],
+    ) -> typing.Tuple[mido.Message, ...]:
         """Generates pitch-bend / note-on / note-off messages for each tone in a chord.
 
         Concatenates the midi messages for every played tone with the global control
@@ -475,7 +478,7 @@ class MidiFileConverter(abc.Converter):
         simple_event: events.basic.SimpleEvent,
         absolute_time: utilities.constants.Real,
         available_midi_channels_cycle: typing.Iterator,
-    ) -> typing.Tuple[mido.Message]:
+    ) -> typing.Tuple[mido.Message, ...]:
         """Converts ``SimpleEvent`` (or any object that inherits from ``SimpleEvent``).
 
         Return tuple filled with midi messages that represent the mutwo data in the
@@ -506,22 +509,22 @@ class MidiFileConverter(abc.Converter):
             absolute_time,
             simple_event.duration,
             available_midi_channels_cycle,
-            *extracted_data
+            *extracted_data  # type: ignore
         )
         return tuple(midi_messages)
 
     def _sequential_event_to_midi_messages(
         self,
         sequential_event: events.basic.SequentialEvent[events.basic.SimpleEvent],
-        available_midi_channels: typing.Tuple[int],
-    ) -> typing.Tuple[mido.Message]:
+        available_midi_channels: typing.Tuple[int, ...],
+    ) -> typing.Tuple[mido.Message, ...]:
         """Iterates through the ``SequentialEvent`` and converts each ``SimpleEvent``.
 
         Return unsorted tuple of Midi messages where the time attribute of each message
         is the absolute time in ticks.
         """
 
-        midi_data = []
+        midi_data: typing.List[mido.Message] = []
 
         available_midi_channels_cycle = itertools.cycle(available_midi_channels)
 
@@ -538,7 +541,7 @@ class MidiFileConverter(abc.Converter):
 
     def _midi_messages_to_midi_track(
         self,
-        midi_data: typing.Tuple[mido.Message],
+        midi_data: typing.Tuple[mido.Message, ...],
         duration: parameters.abc.DurationType,
         is_first_track: bool = False,
     ) -> mido.MidiTrack:

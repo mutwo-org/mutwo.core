@@ -1,6 +1,6 @@
 import unittest
 
-import expenvelope
+import expenvelope  # type: ignore
 
 from mutwo import converters
 from mutwo.events import basic

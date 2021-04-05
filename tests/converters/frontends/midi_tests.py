@@ -2,7 +2,7 @@ import itertools
 import os
 import unittest
 
-import mido
+import mido  # type: ignore
 
 # events
 from mutwo.events import basic

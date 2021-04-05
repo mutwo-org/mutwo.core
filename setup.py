@@ -1,12 +1,12 @@
-import setuptools
+import setuptools  # type: ignore
 
 extras_require = {
-    "pyo": "pyo>=1.0.3, <2",
-    "midi": "mido>=1.2.9, <2",
-    "reaper": "rpp>=0.4, <0.5",
+    "pyo": ["pyo>=1.0.3, <2"],
+    "midi": ["mido>=1.2.9, <2"],
+    "reaper": ["rpp>=0.4, <0.5"],
 }
 
-extras_require.update({"all": list(extras_require.values())})
+extras_require.update({"all": list(extras_require.values())})  # type: ignore
 
 setuptools.setup(
     name="mutwo",

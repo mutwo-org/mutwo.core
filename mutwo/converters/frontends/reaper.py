@@ -1,6 +1,6 @@
 import typing
 
-import rpp
+import rpp  # type: ignore
 
 from mutwo.converters.frontends import reaper_constants
 
@@ -92,10 +92,10 @@ class ReaperMarkerConverter(converters.abc.EventConverter):
         self,
         simple_event_to_marker_name: typing.Callable[
             [events.basic.SimpleEvent], str
-        ] = lambda simple_event: simple_event.name,
+        ] = lambda simple_event: simple_event.name,  # type: ignore
         simple_event_to_marker_color: typing.Callable[
             [events.basic.SimpleEvent], str
-        ] = lambda simple_event: simple_event.color,
+        ] = lambda simple_event: simple_event.color,  # type: ignore
     ):
         self._simple_event_to_marker_name = simple_event_to_marker_name
         self._simple_event_to_marker_color = simple_event_to_marker_color
@@ -104,7 +104,7 @@ class ReaperMarkerConverter(converters.abc.EventConverter):
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str]:
+    ) -> typing.Tuple[str, ...]:
         try:
             marker_name = self._simple_event_to_marker_name(simple_event)
             marker_color = self._simple_event_to_marker_color(simple_event)

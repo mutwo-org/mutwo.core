@@ -1,5 +1,7 @@
 """Abstract base classes for events (definition of public API)."""
 
+from __future__ import annotations
+
 import abc
 import copy
 import typing
@@ -63,7 +65,7 @@ class Event(abc.ABC):
     # ###################################################################### #
 
     @abc.abstractmethod
-    def destructive_copy(self) -> "Event":
+    def destructive_copy(self) -> Event:
         """Adapted deep copy method that returns a new object for every leaf.
 
         It's called 'destructive', because it forgets potential repetitions of
@@ -95,7 +97,7 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_parameter(self, parameter_name: str) -> typing.Union[tuple, typing.Any]:
+    def get_parameter(self, parameter_name: str) -> typing.Union[typing.Tuple[typing.Any, ...], typing.Any]:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -118,7 +120,9 @@ class Event(abc.ABC):
         self,
         parameter_name: str,
         object_or_function: typing.Union[
-            typing.Callable[[parameters.abc.ParameterType], parameters.abc.ParameterType],
+            typing.Callable[
+                [parameters.abc.ParameterType], parameters.abc.ParameterType
+            ],
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
@@ -184,7 +188,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_out(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Optional["Event"]:
+    ) -> typing.Optional[Event]:
         """Time-based slicing of the respective event.
 
         :param start: number that indicates the point when the
@@ -206,7 +210,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_off(
         self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
-    ) -> typing.Optional["Event"]:
+    ) -> typing.Optional[Event]:
         """Time-based deletion / shortening of the respective event.
 
         :param start: number that indicates absolute time when the
@@ -227,7 +231,7 @@ class Event(abc.ABC):
 
     def split_at(
         self, absolute_time: parameters.abc.DurationType
-    ) -> typing.Tuple["Event", "Event"]:
+    ) -> typing.Tuple[Event, Event]:
         """Split event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where event shall be split
@@ -249,10 +253,13 @@ class Event(abc.ABC):
         )
 
 
-class ComplexEvent(Event, typing.List[Event]):
+T = typing.TypeVar("T", bound=Event)
+
+
+class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
-    def __init__(self, iterable: typing.Iterable[Event]):
+    def __init__(self, iterable: typing.Iterable[T]):
         super().__init__(iterable)
 
     # ###################################################################### #
@@ -262,13 +269,21 @@ class ComplexEvent(Event, typing.List[Event]):
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
 
-    def __add__(self, event: typing.List[Event]) -> "ComplexEvent":
+    def __add__(self, event: typing.List[T]) -> ComplexEvent[T]:
         return type(self)(super().__add__(event))
 
-    def __mul__(self, factor: int) -> "ComplexEvent":
+    def __mul__(self, factor: int) -> ComplexEvent[T]:
         return type(self)(super().__mul__(factor))
 
-    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> Event:  # type: ignore
+    @typing.overload
+    def __getitem__(self, index_or_slice: int) -> T:
+        ...
+
+    @typing.overload
+    def __getitem__(self, index_or_slice: slice) -> ComplexEvent[T]:
+        ...
+
+    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> typing.Union[T, ComplexEvent[T]]:
         event = super().__getitem__(index_or_slice)
         if isinstance(index_or_slice, slice):
             event = type(self)(event)  # type: ignore
@@ -279,7 +294,7 @@ class ComplexEvent(Event, typing.List[Event]):
     # ###################################################################### #
 
     @Event.duration.setter  # type: ignore
-    def duration(self, new_duration: parameters.abc.DurationType) -> None:
+    def duration(self, new_duration: parameters.abc.DurationType):
         old_duration = self.duration
         self.set_parameter(
             "duration",
@@ -309,12 +324,12 @@ class ComplexEvent(Event, typing.List[Event]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def copy(self) -> "ComplexEvent":
+    def copy(self) -> ComplexEvent[T]:
         """Return a deep copy of the ComplexEvent."""
         return copy.deepcopy(self)
 
-    def destructive_copy(self) -> "ComplexEvent":
-        return type(self)([event.destructive_copy() for event in self])
+    def destructive_copy(self) -> ComplexEvent[T]:
+        return type(self)([event.destructive_copy() for event in self])  # type: ignore
 
     def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any, ...]:
         return tuple(event.get_parameter(parameter_name) for event in self)
@@ -324,11 +339,13 @@ class ComplexEvent(Event, typing.List[Event]):
         self,
         parameter_name: str,
         object_or_function: typing.Union[
-            typing.Callable[[parameters.abc.ParameterType], parameters.abc.ParameterType],
+            typing.Callable[
+                [parameters.abc.ParameterType], parameters.abc.ParameterType
+            ],
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> typing.Optional["ComplexEvent"]:
+    ) -> typing.Optional[ComplexEvent[T]]:
         [
             event.set_parameter(
                 parameter_name,
@@ -345,13 +362,13 @@ class ComplexEvent(Event, typing.List[Event]):
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
-    ) -> typing.Optional["ComplexEvent"]:
+    ) -> typing.Optional[ComplexEvent[T]]:
         [event.mutate_parameter(parameter_name, function) for event in self]
 
     @abc.abstractmethod
     def squash_in(
         self, start: parameters.abc.DurationType, event_to_squash_in: Event
-    ) -> typing.Union[None, Event]:
+    ) -> typing.Optional[ComplexEvent[T]]:
         """Time-based insert of a new event into the present event.
 
         :param start: Absolute time where the event shall be inserted.

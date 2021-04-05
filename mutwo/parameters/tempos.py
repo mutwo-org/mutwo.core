@@ -5,13 +5,11 @@ from mutwo.utilities import constants
 
 __all__ = ("TempoPoint",)
 
-TempoInBeatsPerMinute = typing.NewType("TempoInBeatsPerMinute", float)
-
 
 class TempoPoint(parameters.abc.Parameter):
     def __init__(
         self,
-        tempo_in_beats_per_minute: TempoInBeatsPerMinute,
+        tempo_in_beats_per_minute: float,
         reference: constants.Real = 1,
     ):
         self.tempo_in_beats_per_minute = tempo_in_beats_per_minute

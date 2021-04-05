@@ -1,9 +1,9 @@
 import unittest
 
 try:
-    import quicktions as fractions
+    import quicktions as fractions  # type: ignore
 except ImportError:
-    import fractions
+    import fractions  # type: ignore
 
 from mutwo.parameters import pitches
 

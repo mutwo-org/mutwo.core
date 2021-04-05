@@ -153,7 +153,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
     ) -> typing.Tuple[ExtractedData]:
         duration = simple_event_to_convert.duration
 
-        extracted_data = [duration]
+        extracted_data: typing.List[object] = [duration]
         for extraction_function in self._extraction_functions:
             try:
                 extracted_information = extraction_function(simple_event_to_convert)

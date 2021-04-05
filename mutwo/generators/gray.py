@@ -5,7 +5,9 @@ import typing
 __all__ = ("reflected_binary_code",)
 
 
-def reflected_binary_code(length: int, modulus: int) -> typing.Tuple[typing.Tuple[int]]:
+def reflected_binary_code(
+    length: int, modulus: int
+) -> typing.Tuple[typing.Tuple[int, ...], ...]:
     """Make gray code where each tuple has `length` items with `modulus` different numbers.
 
     :param length: how long one code is
@@ -39,20 +41,20 @@ def reflected_binary_code(length: int, modulus: int) -> typing.Tuple[typing.Tupl
         if length == 1:
             return [[i] for i in F]
         L = _recursive_gray_code_maker(length - 1, modulus)
-        M = []
+        M: typing.List[typing.List[int]] = []
         for j in F:
             M = M + [ll + [j] for ll in L]
         k = len(M)
-        Mr = [0] * modulus
+        Mr: typing.List[typing.List[typing.List[int]]] = [[]] * modulus
         for i in range(modulus - 1):
             i1 = i * int(k / modulus)
             i2 = (i + 1) * int(k / modulus)
             Mr[i] = M[i1:i2]
-        Mr[modulus - 1] = M[(modulus - 1) * int(k / modulus) :]
+        Mr[modulus - 1] = M[(modulus - 1) * int(k / modulus) :]  # type: ignore
         for i in range(modulus):
             if i % 2 != 0:
                 Mr[i].reverse()
-        M0 = []
+        M0: typing.List[typing.List[int]] = []
         for i in range(modulus):
             M0 = M0 + Mr[i]
         return M0

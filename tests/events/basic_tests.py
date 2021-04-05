@@ -118,7 +118,7 @@ class SimpleEventTest(unittest.TestCase):
 
 class SequentialEventTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.sequence = basic.SequentialEvent(
+        self.sequence: basic.SequentialEvent[basic.SimpleEvent] = basic.SequentialEvent(
             [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
         )
 
@@ -224,7 +224,7 @@ class SequentialEventTest(unittest.TestCase):
 
 class SimultaneousEventTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.sequence = basic.SimultaneousEvent(
+        self.sequence: basic.SimultaneousEvent[basic.SimpleEvent] = basic.SimultaneousEvent(
             [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
         )
 

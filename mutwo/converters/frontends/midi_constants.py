@@ -24,7 +24,9 @@ DEFAULT_MIDI_INSTRUMENT_NAME = "Acoustic Grand Piano"
 DEFAULT_N_MIDI_CHANNELS_PER_TRACK = 1
 """default value for ``n_midi_channels_per_track`` in `MidiFileConverter`"""
 
-DEFAULT_TEMPO_EVENTS = events.basic.SequentialEvent(
+DEFAULT_TEMPO_EVENTS: events.basic.SequentialEvent[
+    events.basic.EnvelopeEvent
+] = events.basic.SequentialEvent(
     [events.basic.EnvelopeEvent(1, parameters.tempos.TempoPoint(120, 1))]
 )
 """default value for ``tempo_events`` in `MidiFileConverter`"""
