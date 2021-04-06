@@ -52,20 +52,22 @@ class NoteLike(events.basic.SimpleEvent):
 
     def __init__(
         self,
-        pitch_or_pitches: PitchOrPitches,
-        duration: parameters.abc.DurationType,
-        volume: constants.Real,
+        pitch_or_pitches: PitchOrPitches = 'c',
+        duration: parameters.abc.DurationType = 1,
+        volume: Volume = 1,
     ):
-        self.pitch_or_pitches = self._convert_pitch_or_pitches_data_to_pitch_or_pitches(
-            pitch_or_pitches
-        )
-        self.volume = self._convert_volume_data_to_volume(volume)
+        self.pitch_or_pitches = pitch_or_pitches
+        self.volume = volume
         super().__init__(duration)
 
-    @staticmethod
-    def _convert_pitch_or_pitches_data_to_pitch_or_pitches(
-        pitch_or_pitches: PitchOrPitches,
-    ) -> typing.List[parameters.abc.Pitch]:
+    @property
+    def pitch_or_pitches(self) -> typing.Any:
+        """The pitch or pitches of the event."""
+
+        return self._pitch_or_pitches
+
+    @pitch_or_pitches.setter
+    def pitch_or_pitches(self, pitch_or_pitches: typing.Any):
         # make sure pitch_or_pitches always become assigned to a list of pitches,
         # to be certain of the returned type
         if not isinstance(pitch_or_pitches, typing.Iterable):
@@ -78,9 +80,16 @@ class NoteLike(events.basic.SimpleEvent):
         else:
             # several pitches
             pitch_or_pitches = list(pitch_or_pitches)
-        return pitch_or_pitches
+        self._pitch_or_pitches = pitch_or_pitches
 
-    def _convert_volume_data_to_volume(self, volume: Volume) -> parameters.abc.Volume:
+    @property
+    def volume(self) -> typing.Any:
+        """The volume of the event."""
+
+        return self._volume
+
+    @volume.setter
+    def volume(self, volume: typing.Any):
         if isinstance(volume, numbers.Real):
             if volume >= 0:
                 volume = parameters.volumes.DirectVolume(volume)
@@ -95,24 +104,4 @@ class NoteLike(events.basic.SimpleEvent):
                 )
             )
             raise TypeError(message)
-        return volume
-
-    @property
-    def pitch_or_pitches(self) -> typing.List[parameters.abc.Pitch]:
-        """The pitch or pitches of the event."""
-
-        return self._pitch_or_pitches
-
-    @pitch_or_pitches.setter
-    def pitch_or_pitches(self, pitch_or_pitches: typing.List[parameters.abc.Pitch]):
-        self._pitch_or_pitches = pitch_or_pitches
-
-    @property
-    def volume(self) -> parameters.abc.Volume:
-        """The volume of the event."""
-
-        return self._volume
-
-    @volume.setter
-    def volume(self, volume: parameters.abc.Volume):
         self._volume = volume
