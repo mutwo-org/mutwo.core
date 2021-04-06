@@ -1,5 +1,6 @@
 """Event classes which are designated for musical usage."""
 
+import numbers
 import typing
 
 from mutwo import events
@@ -89,7 +90,7 @@ class NoteLike(events.basic.SimpleEvent):
 
     @volume.setter
     def volume(self, volume: typing.Any):
-        if isinstance(volume, constants.Real.__args__):  # type: ignore
+        if isinstance(volume, numbers.Real):
             if volume >= 0:
                 volume = parameters.volumes.DirectVolume(volume)
             else:
