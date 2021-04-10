@@ -289,3 +289,7 @@ class Volume(Parameter):
             return self.amplitude == other.amplitude  # type: ignore
         except AttributeError:
             return False
+
+
+class PlayingIndicator(Parameter):
+    pass

@@ -11,6 +11,7 @@ from . import isis
 for modules, dependency in (
     (("midi_constants", "midi"), "mido"),
     (("reaper",), "rpp"),
+    (("abjad",), "abjad"),
 ):
     for module in modules:
         tools.import_module_if_dependency_has_been_installed(
