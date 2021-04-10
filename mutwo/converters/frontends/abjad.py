@@ -16,13 +16,22 @@ from mutwo.converters import abc
 from mutwo import events
 from mutwo import parameters
 
+__all__ = (
+    "MutwoPitchToAbjadPitchConverter",
+    "SequentialEventToQuantizedAbjadContainerConverter",
+    "SequentialEventToAbjadVoiceConverter",
+)
+
 
 class MutwoPitchToAbjadPitchConverter(abc.Converter):
     def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
-        return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
+        if isinstance(pitch_to_convert, parameters.pitches.WesternPitch):
+            return abjad.NamedPitch(pitch_to_convert.name)
+        else:
+            return abjad.NumberedPitch.from_hertz(pitch_to_convert.frequency)
 
 
-class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
+class SequentialEventToQuantizedAbjadContainerConverter(abc.Converter):
     def __init__(
         self,
         time_signatures: typing.Optional[typing.Sequence[abjad.TimeSignature]] = None,
@@ -48,7 +57,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
         self._time_signatures = time_signatures
         self._tempo_envelope = tempo_envelope
         self._attack_point_optimizer = attack_point_optimizer
-        self._q_schema = SequentialEventToQuantisizedAbjadContainerConverter._make_q_schema(
+        self._q_schema = SequentialEventToQuantizedAbjadContainerConverter._make_q_schema(
             self._time_signatures
         )
 
@@ -81,7 +90,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
         has_tie: bool,
         index_of_previous_q_event: int,
     ) -> typing.Tuple[bool, int]:
-        q_event = SequentialEventToQuantisizedAbjadContainerConverter._get_respective_q_event_from_abjad_leaf(
+        q_event = SequentialEventToQuantizedAbjadContainerConverter._get_respective_q_event_from_abjad_leaf(
             abjad_leaf
         )
 
@@ -115,7 +124,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
             (
                 has_tie,
                 index_of_previous_q_event,
-            ) = SequentialEventToQuantisizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
+            ) = SequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
                 indices + [nth_abjad_leaf_or_tuplet],
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
@@ -138,7 +147,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
         index_of_previous_q_event: int,
     ) -> typing.Tuple[bool, int]:
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
-            return SequentialEventToQuantisizedAbjadContainerConverter._process_tuplet(
+            return SequentialEventToQuantizedAbjadContainerConverter._process_tuplet(
                 indices,
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
@@ -148,7 +157,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
             )
 
         else:
-            return SequentialEventToQuantisizedAbjadContainerConverter._process_abjad_leaf(
+            return SequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf(
                 indices,
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
@@ -175,7 +184,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
                 (
                     has_tie,
                     index_of_previous_q_event,
-                ) = SequentialEventToQuantisizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
+                ) = SequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf_or_tuplet(
                     [nth_bar, nth_abjad_leaf_or_tuplet],
                     abjad_leaf_or_tuplet,
                     related_abjad_leaves_per_simple_event,
@@ -258,7 +267,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
             q_event_sequence
         )
 
-        related_abjad_leaves_per_simple_event = SequentialEventToQuantisizedAbjadContainerConverter._make_related_abjad_leaves_per_simple_event(
+        related_abjad_leaves_per_simple_event = SequentialEventToQuantizedAbjadContainerConverter._make_related_abjad_leaves_per_simple_event(
             sequential_event_to_convert, q_event_sequence, quanitisized_abjad_leaves
         )
         return (
@@ -270,7 +279,7 @@ class SequentialEventToQuantisizedAbjadContainerConverter(abc.Converter):
 class SequentialEventToAbjadVoiceConverter(abc.Converter):
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantisizedAbjadContainerConverter,
+        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter,
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], typing.List[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
