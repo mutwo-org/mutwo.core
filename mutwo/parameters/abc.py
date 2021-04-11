@@ -142,7 +142,7 @@ class Volume(Parameter):
     """Abstract base class for any volume class.
 
     If the user wants to define a new volume class, the abstract
-    property :attr:`volume` has to be overridden.
+    property :attr:`amplitude` has to be overridden.
     """
 
     @staticmethod
@@ -289,7 +289,3 @@ class Volume(Parameter):
             return self.amplitude == other.amplitude  # type: ignore
         except AttributeError:
             return False
-
-
-class PlayingIndicator(Parameter):
-    pass
