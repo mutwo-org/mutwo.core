@@ -8,14 +8,14 @@ from . import isis_constants
 from . import isis
 
 # import modules with extra require
-for modules, dependency in (
-    (("midi_constants", "midi"), "mido"),
-    (("reaper",), "rpp"),
-    (("abjad",), "abjad"),
+for modules, dependencies in (
+    (("midi_constants", "midi"), ("mido",)),
+    (("reaper",), ("rpp",)),
+    (("abjad_attachments", "abjad_constants", "abjad",), ("abjad", "abjadext.nauert")),
 ):
     for module in modules:
-        tools.import_module_if_dependency_has_been_installed(
-            "mutwo.converters.frontends.{}".format(module), dependency
+        tools.import_module_if_dependencies_have_been_installed(
+            "mutwo.converters.frontends.{}".format(module), dependencies
         )
 
-del module, dependency, tools
+del module, dependencies, tools

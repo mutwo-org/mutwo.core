@@ -12,7 +12,9 @@ import abjad  # type: ignore
 from abjadext import nauert  # type: ignore
 import expenvelope  # type: ignore
 
-from mutwo.converters import abc
+from mutwo.converters import abc as converters_abc
+from mutwo.converters.frontends import abjad_attachments
+from mutwo.converters.frontends import abjad_constants
 from mutwo import events
 from mutwo import parameters
 
@@ -23,7 +25,7 @@ __all__ = (
 )
 
 
-class MutwoPitchToAbjadPitchConverter(abc.Converter):
+class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
     def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
         if isinstance(pitch_to_convert, parameters.pitches.WesternPitch):
             return abjad.NamedPitch(pitch_to_convert.name)
@@ -31,7 +33,7 @@ class MutwoPitchToAbjadPitchConverter(abc.Converter):
             return abjad.NumberedPitch.from_hertz(pitch_to_convert.frequency)
 
 
-class SequentialEventToQuantizedAbjadContainerConverter(abc.Converter):
+class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
     def __init__(
         self,
         time_signatures: typing.Optional[typing.Sequence[abjad.TimeSignature]] = None,
@@ -276,7 +278,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(abc.Converter):
         )
 
 
-class SequentialEventToAbjadVoiceConverter(abc.Converter):
+class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter,
@@ -287,16 +289,24 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
         simple_event_to_playing_indicators: typing.Callable[
-            [events.basic.SimpleEvent], typing.List[parameters.abc.PlayingIndicator]
+            [events.basic.SimpleEvent],
+            parameters.playing_indicators.PlayingIndicatorCollection,
         ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
+        simple_event_to_notation_indicators: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.notation_indicators.NotationIndicatorCollection,
+        ] = lambda simple_event: simple_event.notation_indicators,  # type: ignore
         does_extracted_data_indicate_rest: typing.Callable[
             [
                 typing.List[parameters.abc.Pitch],
                 parameters.abc.Volume,
-                typing.List[parameters.abc.PlayingIndicator],
+                parameters.playing_indicators.PlayingIndicatorCollection,
+                parameters.notation_indicators.NotationIndicatorCollection,
             ],
             bool,
-        ] = lambda pitches, volume, playing_indicators: len(pitches)
+        ] = lambda pitches, volume, playing_indicators, notation_indicators: len(
+            pitches
+        )
         == 0,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
     ):
@@ -306,6 +316,7 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
         self._simple_event_to_pitches = simple_event_to_pitches
         self._simple_event_to_volume = simple_event_to_volume
         self._simple_event_to_playing_indicators = simple_event_to_playing_indicators
+        self._simple_event_to_notation_indicators = simple_event_to_notation_indicators
         self._does_extracted_data_indicate_rest = does_extracted_data_indicate_rest
         self._mutwo_pitch_to_abjad_pitch_converter = (
             mutwo_pitch_to_abjad_pitch_converter
@@ -347,16 +358,123 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
             else:
                 sequence = sequence[index]
 
+    @staticmethod
+    def _indicator_collection_to_abjad_attachments(
+        indicator_collection: parameters.abc.IndicatorCollection,
+        indicator_name_to_abjad_attachment_mapping: typing.Dict[
+            str, abjad_attachments.AbjadAttachment
+        ],
+    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+        attachments = {}
+        for (
+            indicator_name,
+            indicator,
+        ) in indicator_collection.get_indicator_dict().items():
+            if indicator_name in indicator_name_to_abjad_attachment_mapping:
+                new_attachment = indicator_name_to_abjad_attachment_mapping[
+                    indicator_name
+                ](**indicator.get_arguments_dict())
+                attachments.update({indicator_name: new_attachment})
+
+        return attachments
+
+    @staticmethod
+    def _playing_indicator_collection_to_abjad_attachments(
+        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
+    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
+            playing_indicators, abjad_constants.PLAYING_INDICATOR_TO_ABJAD_ATTACHMENT
+        )
+
+    @staticmethod
+    def _notation_indicator_collection_to_abjad_attachments(
+        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection,
+    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
+            notation_indicators, abjad_constants.NOTATION_INDICATOR_TO_ABJAD_ATTACHMENT
+        )
+
     # ###################################################################### #
     #                          private methods                               #
     # ###################################################################### #
+
+    def _get_attachments_for_quantized_abjad_leaves(
+        self,
+        extracted_data_per_simple_event: typing.Tuple[
+            typing.Tuple[
+                typing.List[parameters.abc.Pitch],
+                parameters.abc.Volume,
+                parameters.playing_indicators.PlayingIndicatorCollection,
+                parameters.notation_indicators.NotationIndicatorCollection,
+            ],
+            ...,
+        ],
+    ) -> typing.Tuple[typing.Tuple[abjad_attachments.AbjadAttachment, ...], ...]:
+        attachments_per_type_per_event = {
+            attachment_name: [None for _ in extracted_data_per_simple_event]
+            for attachment_name in abjad_constants.AVAILABLE_ABJAD_ATTACHMENTS
+        }
+        for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
+            _, volume, playing_indicators, notation_indicators = extracted_data
+            attachments = {}
+            attachments.update(
+                SequentialEventToAbjadVoiceConverter._playing_indicator_collection_to_abjad_attachments(
+                    playing_indicators
+                )
+            )
+            attachments.update(
+                SequentialEventToAbjadVoiceConverter._notation_indicator_collection_to_abjad_attachments(
+                    notation_indicators
+                )
+            )
+            for attachment_name, attachment in attachments.items():
+                attachments_per_type_per_event[attachment_name][nth_event] = attachment
+
+        return tuple(
+            attachments for attachments in attachments_per_type_per_event.values()
+        )
+
+    def _apply_attachments_on_quantized_abjad_leaves(
+        self,
+        quanitisized_abjad_leaves: abjad.Voice,
+        related_abjad_leaves_per_simple_event: typing.Tuple[
+            typing.Tuple[typing.Tuple[int, ...], ...], ...
+        ],
+        attachments_per_type_per_event: typing.Tuple[
+            typing.Tuple[abjad_attachments.AbjadAttachment, ...], ...
+        ],
+    ) -> None:
+        for attachments in attachments_per_type_per_event:
+            previous_attachment = None
+            for related_abjad_leaves_indices, attachment in zip(
+                related_abjad_leaves_per_simple_event, attachments
+            ):
+                if attachment and attachment.is_active:
+                    abjad_leaves = tuple(
+                        SequentialEventToAbjadVoiceConverter._get_item_from_indices(
+                            quanitisized_abjad_leaves, indices
+                        )
+                        for indices in related_abjad_leaves_indices
+                    )
+                    processed_abjad_leaves = attachment.process_leaves(
+                        abjad_leaves, previous_attachment
+                    )
+                    for processed_abjad_leaf, indices in zip(
+                        processed_abjad_leaves, related_abjad_leaves_indices
+                    ):
+                        SequentialEventToAbjadVoiceConverter._set_item_from_indices(
+                            quanitisized_abjad_leaves, indices, processed_abjad_leaf
+                        )
+
+                    previous_attachment = attachment
 
     def _extract_data_from_simple_event(
         self, simple_event: events.basic.SimpleEvent
     ) -> typing.Tuple[
         typing.List[parameters.abc.Pitch],
         parameters.abc.Volume,
-        typing.List[parameters.abc.PlayingIndicator],
+        parameters.playing_indicators.PlayingIndicatorCollection,
+        parameters.notation_indicators.NotationIndicatorCollection,
     ]:
         try:
             pitches = self._simple_event_to_pitches(simple_event)
@@ -372,9 +490,20 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
         try:
             playing_indicators = self._simple_event_to_playing_indicators(simple_event)
         except AttributeError:
-            playing_indicators = []
+            playing_indicators = (
+                parameters.playing_indicators.PlayingIndicatorCollection()
+            )
 
-        return pitches, volume, playing_indicators
+        try:
+            notation_indicators = self._simple_event_to_notation_indicators(
+                simple_event
+            )
+        except AttributeError:
+            notation_indicators = (
+                parameters.notation_indicators.NotationIndicatorCollection()
+            )
+
+        return pitches, volume, playing_indicators, notation_indicators
 
     def _apply_pitches_on_quantized_abjad_leaf(
         self,
@@ -424,7 +553,8 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
             typing.Tuple[
                 typing.List[parameters.abc.Pitch],
                 parameters.abc.Volume,
-                typing.List[parameters.abc.PlayingIndicator],
+                parameters.playing_indicators.PlayingIndicatorCollection,
+                parameters.notation_indicators.NotationIndicatorCollection,
             ],
             ...,
         ],
@@ -508,8 +638,16 @@ class SequentialEventToAbjadVoiceConverter(abc.Converter):
             is_simple_event_rest_per_simple_event,
         )
 
-        # fourth, apply dynamics, tempos and pitch_indicators on abjad voice
+        # fourth, apply dynamics, tempos and playing_indicators on abjad voice
         # TODO(implement dynamic attachment, tempo attachment, pitch indicator
         # attachment)
+        attachments_per_type_per_event = self._get_attachments_for_quantized_abjad_leaves(
+            extracted_data_per_simple_event
+        )
+        self._apply_attachments_on_quantized_abjad_leaves(
+            quanitisized_abjad_leaves,
+            related_abjad_leaves_per_simple_event,
+            attachments_per_type_per_event,
+        )
 
         return quanitisized_abjad_leaves
