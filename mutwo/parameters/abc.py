@@ -1,8 +1,10 @@
 """Abstract base classes for different parameters."""
 
 import abc
+import dataclasses
 import functools
 import math
+import typing
 
 try:
     import quicktions as fractions  # type: ignore
@@ -14,7 +16,7 @@ from mutwo.parameters import volumes_constants
 from mutwo.utilities import constants
 from mutwo.utilities import tools
 
-__all__ = ("Pitch", "Volume")
+__all__ = ("Pitch", "Volume", "PlayingIndicator", "NotationIndicator")
 
 
 class Parameter(abc.ABC):
@@ -142,7 +144,7 @@ class Volume(Parameter):
     """Abstract base class for any volume class.
 
     If the user wants to define a new volume class, the abstract
-    property :attr:`amplitude` has to be overridden.
+    property :attr:`` has to be overridden.
     """
 
     @staticmethod
@@ -289,3 +291,71 @@ class Volume(Parameter):
             return self.amplitude == other.amplitude  # type: ignore
         except AttributeError:
             return False
+
+
+@dataclasses.dataclass()
+class Indicator(Parameter):
+    @property
+    @abc.abstractmethod
+    def is_active(self) -> bool:
+        raise NotImplementedError()
+
+    def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
+        return {
+            key: getattr(self, key) for key in self.__dataclass_fields__.keys()
+        }
+
+
+class PlayingIndicator(Indicator):
+    pass
+
+
+class ExplicitPlayingIndicator(PlayingIndicator):
+    def __init__(self, is_active: bool = False):
+        self.is_active = is_active
+
+    def __repr__(self):
+        return '{}({})'.format(type(self).__name__, self.is_active)
+
+    def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
+        return {'is_active': self.is_active}
+
+    @property
+    def is_active(self) -> bool:
+        return self._is_active
+
+    @is_active.setter
+    def is_active(self, is_active: bool):
+        self._is_active = is_active
+
+
+@dataclasses.dataclass()
+class ImplicitPlayingIndicator(PlayingIndicator):
+    @property
+    def is_active(self) -> bool:
+        return all(
+            tuple(argument is not None for argument in self.get_arguments_dict().values())
+        )
+
+
+class NotationIndicator(Indicator):
+    @property
+    def is_active(self) -> bool:
+        return all(
+            tuple(argument is not None for argument in self.get_arguments_dict().values())
+        )
+
+
+T = typing.TypeVar("T", PlayingIndicator, NotationIndicator)
+
+
+@dataclasses.dataclass(frozen=True)
+class IndicatorCollection(typing.Generic[T]):
+    def get_all_indicator(self) -> typing.Tuple[T, ...]:
+        return tuple(
+            getattr(self, key)
+            for key in self.__dataclass_fields__.keys()  # type: ignore
+        )
+
+    def get_indicator_dict(self) -> typing.Dict[str, Indicator]:
+        return {key: getattr(self, key) for key in self.__dataclass_fields__.keys()}

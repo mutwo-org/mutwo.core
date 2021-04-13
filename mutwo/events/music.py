@@ -45,6 +45,8 @@ class NoteLike(events.basic.SimpleEvent):
         number is smaller than 0, automatically generates a
         :class:`mutwo.parameters.volumes.DecibelVolume` object (and the number
         will be interpreted as decibel).
+    :param playing_indicators:
+    :param notation_indicators:
 
     By default mutwo doesn't differentiate between Tones, Chords and
     Rests, but rather simply implements one general class which can
@@ -69,10 +71,22 @@ class NoteLike(events.basic.SimpleEvent):
         pitch_or_pitches: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
         volume: Volume = 1,
+        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
+        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
+        # before_grace_notes  # TODO(add grace note container!)
+        # after_grace_notes
     ):
+        if playing_indicators is None:
+            playing_indicators = parameters.playing_indicators.PlayingIndicatorCollection()
+
+        if notation_indicators is None:
+            notation_indicators = parameters.notation_indicators.NotationIndicatorCollection()
+
         self.pitch_or_pitches = pitch_or_pitches
         self.volume = volume
         super().__init__(duration)
+        self.playing_indicators = playing_indicators
+        self.notation_indicators = notation_indicators
 
     # ###################################################################### #
     #                          static methods                                #
@@ -162,7 +176,9 @@ class NoteLike(events.basic.SimpleEvent):
     def pitch_or_pitches(self, pitch_or_pitches: typing.Any):
         # make sure pitch_or_pitches always become assigned to a list of pitches,
         # to be certain of the returned type
-        if not isinstance(pitch_or_pitches, str) and isinstance(pitch_or_pitches, typing.Iterable):
+        if not isinstance(pitch_or_pitches, str) and isinstance(
+            pitch_or_pitches, typing.Iterable
+        ):
             # several pitches
             pitches_per_element = (
                 NoteLike._convert_unknown_object_to_pitch(pitch)

@@ -17,9 +17,10 @@ __all__ = (
     "insert_next_to",
     "uniqify_iterable",
     "cyclic_permutations",
-    # "import_module_if_dependency_has_been_installed",  # not for public use
+    # "import_module_if_dependencies_have_been_installed",  # not for public use
     "find_closest_index",
     "find_closest_item",
+    # "class_name_to_object_name",  # not for public use
 )
 
 
@@ -109,7 +110,7 @@ def insert_next_to(
         iterable.insert(index + real_distance, item_to_insert)
 
 
-T = typing.TypeVar('T', bound=constants.Real)
+T = typing.TypeVar("T", bound=constants.Real)
 
 
 def find_closest_index(
@@ -146,7 +147,7 @@ def find_closest_index(
 
     else:
         indices = (solution, solution - 1)
-        differences = tuple(abs(- sorted_research_data[n] + item) for n in indices)
+        differences = tuple(abs(-sorted_research_data[n] + item) for n in indices)
         index = indices[differences.index(min(differences))]  # type: ignore
 
     return research_data.index(sorted_research_data[index])
@@ -176,24 +177,26 @@ def find_closest_item(
     return data[find_closest_index(item, data, key=key)]
 
 
-def import_module_if_dependency_has_been_installed(
-    module: str, dependency: str, import_class: bool = False
+def import_module_if_dependencies_have_been_installed(
+    module: str, dependencies: typing.Tuple[str, ...], import_class: bool = False
 ) -> None:
-    try:
-        importlib.import_module(dependency)
-    except ImportError:
-        message = (
-            "Can't load module '{0}'. Install dependency '{1}' if you want to use"
-            " '{0}'.".format(module, dependency)
-        )
-        warnings.warn(message)
-    else:
-        if import_class:
-            class_name = module.split(".")[-1]
-            return getattr(importlib.import_module(module), class_name)
+    for dependency in dependencies:
+        try:
+            importlib.import_module(dependency)
+        except ImportError:
+            message = (
+                "Can't load module '{0}'. Install dependency '{1}' if you want to use"
+                " '{0}'.".format(module, dependency)
+            )
+            warnings.warn(message)
+            return
 
-        else:
-            importlib.import_module(module)
+    if import_class:
+        class_name = module.split(".")[-1]
+        return getattr(importlib.import_module(module), class_name)
+
+    else:
+        importlib.import_module(module)
 
 
 def uniqify_iterable(
@@ -223,9 +226,7 @@ def uniqify_iterable(
     """
 
     sorted_iterable = sorted(iterable, key=sort_key)
-    result = (
-        key for key, _ in itertools.groupby(sorted_iterable, key=group_by_key)
-    )
+    result = (key for key, _ in itertools.groupby(sorted_iterable, key=group_by_key))
 
     try:
         return type(iterable)(result)  # type: ignore
@@ -258,3 +259,25 @@ def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generat
     return (
         functools.partial(reorder_from_index, i)(sequence) for i in range(len(sequence))
     )
+
+
+def class_name_to_object_name(class_name: str) -> str:
+    """
+
+    MyClassName -> my_class_name
+    """
+    characters = []
+
+    is_first = True
+    for character in class_name:
+        if character.isupper():
+            character = character.lower()
+            if not is_first:
+                character = "_{}".format(character)
+
+        if is_first:
+            is_first = False
+
+        characters.append(character)
+
+    return "".join(characters)

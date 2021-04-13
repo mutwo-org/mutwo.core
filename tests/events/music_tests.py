@@ -92,7 +92,13 @@ class NoteLikeTest(unittest.TestCase):
 
     def test_parameters_to_compare(self):
         note_like = music.NoteLike([pitches.WesternPitch()], 1, 1)
-        expected_parameters_to_compare = ("duration", "pitch_or_pitches", "volume")
+        expected_parameters_to_compare = (
+            "duration",
+            "notation_indicators",
+            "pitch_or_pitches",
+            "playing_indicators",
+            "volume",
+        )
         self.assertEqual(
             note_like._parameters_to_compare, expected_parameters_to_compare
         )

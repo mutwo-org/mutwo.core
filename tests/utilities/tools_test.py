@@ -105,6 +105,14 @@ class ToolsTest(unittest.TestCase):
         for expected_permutation in expected_permutations:
             self.assertEqual(next(permutation_generator), expected_permutation)
 
+    def test_class_name_to_object_name(self):
+        self.assertEqual(
+            tools.class_name_to_object_name("MyClassName"), "my_class_name"
+        )
+        self.assertEqual(
+            tools.class_name_to_object_name("MySecondClassName"), "my_second_class_name"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
