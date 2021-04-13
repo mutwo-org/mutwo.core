@@ -369,11 +369,11 @@ class Ornamentation(playing_indicators.Ornamentation, BangFirstAttachment):
     def _make_markup(self) -> abjad.Markup:
         return abjad.Markup(
             [
-                abjad.MarkupCommand("vspace", -0.25),
-                abjad.MarkupCommand("fontsize", -4),
-                abjad.MarkupCommand("rounded-box", ["{}".format(self.n_times)]),
-                abjad.MarkupCommand("hspace", -0.4),
-                abjad.MarkupCommand(
+                abjad.markups.MarkupCommand("vspace", -0.25),
+                abjad.markups.MarkupCommand("fontsize", -4),
+                abjad.markups.MarkupCommand("rounded-box", ["{}".format(self.n_times)]),
+                abjad.markups.MarkupCommand("hspace", -0.4),
+                abjad.markups.MarkupCommand(
                     "path",
                     0.25,
                     abjad.LilyPondLiteral(
