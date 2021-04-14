@@ -20,6 +20,7 @@ from mutwo import parameters
 
 __all__ = (
     "MutwoPitchToAbjadPitchConverter",
+    "MutwoVolumeToAbjadAttachmentDynamicConverter",
     "SequentialEventToQuantizedAbjadContainerConverter",
     "SequentialEventToAbjadVoiceConverter",
 )
