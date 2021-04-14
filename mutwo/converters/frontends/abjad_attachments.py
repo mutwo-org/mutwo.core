@@ -381,7 +381,7 @@ class MarginMarkup(notation_indicators.MarginMarkup, BangFirstAttachment):
         command = "\\set {}.instrumentName = \\markup ".format(self.context)
         command += "{ " + self.content + " }"
         abjad.attach(
-            abjad.Literal(command), leaf,
+            abjad.LilyPondLiteral(command), leaf,
         )
         return leaf
 
