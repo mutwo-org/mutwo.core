@@ -218,7 +218,7 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
             self.contact_point
         ).markup
         if previous_attachment:
-            if previous_attachment.contact_point == "pizzicato":
+            if previous_attachment.contact_point == "pizzicato":  # type: ignore
                 string_contact_point_markup = abjad.Markup(
                     [
                         abjad.markups.MarkupCommand(
@@ -379,7 +379,7 @@ class Markup(notation_indicators.Markup, BangFirstAttachment):
 class MarginMarkup(notation_indicators.MarginMarkup, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         command = "\\set {}.instrumentName = \\markup ".format(self.context)
-        command += "{ " + self.content + " }"
+        command += "{ " + self.content + " }"  # type: ignore
         abjad.attach(
             abjad.LilyPondLiteral(command), leaf,
         )
@@ -411,7 +411,7 @@ class Ornamentation(playing_indicators.Ornamentation, BangFirstAttachment):
                     "path",
                     0.25,
                     abjad.LilyPondLiteral(
-                        self._direction_to_ornamentation_command[self.direction]
+                        self._direction_to_ornamentation_command[self.direction]  # type: ignore
                     ),
                 ),
             ],

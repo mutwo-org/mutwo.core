@@ -293,7 +293,7 @@ class Volume(Parameter):
             return False
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass()  # type: ignore
 class Indicator(Parameter):
     @property
     @abc.abstractmethod
@@ -302,7 +302,7 @@ class Indicator(Parameter):
 
     def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
         return {
-            key: getattr(self, key) for key in self.__dataclass_fields__.keys()
+            key: getattr(self, key) for key in self.__dataclass_fields__.keys()  # type: ignore
         }
 
 
@@ -315,10 +315,10 @@ class ExplicitPlayingIndicator(PlayingIndicator):
         self.is_active = is_active
 
     def __repr__(self):
-        return '{}({})'.format(type(self).__name__, self.is_active)
+        return "{}({})".format(type(self).__name__, self.is_active)
 
     def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
-        return {'is_active': self.is_active}
+        return {"is_active": self.is_active}
 
     @property
     def is_active(self) -> bool:
@@ -334,7 +334,9 @@ class ImplicitPlayingIndicator(PlayingIndicator):
     @property
     def is_active(self) -> bool:
         return all(
-            tuple(argument is not None for argument in self.get_arguments_dict().values())
+            tuple(
+                argument is not None for argument in self.get_arguments_dict().values()
+            )
         )
 
 
@@ -342,7 +344,9 @@ class NotationIndicator(Indicator):
     @property
     def is_active(self) -> bool:
         return all(
-            tuple(argument is not None for argument in self.get_arguments_dict().values())
+            tuple(
+                argument is not None for argument in self.get_arguments_dict().values()
+            )
         )
 
 
@@ -358,4 +362,4 @@ class IndicatorCollection(typing.Generic[T]):
         )
 
     def get_indicator_dict(self) -> typing.Dict[str, Indicator]:
-        return {key: getattr(self, key) for key in self.__dataclass_fields__.keys()}
+        return {key: getattr(self, key) for key in self.__dataclass_fields__.keys()}  # type: ignore

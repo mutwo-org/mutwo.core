@@ -5,7 +5,7 @@
 
 import typing
 
-import numpy as np
+import numpy as np  # type: ignore
 
 from mutwo import parameters
 from mutwo.utilities import constants
@@ -160,7 +160,7 @@ class WesternVolume(parameters.abc.Volume):
         WesternVolume(mf)
         """
         volume_object = cls("mf")
-        closest_decibel: constants.Real = tools.find_closest_item(
+        closest_decibel: float = tools.find_closest_item(
             decibel,
             tuple(volume_object._decibel_to_standard_dynamic_indicator_mapping.keys()),
         )
@@ -198,7 +198,7 @@ class WesternVolume(parameters.abc.Volume):
 
     @property
     def decibel(self) -> constants.Real:
-        return parameters.volumes_constants.dynamic_indicator_to_decibel[self.name]
+        return self._dynamic_indicator_to_decibel_mapping[self.name]
 
     @property
     def amplitude(self) -> constants.Real:

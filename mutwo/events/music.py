@@ -18,7 +18,7 @@ PitchOrPitches = typing.Union[
     parameters.abc.Pitch, typing.Iterable, constants.Real, None
 ]
 
-Volume = typing.Union[parameters.abc.Volume, constants.Real]
+Volume = typing.Union[parameters.abc.Volume, constants.Real, str]
 
 
 class NoteLike(events.basic.SimpleEvent):
@@ -38,13 +38,15 @@ class NoteLike(events.basic.SimpleEvent):
         The unit of the duration is up to the interpretation of the user and the
         respective converter routine that will be used.
     :param volume: The volume of the event. Can either be a object of
-        :mod:`mutwo.parameters.volumes` or a number. If the number ranges from 0
-        to 1, mutwo automatically generates a
+        :mod:`mutwo.parameters.volumes`, a number or a string. If the number
+        ranges from 0 to 1, mutwo automatically generates a
         :class:`mutwo.parameters.volumes.DirectVolume` object (and the number
         will be interpreted as the amplitude). If the
         number is smaller than 0, automatically generates a
         :class:`mutwo.parameters.volumes.DecibelVolume` object (and the number
-        will be interpreted as decibel).
+        will be interpreted as decibel). If the argument is a string,
+        `mutwo` will try to initialise a :class:`mutwo.parameters.volumes.WesternVolume`
+        object.
     :param playing_indicators:
     :param notation_indicators:
 
