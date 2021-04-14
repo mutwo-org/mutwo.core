@@ -12,8 +12,10 @@ __all__ = (
     "Arpeggio",
     "Pedal",
     "StringContactPoint",
+    "Hairpin",
     "Ornamentation",
     "ArtificalHarmonic",
+    "Fermata",
     "PlayingIndicatorCollection",
 )
 
