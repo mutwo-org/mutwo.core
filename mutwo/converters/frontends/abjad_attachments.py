@@ -224,7 +224,7 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
                     + string_contact_point_markup.contents
                 )
         abjad.attach(
-            abjad.Markup(string_contact_point_markup), leaf,
+            abjad.Markup(string_contact_point_markup, direction='up'), leaf,
         )
         return leaf
 
