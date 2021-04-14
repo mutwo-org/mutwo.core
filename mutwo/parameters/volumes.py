@@ -189,7 +189,7 @@ class WesternVolume(parameters.abc.Volume):
             assert name in parameters.volumes_constants.DYNAMIC_INDICATOR
         except AssertionError:
             message = (
-                "unknown dynamic name '{}'. supported dynamic names are '{}'.".format(
+                "unknown dynamic name '{}'. Supported dynamic names are '{}'.".format(
                     name, parameters.volumes_constants.DYNAMIC_INDICATOR,
                 )
             )
