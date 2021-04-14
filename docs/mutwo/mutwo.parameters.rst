@@ -11,7 +11,9 @@ Submodules are:
    :toctree: parameters
 
    mutwo.parameters.abc
+   mutwo.parameters.notation_indicators
    mutwo.parameters.pitches
+   mutwo.parameters.playing_indicators
    mutwo.parameters.tempos
    mutwo.parameters.volumes
 
