@@ -66,8 +66,6 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         else:
             time_signatures = tuple(time_signatures)
 
-        print(time_signatures)
-
         self._duration_unit = duration_unit
         self._time_signatures = time_signatures
         self._tempo_envelope = tempo_envelope
