@@ -3,6 +3,9 @@
 'Volume' is defined as any object that knows a :attr:`amplitude` attribute.
 """
 
+import typing
+
+import numpy as np
 
 from mutwo import parameters
 from mutwo.utilities import constants
@@ -60,7 +63,8 @@ class WesternVolume(parameters.abc.Volume):
     """Volume with a traditional Western nomenclature.
 
     :param name: Dynamic indicator in traditional Western nomenclature
-        ('f', 'pp', 'mf', 'sfz', etc.).
+        ('f', 'pp', 'mf', 'sfz', etc.). For a list of all supported
+        indicators, see :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR`.
 
     >>> from mutwo.parameters import volumes
     >>> volumes.WesternVolume('fff')
@@ -68,39 +72,125 @@ class WesternVolume(parameters.abc.Volume):
 
     def __init__(self, name: str):
         self.name = name
+        self._standard_dynamic_indicator_to_decibel_mapping = (
+            WesternVolume._make_standard_dynamic_indicator_to_decibel_mapping()
+        )
+        self._dynamic_indicator_to_decibel_mapping = WesternVolume._make_dynamic_indicator_to_decibel_mapping(
+            self._standard_dynamic_indicator_to_decibel_mapping
+        )
+        self._decibel_to_standard_dynamic_indicator_mapping = {
+            decibel: dynamic_indicator
+            for dynamic_indicator, decibel in self._standard_dynamic_indicator_to_decibel_mapping.items()
+        }
 
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, self.name)
 
+    # ###################################################################### #
+    #                      static private methods                            #
+    # ###################################################################### #
+
+    @staticmethod
+    def _make_standard_dynamic_indicator_to_decibel_mapping() -> typing.Dict[
+        str, float
+    ]:
+        return {
+            dynamic_indicator: decibel
+            for dynamic_indicator, decibel in zip(
+                parameters.volumes_constants.STANDARD_DYNAMIC_INDICATOR,
+                np.linspace(
+                    parameters.volumes_constants.MINIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR,
+                    parameters.volumes_constants.MAXIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR,
+                    len(parameters.volumes_constants.STANDARD_DYNAMIC_INDICATOR),
+                    dtype=float,
+                ),
+            )
+        }
+
+    @staticmethod
+    def _make_dynamic_indicator_to_decibel_mapping(
+        standard_dynamic_indicator_to_decibel_mapping: typing.Dict[str, float]
+    ) -> typing.Dict[str, float]:
+        dynamic_indicator_to_decibel_mapping = {}
+        dynamic_indicator_to_decibel_mapping.update(
+            standard_dynamic_indicator_to_decibel_mapping
+        )
+        for (
+            special_dynamic_indicator,
+            standard_dynamic_indicator,
+        ) in (
+            parameters.volumes_constants.SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING.items()
+        ):
+            dynamic_indicator_to_decibel_mapping.update(
+                {
+                    special_dynamic_indicator: dynamic_indicator_to_decibel_mapping[
+                        standard_dynamic_indicator
+                    ]
+                }
+            )
+        return dynamic_indicator_to_decibel_mapping
+
+    # ###################################################################### #
+    #                class methods (alternative constructors)                #
+    # ###################################################################### #
+
     @classmethod
     def from_amplitude(cls, amplitude: constants.Real) -> "WesternVolume":
+        """Initialise `WesternVolume` from amplitude ratio.
+
+        :param amplitude: The amplitude which shall be converted to a `WesternVolume`
+            object.
+
+        >>> from mutwo.parameters import volumes
+        >>> volumes.WesternVolume.from_amplitude(0.05)
+        WesternVolume(mp)
+        """
         decibel = cls.amplitude_ratio_to_decibel(amplitude)
         return cls.from_decibel(decibel)
 
     @classmethod
     def from_decibel(cls, decibel: constants.Real) -> "WesternVolume":
+        """Initialise `WesternVolume` from decibel.
+
+        :param decibel: The decibel which shall be converted to a `WesternVolume`
+            object.
+
+        >>> from mutwo.parameters import volumes
+        >>> volumes.WesternVolume.from_decibel(-24)
+        WesternVolume(mf)
+        """
+        volume_object = cls("mf")
         closest_decibel: constants.Real = tools.find_closest_item(
             decibel,
-            tuple(parameters.volumes_constants.DECIBEL_TO_STANDARD_DYNAMIC_INDICATOR.keys()),
+            tuple(volume_object._decibel_to_standard_dynamic_indicator_mapping.keys()),
         )
-        indicator = parameters.volumes_constants.DECIBEL_TO_STANDARD_DYNAMIC_INDICATOR[
+        indicator = volume_object._decibel_to_standard_dynamic_indicator_mapping[
             closest_decibel
         ]
-        return cls(indicator)
+        volume_object.name = indicator
+        return volume_object
+
+    # ###################################################################### #
+    #                             properties                                 #
+    # ###################################################################### #
 
     @property
     def name(self) -> str:
+        """The western nomenclature name for dynamic.
+
+        For a list of all supported indicators, see
+        :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR`.
+        """
         return self._name
 
     @name.setter
     def name(self, name: str) -> None:
         try:
-            assert name in parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL
+            assert name in parameters.volumes_constants.DYNAMIC_INDICATOR
         except AssertionError:
             message = (
-                "Unknown dynamic name '{}'. Supported dynamic names are '{}'.".format(
-                    name,
-                    parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL.keys(),
+                "unknown dynamic name '{}'. supported dynamic names are '{}'.".format(
+                    name, parameters.volumes_constants.DYNAMIC_INDICATOR,
                 )
             )
             raise ValueError(message)
@@ -108,7 +198,7 @@ class WesternVolume(parameters.abc.Volume):
 
     @property
     def decibel(self) -> constants.Real:
-        return parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL[self.name]
+        return parameters.volumes_constants.dynamic_indicator_to_decibel[self.name]
 
     @property
     def amplitude(self) -> constants.Real:

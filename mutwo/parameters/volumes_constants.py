@@ -2,8 +2,6 @@
 
 """
 
-import numpy as np
-
 MINIMUM_VELOCITY = 0
 """the lowest allowed midi velocity value"""
 
@@ -11,32 +9,27 @@ MAXIMUM_VELOCITY = 127
 """the highest allowed midi velocity value"""
 
 # standard volume indicator
-_dynamic_indicators = "ppppp pppp ppp pp p mp mf f ff fff ffff fffff".split(" ")
-_min_decibel, _max_decibel = -52, 0
-STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL = {
-    dynamic_indicator: decibel
-    for dynamic_indicator, decibel in zip(
-        _dynamic_indicators,
-        np.linspace(_min_decibel, _max_decibel, len(_dynamic_indicators), dtype=float),
-    )
+STANDARD_DYNAMIC_INDICATOR = tuple(
+    "ppppp pppp ppp pp p mp mf f ff fff ffff fffff".split(" ")
+)
+
+MINIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR: float = -52
+"""decibel value for lowest dynamic indicator ('ppppp')"""
+
+MAXIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR: float = 0
+"""decibel value for highest dynamic indicator ('fffff')"""
+
+SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING = {
+    "fp": "mf",
+    "sf": "f",
+    "sff": "ff",
+    "sfz": "ff",
+    "sp": "p",
+    "spp": "pp",
+    "rfz": "f",
 }
 
-# special volume indicator
-SPECIAL_DYNAMIC_INDICATOR_TO_DECIBEL = {
-    "fp": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["mf"],
-    "sf": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["f"],
-    "sff": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["ff"],
-    "sfz": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["ff"],
-    "sp": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["p"],
-    "spp": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["pp"],
-    "rfz": STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL["f"],
-}
-
-DYNAMIC_INDICATOR_TO_DECIBEL = dict(**STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL)
-DYNAMIC_INDICATOR_TO_DECIBEL.update(SPECIAL_DYNAMIC_INDICATOR_TO_DECIBEL)
-
-DECIBEL_TO_STANDARD_DYNAMIC_INDICATOR = {
-    value: key for key, value in STANDARD_DYNAMIC_INDICATOR_TO_DECIBEL.items()
-}
-
-del _dynamic_indicators, np
+DYNAMIC_INDICATOR = STANDARD_DYNAMIC_INDICATOR + tuple(
+    SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING.keys()
+)
+"""all available dynamic indicator for :class:`WesternVolume`"""
