@@ -14,16 +14,25 @@ The following example generates a short midi file:
 
 ```python3
 from mutwo.events import basic, music
-from mutwo.parameters import pitches
 from mutwo.converters import frontends
 simple_melody = basic.SequentialEvent(
     [
-        music.NoteLike(pitches.WesternPitch(pitch_name), duration=0.5, volume=0.75)
-        for pitch_name in ("c", "a", "g", "e")
+        music.NoteLike(pitch_name, duration=0.25, volume='mf')
+        for pitch_name in ("c", "a", "gs", "e")
     ]
 )
 midi_file_converter = frontends.midi.MidiFileConverter('my_simple_melody.mid')
 midi_file_converter.convert(simple_melody)
+```
+
+Making Western notation via [abjad](https://github.com/Abjad/abjad) of the same melody:
+
+```python3
+import abjad
+abjad_voice_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter()
+abjad_voice = abjad_voice_converter.convert(simple_melody)
+abjad_score = abjad.Score([abjad.Staff([abjad_voice])])
+abjad.show(abjad_score)
 ```
 
 ### Documentation
