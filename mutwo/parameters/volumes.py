@@ -11,7 +11,7 @@ from mutwo import parameters
 from mutwo.utilities import constants
 from mutwo.utilities import tools
 
-__all__ = ("DirectVolume", "DecibelVolume")
+__all__ = ("DirectVolume", "DecibelVolume", "WesternVolume")
 
 
 class DirectVolume(parameters.abc.Volume):
