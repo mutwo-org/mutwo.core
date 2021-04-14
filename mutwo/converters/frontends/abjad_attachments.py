@@ -22,6 +22,11 @@ class AbjadAttachment(abc.ABC):
     ) -> typing.Tuple[abjad.Leaf, ...]:
         raise NotImplementedError()
 
+    @property
+    @abc.abstractmethod
+    def is_active(self) -> bool:
+        raise NotImplementedError()
+
 
 class ToggleAttachment(AbjadAttachment):
     @abc.abstractmethod
@@ -259,6 +264,21 @@ class Pedal(playing_indicators.Pedal, ToggleAttachment):
             return leaves
 
 
+class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
+    def process_leaf(
+        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
+    ) -> typing.Tuple[abjad.Leaf, ...]:
+        if self.symbol == '!':
+            abjad.attach(
+                abjad.StopHairpin(), leaf,
+            )
+        else:
+            abjad.attach(
+                abjad.StartHairpin(self.symbol), leaf,
+            )
+        return leaf
+
+
 class BartokPizzicato(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
@@ -393,6 +413,10 @@ class Ornamentation(playing_indicators.Ornamentation, BangFirstAttachment):
 class Dynamic(ToggleAttachment):
     dynamic_indicator: str = "mf"  # TODO(for future usage add typing.Literal)
 
+    @property
+    def is_active(self) -> bool:
+        return True
+
     def process_leaf(
         self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
     ) -> abjad.Leaf:
@@ -405,6 +429,10 @@ class Tempo(ToggleAttachment):
     reference_duration: typing.Tuple[int, int] = (1, 4)
     units_per_minute: float = 60
     textual_indication: typing.Optional[str] = None
+
+    @property
+    def is_active(self) -> bool:
+        return True
 
     def process_leaf(
         self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]

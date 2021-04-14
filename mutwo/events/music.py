@@ -70,7 +70,7 @@ class NoteLike(events.basic.SimpleEvent):
         self,
         pitch_or_pitches: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
-        volume: Volume = 1,
+        volume: Volume = 'mf',
         playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
         notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
         # before_grace_notes  # TODO(add grace note container!)
@@ -207,6 +207,9 @@ class NoteLike(events.basic.SimpleEvent):
                 volume = parameters.volumes.DirectVolume(volume)  # type: ignore
             else:
                 volume = parameters.volumes.DecibelVolume(volume)  # type: ignore
+
+        elif isinstance(volume, str):
+            volume = parameters.volumes.WesternVolume(volume)
 
         elif not isinstance(volume, parameters.abc.Volume):
             message = (

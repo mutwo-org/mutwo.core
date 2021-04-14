@@ -6,6 +6,7 @@
 
 from mutwo import parameters
 from mutwo.utilities import constants
+from mutwo.utilities import tools
 
 __all__ = ("DirectVolume", "DecibelVolume")
 
@@ -27,7 +28,7 @@ class DirectVolume(parameters.abc.Volume):
         return self._amplitude
 
     def __repr__(self) -> str:
-        return "DirectVolume({})".format(self.amplitude)
+        return "{}({})".format(type(self).__name__, self.amplitude)
 
 
 class DecibelVolume(parameters.abc.Volume):
@@ -52,9 +53,63 @@ class DecibelVolume(parameters.abc.Volume):
         return self.decibel_to_amplitude_ratio(self.decibel)
 
     def __repr__(self) -> str:
-        return "DecibelVolume({})".format(self.amplitude)
+        return "{}({})".format(type(self).__name__, self.amplitude)
 
 
 class WesternVolume(parameters.abc.Volume):
-    def __init__(self, indication: str):
-        raise NotImplementedError
+    """Volume with a traditional Western nomenclature.
+
+    :param name: Dynamic indicator in traditional Western nomenclature
+        ('f', 'pp', 'mf', 'sfz', etc.).
+
+    >>> from mutwo.parameters import volumes
+    >>> volumes.WesternVolume('fff')
+    """
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self) -> str:
+        return "{}({})".format(type(self).__name__, self.name)
+
+    @classmethod
+    def from_amplitude(cls, amplitude: constants.Real) -> "WesternVolume":
+        decibel = cls.amplitude_ratio_to_decibel(amplitude)
+        return cls.from_decibel(decibel)
+
+    @classmethod
+    def from_decibel(cls, decibel: constants.Real) -> "WesternVolume":
+        closest_decibel: constants.Real = tools.find_closest_item(
+            decibel,
+            tuple(parameters.volumes_constants.DECIBEL_TO_STANDARD_DYNAMIC_INDICATOR.keys()),
+        )
+        indicator = parameters.volumes_constants.DECIBEL_TO_STANDARD_DYNAMIC_INDICATOR[
+            closest_decibel
+        ]
+        return cls(indicator)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        try:
+            assert name in parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL
+        except AssertionError:
+            message = (
+                "Unknown dynamic name '{}'. Supported dynamic names are '{}'.".format(
+                    name,
+                    parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL.keys(),
+                )
+            )
+            raise ValueError(message)
+        self._name = name
+
+    @property
+    def decibel(self) -> constants.Real:
+        return parameters.volumes_constants.DYNAMIC_INDICATOR_TO_DECIBEL[self.name]
+
+    @property
+    def amplitude(self) -> constants.Real:
+        return self.decibel_to_amplitude_ratio(self.decibel)

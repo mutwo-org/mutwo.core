@@ -66,6 +66,12 @@ class Fermata(parameters.abc.ImplicitPlayingIndicator):
     ] = None  # TODO(for future usage add typing.Literal)
 
 
+@dataclasses.dataclass()
+class Hairpin(parameters.abc.ImplicitPlayingIndicator):
+    # TODO(for future usage add typing.Literal['<', '>', '!')
+    symbol: typing.Optional[str] = None
+
+
 @dataclasses.dataclass(frozen=True)
 class PlayingIndicatorCollection(
     parameters.abc.IndicatorCollection[parameters.abc.PlayingIndicator]
@@ -81,6 +87,7 @@ class PlayingIndicatorCollection(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
     fermata: Fermata = dataclasses.field(default_factory=Fermata)
+    hairpin: Hairpin = dataclasses.field(default_factory=Hairpin)
     natural_harmonic: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
