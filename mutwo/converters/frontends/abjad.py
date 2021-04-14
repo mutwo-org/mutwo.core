@@ -62,9 +62,11 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
             warnings.warn(message)
 
         if time_signatures is None:
-            time_signatures = (abjad.TimeSignature(4, 4),)
+            time_signatures = (abjad.TimeSignature((4, 4)), abjad.TimeSignature((4, 4)))
         else:
             time_signatures = tuple(time_signatures)
+
+        print(time_signatures)
 
         self._duration_unit = duration_unit
         self._time_signatures = time_signatures
@@ -292,7 +294,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter,
+        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = SequentialEventToQuantizedAbjadContainerConverter(),
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], typing.List[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
@@ -415,7 +417,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         self, volume: parameters.abc.Volume
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
         return {
-            "dynamic": self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(volume)
+            "dynamic": self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(
+                volume
+            )
         }
 
     def _get_attachments_for_quantized_abjad_leaves(
