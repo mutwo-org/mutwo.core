@@ -220,11 +220,25 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
         if previous_attachment:
             if previous_attachment.contact_point == "pizzicato":
                 string_contact_point_markup = abjad.Markup(
-                    [abjad.markups.MarkupCommand("caps", "arco")]
-                    + string_contact_point_markup.contents
+                    [
+                        abjad.markups.MarkupCommand(
+                            "caps",
+                            "arco {}".format(
+                                " ".join(
+                                    string_contact_point_markup.contents[0].arguments
+                                )
+                            ),
+                        )
+                    ]
                 )
+
         abjad.attach(
-            abjad.Markup(string_contact_point_markup, direction='up'), leaf,
+            abjad.Markup(
+                [abjad.markups.MarkupCommand("fontsize", -2.4)]
+                + string_contact_point_markup.contents,
+                direction="up",
+            ),
+            leaf,
         )
         return leaf
 
@@ -268,7 +282,7 @@ class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
     ) -> typing.Tuple[abjad.Leaf, ...]:
-        if self.symbol == '!':
+        if self.symbol == "!":
             abjad.attach(
                 abjad.StopHairpin(), leaf,
             )
