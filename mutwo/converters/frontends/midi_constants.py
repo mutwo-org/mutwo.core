@@ -6,7 +6,7 @@ There are basically two types of constants:
     2. Values that are defined by the midi file standard.
 """
 
-import expenvelope  # type: ignroe
+import expenvelope  # type: ignore
 
 from mutwo import parameters
 
