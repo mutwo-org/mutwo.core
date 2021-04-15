@@ -26,7 +26,8 @@ DEFAULT_N_MIDI_CHANNELS_PER_TRACK = 1
 """default value for ``n_midi_channels_per_track`` in `MidiFileConverter`"""
 
 DEFAULT_TEMPO_ENVELOPE: expenvelope.Envelope = expenvelope.Envelope.from_levels_and_durations(
-    levels=[parameters.tempos.TempoPoint(120, 1)]
+    levels=[parameters.tempos.TempoPoint(120, 1), parameters.tempos.TempoPoint(120, 1)],
+    durations=[1],
 )
 """default value for ``tempo_envelope`` in `MidiFileConverter`"""
 
