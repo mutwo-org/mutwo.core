@@ -72,17 +72,21 @@ class NoteLike(events.basic.SimpleEvent):
         self,
         pitch_or_pitches: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
-        volume: Volume = 'mf',
+        volume: Volume = "mf",
         playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
         notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
         # before_grace_notes  # TODO(add grace note container!)
         # after_grace_notes
     ):
         if playing_indicators is None:
-            playing_indicators = parameters.playing_indicators.PlayingIndicatorCollection()
+            playing_indicators = (
+                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
+            )
 
         if notation_indicators is None:
-            notation_indicators = parameters.notation_indicators.NotationIndicatorCollection()
+            notation_indicators = (
+                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
+            )
 
         self.pitch_or_pitches = pitch_or_pitches
         self.volume = volume

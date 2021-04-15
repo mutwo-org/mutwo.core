@@ -15,12 +15,9 @@ Submodules are:
    mutwo.events.music
   
    
-   
+Submodules that contain constants are:
 
-   
-   
-   
+.. autosummary::
+   :toctree: parameters
 
-   
-   
-   
+   mutwo.events.music_constants
