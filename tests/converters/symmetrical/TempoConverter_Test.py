@@ -8,27 +8,12 @@ from mutwo.parameters import tempos
 
 
 class TempoConverterTest(unittest.TestCase):
-    def test_make_envelope(self):
-        tempo_events = basic.SequentialEvent(
-            [
-                basic.EnvelopeEvent(4, tempos.TempoPoint(60)),
-                basic.EnvelopeEvent(
-                    3, tempos.TempoPoint(50), tempos.TempoPoint(60), curve_shape=1
-                ),
-            ]
-        )
-        envelope = converters.symmetrical.TempoConverter._make_envelope_from_tempo_events(
-            tempo_events
-        )
-        expected_envelope = expenvelope.Envelope.from_levels_and_durations(
-            (1, 1, 1.2, 1), (4, 1e-100, 3 - 1e-100), (0, 0, 1)
-        )
-        self.assertEqual(envelope, expected_envelope)
-
     def test_convert_simple_event(self):
-        tempo_events = basic.SequentialEvent([basic.EnvelopeEvent(4, 30, 60)])
+        tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+            levels=[30, 60], durations=[4]
+        )
         simple_event = basic.SimpleEvent(4)
-        converter = converters.symmetrical.TempoConverter(tempo_events)
+        converter = converters.symmetrical.TempoConverter(tempo_envelope)
         converted_simple_event = converter.convert(simple_event)
         expected_duration = 6
         self.assertEqual(converted_simple_event.duration, expected_duration)
@@ -37,21 +22,24 @@ class TempoConverterTest(unittest.TestCase):
         sequential_event = basic.SequentialEvent(
             [basic.SimpleEvent(2) for _ in range(5)]
         )
-        tempo_events = basic.SequentialEvent(
-            [
-                basic.EnvelopeEvent(2, tempos.TempoPoint(30)),
-                basic.EnvelopeEvent(1, tempos.TempoPoint(60)),
-                basic.EnvelopeEvent(1, tempos.TempoPoint(30)),
-                basic.EnvelopeEvent(2, tempos.TempoPoint(30), tempos.TempoPoint(60)),
-                basic.EnvelopeEvent(
-                    2, tempos.TempoPoint(30), tempos.TempoPoint(60), curve_shape=10
-                ),
-                basic.EnvelopeEvent(
-                    2, tempos.TempoPoint(30), tempos.TempoPoint(60), curve_shape=-10
-                ),
-            ]
+        tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+            levels=[
+                30,
+                tempos.TempoPoint(30),
+                60,
+                tempos.TempoPoint(60),
+                30,
+                30,
+                60,
+                30,
+                60,
+                tempos.TempoPoint(30, reference=1),
+                tempos.TempoPoint(30, reference=2),  # -> 60 BPM for ref=1
+            ],
+            durations=[2, 0, 1, 0, 1, 2, 0, 2, 0, 2],
+            curve_shapes=[0, 0, 0, 0, 0, 0, 0, 10, 0, -10],
         )
-        converter = converters.symmetrical.TempoConverter(tempo_events)
+        converter = converters.symmetrical.TempoConverter(tempo_envelope)
         converted_sequential_event = converter.convert(sequential_event)
         expected_durations = (4, 3, 3, 3.8000908039820196, 2.1999091960179804)
         self.assertEqual(
@@ -59,13 +47,15 @@ class TempoConverterTest(unittest.TestCase):
         )
 
     def test_convert_simultaneous_event(self):
-        tempo_events = basic.SequentialEvent([basic.EnvelopeEvent(4, 30, 60)])
+        tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+            levels=[30, 60], durations=[4]
+        )
         simple_event0 = basic.SimpleEvent(4)
         simple_event1 = basic.SimpleEvent(8)
         simultaneous_event = basic.SimultaneousEvent(
             [simple_event0, simple_event0, simple_event1]
         )
-        converter = converters.symmetrical.TempoConverter(tempo_events)
+        converter = converters.symmetrical.TempoConverter(tempo_envelope)
         converted_simultaneous_event = converter.convert(simultaneous_event)
         expected_duration0 = simultaneous_event[0].duration * 1.5
         expected_duration1 = 10

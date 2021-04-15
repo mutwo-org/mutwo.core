@@ -6,7 +6,8 @@ There are basically two types of constants:
     2. Values that are defined by the midi file standard.
 """
 
-from mutwo import events
+import expenvelope  # type: ignroe
+
 from mutwo import parameters
 
 DEFAULT_AVAILABLE_MIDI_CHANNELS = tuple(range(16))
@@ -24,12 +25,10 @@ DEFAULT_MIDI_INSTRUMENT_NAME = "Acoustic Grand Piano"
 DEFAULT_N_MIDI_CHANNELS_PER_TRACK = 1
 """default value for ``n_midi_channels_per_track`` in `MidiFileConverter`"""
 
-DEFAULT_TEMPO_EVENTS: events.basic.SequentialEvent[
-    events.basic.EnvelopeEvent
-] = events.basic.SequentialEvent(
-    [events.basic.EnvelopeEvent(1, parameters.tempos.TempoPoint(120, 1))]
+DEFAULT_TEMPO_ENVELOPE: expenvelope.Envelope = expenvelope.Envelope.from_levels_and_durations(
+    levels=[parameters.tempos.TempoPoint(120, 1)]
 )
-"""default value for ``tempo_events`` in `MidiFileConverter`"""
+"""default value for ``tempo_envelope`` in `MidiFileConverter`"""
 
 DEFAULT_TICKS_PER_BEAT = 480
 """default value for ``ticks_per_beat`` in `MidiFileConverter`"""

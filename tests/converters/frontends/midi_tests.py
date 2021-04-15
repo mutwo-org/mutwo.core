@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 
+import expenvelope  # type: ignore
 import mido  # type: ignore
 
 # events
@@ -15,6 +16,8 @@ from mutwo.converters.frontends import midi_constants
 # parameters
 from mutwo.parameters import pitches
 from mutwo.parameters import volumes
+
+from mutwo.utilities import tools
 
 
 class MidiFileConverterTest(unittest.TestCase):
@@ -69,20 +72,22 @@ class MidiFileConverterTest(unittest.TestCase):
 
     def test_adjust_beat_length_in_microseconds(self):
         # should return the same number
-        tempo_event0 = basic.EnvelopeEvent(4, mido.bpm2tempo(40))
+        tempo_point = 40
+        beat_length_in_microseconds = mido.bpm2tempo(tempo_point)
         self.assertEqual(
             midi.MidiFileConverter._adjust_beat_length_in_microseconds(
-                tempo_event0, tempo_event0.object_start
+                tempo_point, beat_length_in_microseconds
             ),
-            tempo_event0.object_start,
+            beat_length_in_microseconds,
         )
 
         # should return MAXIMUM_MICROSECONDS_PER_BEAT, because bpm 3
         # is already too slow
-        tempo_event1 = basic.EnvelopeEvent(4, mido.bpm2tempo(3))
+        tempo_point = 3
+        beat_length_in_microseconds = mido.bpm2tempo(tempo_point)
         self.assertEqual(
             midi.MidiFileConverter._adjust_beat_length_in_microseconds(
-                tempo_event1, tempo_event1.object_start
+                tempo_point, beat_length_in_microseconds
             ),
             midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT,
         )
@@ -222,29 +227,27 @@ class MidiFileConverterTest(unittest.TestCase):
                 self.converter._tune_pitch(*data_to_tune), expected_midi_data
             )
 
-    def test_tempo_events_to_midi_messages(self):
-        tempo_events = basic.SequentialEvent(
-            [
-                basic.EnvelopeEvent(2, 60),
-                basic.EnvelopeEvent(3, 40),
-                basic.EnvelopeEvent(2, 100),
-            ]
+    def test_tempo_envelope_to_midi_messages(self):
+        tempo_envelope = expenvelope.Envelope.from_points(
+            (2, 60), (0, 60), (3, 40), (0, 40), (2, 100)
         )
         midi_messages = tuple(
             mido.MetaMessage(
                 "set_tempo",
                 tempo=self.converter._beats_per_minute_to_beat_length_in_microseconds(
-                    tempo_event.object_start
+                    level
                 ),
                 time=absolute_time * midi_constants.DEFAULT_TICKS_PER_BEAT,
             )
-            for absolute_time, tempo_event in zip(
-                tempo_events.absolute_times, tempo_events
+            for absolute_time, level in zip(
+                tools.accumulate_from_zero(tempo_envelope.durations),
+                tempo_envelope.levels,
             )
         )
 
         self.assertEqual(
-            self.converter._tempo_events_to_midi_messages(tempo_events), midi_messages
+            self.converter._tempo_envelope_to_midi_messages(tempo_envelope),
+            midi_messages,
         )
 
     def test_note_information_to_midi_messages(self):

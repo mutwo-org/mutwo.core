@@ -8,6 +8,7 @@ import operator
 import typing
 import warnings
 
+import expenvelope  # type: ignore
 import mido  # type: ignore
 
 from mutwo.converters import abc
@@ -93,7 +94,7 @@ class MidiFileConverter(abc.Converter):
         documentation: "Typical values range from 96 to 480 but some use even more
         ticks per beat".
     :param instrument_name: Sets the midi instrument of all channels.
-    :param tempo_events: All Midi files should specify their tempo. The default
+    :param tempo_envelope: All Midi files should specify their tempo. The default
         value of mutwo is 120 BPM (this is also the value that is assumed by any
         midi-file-reading-software if no tempo has been specified). Tempo changes
         are supported (and will be written to the resulting midi file).
@@ -135,7 +136,7 @@ class MidiFileConverter(abc.Converter):
         maximum_pitch_bend_deviation: float = None,
         ticks_per_beat: int = None,
         instrument_name: str = None,
-        tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent] = None,
+        tempo_envelope: expenvelope.Envelope = None,
     ):
         # TODO(find a less redundant way of setting default values)
         # set current default values if parameters aren't defined
@@ -159,8 +160,8 @@ class MidiFileConverter(abc.Converter):
         if instrument_name is None:
             instrument_name = midi_constants.DEFAULT_MIDI_INSTRUMENT_NAME
 
-        if tempo_events is None:
-            tempo_events = midi_constants.DEFAULT_TEMPO_EVENTS
+        if tempo_envelope is None:
+            tempo_envelope = midi_constants.DEFAULT_TEMPO_ENVELOPE
 
         # check for correct values of midi specifications (have to be correct to be
         # able to write a readable midi file)
@@ -182,7 +183,7 @@ class MidiFileConverter(abc.Converter):
         self._ticks_per_beat = ticks_per_beat
         self._instrument_name = instrument_name
 
-        self._tempo_events = tempo_events
+        self._tempo_envelope = tempo_envelope
 
         self._pitch_bending_warning = (
             "Maximum pitch bending is {} cents up or down!".format(
@@ -233,7 +234,10 @@ class MidiFileConverter(abc.Converter):
 
     @staticmethod
     def _adjust_beat_length_in_microseconds(
-        tempo_event: events.basic.EnvelopeEvent, beat_length_in_microseconds: int
+        tempo_point: typing.Union[
+            utilities.constants.Real, parameters.tempos.TempoPoint
+        ],
+        beat_length_in_microseconds: int,
     ) -> int:
         """This method makes sure that ``beat_length_in_microseconds`` isn't too big.
 
@@ -244,9 +248,8 @@ class MidiFileConverter(abc.Converter):
 
         if beat_length_in_microseconds >= midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT:
             beat_length_in_microseconds = midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT
-            message = (
-                "TempoPoint '{}' of TempoEvent '{}' is too slow for Standard Midi"
-                " Files. ".format(tempo_event.object_start, tempo_event)
+            message = "TempoPoint '{}' is too slow for Standard Midi Files. ".format(
+                tempo_point
             )
             message += (
                 "The slowest possible tempo is '{0}' BPM. Tempo has been set to"
@@ -367,27 +370,22 @@ class MidiFileConverter(abc.Converter):
     #             methods for converting mutwo data to midi data             #
     # ###################################################################### #
 
-    def _tempo_events_to_midi_messages(
-        self, tempo_events: events.basic.SequentialEvent[events.basic.EnvelopeEvent]
+    def _tempo_envelope_to_midi_messages(
+        self, tempo_envelope: expenvelope.Envelope
     ) -> typing.Tuple[mido.MetaMessage, ...]:
         """Converts a SequentialEvent of ``EnvelopeEvent`` to midi Tempo messages."""
 
-        # reveal_type(tempo_events)
-        # reveal_type(tempo_events[0])
-
-        tempo_events[0].object_start
+        absolute_times = utilities.tools.accumulate_from_zero(tempo_envelope.durations)
 
         midi_messages = []
-        for absolute_time, tempo_event in zip(
-            tempo_events.absolute_times, tempo_events
-        ):
+        for absolute_time, tempo_point in zip(absolute_times, tempo_envelope.levels):
             absolute_tick = self._beats_to_ticks(absolute_time)
             beat_length_in_microseconds = self._beats_per_minute_to_beat_length_in_microseconds(
-                tempo_event.object_start
+                tempo_point
             )
 
             beat_length_in_microseconds = MidiFileConverter._adjust_beat_length_in_microseconds(
-                tempo_event, beat_length_in_microseconds
+                tempo_point, beat_length_in_microseconds
             )
 
             tempo_message = mido.MetaMessage(
@@ -557,7 +555,7 @@ class MidiFileConverter(abc.Converter):
         if is_first_track:
             # standard time signature 4/4
             track.append(mido.MetaMessage("time_signature", numerator=4, denominator=4))
-            midi_data += self._tempo_events_to_midi_messages(self._tempo_events)
+            midi_data += self._tempo_envelope_to_midi_messages(self._tempo_envelope)
 
         # sort midi data
         sorted_midi_data = sorted(midi_data, key=lambda message: message.time)

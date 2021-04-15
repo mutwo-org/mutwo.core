@@ -104,97 +104,59 @@ class TempoPointConverter(converters.abc.Converter):
         )
 
 
-TempoEvents = events.basic.SequentialEvent[events.basic.EnvelopeEvent]
+TempoEvents = expenvelope.Envelope
 
 
 class TempoConverter(converters.abc.EventConverter):
     """Class for applying tempo curves on mutwo events.
 
-    :param tempo_events: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a
-        :class:`mutwo.events.basic.SequentialEvent` that is filled with
-        :class:`mutwo.events.basic.EnvelopeEvent` objects. Each
-        :class:`mutwo.events.basic.EnvelopeEvent` can either be initialised via
-        numbers for start and end attributes (the numbers will be interpreted as BPM
-        [beats per minute]) or via :class:`mutwo.parameters.tempos.TempoPoint` objects.
+    :param tempo_envelope: The tempo curve that shall be applied on the
+        mutwo events. This is expected to be a :class:`expenvelope.Envelope`
+        which levels arefilled with numbers that will be interpreted as BPM
+        [beats per minute]) or with :class:`mutwo.parameters.tempos.TempoPoint`
+        objects.
 
     **Example:**
 
+    >>> import expenvelope
     >>> from mutwo.converters import symmetrical
-    >>> from mutwo.events import basic
     >>> from mutwo.parameters import tempos
-    >>> tempo_events = basic.SequentialEvent(
-    >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
-    >>>      basic.EnvelopeEvent(2, 30, 50),                 # acc. from 30 to 50
-    >>>      basic.EnvelopeEvent(5, 50)]                     # stay on bpm = 50
+    >>> tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+    >>>     levels=[tempos.TempoPoint(60), 60, 30, 50],
+    >>>     durations=[3, 0, 2],
     >>> )
     >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
     """
 
     _tempo_point_converter = TempoPointConverter()
 
-    def __init__(self, tempo_events: TempoEvents):
-        self.tempo_events = tempo_events
+    def __init__(self, tempo_envelope: expenvelope.Envelope):
+        self._envelope = TempoConverter._tempo_envelope_to_beat_length_in_seconds_envelope(
+            tempo_envelope
+        )
 
     # ###################################################################### #
     #                          static methods                                #
     # ###################################################################### #
 
     @staticmethod
-    def _find_beat_length_at_start_and_end(
-        tempo_event: events.basic.EnvelopeEvent,
-    ) -> typing.List[float]:
-        """Extracts the beat-length-in-seconds at start and end of a TempoEvent."""
-        beat_length_at_start_and_end = [
-            TempoConverter._tempo_point_converter.convert(tempo_point)
-            for tempo_point in (tempo_event.object_start, tempo_event.object_stop)
-        ]
-        return beat_length_at_start_and_end
-
-    @staticmethod
-    def _make_envelope_from_tempo_events(
-        tempo_events: TempoEvents,
+    def _tempo_envelope_to_beat_length_in_seconds_envelope(
+        tempo_envelope: expenvelope.Envelope,
     ) -> expenvelope.Envelope:
-        """Convert a list of TempoEvents to an Envelope."""
+        """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
 
-        levels: typing.List[typing.List[float]] = []
-        durations = []
-        curve_shapes = []
-        is_first = True
-        for tempo_event in tempo_events:
-            if is_first:
-                is_first = False
-            else:
-                durations.append(1e-100)
-                curve_shapes.append(0)
-
-            beat_length_at_start_and_end = TempoConverter._find_beat_length_at_start_and_end(
-                tempo_event  # type: ignore
+        levels: typing.List[float] = []
+        for tempo_point in tempo_envelope.levels:
+            beat_length_in_seconds = TempoConverter._tempo_point_converter.convert(
+                tempo_point
             )
-            levels.extend(beat_length_at_start_and_end)  # type: ignore
-            durations.append(tempo_event.duration - 1e-100)
-            curve_shapes.append(tempo_event.curve_shape)  # type: ignore
+            levels.append(beat_length_in_seconds)
+
+        print(levels, tempo_envelope.durations, tempo_envelope.curve_shapes)
 
         return expenvelope.Envelope.from_levels_and_durations(
-            levels, durations, curve_shapes
+            levels, tempo_envelope.durations, tempo_envelope.curve_shapes
         )
-
-    # ###################################################################### #
-    #                           properties                                   #
-    # ###################################################################### #
-
-    @property
-    def tempo_events(self) -> TempoEvents:
-        return self._tempo_events
-
-    @tempo_events.setter
-    def tempo_events(self, tempo_events: TempoEvents):
-        self._tempo_events: TempoEvents = events.basic.SequentialEvent(tempo_events)
-        self._envelope = self._make_envelope_from_tempo_events(self.tempo_events)
-
-    @property
-    def envelope(self) -> expenvelope.Envelope:
-        return self._envelope
 
     # ###################################################################### #
     #                         private methods                                #
@@ -205,7 +167,7 @@ class TempoConverter(converters.abc.EventConverter):
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> typing.Tuple[typing.Any, ...]:
-        simple_event.duration = self.envelope.integrate_interval(
+        simple_event.duration = self._envelope.integrate_interval(
             absolute_entry_delay, simple_event.duration + absolute_entry_delay
         )
         return tuple([])
