@@ -17,11 +17,16 @@ from mutwo.events import basic, music
 from mutwo.converters import frontends
 simple_melody = basic.SequentialEvent(
     [
-        music.NoteLike(pitch_name, duration=0.25, volume='mf')
-        for pitch_name in ("c", "a", "gs", "e")
+        music.NoteLike(pitch_name, duration=duration, volume="mf")
+        for pitch_name, duration in (
+            ("c", 0.75),
+            ("a", 0.25),
+            ("g", 1 / 6),
+            ("es", 1 / 12),
+        )
     ]
 )
-midi_file_converter = frontends.midi.MidiFileConverter('my_simple_melody.mid')
+midi_file_converter = frontends.midi.MidiFileConverter("my_simple_melody.mid")
 midi_file_converter.convert(simple_melody)
 ```
 
@@ -34,6 +39,9 @@ abjad_voice = abjad_voice_converter.convert(simple_melody)
 abjad_score = abjad.Score([abjad.Staff([abjad_voice])])
 abjad.show(abjad_score)
 ```
+
+[Lilypond engraving](docs/pictures/readme_abjad_example.png)
+
 
 ### Documentation
 
