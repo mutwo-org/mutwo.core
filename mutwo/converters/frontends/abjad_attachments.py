@@ -439,24 +439,47 @@ class Dynamic(ToggleAttachment):
 
 
 @dataclasses.dataclass()
-class Tempo(ToggleAttachment):
-    reference_duration: typing.Tuple[int, int] = (1, 4)
-    units_per_minute: float = 60
+class Tempo(BangFirstAttachment):
+    reference_duration: typing.Optional[typing.Tuple[int, int]] = (1, 4)
+    units_per_minute: typing.Optional[int] = 60
     textual_indication: typing.Optional[str] = None
+    # TODO(for future usage add typing.Literal['rit.', 'acc.'])
+    dynamic_change_indication: typing.Optional[str] = None
+    stop_dynamic_change_indicaton: bool = False
+    print_metronome_mark: bool = True
 
     @property
     def is_active(self) -> bool:
         return True
 
-    def process_leaf(
-        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
-    ) -> abjad.Leaf:
-        abjad.attach(
-            abjad.MetronomeMark(
-                reference_duration=self.reference_duration,
-                units_per_minute=self.units_per_minute,
-                textual_indication=self.textual_indication,
-            ),
-            leaf,
-        )
+    def _attach_metronome_mark(self, leaf: abjad.Leaf) -> None:
+        if self.print_metronome_mark:
+            abjad.attach(
+                abjad.MetronomeMark(
+                    reference_duration=self.reference_duration,
+                    units_per_minute=self.units_per_minute,
+                    textual_indication=self.textual_indication,
+                ),
+                leaf,
+            )
+
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        self._attach_metronome_mark(leaf)
+
+        if self.dynamic_change_indication is not None:
+            dynamic_change_indication = abjad.StartTextSpan(
+                left_text=abjad.Markup(self.dynamic_change_indication)
+            )
+            abjad.attach(dynamic_change_indication, leaf)
+
+        return leaf
+
+
+class DynamicChangeIndicationStop(BangFirstAttachment):
+    @property
+    def is_active(self) -> bool:
+        return True
+
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        abjad.attach(abjad.StopTextSpan(), leaf)
         return leaf

@@ -5,8 +5,14 @@
     is still in development.
 """
 
+import abc
 import typing
 import warnings
+
+try:
+    import quicktions as fractions  # type: ignore
+except ImportError:
+    import fractions  # type: ignore
 
 import abjad  # type: ignore
 from abjadext import nauert  # type: ignore
@@ -15,12 +21,17 @@ import expenvelope  # type: ignore
 from mutwo.converters import abc as converters_abc
 from mutwo.converters.frontends import abjad_attachments
 from mutwo.converters.frontends import abjad_constants
+
 from mutwo import events
 from mutwo import parameters
+
+from mutwo.utilities import constants
+from mutwo.utilities import tools
 
 __all__ = (
     "MutwoPitchToAbjadPitchConverter",
     "MutwoVolumeToAbjadAttachmentDynamicConverter",
+    "ComplexTempoEnvelopeToAbjadAttachmentTempoConverter",
     "SequentialEventToQuantizedAbjadContainerConverter",
     "SequentialEventToAbjadVoiceConverter",
 )
@@ -45,6 +56,222 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
         return abjad_attachments.Dynamic(dynamic_indicator=volume_to_convert.name)
 
 
+class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
+    @abc.abstractmethod
+    def convert(
+        self, tempo_envelope_to_convert: expenvelope.Envelope
+    ) -> typing.Tuple[typing.Tuple[constants.Real, abjad_attachments.Tempo], ...]:
+        # return tuple filled with subtuples (leaf_index, abjad_attachments.Tempo)
+        raise NotImplementedError()
+
+
+class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
+    TempoEnvelopeToAbjadAttachmentTempoConverter
+):
+    # ###################################################################### #
+    #                     private static methods                             #
+    # ###################################################################### #
+
+    @staticmethod
+    def _convert_tempo_points(
+        tempo_points: typing.Tuple[
+            typing.Union[constants.Real, parameters.tempos.TempoPoint], ...
+        ]
+    ) -> typing.Tuple[parameters.tempos.TempoPoint, ...]:
+        return tuple(
+            tempo_point
+            if isinstance(tempo_point, parameters.tempos.TempoPoint)
+            else parameters.tempos.TempoPoint(float(tempo_point))
+            for tempo_point in tempo_points
+        )
+
+    @staticmethod
+    def _find_dynamic_change_indication(
+        tempo_point: parameters.tempos.TempoPoint,
+        next_tempo_point: typing.Optional[parameters.tempos.TempoPoint],
+    ) -> typing.Optional[str]:
+        dynamic_change_indication = None
+        if next_tempo_point:
+            absolute_tempo_for_current_tempo_point = (
+                tempo_point.absolute_tempo_in_beat_per_minute
+            )
+            absolute_tempo_for_next_tempo_point = (
+                next_tempo_point.absolute_tempo_in_beat_per_minute
+            )
+            if (
+                absolute_tempo_for_current_tempo_point
+                > absolute_tempo_for_next_tempo_point
+            ):
+                dynamic_change_indication = "rit."
+            elif (
+                absolute_tempo_for_current_tempo_point
+                < absolute_tempo_for_next_tempo_point
+            ):
+                dynamic_change_indication = "acc."
+
+        return dynamic_change_indication
+
+    @staticmethod
+    def _shall_write_metronome_mark(
+        tempo_envelope_to_convert: expenvelope.Envelope,
+        nth_tempo_point: int,
+        tempo_point: parameters.tempos.TempoPoint,
+        tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
+    ) -> bool:
+        write_metronome_mark = True
+        for previous_tempo_point, previous_tempo_point_duration in zip(
+            reversed(tempo_points[:nth_tempo_point]),
+            reversed(tempo_envelope_to_convert.durations[:nth_tempo_point]),
+        ):
+            # make sure the previous tempo point could have been written
+            # down (longer duration than minimal duration)
+            if previous_tempo_point_duration > 0:
+                # if the previous writeable MetronomeMark has the same
+                # beats per minute than the current event, there is no
+                # need to write it down again
+                if (
+                    previous_tempo_point.absolute_tempo_in_beat_per_minute
+                    == tempo_point.absolute_tempo_in_beat_per_minute
+                ):
+                    write_metronome_mark = False
+                    break
+
+                # but if it differs, we should definitely write it down
+                else:
+                    break
+
+        return write_metronome_mark
+
+    @staticmethod
+    def _shall_stop_dynamic_change_indication(
+        converted_tempo_points: typing.Tuple[abjad_attachments.Tempo, ...]
+    ) -> bool:
+        stop_dynamic_change_indicaton = False
+        for _, previous_tempo_point in reversed(converted_tempo_points):
+            # make sure the previous tempo point could have been written
+            # down (longer duration than minimal duration)
+            if previous_tempo_point.dynamic_change_indication is not None:
+                stop_dynamic_change_indicaton = True
+            break
+
+        return stop_dynamic_change_indicaton
+
+    @staticmethod
+    def _find_metronome_mark_values(
+        write_metronome_mark: bool,
+        tempo_point: parameters.tempos.TempoPoint,
+        stop_dynamic_change_indicaton: bool,
+    ) -> typing.Tuple[
+        typing.Optional[typing.Tuple[int, int]],
+        typing.Optional[float],
+        typing.Optional[str],
+    ]:
+        if write_metronome_mark:
+            textual_indication: typing.Optional[str] = tempo_point.textual_indication
+            reference = fractions.Fraction(tempo_point.reference) * fractions.Fraction(
+                1, 4
+            )
+            reference_duration: typing.Optional[typing.Tuple[int, int]] = (
+                reference.numerator,
+                reference.denominator,
+            )
+            units_per_minute: typing.Optional[int] = int(
+                tempo_point.tempo_in_beats_per_minute
+            )
+
+        else:
+            reference_duration = None
+            units_per_minute = None
+            # check if you can write 'a tempo'
+            if stop_dynamic_change_indicaton:
+                textual_indication = "a tempo"
+            else:
+                textual_indication = None
+
+        return reference_duration, units_per_minute, textual_indication
+
+    @staticmethod
+    def _process_tempo_event(
+        tempo_envelope_to_convert: expenvelope.Envelope,
+        nth_tempo_point: int,
+        tempo_point: parameters.tempos.TempoPoint,
+        tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
+        converted_tempo_points: typing.Tuple[abjad_attachments.Tempo, ...],
+    ) -> abjad_attachments.Tempo:
+        try:
+            next_tempo_point: typing.Optional[
+                parameters.tempos.TempoPoint
+            ] = tempo_points[nth_tempo_point + 1]
+        except IndexError:
+            next_tempo_point = None
+
+        # check for dynamic_change_indication
+        dynamic_change_indication = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_dynamic_change_indication(
+            tempo_point, next_tempo_point
+        )
+        write_metronome_mark = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_write_metronome_mark(
+            tempo_envelope_to_convert, nth_tempo_point, tempo_point, tempo_points,
+        )
+
+        stop_dynamic_change_indicaton = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
+            converted_tempo_points
+        )
+
+        (
+            reference_duration,
+            units_per_minute,
+            textual_indication,
+        ) = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._find_metronome_mark_values(
+            write_metronome_mark, tempo_point, stop_dynamic_change_indicaton
+        )
+
+        # for writing 'a tempo'
+        if textual_indication == "a tempo":
+            write_metronome_mark = True
+
+        converted_tempo_point = abjad_attachments.Tempo(
+            reference_duration=reference_duration,
+            units_per_minute=units_per_minute,
+            textual_indication=textual_indication,
+            dynamic_change_indication=dynamic_change_indication,
+            stop_dynamic_change_indicaton=stop_dynamic_change_indicaton,
+            print_metronome_mark=write_metronome_mark,
+        )
+
+        return converted_tempo_point
+
+    # ###################################################################### #
+    #                           public api                                   #
+    # ###################################################################### #
+
+    def convert(
+        self, tempo_envelope_to_convert: expenvelope.Envelope
+    ) -> typing.Tuple[typing.Tuple[constants.Real, abjad_attachments.Tempo], ...]:
+        tempo_points = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_points(
+            tempo_envelope_to_convert.levels
+        )
+
+        tempo_attachments = []
+        for nth_tempo_point, absolute_time, duration, tempo_point in zip(
+            range(len(tempo_points)),
+            tools.accumulate_from_zero(tempo_envelope_to_convert.durations),
+            tempo_envelope_to_convert.durations + (1,),
+            tempo_points,
+        ):
+
+            if duration > 0:
+                tempo_attachment = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._process_tempo_event(
+                    tempo_envelope_to_convert,
+                    nth_tempo_point,
+                    tempo_point,
+                    tempo_points,
+                    tuple(tempo_attachments),
+                )
+                tempo_attachments.append((absolute_time, tempo_attachment))
+
+        return tuple(tempo_attachments)
+
+
 class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
     def __init__(
         self,
@@ -67,6 +294,12 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         else:
             time_signatures = tuple(time_signatures)
 
+        if tempo_envelope is None:
+            tempo_envelope = expenvelope.Envelope.from_points(
+                (0, parameters.tempos.TempoPoint(120)),
+                (0, parameters.tempos.TempoPoint(120)),
+            )
+
         self._duration_unit = duration_unit
         self._time_signatures = time_signatures
         self._tempo_envelope = tempo_envelope
@@ -83,7 +316,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
     def _get_respective_q_event_from_abjad_leaf(
         abjad_leaf: typing.Union[abjad.Rest, abjad.Note]
     ) -> typing.Optional[nauert.QEvent]:
-        # TODO(improve ugly code)
+        # TODO(improve ugly, heuristic, unreliable code)
         try:
             return abjad.get.indicators(abjad_leaf)[0]["q_events"][0]
         except TypeError:
@@ -322,6 +555,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         == 0,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter = MutwoVolumeToAbjadAttachmentDynamicConverter(),
+        tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
     ):
         self._sequential_event_to_quantized_abjad_container_converter = (
             sequential_event_to_quantized_abjad_container_converter
@@ -336,6 +570,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         )
         self._mutwo_volume_to_abjad_attachment_dynamic_converter = (
             mutwo_volume_to_abjad_attachment_dynamic_converter
+        )
+        self._tempo_attachments = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
+            self._sequential_event_to_quantized_abjad_container_converter._tempo_envelope
         )
 
     # ###################################################################### #
@@ -408,6 +645,18 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             notation_indicators, abjad_constants.NOTATION_INDICATOR_TO_ABJAD_ATTACHMENT
         )
 
+    @staticmethod
+    def _find_absolute_times_of_abjad_leaves(
+        abjad_voice: abjad.Voice,
+    ) -> typing.Tuple[fractions.Fraction, ...]:
+        absolute_time_per_leaf: typing.List[fractions.Fraction] = []
+        for leaf in abjad.select(abjad_voice).leaves():
+            start, _ = abjad.get.timespan(leaf).offsets
+            absolute_time_per_leaf.append(
+                fractions.Fraction(start.numerator, start.denominator)
+            )
+        return tuple(absolute_time_per_leaf)
+
     # ###################################################################### #
     #                          private methods                               #
     # ###################################################################### #
@@ -421,8 +670,37 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             )
         }
 
+    def _get_tempo_attachments_for_quantized_abjad_leaves(
+        self, abjad_voice: abjad.Voice,
+    ) -> typing.Tuple[typing.Tuple[int, abjad_attachments.Tempo], ...]:
+        absolute_time_per_leaf = SequentialEventToAbjadVoiceConverter._find_absolute_times_of_abjad_leaves(
+            abjad_voice
+        )
+
+        leaf_index_to_tempo_attachment_pairs: typing.List[
+            typing.Tuple[int, abjad_attachments.Tempo]
+        ] = []
+        for absolute_time, tempo_attachment in self._tempo_attachments:
+            closest_leaf = tools.find_closest_index(
+                absolute_time, absolute_time_per_leaf
+            )
+            # special case:
+            # check for stop dynamic change indication
+            # (has to applied to the previous leaf for
+            #  better looking results)
+            if tempo_attachment.stop_dynamic_change_indicaton:
+                leaf_index_to_tempo_attachment_pairs.append(
+                    (closest_leaf - 1, abjad_attachments.DynamicChangeIndicationStop())
+                )
+            leaf_index_to_tempo_attachment_pairs.append(
+                (closest_leaf, tempo_attachment)
+            )
+
+        return tuple(leaf_index_to_tempo_attachment_pairs)
+
     def _get_attachments_for_quantized_abjad_leaves(
         self,
+        abjad_voice: abjad.Voice,
         extracted_data_per_simple_event: typing.Tuple[
             typing.Tuple[
                 typing.List[parameters.abc.Pitch],
@@ -444,6 +722,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             _, volume, playing_indicators, notation_indicators = extracted_data
             attachments = self._volume_to_abjad_attachment(volume)
+            # TODO(finde TempoAttachments! -> dafuer zuerst die absoluten durations version
+            # allen abjad leaves rausfinden! Wenn du die leaves angeschaut hast kannst durations
+            # weiter machen.)
             attachments.update(
                 SequentialEventToAbjadVoiceConverter._playing_indicator_collection_to_abjad_attachments(
                     playing_indicators
@@ -456,6 +737,24 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             )
             for attachment_name, attachment in attachments.items():
                 attachments_per_type_per_event[attachment_name][nth_event] = attachment
+
+        tempo_attachment_data = self._get_tempo_attachments_for_quantized_abjad_leaves(
+            abjad_voice
+        )
+        for nth_event, tempo_attachment in tempo_attachment_data:
+            try:
+                attachments_per_type_per_event["tempo"][nth_event] = tempo_attachment
+            except IndexError:
+                message = (
+                    "Mutwo couldn't attach tempo attachment '{}' to voice '{}'".format(
+                        tempo_attachment, abjad_voice.components
+                    )
+                )
+                message += (
+                    "because absolute time of tempo attachment is higher than duration"
+                    " of abjad voice."
+                )
+                warnings.warn(message)
 
         return tuple(
             tuple(attachments)
@@ -670,7 +969,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         # TODO(implement dynamic attachment, tempo attachment, pitch indicator
         # attachment)
         attachments_per_type_per_event = self._get_attachments_for_quantized_abjad_leaves(
-            extracted_data_per_simple_event
+            quanitisized_abjad_leaves, extracted_data_per_simple_event
         )
         self._apply_attachments_on_quantized_abjad_leaves(
             quanitisized_abjad_leaves,
