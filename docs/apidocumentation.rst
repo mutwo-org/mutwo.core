@@ -38,6 +38,7 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants
+   mutwo.converters.frontends.abjad_attachments
    mutwo.events.abc
    mutwo.events.basic
    mutwo.events.music
