@@ -1,5 +1,5 @@
-mutwo.events.music_constants
-============================
+mutwo.events.music\_constants
+=============================
 
 .. automodule:: mutwo.events.music_constants
    :members:
