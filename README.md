@@ -56,10 +56,10 @@ A basic installation (after cloning) with the main dependencies can be archived 
 pip3 install .
 ```
 
-For using different backends or frontends (midi, Reaper, ...) **mutwo** may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
+For using different backends or frontends (midi, abjad, ...) **mutwo** may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
 
 ```sh
-pip3 install .[reaper]
+pip3 install .[abjad]
 ```
 
 To install all extra requirements simply run:
