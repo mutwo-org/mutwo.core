@@ -71,7 +71,7 @@ pip3 install .[all]
 
 ### Similar projects
 
-There are a many similar composition frameworks and some of them may fit better to your particular use-case:
+There are a many similar composition frameworks. Maybe one of them fits better to your particular use-case:
 
 **Python based composition frameworks:**
 
