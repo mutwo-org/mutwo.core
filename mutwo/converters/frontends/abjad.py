@@ -71,7 +71,7 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
     its py:method:`mutwo.parameters.volumes.WesternVolume.from_amplitude` method.
 
     Hairpins aren't notated with the aid of :class:`mutwo.parameters.abc.Volume`
-    objects, but with :class:`mutwo.parameters.playing_indicators.Hairpins`.
+    objects, but with :class:`mutwo.parameters.playing_indicators.Hairpin`.
     """
 
     def convert(
