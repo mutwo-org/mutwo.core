@@ -1,8 +1,10 @@
-"""Build Lilypond scores via Abjad from Mutwo data.
+"""Build Lilypond scores via [Abjad](https://github.com/Abjad/abjad) from Mutwo data.
 
-**Disclaimer**:
-    Only basic functionality works for now. This module
-    is still in development.
+The following converter classes help to quantize and translate Mutwo data to
+Western notation. Due to the complex nature of this task, Mutwo tries to offer as
+many optional arguments as possible through which the user can affect the conversion
+routines. The most important class and best starting point for organising a conversion
+setting is :class:`SequentialEventToAbjadVoiceConverter`.
 """
 
 import abc
@@ -31,6 +33,7 @@ from mutwo.utilities import tools
 __all__ = (
     "MutwoPitchToAbjadPitchConverter",
     "MutwoVolumeToAbjadAttachmentDynamicConverter",
+    "TempoEnvelopeToAbjadAttachmentTempoConverter",
     "ComplexTempoEnvelopeToAbjadAttachmentTempoConverter",
     "SequentialEventToQuantizedAbjadContainerConverter",
     "SequentialEventToAbjadVoiceConverter",
@@ -38,6 +41,19 @@ __all__ = (
 
 
 class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
+    """Convert Mutwo Pitch objects to Abjad Pitch objects.
+
+    This default class simply checks if the passed Mutwo object belongs to
+    :class:`mutwo.parameters.pitches.WesternPitch`. If it does, Mutwo
+    will initialise the Abjad Pitch from the :attr:`name` attribute.
+    Otherwise Mutwo will simply initialise the Abjad Pitch from the
+    objects :attr:`frequency` attribute.
+
+    If users desire to make more complex conversions (for instance
+    due to ``scordatura`` or transpositions of instruments), one can simply
+    inherit from this class to define more complex cases.
+    """
+
     def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
         if isinstance(pitch_to_convert, parameters.pitches.WesternPitch):
             return abjad.NamedPitch(pitch_to_convert.name)
@@ -46,6 +62,18 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
+    """Convert Mutwo Volume objects to :class:`mutwo.converters.frontends.abjad_attachments.Dynamic` objects.
+
+    This default class simply checks if the passed Mutwo object belongs to
+    :class:`mutwo.parameters.volumes.WesternVolume`. If it does, Mutwo
+    will initialise the :class:`Tempo` object from the :attr:`name` attribute.
+    Otherwise Mutwo will first initialise a :class:`WesternVolume` object via
+    its :method:`mutwo.parameters.volumes.WesternVolume.from_amplitude` method.
+
+    Hairpins aren't notated with the aid of :class:`mutwo.parameters.abc.Volume`
+    objects, but with :class:`mutwo.parameters.playing_indicators.Hairpins`.
+    """
+
     def convert(
         self, volume_to_convert: parameters.abc.Volume
     ) -> abjad_attachments.Dynamic:
@@ -57,6 +85,13 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
 
 
 class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
+    """Convert tempo envelope to :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
+
+    Abstract base class for tempo envelope conversion. See
+    :class:`ComplexTempoEnvelopeToAbjadAttachmentTempoConverter` for a concrete
+    class.
+    """
+
     @abc.abstractmethod
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
@@ -68,6 +103,15 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
 class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     TempoEnvelopeToAbjadAttachmentTempoConverter
 ):
+    """Convert tempo envelope to :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
+
+    This object tries to intelligently set correct tempo attachments to an
+    :class:`abjad.Voice` object, appropriate to Western notation standards.
+    Therefore it will not repeat tempo indications if they are merely repetitions
+    of previous tempo indications and it will write 'a tempo' when returning to the
+    same tempo after ritardandi or accelerandi.
+    """
+
     # ###################################################################### #
     #                     private static methods                             #
     # ###################################################################### #
@@ -273,9 +317,38 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
 
 class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
+    """Quantize :class`mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
+
+    :param time_signatures: Set time signatures to divide the quantized abjad data
+        in desired bar sizes. If the converted :class:`SequentialEvent` is longer than
+        the sum of all passed time signatures, the last time signature will be repeated
+        for the remaining bars.
+    :param duration_unit: This defines the `duration_unit` of the passed
+        :class:`SequentialEvent` (how the :attr:`mutwo.events.abc.Event.duration`
+        attribute will be interpreted). Can either be 'beats' (default) or
+        'miliseconds'.
+    :param tempo_envelope: Defines the tempo of the converted music. This is an
+        :class:`expenvelope.Envelope` object which durations are beats and which
+        levels are either numbers (that will be interpreted as beats per minute ('BPM'))
+        or :class:`mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
+        been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
+    :param attack_point_optimizer: Optionally the user can pass a
+        :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
+        split events and tie them for better looking notation. The default attack point
+        optimizer is :class:`nauert.MeasurewiseAttackPointOptimizer` which splits events
+        to better represent metrical structures within bars. If no optimizer is desired
+        this argument can be set to ``None``.
+    """
+
+    # TODO(add proper miliseconds conversion: you will have to add the tempo_envelope
+    # when building the QEventSequence. Furthermore you should auto write down the
+    # metronome marks when initialising from miliseconds?)
+
     def __init__(
         self,
-        time_signatures: typing.Optional[typing.Sequence[abjad.TimeSignature]] = None,
+        time_signatures: typing.Sequence[abjad.TimeSignature] = (
+            abjad.TimeSignature((4, 4)),
+        ),
         duration_unit: str = "beats",  # for future: typing.Literal["beats", "miliseconds"]
         tempo_envelope: expenvelope.Envelope = None,
         attack_point_optimizer: typing.Optional[
@@ -283,16 +356,29 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         ] = nauert.MeasurewiseAttackPointOptimizer(),
     ):
         if duration_unit == "miliseconds":
+            # warning for not well implemented miliseconds conversion
+
             message = (
-                "The current implementation can't apply tempo changes in the"
-                " implementation yet!"
+                "The current implementation can't apply tempo changes for duration unit"
+                " 'miliseconds' yet! Furthermore to quantize via duration_unit"
+                " 'miliseconds' isn't well tested yet and may return unexpected"
+                " results."
             )
             warnings.warn(message)
 
-        if time_signatures is None:
-            time_signatures = (abjad.TimeSignature((4, 4)), abjad.TimeSignature((4, 4)))
-        else:
-            time_signatures = tuple(time_signatures)
+        n_time_signatures = len(time_signatures)
+        if n_time_signatures == 0:
+            message = (
+                "Found empy sequence for argument 'time_signatures'. Specify at least"
+                " one time signature!"
+            )
+            raise ValueError(message)
+
+        # nauert will raise an error if there is only one time signature
+        elif n_time_signatures == 1:
+            time_signatures += time_signatures
+
+        time_signatures = tuple(time_signatures)
 
         if tempo_envelope is None:
             tempo_envelope = expenvelope.Envelope.from_points(
@@ -524,6 +610,68 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
 
 class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
+    """Convert :class`mutwo.events.basic.SequentialEvent` objects to :class:`abjad.Voice` objects.
+
+    :param sequential_event_to_quantized_abjad_container_converter: Class which
+        defines how the Mutwo data will be quantized. See
+        :class:`SequentialEventToQuantizedAbjadContainerConverter` for more information.
+    :param simple_event_to_pitches: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
+        (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
+        By default it asks the Event for its :attr:`pitch_or_pitches` attribute
+        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a different name for
+        their pitch property, this argument should be overridden. If the function call
+        raises an :obj:`AttributeError` (e.g. if no pitch can be extracted), mutwo
+        will assume an event without any pitches.
+    :param simple_event_to_volume: Function to extract the volume from a
+        :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating dynamic
+        indicators. The function should return an object that inhertis from
+        :class:`mutwo.parameters.abc.Volume`. By default it asks the Event for
+        its :attr:`volume` attribute (because by default
+        :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a
+        different name for their volume property, this argument should be overridden.
+        If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
+        extracted), mutwo will set `pitch_or_pitches` to an empty list and set
+        volume to 0.
+    :param simple_event_to_playing_indicators: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a
+        :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
+        object. By default it asks the Event for its :attr:`playing_indicators` attribute
+        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a different name for
+        their playing_indicators property, this argument should be overridden. If the
+        function call raises an :obj:`AttributeError` (e.g. if no playing indicator
+        collection can be extracted), mutwo will build a playing indicator collection
+        from :const:`mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+    :param simple_event_to_notation_indicators: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a
+        :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
+        object. By default it asks the Event for its :attr:`notation_indicators` attribute
+        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than ``NoteLike`` with a different name for
+        their playing_indicators property, this argument should be overridden. If the
+        function call raises an :obj:`AttributeError` (e.g. if no notation indicator
+        collection can be extracted), mutwo will build a notation indicator collection
+        from :const:`mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`.
+    :param does_extracted_data_indicate_rest: Function to detect from the extracted
+        data if the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
+        default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
+        the Event will be interpreted as a rest.
+    :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
+        :class:`mutwo.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
+        See :class:`MutwoPitchToAbjadPitchConverter` for more information.
+    :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
+        to convert :class:`mutwo.parameters.abc.Volume` objects to
+        :class:`mutwo.converts.frontends.abjad_attachments.Dynamic` objects.
+        See :class:`MutwoVolumeToAbjadAttachmentDynamicConverter` for more information.
+    :param tempo_envelope_to_abjad_attachment_tempo_converter: Class which defines how
+        to convert tempo envelopes to
+        :class:`mutwo.converts.frontends.abjad_attachments.Tempo` objects.
+        See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
+    """
+
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = SequentialEventToQuantizedAbjadContainerConverter(),
@@ -733,9 +881,6 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             _, volume, playing_indicators, notation_indicators = extracted_data
             attachments = self._volume_to_abjad_attachment(volume)
-            # TODO(finde TempoAttachments! -> dafuer zuerst die absoluten durations version
-            # allen abjad leaves rausfinden! Wenn du die leaves angeschaut hast kannst durations
-            # weiter machen.)
             attachments.update(
                 SequentialEventToAbjadVoiceConverter._playing_indicator_collection_to_abjad_attachments(
                     playing_indicators
@@ -829,7 +974,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             playing_indicators = self._simple_event_to_playing_indicators(simple_event)
         except AttributeError:
             playing_indicators = (
-                parameters.playing_indicators.PlayingIndicatorCollection()
+                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
 
         try:
@@ -838,7 +983,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             )
         except AttributeError:
             notation_indicators = (
-                parameters.notation_indicators.NotationIndicatorCollection()
+                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
             )
 
         return pitches, volume, playing_indicators, notation_indicators
