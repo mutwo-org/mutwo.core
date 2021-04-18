@@ -1,4 +1,4 @@
-"""Build Lilypond scores via [Abjad](https://github.com/Abjad/abjad) from Mutwo data.
+"""Build Lilypond scores via `Abjad <https://github.com/Abjad/abjad>`_ from Mutwo data.
 
 The following converter classes help to quantize and translate Mutwo data to
 Western notation. Due to the complex nature of this task, Mutwo tries to offer as
