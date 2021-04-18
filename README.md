@@ -67,3 +67,24 @@ To install all extra requirements simply run:
 ```sh
 pip3 install .[all]
 ```
+
+
+### Similar projects
+
+There are a many similar composition frameworks and some of them may fit better to your particular use-case:
+
+**Python based composition frameworks:**
+
+- [scamp](http://scamp.marcevanstein.com/): "SCAMP is a computer-assisted composition framework in Python designed to act as a hub, flexibly connecting the composer-programmer to a variety of resources for playback and notation."
+- [isobar](https://github.com/ideoforms/isobar): "isobar is a Python library for creating and manipulating musical patterns, designed for use in algorithmic composition, generative music and sonification."
+- [kodou](https://github.com/ertpoi/kodou): "Kodou is a small module for algorithmic music notation which runs on top of the Lilypond (versions 2.18 to 2.21.0) compiler"
+- [JythonMusic](https://jythonmusic.me/): "JythonMusic is an environment for music making and creative programming."
+
+
+**Composition frameworks in other languages:**
+
+- [slippery-chicken](https://michael-edwards.org/sc/): "a Common Lisp and CLOS package for algorithmic composition."
+- [OpenMusic](https://openmusic-project.github.io/): "OpenMusic (OM) is a visual programming language for computer-assisted music composition created at IRCAM, inheriting from a long tradition of computer-assisted composition research."
+- [Euterpea](http://www.euterpea.com/): "Euterpea is a cross-platform, domain-specific language for computer music applications embedded in the Haskell programming language."
+- [jMusic](http://explodingart.com/jmusic/): "jMusic is a project designed to provide composers and software developers with a library of compositional and audio processing tools."
+- [Comic](https://github.com/simonbahr/Comic): "A Lisp-Environment for Inter-Media Composition."
