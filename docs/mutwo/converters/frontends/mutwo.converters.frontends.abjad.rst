@@ -1,5 +1,5 @@
 mutwo.converters.frontends.abjad module
---------------------------------------
+---------------------------------------
 
 .. automodule:: mutwo.converters.frontends.abjad
    :members:
