@@ -18,7 +18,7 @@ from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
 
-__all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent", "EnvelopeEvent")
+__all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent")
 
 
 class SimpleEvent(events.abc.Event):
