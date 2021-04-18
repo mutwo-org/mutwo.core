@@ -4,7 +4,7 @@ This submodules provides several classes to add specific musical
 playing techniques to :class:`mutwo.events.basic.SimpleEvent` objects.
 They mostly derive from traditional Western playing techniques and their
 notation. Unlike indicators of the :mod:`mutwo.parameters.notation_indicators`
-module, playing indicators have an effect of the played music and aren't
+module, playing indicators have an effect on the played music and aren't
 merely specifications of representation. The proper way to handle
 playing  indicators should be via a :class:`PlayingIndicatorCollection`
 object that should be attached to the respective :class:`SimpleEvent`.
