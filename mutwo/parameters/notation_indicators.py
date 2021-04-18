@@ -1,4 +1,29 @@
-"""
+"""Define notation indicators for simple events.
+
+This submodules provides several classes to express notation
+specifications for :class:`mutwo.events.basic.SimpleEvent` objects.
+They mostly derive from traditional Western notation.
+Unlike indicators of the :mod:`mutwo.parameters.playing_indicators`
+module, notation indicators shouldn't have an effect on the played music
+and are merely specifications of representation. The proper way to handle
+notation indicators should be via a :class:`NotationIndicatorCollection`
+object that should be attached to the respective :class:`SimpleEvent`.
+The collection contains all possible notation indicators which are defined
+in this module. :class:`mutwo.events.music.NoteLike` contain by default
+a notation indicator collection.
+
+Notation indicators have one or more arguments. Their :attr:`is_active`
+attribute can't be set by the user and get automatically initialised depending
+on if all necessary attributes are defined (then active) or if any of the
+necessary attributes is set to :obj:`None` (then not active).
+
+**Example:**
+
+Set notation indicators of :class:`NoteLike`:
+
+>>> from mutwo.events import music
+>>> my_note = music.NoteLike('c', 1 / 4, 'mf')
+>>> my_note.notation_indicators.margin_markup.content = "Violin"
 """
 
 import dataclasses
