@@ -657,6 +657,17 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             )
         return tuple(absolute_time_per_leaf)
 
+    @staticmethod
+    def _replace_rests_with_full_measure_rests(abjad_voice: abjad.Voice) -> None:
+        for bar in abjad_voice:
+            if len(bar) == 1:
+                if isinstance(bar[0], abjad.Rest):
+                    abjad.mutate.replace(
+                        bar[0],
+                        abjad.MultimeasureRest(bar[0].written_duration),
+                        wrappers=True,
+                    )
+
     # ###################################################################### #
     #                          private methods                               #
     # ###################################################################### #
@@ -966,8 +977,6 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         )
 
         # fourth, apply dynamics, tempos and playing_indicators on abjad voice
-        # TODO(implement dynamic attachment, tempo attachment, pitch indicator
-        # attachment)
         attachments_per_type_per_event = self._get_attachments_for_quantized_abjad_leaves(
             quanitisized_abjad_leaves, extracted_data_per_simple_event
         )
@@ -975,6 +984,11 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             quanitisized_abjad_leaves,
             related_abjad_leaves_per_simple_event,
             attachments_per_type_per_event,
+        )
+
+        # fifth, replace rests lasting one bar with full measure rests
+        SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(
+            quanitisized_abjad_leaves
         )
 
         return quanitisized_abjad_leaves
