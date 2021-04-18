@@ -46,6 +46,9 @@ class IsisScoreConverter(converters.abc.EventConverter):
         Defaults to 5.
     """
 
+    # TODO(auto-tie rests (because ISiS doesn't understand more than one rests
+    # between notes)
+
     def __init__(
         self,
         path: str,
