@@ -15,16 +15,17 @@ a playing indicator collection.
 There are basically two different types of playing indicators:
 
 1, Playing indicators which can only be on or off (for instance
-    ``bartok_pizzicato``, ``prall`` or ``laissez_vibrer``). They
-    have a :attr:`is_active` attribute which can either be :obj:`True`
-    or :obj:`False`.
+``bartok_pizzicato``, ``prall`` or ``laissez_vibrer``). They have
+a :attr:`is_active` attribute which can either be :obj:`True`
+or :obj:`False`.
+
 2. Playing indicators with one or more arguments (for instance
-    :class:`Tremolo` with :attr:`n_flags` or :class:`Arpeggio` with
-    :attr:`direction`). Their :attr:`is_active` attribute can't be
-    set by the user and get automatically initialised depending on
-    if all necessary attributes are defined (then active) or
-    if any of the necessary attributes is set to :obj:`None` (then
-    not active).
+:class:`Tremolo` with :attr:`n_flags` or :class:`Arpeggio` with
+:attr:`direction`). Their :attr:`is_active` attribute can't be
+set by the user and get automatically initialised depending on
+if all necessary attributes are defined (then active) or
+if any of the necessary attributes is set to :obj:`None` (then
+not active).
 
 **Example:**
 
@@ -71,9 +72,7 @@ class Tremolo(parameters.abc.ImplicitPlayingIndicator):
 
 @dataclasses.dataclass()
 class Articulation(parameters.abc.ImplicitPlayingIndicator):
-    name: typing.Optional[
-        str
-    ] = None  # TODO(for future usage add typing.Literal)
+    name: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
 
 
 @dataclasses.dataclass()
@@ -140,9 +139,7 @@ class PlayingIndicatorCollection(
     laissez_vibrer: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
-    ornamentation: Ornamentation = dataclasses.field(
-        default_factory=Ornamentation
-    )
+    ornamentation: Ornamentation = dataclasses.field(default_factory=Ornamentation)
     pedal: Pedal = dataclasses.field(default_factory=Pedal)
     prall: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
