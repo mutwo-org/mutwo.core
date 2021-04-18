@@ -188,13 +188,13 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _shall_stop_dynamic_change_indication(
-        converted_tempo_points: typing.Tuple[abjad_attachments.Tempo, ...]
+        tempo_attachments: typing.Tuple[abjad_attachments.Tempo, ...]
     ) -> bool:
         stop_dynamic_change_indicaton = False
-        for _, previous_tempo_point in reversed(converted_tempo_points):
+        for _, previous_tempo_attachment in reversed(tempo_attachments):
             # make sure the previous tempo point could have been written
             # down (longer duration than minimal duration)
-            if previous_tempo_point.dynamic_change_indication is not None:
+            if previous_tempo_attachment.dynamic_change_indication is not None:
                 stop_dynamic_change_indicaton = True
             break
 
@@ -240,7 +240,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         nth_tempo_point: int,
         tempo_point: parameters.tempos.TempoPoint,
         tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
-        converted_tempo_points: typing.Tuple[abjad_attachments.Tempo, ...],
+        tempo_attachments: typing.Tuple[abjad_attachments.Tempo, ...],
     ) -> abjad_attachments.Tempo:
         try:
             next_tempo_point: typing.Optional[
@@ -258,7 +258,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         )
 
         stop_dynamic_change_indicaton = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
-            converted_tempo_points
+            tempo_attachments
         )
 
         (
