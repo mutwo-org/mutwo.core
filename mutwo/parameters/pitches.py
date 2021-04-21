@@ -24,6 +24,7 @@ import math
 import numbers
 import operator
 import typing
+import warnings
 
 import primesieve  # type: ignore
 from primesieve import numpy as primesieve_numpy
@@ -399,6 +400,25 @@ class JustIntonationPitch(parameters.abc.Pitch):
         summed = ((power * pow(prime - 1, 2)) / prime for power, prime in decomposed)
         return 2 * sum(summed)
 
+    @staticmethod
+    def _count_accidentals(accidentals: str) -> int:
+        accidental_counter = collections.Counter({"f": 0, "s": 0})
+        accidental_counter.update(accidentals)
+        for accidental in accidentals:
+            if accidental not in ("f", "s"):
+                message = "Found unknown accidental '{}' which will be ignored".format(
+                    accidental
+                )
+                warnings.warn(message)
+        return (1 * accidental_counter["s"]) - (1 * accidental_counter["f"])
+
+    @staticmethod
+    def _get_accidentals(n_accidentals: int) -> str:
+        if n_accidentals > 0:
+            return "s" * n_accidentals
+        else:
+            return "f" * abs(n_accidentals)
+
     # ###################################################################### #
     #                            private methods                             #
     # ###################################################################### #
@@ -623,6 +643,31 @@ class JustIntonationPitch(parameters.abc.Pitch):
         while ref * exp > ct:
             exp -= 1
         return exp
+
+    @property
+    def helmholtz_ellis_just_intonation_notation_commas(
+        self,
+    ) -> parameters.commas.CommaCompound:
+        """Commas of JustIntonationPitch."""
+
+        prime_to_exponent = {
+            prime: exponent
+            for prime, exponent in zip(self.primes, self.exponents)
+            if exponent != 0 and prime not in (2, 3)
+        }
+        return parameters.commas.CommaCompound(
+            prime_to_exponent, parameters.pitches_constants.DEFAULT_PRIME_TO_COMMA
+        )
+
+    @property
+    def closest_pythagorean_interval(self) -> "JustIntonationPitch":
+        closest_pythagorean_interval = self - type(self)(
+            functools.reduce(
+                operator.mul, self.helmholtz_ellis_just_intonation_notation_commas
+            )
+        )
+        closest_pythagorean_interval.normalize()
+        return closest_pythagorean_interval
 
     @property
     def blueprint(  # type: ignore
@@ -860,6 +905,48 @@ class JustIntonationPitch(parameters.abc.Pitch):
     # ###################################################################### #
     #                            public methods                              #
     # ###################################################################### #
+
+    def get_closest_pythagorean_pitch_name(self, reference: str = "a") -> str:
+        """"""
+
+        # TODO(for future usage: type reference as typing.Literal[] instead of str)
+
+        # TODO(split method, make it more readable)
+
+        # TODO(Add documentation)
+
+        diatonic_pitch_name, accidentals = reference[0], reference[1:]
+        n_accidentals_in_reference = JustIntonationPitch._count_accidentals(accidentals)
+        position_of_diatonic_pitch_in_cycle_of_fifths = parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
+            diatonic_pitch_name
+        )
+
+        closest_pythagorean_interval = self.closest_pythagorean_interval
+        try:
+            n_fifths = closest_pythagorean_interval.exponents[1]
+        # for 1/1
+        except IndexError:
+            n_fifths = 0
+
+        # 1. Find new diatonic pitch name
+        n_steps_in_diatonic_pitch_name = n_fifths % 7
+        nth_diatonic_pitch = (
+            position_of_diatonic_pitch_in_cycle_of_fifths
+            + n_steps_in_diatonic_pitch_name
+        ) % 7
+        new_diatonic_pitch = parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS[
+            nth_diatonic_pitch
+        ]
+
+        # 2. Find new accidentals
+        n_accidentals_in_closest_pythagorean_pitch = (
+            (position_of_diatonic_pitch_in_cycle_of_fifths + n_fifths) // 7
+        ) + n_accidentals_in_reference
+        new_accidentals = JustIntonationPitch._get_accidentals(
+            n_accidentals_in_closest_pythagorean_pitch
+        )
+
+        return "".join((new_diatonic_pitch, new_accidentals))
 
     @decorators.add_return_option
     def register(self, octave: int) -> typing.Optional["JustIntonationPitch"]:  # type: ignore

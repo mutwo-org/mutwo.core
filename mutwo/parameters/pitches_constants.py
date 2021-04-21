@@ -5,8 +5,14 @@ There are basically two types of constants:
     2. Values that are defined by general (cultural, physical, technical) standards
 """
 
-import fractions
 import math
+
+try:
+    import quicktions as fractions  # type: ignore
+except ImportError:
+    import fractions  # type: ignore
+
+from mutwo.parameters import commas
 
 CENT_CALCULATION_CONSTANT = 1200 / (math.log10(2))
 """constant used for cent calculation in mutwo.parameters.abc.Pitch"""
@@ -89,6 +95,11 @@ PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME = {
 """Mapping of pitch class modifications name accidental name for the
 `WesternPitch` class. This global variable is defined in reference to
 ``ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION``."""
+
+
+# is used in mutwo.parameters.pitches.JustIntonationPitch
+DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS = tuple("f c g d a e b".split(" "))
+"""Diatonic pitch names sorted by cycle of fifths."""
 
 DEFAULT_CONCERT_PITCH = 440
 """The default concert pitch in frequency."""
@@ -237,3 +248,35 @@ MIDI_PITCH_FREQUENCIES = (
 
 MIDI_PITCH_NUMBERS = tuple(range(127))
 """A tuple that contains all available midi pitch numbers."""
+
+# tuning commas are organised, so that the relevant prime number
+# is always in the numerator of the ratio!
+DEFAULT_PRIME_TO_COMMA = {
+    # syntonic comma
+    5: commas.Comma(fractions.Fraction(80, 81)),
+    # septimal comma
+    7: commas.Comma(fractions.Fraction(63, 64)),
+    # undecimal quartertone
+    11: commas.Comma(fractions.Fraction(33, 32)),
+    # tridecimal thirdtone
+    13: commas.Comma(fractions.Fraction(26, 27)),
+    # 17-limit schisma
+    17: commas.Comma(fractions.Fraction(2176, 2187)),
+    # 19-limit schisma
+    19: commas.Comma(fractions.Fraction(513, 512)),
+    # 23-limit comma
+    23: commas.Comma(fractions.Fraction(736, 729)),
+    # 29-limit sixthtone
+    29: commas.Comma(fractions.Fraction(261, 256)),
+    # 31-limit quartertone
+    31: commas.Comma(fractions.Fraction(31, 32)),
+    # 37-limit quartertone
+    37: commas.Comma(fractions.Fraction(37, 36)),
+    # 41-limit comma
+    41: commas.Comma(fractions.Fraction(82, 81)),
+    # 43-limit comma
+    43: commas.Comma(fractions.Fraction(129, 128)),
+    # 47-limit quartertone
+    47: commas.Comma(fractions.Fraction(752, 729)),
+}
+"""Standard commas defined by the `Helmholtz-Ellis JI Pitch Notation <https://marsbat.space/pdfs/notation.pdf>`_."""
