@@ -48,6 +48,7 @@ This tree provides a deep overview of all submodules:
    mutwo.generators.toussaint
    mutwo.generators.edwards_constants
    mutwo.parameters.abc
+   mutwo.parameters.commas
    mutwo.parameters.notation_indicators
    mutwo.parameters.pitches
    mutwo.parameters.playing_indicators
