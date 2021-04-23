@@ -1,4 +1,3 @@
-import filecmp
 import os
 import unittest
 
@@ -308,8 +307,10 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
     @staticmethod
     def _are_png_equal(path_to_png0: str, path_to_png1: str) -> bool:
+        import warnings
         image0, image1 = (Image.open(path) for path in (path_to_png0, path_to_png1))
         difference = ImageChops.difference(image1, image0)
+        warnings.warn("Difference box:", difference.getbbox())
         return difference.getbbox() is None
 
     @staticmethod
