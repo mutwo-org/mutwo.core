@@ -2,6 +2,9 @@ import filecmp
 import os
 import unittest
 
+from PIL import Image  # type: ignore
+from PIL import ImageChops  # type: ignore
+
 import abjad  # type: ignore
 import expenvelope  # type: ignore
 
@@ -304,6 +307,12 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 
 class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
     @staticmethod
+    def _are_png_equal(path_to_png0: str, path_to_png1: str) -> bool:
+        image0, image1 = (Image.open(path) for path in (path_to_png0, path_to_png1))
+        difference = ImageChops.difference(image1, image0)
+        return difference.getbbox() is None
+
+    @staticmethod
     def _make_complex_sequential_event() -> basic.SequentialEvent[music.NoteLike]:
         complex_sequential_event = basic.SequentialEvent(
             [
@@ -467,7 +476,9 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
 
         self.assertTrue(
-            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=True)
+            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
         )
 
         # remove test file

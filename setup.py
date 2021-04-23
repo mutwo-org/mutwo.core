@@ -8,6 +8,9 @@ extras_require = {
 }
 
 extras_require.update({"all": list(extras_require.values())})  # type: ignore
+extras_require.update(
+    {"testing": ["nose", "pillow>=8.2.0, <9.0.0"] + extras_require["all"]}
+)
 
 setuptools.setup(
     name="mutwo",
@@ -23,7 +26,6 @@ setuptools.setup(
         package for package in setuptools.find_packages() if package[:5] != "tests"
     ],
     setup_requires=[],
-    tests_require=["nose"],
     install_requires=[
         "expenvelope>=0.6.5, <1.0.0",
         "primesieve>=2.0.0, <3.0.0",
