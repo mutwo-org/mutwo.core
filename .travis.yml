@@ -4,6 +4,7 @@ python:
 before_install:
   - sudo apt-get update
   - sudo apt-get install csound
+  - sudo apt-get install lilypond
 install:
   - pip3 install .[all]
   - pip3 install coveralls

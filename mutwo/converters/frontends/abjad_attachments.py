@@ -360,12 +360,25 @@ class Clef(notation_indicators.Clef, BangFirstAttachment):
         return leaf
 
 
-class Ottava(notation_indicators.Ottava, BangFirstAttachment):
-    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+class Ottava(notation_indicators.Ottava, ToggleAttachment):
+    def process_leaf(
+        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
+    ) -> abjad.Leaf:
         abjad.attach(
             abjad.Ottava(self.n_octaves, format_slot="before"), leaf,
         )
         return leaf
+
+    def process_leaves(
+        self,
+        leaves: typing.Tuple[abjad.Leaf, ...],
+        previous_attachment: typing.Optional["AbjadAttachment"],
+    ) -> typing.Tuple[abjad.Leaf, ...]:
+        # don't attach ottava = 0 at start (this is the default notation)
+        if previous_attachment is not None or self.n_octaves != 0:
+            return super().process_leaves(leaves, previous_attachment)
+        else:
+            return leaves
 
 
 class Markup(notation_indicators.Markup, BangFirstAttachment):

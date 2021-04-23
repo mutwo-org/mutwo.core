@@ -1,7 +1,13 @@
+import filecmp
 import unittest
 
 import abjad  # type: ignore
 import expenvelope  # type: ignore
+
+try:
+    import quicktions as fractions  # type: ignore
+except ImportError:
+    import fractions  # type: ignore
 
 from mutwo.converters import frontends
 from mutwo.events import basic
@@ -296,8 +302,66 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 
 
 class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
+    @staticmethod
+    def _make_complex_sequential_event() -> basic.SequentialEvent[music.NoteLike]:
+        complex_sequential_event = basic.SequentialEvent(
+            [
+                music.NoteLike(pitch_name, duration=duration, volume="mf")
+                for pitch_name, duration in (
+                    ("c f a d", 0.75),
+                    ("a", 0.25),
+                    ("g", fractions.Fraction(1, 12)),
+                    ("es", fractions.Fraction(1, 12)),
+                    ("fqs bf bqf", fractions.Fraction(1, 12)),
+                    ("c", fractions.Fraction(3, 4)),
+                    ([], 1),  # full measure rest
+                    ("ds", 0.75),
+                    ([], fractions.Fraction(3, 8)),
+                    ("1/3", 0.75),
+                    ([], 0.25),
+                    ("1/7", 1.5),
+                    ("5/4", 0.25),
+                    ("7/4", fractions.Fraction(1, 8)),
+                    ([], fractions.Fraction(3, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                    ("c", fractions.Fraction(1, 4)),
+                )
+            ]
+        )
+
+        complex_sequential_event[0].notation_indicators.margin_markup.content = (
+            "Magic Instr"
+        )
+        complex_sequential_event[2].playing_indicators.bartok_pizzicato.is_active = True
+        complex_sequential_event[3].volume = "fff"
+        complex_sequential_event[4].volume = "fff"
+        complex_sequential_event[7].playing_indicators.fermata.fermata_type = "fermata"
+        complex_sequential_event[9].notation_indicators.ottava.n_octaves = -1
+        complex_sequential_event[
+            9
+        ].playing_indicators.string_contact_point.contact_point = (
+            "sul tasto"
+        )
+        complex_sequential_event[
+            11
+        ].playing_indicators.string_contact_point.contact_point = (
+            "sul tasto"
+        )
+        complex_sequential_event[11].notation_indicators.ottava.n_octaves = -2
+        complex_sequential_event[
+            12
+        ].playing_indicators.string_contact_point.contact_point = (
+            "pizzicato"
+        )
+        return complex_sequential_event
+
     @classmethod
     def setUpClass(cls):
+        # initialise converter and sequential event for simple tests
         cls.converter = frontends.abjad.SequentialEventToAbjadVoiceConverter()
         cls.sequential_event = basic.SequentialEvent(
             [
@@ -310,8 +374,35 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
                 )
             ]
         )
+        # initialise complex converter and sequential event for complex tests
+        cls.complex_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
+            frontends.abjad.SequentialEventToQuantizedAbjadContainerConverter(
+                time_signatures=[
+                    abjad.TimeSignature(ts)
+                    for ts in (
+                        (4, 4),
+                        (4, 4),
+                        (4, 4),
+                        (4, 4),
+                        (4, 4),
+                        (4, 4),
+                        (4, 4),
+                        (3, 4),
+                        (6, 8),
+                        (3, 4),
+                    )
+                ],
+                tempo_envelope=expenvelope.Envelope.from_levels_and_durations(
+                    levels=(120, 120, 130, 130, 100), durations=(3, 2, 2.75, 0)
+                ),
+            )
+        )
+        cls.complex_sequential_event = (
+            SequentialEventToAbjadVoiceConverterTest._make_complex_sequential_event()
+        )
 
     def test_convert(self):
+        # TODO(improve readability of conversion method!)
         expected_abjad_voice = abjad.Voice(
             [
                 abjad.score.Container("c'2. a'4"),
@@ -353,6 +444,30 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             )
 
             self.assertEqual(indicators0, indicators1)
+
+    def test_convert_with_lilypond_output(self):
+        # basically an integration test (testing if the rendered png
+        # is equal to the previously rendered and manually checked png)
+        converted_sequential_event = self.complex_converter.convert(
+            self.complex_sequential_event
+        )
+        tests_path = "tests/converters/frontends"
+        new_png_file_path = "{}/abjad_png_output.png".format(tests_path)
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
+
+        self.assertTrue(
+            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=True)
+        )
 
 
 if __name__ == "__main__":

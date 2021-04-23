@@ -8,6 +8,8 @@ setting is :class:`SequentialEventToAbjadVoiceConverter`.
 """
 
 import abc
+import functools
+import operator
 import typing
 import warnings
 
@@ -58,7 +60,7 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
         if isinstance(pitch_to_convert, parameters.pitches.WesternPitch):
             return abjad.NamedPitch(pitch_to_convert.name)
         else:
-            return abjad.NumberedPitch.from_hertz(pitch_to_convert.frequency)
+            return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
@@ -836,6 +838,8 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             abjad_voice
         )
 
+        assert absolute_time_per_leaf == tuple(sorted(absolute_time_per_leaf))
+
         leaf_index_to_tempo_attachment_pairs: typing.List[
             typing.Tuple[int, abjad_attachments.Tempo]
         ] = []
@@ -894,28 +898,20 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             for attachment_name, attachment in attachments.items():
                 attachments_per_type_per_event[attachment_name][nth_event] = attachment
 
-        tempo_attachment_data = self._get_tempo_attachments_for_quantized_abjad_leaves(
-            abjad_voice
-        )
-        for nth_event, tempo_attachment in tempo_attachment_data:
-            try:
-                attachments_per_type_per_event["tempo"][nth_event] = tempo_attachment
-            except IndexError:
-                message = (
-                    "Mutwo couldn't attach tempo attachment '{}' to voice '{}'".format(
-                        tempo_attachment, abjad_voice.components
-                    )
-                )
-                message += (
-                    "because absolute time of tempo attachment is higher than duration"
-                    " of abjad voice."
-                )
-                warnings.warn(message)
-
         return tuple(
             tuple(attachments)
             for attachments in attachments_per_type_per_event.values()
         )
+
+    def _apply_tempos_on_quantized_abjad_leaves(
+        self, quanitisized_abjad_leaves: abjad.Voice,
+    ):
+        leaves = abjad.select(quanitisized_abjad_leaves).leaves()
+        tempo_attachment_data = self._get_tempo_attachments_for_quantized_abjad_leaves(
+            quanitisized_abjad_leaves
+        )
+        for nth_event, tempo_attachment in tempo_attachment_data:
+            tempo_attachment.process_leaves((leaves[nth_event],), None)
 
     def _apply_attachments_on_quantized_abjad_leaves(
         self,
@@ -964,6 +960,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         except AttributeError:
             pitches = []
 
+        # TODO(Add option: no dynamic indicator if there aren't any pitches)
         try:
             volume = self._simple_event_to_volume(simple_event)
         except AttributeError:
@@ -1130,6 +1127,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             related_abjad_leaves_per_simple_event,
             attachments_per_type_per_event,
         )
+        self._apply_tempos_on_quantized_abjad_leaves(quanitisized_abjad_leaves)
 
         # fifth, replace rests lasting one bar with full measure rests
         SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(

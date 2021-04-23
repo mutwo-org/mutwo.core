@@ -54,7 +54,7 @@ class Clef(parameters.abc.NotationIndicator):
 
 @dataclasses.dataclass()
 class Ottava(parameters.abc.NotationIndicator):
-    n_octaves: typing.Optional[int] = None
+    n_octaves: typing.Optional[int] = 0
 
 
 @dataclasses.dataclass()
