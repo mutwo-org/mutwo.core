@@ -4,7 +4,8 @@ python:
 before_install:
   - sudo apt-get update
   - sudo apt-get install csound
-  - sudo apt-get install lilypond
+  - wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh
+  - sh lilypond-2.22.0-1.linux-64.sh
 install:
   - pip3 install .[testing]
   - pip3 install coveralls
