@@ -310,7 +310,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         import warnings
         image0, image1 = (Image.open(path) for path in (path_to_png0, path_to_png1))
         difference = ImageChops.difference(image1, image0)
-        warnings.warn("Difference box:", difference.getbbox())
+        warnings.warn("Difference box: {}".format(difference.getbbox()))
         return difference.getbbox() is None
 
     @staticmethod
