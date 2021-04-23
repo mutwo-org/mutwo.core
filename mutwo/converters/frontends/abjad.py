@@ -319,7 +319,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
 
 class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
-    """Quantize :class`mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
+    """Quantize :class:`mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
         in desired bar sizes. If the converted :class:`SequentialEvent` is longer than
@@ -612,7 +612,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
 
 class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
-    """Convert :class`mutwo.events.basic.SequentialEvent` objects to :class:`abjad.Voice` objects.
+    """Convert :class:`mutwo.events.basic.SequentialEvent` objects to :class:`abjad.Voice` objects.
 
     :param sequential_event_to_quantized_abjad_container_converter: Class which
         defines how the Mutwo data will be quantized. See
