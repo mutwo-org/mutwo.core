@@ -1,15 +1,23 @@
 language: python
 python:
-  - 3.8
+- 3.8
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install csound
-  - wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh
-  - sh lilypond-2.22.0-1.linux-64.sh --batch
+- sudo apt-get update
+- sudo apt-get install csound
+- wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh
+- sh lilypond-2.22.0-1.linux-64.sh --batch
 install:
-  - pip3 install .[testing]
-  - pip3 install coveralls
+- pip3 install .[testing]
+- pip3 install coveralls
 script:
-  - nosetests --with-coverage --cover-package=mutwo
+- nosetests --with-coverage --cover-package=mutwo
 after_success:
-  - coveralls
+- coveralls
+deploy:
+  provider: pypi
+  username: __token__
+  password:
+    secure: LbozqPkemh6MWfqBPgjFlN1TlR0cFdg8FNrPlKaj2ZeupnLoQ8BwQrXlb9om0U6+RfrP4jWLI6ERJ0cw3psOLSSe99tuEy6/cjBzCuKb75za7Hvi9XHW3NC3WwVt9f6UcgIfuc2xyWssHvYo+9Gqa1PPEWdlLEGAYxG3ELLEXm1Pv2wqDEQYBUxYN50bgKlOjGOIoPjqYro0dnFVYMW6dNF9kbynOVFbeiL1P92Y8Nd24baipCVpNefS11p1ZLQAYT3b2ygFG1G+NHsO+hdNtwlRIi7XzZ6EH48+3oNGlR/uzURkZbYmjPp41z7gVS9Zh95dQNtigF59Q6ANGsr019IOru1Y04G41odNSocl6EtefX+hkqXHHXpV4CB2Tbz0j6uvbWfYm3hZPoNWP5g+3h0/qF9s6vnOowoSp6Qquxcaz5ZradfBIhfrKYxw9WHIaady7PeIC1s1ASXu9uWsMLeoYUOXq/L1C2j9NJOWYepW3/6m99Rsn+N/b3bW0o7EjwP0FKzf+OQJFPvkoqrD494oABX8a985a26eu4RMHukA7ufBXOq6nlEilyNeFD1JQe1UUlWT8ede8kllcRjg6AFvJRhrZOrUYg2lF7CBsZpoh6SNNNdkpUQ/BpGgOuPUwRj5tIAFzkcvhHh+LeXWaHOWvCsi9PScCdPCtX6hTA8=
+  on:
+    tags: true
+
