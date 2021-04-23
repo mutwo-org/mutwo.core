@@ -467,7 +467,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
 
         self.assertTrue(
-            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=False)
+            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=True)
         )
 
         # remove test file
