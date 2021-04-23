@@ -7,7 +7,7 @@
 [![PyPI version](https://badge.fury.io/py/mutwo.svg)](https://badge.fury.io/py/mutwo)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-### disclaimer: This framework is still in an early stage of development and the API could still change until the first pypi release.
+### disclaimer: This framework is still in an early stage of development and the API may still change until version 1.0.0.
 
 **Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python. It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, [csound](https://csound.com/) scores, musical notation with [Lilypond](https://lilypond.org/) via [abjad](https://github.com/Abjad/abjad)). The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures and an easily extensible and tweakable software design.
 
@@ -51,23 +51,27 @@ For more information how to use **mutwo** read the [documentation](https://mutwo
 
 ### Installation
 
-A basic installation (after cloning) with the main dependencies can be archived with the simple pip command:
+**Mutwo** is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
 
 ```sh
-pip3 install .
+pip3 install mutwo
 ```
 
 For using different backends or frontends (midi, abjad, ...) **mutwo** may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
 
 ```sh
-pip3 install .[abjad]
+pip3 install mutwo[abjad]
 ```
 
 To install all extra requirements simply run:
 
 ```sh
-pip3 install .[all]
+pip3 install mutwo[all]
 ```
+
+### Requirements
+
+Depending on the used converter classes, **mutwo** may need additional installed to work properly. For using the Csound converter, you should install Csound first. For using Lilypond via **mutwos** abjad Converter, install Lilypond first. For using the ISiS converter, install ISiS first.
 
 
 ### Similar projects
