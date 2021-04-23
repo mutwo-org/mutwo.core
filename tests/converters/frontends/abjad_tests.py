@@ -1,4 +1,5 @@
 import filecmp
+import os
 import unittest
 
 import abjad  # type: ignore
@@ -466,8 +467,11 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
 
         self.assertTrue(
-            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=True)
+            filecmp.cmp(new_png_file_path, png_file_to_compare_path, shallow=False)
         )
+
+        # remove test file
+        os.remove(new_png_file_path)
 
 
 if __name__ == "__main__":
