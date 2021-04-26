@@ -661,12 +661,16 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @property
     def closest_pythagorean_interval(self) -> "JustIntonationPitch":
-        closest_pythagorean_interval = self - type(self)(
-            functools.reduce(
-                operator.mul, self.helmholtz_ellis_just_intonation_notation_commas
+        if len(self.helmholtz_ellis_just_intonation_notation_commas) > 0:
+            closest_pythagorean_interval = self - type(self)(
+                functools.reduce(
+                    operator.mul, self.helmholtz_ellis_just_intonation_notation_commas
+                )
             )
-        )
-        closest_pythagorean_interval.normalize()
+            closest_pythagorean_interval.normalize()
+        else:
+            closest_pythagorean_interval = self.normalize(mutate=False)
+
         return closest_pythagorean_interval
 
     @property
