@@ -8,8 +8,6 @@ setting is :class:`SequentialEventToAbjadVoiceConverter`.
 """
 
 import abc
-import functools
-import operator
 import typing
 import warnings
 
