@@ -54,6 +54,9 @@ class CommaCompound(typing.Iterable[Comma]):
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, self._prime_to_exponent)
 
+    def __len__(self) -> int:
+        return sum((abs(exponent) for exponent in self._prime_to_exponent.values()))
+
     def __iter__(self):
         return (
             self._prime_to_comma[prime].ratio ** exponent
