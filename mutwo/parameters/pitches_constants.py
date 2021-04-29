@@ -26,6 +26,16 @@ DIATONIC_PITCH_NAME_TO_PITCH_CLASS = {
 """Mapping of diatonic pitch name to pitch class for the `WesternPitch` class.
 Mutwo uses a chromatic scale where a change of the number 1 is one half tone."""
 
+ASCENDING_DIATONIC_PITCH_NAMES = tuple(
+    sorted(
+        DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys(),
+        key=lambda diatonic_pitch_name: DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+            diatonic_pitch_name
+        ],
+    )
+)
+"""Tuple with diatonic pitch names in ascending order."""
+
 ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
     # multiply with 2 because the difference of "1" in pitch
     # class is defined as one chromatic step (see class
@@ -85,8 +95,8 @@ ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
     }.items()
 }
 """Mapping of accidental name to pitch class modification for the
-`WesternPitch` class. When adding new accidentals only this constant
-has to be changed."""
+`WesternPitch` class. When adding new accidentals or changing
+accidental names only this constant has to be changed."""
 
 PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME = {
     accidental_value: accidental_name

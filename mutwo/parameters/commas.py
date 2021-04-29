@@ -14,9 +14,6 @@ except ImportError:
     import fractions  # type: ignore
 
 
-from mutwo import parameters
-
-
 class Comma(object):
     """A `tuning comma <https://en.wikipedia.org/wiki/Comma_(music)>`_."""
 
@@ -39,12 +36,8 @@ class CommaCompound(typing.Iterable[Comma]):
     def __init__(
         self,
         prime_to_exponent: typing.Dict[int, int],
-        prime_to_comma: typing.Optional[typing.Dict[int, Comma]] = None,
+        prime_to_comma: typing.Optional[typing.Dict[int, Comma]],
     ):
-        # set default value
-        if prime_to_comma is None:
-            prime_to_comma = parameters.DEFAULT_PRIME_TO_COMMA
-
         # TODO(make sure all primes in 'prime_to_exponent' are also in
         # 'prime_to_comma')
 

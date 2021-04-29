@@ -4,6 +4,8 @@ from mutwo.utilities import tools
 
 from . import csound_constants
 from . import csound
+from . import ekmelily_constants
+from . import ekmelily
 from . import isis_constants
 from . import isis
 
