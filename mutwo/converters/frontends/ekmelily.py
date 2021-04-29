@@ -55,25 +55,23 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         ekmelily_accidentals: typing.Sequence[EkmelilyAccidental],
         # should have exactly 7 fractions (one for each diatonic pitch)
         global_scale: typing.Optional[typing.Tuple[fractions.Fraction, ...]] = None,
+        path: str = ".",
     ):
         if global_scale is None:
             # set to default 12 EDO, a' = 440 Hertz
             global_scale = frontends.ekmelily_constants.DEFAULT_GLOBAL_SCALE
 
-        corrected_global_scale = []
-        for nth_scale_degree, alteration_fraction in enumerate(global_scale):
-            if alteration_fraction < 0:
-                message = (
-                    "Found negative value in global scale for scale degree {}. Value"
-                    " has been set to 0 (no negative numbers are allowed).".format(
-                        nth_scale_degree
-                    )
-                )
-                warnings.warn(message)
-                alteration_fraction = 0
-            corrected_global_scale.append(alteration_fraction)
+        corrected_global_scale = list(global_scale)
+        if corrected_global_scale[0] != 0:
+            message = (
+                "Found value '{}' for first scale degree in global scale. Autoset value"
+                " to 0 (Lilypond doesn't allow values != 0 for the first scale degree)"
+                .format(corrected_global_scale[0])
+            )
+            warnings.warn(message)
+            corrected_global_scale[0] = 0
 
-        self._path = "ekme-{}.ily".format(name)
+        self._path = "{}/ekme-{}.ily".format(path, name)
         self._global_scale = tuple(corrected_global_scale)
         self._ekmelily_accidentals = ekmelily_accidentals
         (
@@ -365,6 +363,7 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         ] = None,
         prime_to_heji_accidental_name: typing.Optional[typing.Dict[int, str]] = None,
         reference_pitch: str = "a",
+        path: str = ".",
     ):
         if name is None:
             name = "heji-ref-{}".format(reference_pitch)
@@ -389,7 +388,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             prime_to_highest_allowed_exponent,
             prime_to_heji_accidental_name,
         )
-        super().__init__(name, ekmelily_accidentals, global_scale=global_scale)
+        super().__init__(
+            name, ekmelily_accidentals, global_scale=global_scale, path=path
+        )
 
     # ###################################################################### #
     #                          static methods                                #
