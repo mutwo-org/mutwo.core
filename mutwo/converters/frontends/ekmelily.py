@@ -142,7 +142,7 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
                 .format(corrected_global_scale[0])
             )
             warnings.warn(message)
-            corrected_global_scale[0] = 0
+            corrected_global_scale[0] = fractions.Fraction(0, 1)
         return tuple(corrected_global_scale)
 
     @staticmethod
