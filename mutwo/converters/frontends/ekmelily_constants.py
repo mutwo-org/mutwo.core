@@ -447,6 +447,23 @@ DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT = {
 """Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
 `prime_to_highest_allowed_exponent`."""
 
+DEFAULT_TEMPERED_PITCH_INDICATOR = "t"
+"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
+`tempered_pitch_indicator`."""
+
+DEFAULT_OTONALITY_INDICATOR = "o"
+"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
+`otonality_indicator`."""
+
+DEFAULT_UTONALITY_INDICATOR = "u"
+"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
+`utonality_indicator`."""
+
+# solution from: https://stackoverflow.com/questions/23199733/convert-numbers-into-corresponding-letter-using-python
+DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR = lambda exponent: chr(ord("`") + exponent)
+"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
+`exponent_to_exponent_indicator`."""
+
 PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE = round(
     (pitches.JustIntonationPitch((0, 7)).normalize(mutate=False).cents), 2  # type: ignore
 )
@@ -472,3 +489,9 @@ PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS = {
     * PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE,
 }
 """Step in cents mapping for each pythagorean accidental (# or b)."""
+
+DIFFERENCE_BETWEEN_PYTHAGOREAN_AND_TEMPERED_FIFTH = (
+    pitches.JustIntonationPitch("3/2").cents - 700
+)
+"""The difference in cents between a just fifth (3/2) and
+a 12-EDO fifth."""

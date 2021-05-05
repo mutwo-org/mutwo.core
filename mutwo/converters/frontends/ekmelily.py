@@ -1,9 +1,14 @@
-"""Build tuning files for Lilypond extension `ekmelily <http://www.ekmelic-music.org/de/extra/ekmelily.htm>`_.
+"""Build tuning files for `Lilypond <https://lilypond.org/>`_ extension `Ekmelily <http://www.ekmelic-music.org/en/extra/ekmelily.htm>`_.
 
 By default the smallest step which Lilypond supports is one quartertone. With
 the help of Ekmelily it is easily possible to add more complex micro- or
 macrotonal tunings to Lilypond. The converter in this module aims to make it easier
 to build tuning files to be used with the 'ekmel-main.ily' script from Thomas Richter.
+
+**Disclaimer:**
+
+For now the converters of this file only support making notation tables for
+English note names.
 """
 
 import dataclasses
@@ -25,12 +30,36 @@ from mutwo.utilities import constants
 
 @dataclasses.dataclass(frozen=True)
 class EkmelilyAccidental(object):
-    """Representation of an Ekmelily accidental."""
+    """Representation of an Ekmelily accidental.
+
+    :param accidental_name: The name of the accidental that
+        follows after the diatonic pitch name (e.g. 's' or 'qf')
+    :param accidental_glyphs: A tuple containing strings with the name
+        of accidental glyphs that should appear before the notehead. For
+        a list of available glyphs, check the documentation of
+        `Ekmelos <http://www.ekmelic-music.org/en/extra/ekmelos.htm>`_.
+        Furthermore one can find mappings from mutwo data to Ekmelos glyph
+        names in :const:`mutwo.converters.frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`
+        and :const:`mutwo.converters.frontends.ekmelily_constants.TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`.
+    :param deviation_in_cents: How many cents shall an altered pitch differ from
+        its diatonic / natural counterpart.
+    :param available_diatonic_pitch_indices: (optional) Sometimes one
+        may want to define accidentals which are only available for certain
+        diatonic pitches. For this case, one can use this argument
+        and specify all diatonic pitches which should know this
+        accidental. If this argument keeps undefined, the accidental
+        will be added to all seven diatonic pitches.
+
+    **Example:**
+
+    >>> from mutwo.converter.frontends import ekmelily
+    >>> sharp = ekmelily.EkmelilyAccidental('s', ("#xE262",), 100)
+    >>> flat = ekmelily.EkmelilyAccidental('f', ("#xE260",), -100)
+    """
 
     # TODO(add possibility to declare different languages)
     # typing.Union[str, typing.Dict[str, str]]
     accidental_name: str
-    # TODO(add possibility for multiple accidentals)
     accidental_glyphs: typing.Tuple[str, ...]
     deviation_in_cents: float
     available_diatonic_pitch_indices: typing.Optional[typing.Tuple[int, ...]] = None
@@ -47,32 +76,46 @@ class EkmelilyAccidental(object):
 
 
 class EkmelilyTuningFileConverter(converters_abc.Converter):
-    """Make Ekmelily tuning files from Ekmelily accidentals."""
+    """Build Ekmelily tuning files from Ekmelily accidentals.
+
+    :param path: Path where the new Ekmelily tuning file shall be written.
+        The suffix '.ily' is recommended, but not necessary.
+    :param ekmelily_accidentals: A sequence which contains all
+        :class:`EkmelilyAccidental` that shall be written to the tuning file,
+    :param global_scale: (optional) From the `Lilypond documentation <https://lilypond.org/doc/v2.20/Documentation/notation/scheme-functions>`_:
+        "This determines the tuning of pitches with no accidentals or key signatures.
+        The first pitch is c. Alterations are calculated relative to this scale.
+        The number of pitches in this scale determines the number of scale steps
+        that make up an octave. Usually the 7-note major scale."
+
+    **Example:**
+
+    >>> from mutwo.converter.frontends import ekmelily
+    >>> sharp = ekmelily.EkmelilyAccidental('s', ("#xE262",), 100)
+    >>> flat = ekmelily.EkmelilyAccidental('f', ("#xE260",), -100)
+    >>> eigth_tone_sharp = ekmelily.EkmelilyAccidental('es', ("#xE2C7",), 25)
+    >>> eigth_tone_flat = ekmelily.EkmelilyAccidental('ef', ("#xE2C2",), -25)
+    >>> converter = ekmelily.EkmelilyTuningFileConverter(
+    >>>     'ekme-test.ily', (sharp, flat, eigth_tone_sharp, eigth_tone_flat)
+    >>> )
+    >>> converter.convert()
+    """
 
     def __init__(
         self,
-        name: str,
+        path: str,
         ekmelily_accidentals: typing.Sequence[EkmelilyAccidental],
         # should have exactly 7 fractions (one for each diatonic pitch)
         global_scale: typing.Optional[typing.Tuple[fractions.Fraction, ...]] = None,
-        path: str = ".",
     ):
         if global_scale is None:
             # set to default 12 EDO, a' = 440 Hertz
             global_scale = frontends.ekmelily_constants.DEFAULT_GLOBAL_SCALE
 
-        corrected_global_scale = list(global_scale)
-        if corrected_global_scale[0] != 0:
-            message = (
-                "Found value '{}' for first scale degree in global scale. Autoset value"
-                " to 0 (Lilypond doesn't allow values != 0 for the first scale degree)"
-                .format(corrected_global_scale[0])
-            )
-            warnings.warn(message)
-            corrected_global_scale[0] = 0
+        global_scale = EkmelilyTuningFileConverter._correct_global_scale(global_scale)
 
-        self._path = "{}/ekme-{}.ily".format(path, name)
-        self._global_scale = tuple(corrected_global_scale)
+        self._path = path
+        self._global_scale = global_scale
         self._ekmelily_accidentals = ekmelily_accidentals
         (
             self._accidental_to_alteration_code_mapping,
@@ -84,6 +127,23 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     # ###################################################################### #
     #                          static methods                                #
     # ###################################################################### #
+
+    @staticmethod
+    def _correct_global_scale(
+        global_scale: typing.Tuple[fractions.Fraction, ...]
+    ) -> typing.Tuple[fractions.Fraction, ...]:
+        # Lilypond doesn't allow negative values for first item in global scale.
+        # Therefore Mutwo makes sure that the first item isn't a negative number.
+        corrected_global_scale = list(global_scale)
+        if corrected_global_scale[0] != 0:
+            message = (
+                "Found value '{}' for first scale degree in global scale. Autoset value"
+                " to 0 (Lilypond doesn't allow values != 0 for the first scale degree)"
+                .format(corrected_global_scale[0])
+            )
+            warnings.warn(message)
+            corrected_global_scale[0] = 0
+        return tuple(corrected_global_scale)
 
     @staticmethod
     def _deviation_in_cents_to_alteration_fraction(
@@ -101,6 +161,12 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         alteration_fraction: fractions.Fraction,
     ) -> float:
         return float(alteration_fraction * 200)
+
+    @staticmethod
+    def _accidental_index_to_alteration_code(accidental_index: int) -> str:
+        # convert index of accidental to hex code in a format that is
+        # readable by Lilypond
+        return "#x{}".format(str(hex(accidental_index))[2:].upper())
 
     @staticmethod
     def _group_accidentals_by_deviations_in_cents(
@@ -143,12 +209,14 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     ) -> None:
         # Add accidental data to accidental_to_alteration_code_mapping
         # and alteration_code_to_alteration_fraction_mapping.
-        is_positive = True
-        for accidental, accidental_index in (
-            (positive_accidental, positive_alteration_index),
-            (negative_accidental, negative_alteration_index),
+
+        for is_positive, accidental, accidental_index in (
+            (True, positive_accidental, positive_alteration_index),
+            (False, negative_accidental, negative_alteration_index),
         ):
-            alteration_code = "#x{}".format(str(hex(accidental_index))[2:].upper())
+            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+                accidental_index
+            )
             if accidental:
                 accidental_to_alteration_code_mapping.update(
                     {accidental: alteration_code}
@@ -157,9 +225,18 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
             if is_positive is True:
                 try:
                     deviation_in_cents = accidental.deviation_in_cents  # type: ignore
+
                 # if only negative accidental is defined
                 except AttributeError:
                     deviation_in_cents = negative_accidental.deviation_in_cents  # type: ignore
+
+                # special treatment for accidental with cent deviation 0
+                # -> this is always alteration_code '#x00' and get implicitly
+                #    defined if the user doesn't override it
+                if deviation_in_cents == 0:
+                    alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+                        0
+                    )
 
                 alteration_fraction = EkmelilyTuningFileConverter._deviation_in_cents_to_alteration_fraction(
                     deviation_in_cents
@@ -167,7 +244,6 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
                 alteration_code_to_alteration_fraction_mapping.update(
                     {alteration_code: alteration_fraction}
                 )
-                is_positive = False
 
     @staticmethod
     def _get_accidental_from_accidental_iterator(
@@ -190,7 +266,8 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         accidental_group: typing.Tuple[typing.Tuple[EkmelilyAccidental, ...], ...],
     ) -> int:
         # Define alteration codes and alteration fractions for accidentals
-        # in accidental group and add the defined data to both mappings.
+        # in one accidental group and add the calculated data to both mappings.
+
         positive_accidentals, negative_accidentals = accidental_group
         positive_accidentals_iterator = iter(positive_accidentals)
         negative_accidentals_iterator = iter(negative_accidentals)
@@ -316,12 +393,45 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         )
         return languages_table
 
-    def _make_notations_table(self) -> str:
-        # TODO(only add natural accidental if no accidental with deviation_in_cents = 0
-        #      has been defined!)
+    def _add_natural_alteration(
+        self, notations_table_entries: typing.List[str]
+    ) -> None:
+        natural_alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+            0
+        )
+        if (
+            natural_alteration_code
+            not in self._accidental_to_alteration_code_mapping.values()
+        ):
+            natural_alteration_entry = "({} {})".format(
+                natural_alteration_code,
+                frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH[
+                    (
+                        None,
+                        None,
+                        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+                            fractions.Fraction(0, 1)
+                        ],
+                    )
+                ],
+            )
+            notations_table_entries.append(natural_alteration_entry)
+            message = (
+                "No EkmelilyAccidental with cents_deviation = 0 has been found."
+                " Therefore mutwo automatically added natural sign with glyph '#xE261'"
+                " for natural pitches."
+            )
+            warnings.warn(message)
 
+    def _make_notations_table(self) -> str:
         # add natural accidental for diatonic pitches without alterations
-        notations_table_entries = ["(#x00 #xE261)"]
+        notations_table_entries = []
+
+        # add glyph for natural if it hasn't been defined in ekmelily_accidentals
+        # argument of __init__
+        self._add_natural_alteration(notations_table_entries)
+
+        # add glyphs for all remaining accidentals
         for accidental in self._ekmelily_accidentals:
             alteration_code = self._accidental_to_alteration_code_mapping[accidental]
             accidental_notation = "({} {})".format(
@@ -339,6 +449,9 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     # ###################################################################### #
 
     def convert(self):
+        """Render tuning file to :attr:`path`."""
+
+        # TODO(Make docstring with example!)
         ekmelily_tuning_file = (
             self._make_tuning_table(),
             self._make_languages_table(),
@@ -353,20 +466,49 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
 
 
 class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
-    """Make Ekmelily tuning files for `Helmholtz-Ellis JI Pitch Notation <https://marsbat.space/pdfs/notation.pdf>`_."""
+    """Build Ekmelily tuning files for `Helmholtz-Ellis JI Pitch Notation <https://marsbat.space/pdfs/notation.pdf>`_.
+
+    :param path: Path where the new Ekmelily tuning file shall be written.
+        The suffix '.ily' is recommended, but not necessary.
+    :param reference_pitch: (optional) The reference pitch (1/1). Should be a diatonic
+        pitch name (see :const:`mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
+        in English nomenclature. For any reference pitch != 'c' Lilyponds midi rendering
+        won't be correct.
+    :param prime_to_heji_accidental_name: (optional) Mapping of a prime number
+        to a string which indicates the respective prime number in the resulting
+        accidental name. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
+        for the default mapping.
+    :param otonality_indicator: (optional) String which indicates that the
+        respective prime alteration is otonal. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+        for the default value.
+    :param utonality_indicator: (optional) String which indicates that the
+        respective prime alteration is utonal. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+        for the default value.
+    :param exponent_to_exponent_indicator: (optional) Function to convert the
+        exponent of a prime number to string which indicates the respective
+        exponent. See :func:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
+        for the default function.
+    :param tempered_pitch_indicator: (optional) String which indicates that the
+        respective accidental is tempered (12 EDO). See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
+        for the default value.
+    """
 
     def __init__(
         self,
-        name: str = None,
+        path: str = None,
         prime_to_highest_allowed_exponent: typing.Optional[
             typing.Dict[int, int]
         ] = None,
+        reference_pitch: str = "c",
         prime_to_heji_accidental_name: typing.Optional[typing.Dict[int, str]] = None,
-        reference_pitch: str = "a",
-        path: str = ".",
+        otonality_indicator: str = None,
+        utonality_indicator: str = None,
+        exponent_to_exponent_indicator: typing.Callable[[int], str] = None,
+        tempered_pitch_indicator: str = None,
     ):
-        if name is None:
-            name = "heji-ref-{}".format(reference_pitch)
+        # set default values
+        if path is None:
+            path = "ekme-heji-ref-{}.ily".format(reference_pitch)
 
         if prime_to_highest_allowed_exponent is None:
             prime_to_highest_allowed_exponent = (
@@ -377,6 +519,27 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             prime_to_heji_accidental_name = (
                 frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME
             )
+
+        if otonality_indicator is None:
+            otonality_indicator = (
+                frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR
+            )
+
+        if utonality_indicator is None:
+            utonality_indicator = (
+                frontends.ekmelily_constants.DEFAULT_UTONALITY_INDICATOR
+            )
+
+        if exponent_to_exponent_indicator is None:
+            exponent_to_exponent_indicator = (
+                frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
+            )
+
+        if tempered_pitch_indicator is None:
+            tempered_pitch_indicator = (
+                frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR
+            )
+
         difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches = HEJIEkmelilyTuningFileConverter._find_difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches(
             reference_pitch
         )
@@ -387,10 +550,12 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches,
             prime_to_highest_allowed_exponent,
             prime_to_heji_accidental_name,
+            otonality_indicator,
+            utonality_indicator,
+            exponent_to_exponent_indicator,
+            tempered_pitch_indicator,
         )
-        super().__init__(
-            name, ekmelily_accidentals, global_scale=global_scale, path=path
-        )
+        super().__init__(path, ekmelily_accidentals, global_scale=global_scale)
 
     # ###################################################################### #
     #                          static methods                                #
@@ -404,19 +569,13 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         reference_pitch_index = pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
             reference_pitch
         )
-        # TODO(don't hard code 700 cents for tempered fifth, or hard code it at least
-        #      in constants file)
-        difference_between_pythagorean_and_tempered_fifth = (
-            pitches.JustIntonationPitch("3/2").cents - 700
-        )
-
         for diatonic_pitch_name in pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES:
             pitch_index = pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
                 diatonic_pitch_name
             )
             n_exponents_difference_from_reference = pitch_index - reference_pitch_index
             difference_from_tempered_diatonic_pitch = (
-                difference_between_pythagorean_and_tempered_fifth
+                frontends.ekmelily_constants.DIFFERENCE_BETWEEN_PYTHAGOREAN_AND_TEMPERED_FIFTH
                 * n_exponents_difference_from_reference
             )
             difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches.append(
@@ -481,6 +640,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         pythagorean_accidental: str,
         prime: int,
         exponent: int,
+        otonality_indicator: str,
+        utonality_indicator: str,
+        exponent_to_exponent_indicator: typing.Callable[[int], str],
     ) -> typing.Tuple[str, str, float]:
         glyph_key = (
             (prime, exponent, pythagorean_accidental)
@@ -491,13 +653,10 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             glyph_key
         ]
 
-        # TODO(don't hard code 'u' and 'o' or put it at least in constants)
-        # TODO(don't hard code a->1, b->2, c->3 exponents, or put it at least
-        #      in constants)
         accidental_name = "{}{}{}".format(
-            ("o", "u")[exponent < 0],
+            (otonality_indicator, utonality_indicator)[exponent < 0],
             prime_to_heji_accidental_name[prime],
-            "abc"[abs(exponent) - 1],
+            exponent_to_exponent_indicator(abs(exponent) - 1),
         )
 
         cents_deviation = pitches.JustIntonationPitch(
@@ -511,6 +670,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         prime_to_highest_allowed_exponent: typing.Dict[int, int],
         prime_to_heji_accidental_name: typing.Dict[int, str],
         exponents: typing.Tuple[int, ...],
+        otonality_indicator: str,
+        utonality_indicator: str,
+        exponent_to_exponent_indicator: typing.Callable[[int], str],
     ) -> EkmelilyAccidental:
         accidental_parts = ["{}".format(pythagorean_accidental)]
         cents_deviation = float(
@@ -532,6 +694,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
                     pythagorean_accidental,
                     prime,
                     exponent,
+                    otonality_indicator,
+                    utonality_indicator,
+                    exponent_to_exponent_indicator,
                 )
                 accidental_parts.append(accidental_change)
                 glyphs.append(glyph)
@@ -562,6 +727,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
     def _make_accidentals_for_higher_primes(
         prime_to_highest_allowed_exponent: typing.Dict[int, int],
         prime_to_heji_accidental_name: typing.Dict[int, str],
+        otonality_indicator: str,
+        utonality_indicator: str,
+        exponent_to_exponent_indicator: typing.Callable[[int], str],
     ) -> typing.Tuple[EkmelilyAccidental, ...]:
         allowed_exponents = tuple(
             tuple(range(-maxima_exponent, maxima_exponent + 1))
@@ -584,6 +752,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
                         prime_to_highest_allowed_exponent,
                         prime_to_heji_accidental_name,
                         exponents,
+                        otonality_indicator,
+                        utonality_indicator,
+                        exponent_to_exponent_indicator,
                     )
                     accidentals.append(accidental)
 
@@ -594,6 +765,7 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches: typing.Tuple[
             float, ...
         ],
+        tempered_pitch_indicator: str,
     ) -> typing.Tuple[EkmelilyAccidental, ...]:
         accidentals = []
 
@@ -610,8 +782,9 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
                 frontends.ekmelily_constants.TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH.items()
             ):
 
-                # TODO(don't hard code 't' or put it in constants)
-                accidental_name = "{}t".format(tempered_accidental)
+                accidental_name = "{}{}".format(
+                    tempered_accidental, tempered_pitch_indicator
+                )
                 deviation_in_cents = (
                     frontends.ekmelily_constants.TEMPERED_ACCIDENTAL_TO_CENT_DEVIATION[
                         tempered_accidental
@@ -638,6 +811,10 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         ],
         prime_to_highest_allowed_exponent: typing.Dict[int, int],
         prime_to_heji_accidental_name: typing.Dict[int, str],
+        otonality_indicator: str,
+        utonality_indicator: str,
+        exponent_to_exponent_indicator: typing.Callable[[int], str],
+        tempered_pitch_indicator: str,
     ) -> typing.Tuple[EkmelilyAccidental, ...]:
 
         # standard flat / sharp
@@ -647,12 +824,17 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
 
         # add accidentals with commas
         accidentals_for_higher_primes = HEJIEkmelilyTuningFileConverter._make_accidentals_for_higher_primes(
-            prime_to_highest_allowed_exponent, prime_to_heji_accidental_name
+            prime_to_highest_allowed_exponent,
+            prime_to_heji_accidental_name,
+            otonality_indicator,
+            utonality_indicator,
+            exponent_to_exponent_indicator,
         )
 
         # make tempered accidentals
         tempered_accidentals = HEJIEkmelilyTuningFileConverter._make_tempered_accidentals(
-            difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches
+            difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches,
+            tempered_pitch_indicator,
         )
 
         return (
