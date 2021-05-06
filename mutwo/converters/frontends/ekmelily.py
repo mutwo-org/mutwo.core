@@ -34,21 +34,25 @@ class EkmelilyAccidental(object):
 
     :param accidental_name: The name of the accidental that
         follows after the diatonic pitch name (e.g. 's' or 'qf')
-    :param accidental_glyphs: A tuple containing strings with the name
-        of accidental glyphs that should appear before the notehead. For
+    :type accidental_name: str
+    :param accidental_glyphs: The name of accidental glyphs that should
+        appear before the notehead. For
         a list of available glyphs, check the documentation of
         `Ekmelos <http://www.ekmelic-music.org/en/extra/ekmelos.htm>`_.
         Furthermore one can find mappings from mutwo data to Ekmelos glyph
-        names in :const:`mutwo.converters.frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`
-        and :const:`mutwo.converters.frontends.ekmelily_constants.TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`.
+        names in :const:`~mutwo.converters.frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`
+        and :const:`~mutwo.converters.frontends.ekmelily_constants.TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH`.
+    :type accidental_glyphs: typing.Tuple[str, ...]
     :param deviation_in_cents: How many cents shall an altered pitch differ from
         its diatonic / natural counterpart.
-    :param available_diatonic_pitch_indices: (optional) Sometimes one
+    :type deviation_in_cents: float
+    :param available_diatonic_pitch_indices: Sometimes one
         may want to define accidentals which are only available for certain
         diatonic pitches. For this case, one can use this argument
         and specify all diatonic pitches which should know this
         accidental. If this argument keeps undefined, the accidental
         will be added to all seven diatonic pitches.
+    :type available_diatonic_pitch_indices: typing.Optional[typing.Tuple[int, ...]], optional
 
     **Example:**
 
@@ -80,13 +84,16 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
 
     :param path: Path where the new Ekmelily tuning file shall be written.
         The suffix '.ily' is recommended, but not necessary.
+    :type path: str
     :param ekmelily_accidentals: A sequence which contains all
         :class:`EkmelilyAccidental` that shall be written to the tuning file,
-    :param global_scale: (optional) From the `Lilypond documentation <https://lilypond.org/doc/v2.20/Documentation/notation/scheme-functions>`_:
+    :type ekmelily_accidentals: typing.Sequence[EkmelilyAccidental]
+    :param global_scale: From the `Lilypond documentation <https://lilypond.org/doc/v2.20/Documentation/notation/scheme-functions>`_:
         "This determines the tuning of pitches with no accidentals or key signatures.
         The first pitch is c. Alterations are calculated relative to this scale.
         The number of pitches in this scale determines the number of scale steps
         that make up an octave. Usually the 7-note major scale."
+    :type global_scale: typing.Tuple[fractions.Fraction, ...], optional
 
     **Example:**
 
@@ -470,27 +477,34 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
 
     :param path: Path where the new Ekmelily tuning file shall be written.
         The suffix '.ily' is recommended, but not necessary.
-    :param reference_pitch: (optional) The reference pitch (1/1). Should be a diatonic
-        pitch name (see :const:`mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
+    :type path: str
+    :param reference_pitch: The reference pitch (1/1). Should be a diatonic
+        pitch name (see :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
         in English nomenclature. For any reference pitch != 'c' Lilyponds midi rendering
         won't be correct.
-    :param prime_to_heji_accidental_name: (optional) Mapping of a prime number
+    :type reference_pitch: str, optional
+    :param prime_to_heji_accidental_name: Mapping of a prime number
         to a string which indicates the respective prime number in the resulting
-        accidental name. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
+        accidental name. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
         for the default mapping.
-    :param otonality_indicator: (optional) String which indicates that the
-        respective prime alteration is otonal. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+    :type prime_to_heji_accidental_name: typing.Dict[int, str], optional
+    :param otonality_indicator: String which indicates that the
+        respective prime alteration is otonal. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
         for the default value.
-    :param utonality_indicator: (optional) String which indicates that the
-        respective prime alteration is utonal. See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+    :type otonality_indicator: str, optional
+    :param utonality_indicator: String which indicates that the
+        respective prime alteration is utonal. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
         for the default value.
-    :param exponent_to_exponent_indicator: (optional) Function to convert the
+    :type utonality_indicator: str, optional
+    :param exponent_to_exponent_indicator: Function to convert the
         exponent of a prime number to string which indicates the respective
-        exponent. See :func:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
+        exponent. See :func:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
         for the default function.
-    :param tempered_pitch_indicator: (optional) String which indicates that the
-        respective accidental is tempered (12 EDO). See :const:`mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
+    :type exponent_to_exponent_indicator: typing.Callable[[int], str], optional
+    :param tempered_pitch_indicator: String which indicates that the
+        respective accidental is tempered (12 EDO). See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
         for the default value.
+    :type tempered_pitch_indicator: str, optional
     """
 
     def __init__(
