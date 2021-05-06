@@ -18,7 +18,7 @@ extras_require.update(
 
 setuptools.setup(
     name="mutwo",
-    version="0.3.3",
+    version="0.3.4",
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,

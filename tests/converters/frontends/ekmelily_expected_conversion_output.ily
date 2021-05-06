@@ -1,0 +1,52 @@
+ekmTuning = #'(
+  (-1 0 1 2 5/2 7/2 9/2 11/2)
+  (#x12 . 1/8)
+  (#x14 . 1/2))
+
+ekmLanguages = #'(
+(english . (
+  (c 0 . 0)
+  (d 1 . 0)
+  (e 2 . 0)
+  (f 3 . 0)
+  (g 4 . 0)
+  (a 5 . 0)
+  (b 6 . 0)
+  (cs 0 . #x14)
+  (ds 1 . #x14)
+  (es 2 . #x14)
+  (fs 3 . #x14)
+  (gs 4 . #x14)
+  (as 5 . #x14)
+  (bs 6 . #x14)
+  (cf 0 . #x15)
+  (df 1 . #x15)
+  (ef 2 . #x15)
+  (ff 3 . #x15)
+  (gf 4 . #x15)
+  (af 5 . #x15)
+  (bf 6 . #x15)
+  (ces 0 . #x12)
+  (des 1 . #x12)
+  (ees 2 . #x12)
+  (fes 3 . #x12)
+  (ges 4 . #x12)
+  (aes 5 . #x12)
+  (bes 6 . #x12)
+  (cef 0 . #x13)
+  (def 1 . #x13)
+  (eef 2 . #x13)
+  (fef 3 . #x13)
+  (gef 4 . #x13)
+  (aef 5 . #x13)
+  (bef 6 . #x13))))
+
+ekmNotations = #'(
+(default .(
+  (#x0 #xE261)
+  (#x14 #xE262)
+  (#x15 #xE260)
+  (#x12 #xE2C7)
+  (#x13 #xE2C2))))
+
+\include "ekmel-main.ily"
