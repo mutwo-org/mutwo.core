@@ -179,8 +179,17 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     def _group_accidentals_by_deviations_in_cents(
         ekmelily_accidentals: typing.Sequence[EkmelilyAccidental],
     ) -> typing.Tuple[
-        typing.Tuple[typing.Tuple[EkmelilyAccidental, ...], ...], ...,
+        typing.Tuple[float, typing.Tuple[typing.Tuple[EkmelilyAccidental, ...], ...]],
+        ...,
     ]:
+        """Put all accidentals with the same absolute deviation to the same tuple.
+
+        The first element of each tuple is the absolute deviation in cents,
+        the second element is tuple with two elements where the first element
+        contains all positive accidentals and the second tuple all negative
+        accidentals.
+        """
+
         available_deviations_in_cents = sorted(
             set(
                 map(
@@ -190,13 +199,16 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
             )
         )
         accidentals_grouped_by_deviations_in_cents = tuple(
-            tuple(
+            (
+                deviation_in_cents,
                 tuple(
-                    accidental
-                    for accidental in ekmelily_accidentals
-                    if value * accidental.deviation_in_cents == deviation_in_cents
-                )
-                for value in (1, -1)
+                    tuple(
+                        accidental
+                        for accidental in ekmelily_accidentals
+                        if value * accidental.deviation_in_cents == deviation_in_cents
+                    )
+                    for value in (1, -1)
+                ),
             )
             for deviation_in_cents in available_deviations_in_cents
         )
@@ -204,7 +216,41 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         return accidentals_grouped_by_deviations_in_cents
 
     @staticmethod
-    def _process_accidentals(
+    def _process_single_accidental(
+        accidental_to_alteration_code_mapping: typing.Dict[EkmelilyAccidental, str],
+        alteration_code_to_alteration_fraction_mapping: typing.Dict[
+            str, fractions.Fraction
+        ],
+        accidental: typing.Optional[EkmelilyAccidental],
+        accidental_index: int,
+        is_positive: bool,
+        absolute_deviation_in_cents: float,
+    ):
+        # special treatment for accidental with cent deviation 0
+        # -> this is always alteration_code '#x00' and get implicitly
+        #    defined if the user doesn't override it
+        if absolute_deviation_in_cents == 0:
+            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+                int(not is_positive)
+            )
+        else:
+            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+                accidental_index
+            )
+
+        if accidental:
+            accidental_to_alteration_code_mapping.update({accidental: alteration_code})
+
+        if is_positive:
+            alteration_fraction = EkmelilyTuningFileConverter._deviation_in_cents_to_alteration_fraction(
+                absolute_deviation_in_cents
+            )
+            alteration_code_to_alteration_fraction_mapping.update(
+                {alteration_code: alteration_fraction}
+            )
+
+    @staticmethod
+    def _process_accidental_pair(
         accidental_to_alteration_code_mapping: typing.Dict[EkmelilyAccidental, str],
         alteration_code_to_alteration_fraction_mapping: typing.Dict[
             str, fractions.Fraction
@@ -213,6 +259,7 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         positive_alteration_index: int,
         negative_accidental: typing.Optional[EkmelilyAccidental],
         negative_alteration_index: int,
+        absolute_deviation_in_cents: float,
     ) -> None:
         # Add accidental data to accidental_to_alteration_code_mapping
         # and alteration_code_to_alteration_fraction_mapping.
@@ -221,36 +268,14 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
             (True, positive_accidental, positive_alteration_index),
             (False, negative_accidental, negative_alteration_index),
         ):
-            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
-                accidental_index
+            EkmelilyTuningFileConverter._process_single_accidental(
+                accidental_to_alteration_code_mapping,
+                alteration_code_to_alteration_fraction_mapping,
+                accidental,
+                accidental_index,
+                is_positive,
+                absolute_deviation_in_cents,
             )
-            if accidental:
-                accidental_to_alteration_code_mapping.update(
-                    {accidental: alteration_code}
-                )
-
-            if is_positive is True:
-                try:
-                    deviation_in_cents = accidental.deviation_in_cents  # type: ignore
-
-                # if only negative accidental is defined
-                except AttributeError:
-                    deviation_in_cents = negative_accidental.deviation_in_cents  # type: ignore
-
-                # special treatment for accidental with cent deviation 0
-                # -> this is always alteration_code '#x00' and get implicitly
-                #    defined if the user doesn't override it
-                if deviation_in_cents == 0:
-                    alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
-                        0
-                    )
-
-                alteration_fraction = EkmelilyTuningFileConverter._deviation_in_cents_to_alteration_fraction(
-                    deviation_in_cents
-                )
-                alteration_code_to_alteration_fraction_mapping.update(
-                    {alteration_code: alteration_fraction}
-                )
 
     @staticmethod
     def _get_accidental_from_accidental_iterator(
@@ -271,6 +296,7 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         ],
         nth_alteration: int,
         accidental_group: typing.Tuple[typing.Tuple[EkmelilyAccidental, ...], ...],
+        absolute_deviation_in_cents: float,
     ) -> int:
         # Define alteration codes and alteration fractions for accidentals
         # in one accidental group and add the calculated data to both mappings.
@@ -290,13 +316,14 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
                 negative_accidentals_iterator
             )
 
-            EkmelilyTuningFileConverter._process_accidentals(
+            EkmelilyTuningFileConverter._process_accidental_pair(
                 accidental_to_alteration_code_mapping,
                 alteration_code_to_alteration_fraction_mapping,
                 positive_accidental,
                 positive_alteration_index,
                 negative_accidental,
                 negative_alteration_index,
+                absolute_deviation_in_cents,
             )
             nth_alteration += 2
 
@@ -318,12 +345,16 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
 
         # start with hex x12 like in ekmel.ily
         nth_alteration = 18
-        for accidental_group in accidentals_grouped_by_deviations_in_cents:
+        for (
+            absolute_deviation_in_cents,
+            accidental_group,
+        ) in accidentals_grouped_by_deviations_in_cents:
             nth_alteration = EkmelilyTuningFileConverter._process_accidental_group(
                 accidental_to_alteration_code_mapping,
                 alteration_code_to_alteration_fraction_mapping,
                 nth_alteration,
                 accidental_group,
+                absolute_deviation_in_cents,
             )
 
         return (
@@ -432,7 +463,7 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
 
     def _make_notations_table(self) -> str:
         # add natural accidental for diatonic pitches without alterations
-        notations_table_entries = []
+        notations_table_entries: typing.List[str] = []
 
         # add glyph for natural if it hasn't been defined in ekmelily_accidentals
         # argument of __init__
