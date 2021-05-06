@@ -23,6 +23,7 @@ import expenvelope  # type: ignore
 from mutwo.converters import abc as converters_abc
 from mutwo.converters.frontends import abjad_attachments
 from mutwo.converters.frontends import abjad_constants
+from mutwo.converters.frontends import ekmelily_constants
 
 from mutwo import events
 from mutwo import parameters
@@ -32,6 +33,7 @@ from mutwo.utilities import tools
 
 __all__ = (
     "MutwoPitchToAbjadPitchConverter",
+    "MutwoPitchToHEJIAbjadPitchConverter",
     "MutwoVolumeToAbjadAttachmentDynamicConverter",
     "TempoEnvelopeToAbjadAttachmentTempoConverter",
     "ComplexTempoEnvelopeToAbjadAttachmentTempoConverter",
@@ -59,6 +61,122 @@ class MutwoPitchToAbjadPitchConverter(converters_abc.Converter):
             return abjad.NamedPitch(pitch_to_convert.name)
         else:
             return abjad.NamedPitch.from_hertz(pitch_to_convert.frequency)
+
+
+class _HEJIAccidental(object):
+    """Fake abjad accidental
+
+    Only for internal usage within the :class:`MutwoPitchToHEJIAbjadPitchConverter`.
+    """
+
+    def __init__(self, accidental: str):
+        self._accidental = accidental
+
+    def __str__(self) -> str:
+        return self._accidental
+
+    # necessary attributes, although they
+    # won't be used at all
+    semitones = 0
+    arrow = None
+
+
+class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
+    """Convert Mutwo :obj:`~mutwo.parameters.pitches.JustIntonationPitch` objects to Abjad Pitch objects."""
+
+    def __init__(
+        self,
+        reference: str = "a",
+        prime_to_heji_accidental_name: typing.Optional[typing.Dict[int, str]] = None,
+        otonality_indicator: str = None,
+        utonality_indicator: str = None,
+        exponent_to_exponent_indicator: typing.Callable[[int], str] = None,
+        tempered_pitch_indicator: str = None,
+    ):
+        # set default values
+        if prime_to_heji_accidental_name is None:
+            prime_to_heji_accidental_name = (
+                ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME
+            )
+
+        if otonality_indicator is None:
+            otonality_indicator = ekmelily_constants.DEFAULT_OTONALITY_INDICATOR
+
+        if utonality_indicator is None:
+            utonality_indicator = ekmelily_constants.DEFAULT_UTONALITY_INDICATOR
+
+        if exponent_to_exponent_indicator is None:
+            exponent_to_exponent_indicator = (
+                ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR
+            )
+
+        if tempered_pitch_indicator is None:
+            tempered_pitch_indicator = (
+                ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR
+            )
+
+        self._reference = reference
+        self._otonality_indicator = otonality_indicator
+        self._utonality_indicator = utonality_indicator
+        self._exponent_to_exponent_indicator = exponent_to_exponent_indicator
+        self._tempered_pitch_indicator = tempered_pitch_indicator
+        self._reference_index = parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+            reference
+        )
+        self._prime_to_heji_accidental_name = prime_to_heji_accidental_name
+
+    def _convert_just_intonation_pitch(
+        self,
+        pitch_to_convert: parameters.pitches.JustIntonationPitch,
+    ) -> abjad.Pitch:
+        # find pythagorean pitch
+        closest_pythagorean_pitch_name = pitch_to_convert.get_closest_pythagorean_pitch_name(
+            self._reference
+        )
+        abjad_pitch_class = abjad.NamedPitchClass(closest_pythagorean_pitch_name)
+
+        # find additional commas
+        accidental_parts = [str(abjad_pitch_class.accidental)]
+        prime_to_exponent = (
+            pitch_to_convert.helmholtz_ellis_just_intonation_notation_commas.prime_to_exponent
+        )
+        for prime in sorted(prime_to_exponent.keys()):
+            exponent = prime_to_exponent[prime]
+            if exponent != 0:
+                tonality = (
+                    self._otonality_indicator
+                    if exponent > 0
+                    else self._utonality_indicator
+                )
+                heji_accidental_name = self._prime_to_heji_accidental_name[prime]
+                exponent = self._exponent_to_exponent_indicator(abs(exponent) - 1)
+                accidental_parts.append(
+                    "{}{}{}".format(tonality, heji_accidental_name, exponent)
+                )
+
+        accidental = _HEJIAccidental("".join(accidental_parts))
+        abjad_pitch_class._accidental = accidental
+
+        octave = pitch_to_convert.octave + 4
+        if (
+            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+                closest_pythagorean_pitch_name[0]
+            )
+            < self._reference_index
+        ):
+            octave += 1
+
+        abjad_pitch = abjad.NamedPitch(octave=octave)
+        abjad_pitch._pitch_class = abjad_pitch_class
+        return abjad_pitch
+
+    def convert(self, pitch_to_convert: parameters.abc.Pitch) -> abjad.Pitch:
+        if isinstance(pitch_to_convert, parameters.pitches.JustIntonationPitch):
+            abjad_pitch = self._convert_just_intonation_pitch(pitch_to_convert)
+        else:
+            abjad_pitch = MutwoPitchToAbjadPitchConverter().convert(pitch_to_convert)
+
+        return abjad_pitch
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):

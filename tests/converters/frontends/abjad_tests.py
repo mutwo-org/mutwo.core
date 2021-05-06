@@ -51,6 +51,65 @@ class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
         )
 
 
+class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
+    def test_convert(self):
+        converter = frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter(reference="c")
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("1/1"))
+            ),
+            abjad.lilypond(abjad.NamedPitch("c'")),
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("3/2"))
+            ),
+            abjad.lilypond(abjad.NamedPitch("g'")),
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("5/4"))
+            ),
+            "eoaa'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("7/4"))
+            ),
+            "bfoba'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("7/6"))
+            ),
+            "efoba'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("12/7"))
+            ),
+            "auba'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("9/8"))
+            ),
+            "d'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("9/16"))
+            ),
+            "d",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("9/4"))
+            ),
+            "d''",
+        )
+
+
 class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
     def test_convert(self):
         converter = frontends.abjad.MutwoVolumeToAbjadAttachmentDynamicConverter()

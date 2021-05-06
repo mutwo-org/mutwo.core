@@ -55,3 +55,7 @@ class CommaCompound(typing.Iterable[Comma]):
             self._prime_to_comma[prime].ratio ** exponent
             for prime, exponent in self._prime_to_exponent.items()
         )
+
+    @property
+    def prime_to_exponent(self) -> typing.Dict[int, int]:
+        return dict(self._prime_to_exponent)
