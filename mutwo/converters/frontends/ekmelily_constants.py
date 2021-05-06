@@ -460,7 +460,7 @@ DEFAULT_UTONALITY_INDICATOR = "u"
 `utonality_indicator`."""
 
 # solution from: https://stackoverflow.com/questions/23199733/convert-numbers-into-corresponding-letter-using-python
-DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR = lambda exponent: chr(ord("`") + exponent)
+DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR = lambda exponent: chr(ord("a") + exponent)
 """Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
 `exponent_to_exponent_indicator`."""
 
