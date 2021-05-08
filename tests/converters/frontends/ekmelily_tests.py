@@ -106,12 +106,34 @@ class EkmelilyTuningFileConverterTest(unittest.TestCase):
         )
 
         test_file_path = "tests/converters/frontends/ekme-test.ily"
+        natural = ekmelily.EkmelilyAccidental('', ("#xE261",), 0)
         sharp = ekmelily.EkmelilyAccidental("s", ("#xE262",), 100)
         flat = ekmelily.EkmelilyAccidental("f", ("#xE260",), -100)
         eigth_tone_sharp = ekmelily.EkmelilyAccidental("es", ("#xE2C7",), 25)
         eigth_tone_flat = ekmelily.EkmelilyAccidental("ef", ("#xE2C2",), -25)
         converter = ekmelily.EkmelilyTuningFileConverter(
-            test_file_path, (sharp, flat, eigth_tone_sharp, eigth_tone_flat)
+            test_file_path, (natural, sharp, flat, eigth_tone_sharp, eigth_tone_flat)
+        )
+        converter.convert()
+
+        self.assertTrue(filecmp.cmp(test_file_path, comparision_file_path))
+        os.remove(test_file_path)
+
+
+class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
+    def test_convert(self):
+        # regression test with doc string example
+        comparision_file_path = (
+            "tests/converters/frontends/ekmelily_heji_expected_conversion_output.ily"
+        )
+
+        test_file_path = "tests/converters/frontends/ekme-heji-test.ily"
+        converter = ekmelily.HEJIEkmelilyTuningFileConverter(
+            test_file_path,
+            prime_to_highest_allowed_exponent={5: 2, 7: 1},
+            reference_pitch="c",
+            prime_to_heji_accidental_name={5: "five", 7: "seven"},
+            exponent_to_exponent_indicator=lambda exponent: ("one", "two")[exponent],
         )
         converter.convert()
 

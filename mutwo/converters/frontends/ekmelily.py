@@ -103,12 +103,13 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     **Example:**
 
     >>> from mutwo.converter.frontends import ekmelily
+    >>> natural = ekmelily.EkmelilyAccidental('', ("#xE261",), 0)
     >>> sharp = ekmelily.EkmelilyAccidental('s', ("#xE262",), 100)
     >>> flat = ekmelily.EkmelilyAccidental('f', ("#xE260",), -100)
     >>> eigth_tone_sharp = ekmelily.EkmelilyAccidental('es', ("#xE2C7",), 25)
     >>> eigth_tone_flat = ekmelily.EkmelilyAccidental('ef', ("#xE2C2",), -25)
     >>> converter = ekmelily.EkmelilyTuningFileConverter(
-    >>>     'ekme-test.ily', (sharp, flat, eigth_tone_sharp, eigth_tone_flat)
+    >>>     'ekme-test.ily', (natural, sharp, flat, eigth_tone_sharp, eigth_tone_flat)
     >>> )
     >>> converter.convert()
     """
@@ -181,6 +182,25 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         return "#x{}".format(str(hex(accidental_index))[2:].upper())
 
     @staticmethod
+    def _find_and_group_accidentals_by_specific_deviation_in_cents(
+        ekmelily_accidentals: typing.Sequence[EkmelilyAccidental],
+        deviation_in_cents: float,
+    ) -> typing.Tuple[
+        typing.Tuple[EkmelilyAccidental, ...], typing.Tuple[EkmelilyAccidental, ...]
+    ]:
+        positive, negative = [], []
+        for accidental in ekmelily_accidentals:
+            if accidental.deviation_in_cents == deviation_in_cents:
+                positive.append(accidental)
+            elif (
+                accidental.deviation_in_cents == -deviation_in_cents
+                and deviation_in_cents != 0
+            ):
+                negative.append(accidental)
+
+        return tuple(positive), tuple(negative)
+
+    @staticmethod
     def _group_accidentals_by_deviations_in_cents(
         ekmelily_accidentals: typing.Sequence[EkmelilyAccidental],
     ) -> typing.Tuple[
@@ -206,13 +226,8 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         accidentals_grouped_by_deviations_in_cents = tuple(
             (
                 deviation_in_cents,
-                tuple(
-                    tuple(
-                        accidental
-                        for accidental in ekmelily_accidentals
-                        if value * accidental.deviation_in_cents == deviation_in_cents
-                    )
-                    for value in (1, -1)
+                EkmelilyTuningFileConverter._find_and_group_accidentals_by_specific_deviation_in_cents(
+                    ekmelily_accidentals, deviation_in_cents
                 ),
             )
             for deviation_in_cents in available_deviations_in_cents
@@ -231,17 +246,9 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         is_positive: bool,
         absolute_deviation_in_cents: float,
     ):
-        # special treatment for accidental with cent deviation 0
-        # -> this is always alteration_code '#x00' and get implicitly
-        #    defined if the user doesn't override it
-        if absolute_deviation_in_cents == 0:
-            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
-                int(not is_positive)
-            )
-        else:
-            alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
-                accidental_index
-            )
+        alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
+            accidental_index
+        )
 
         if accidental:
             accidental_to_alteration_code_mapping.update({accidental: alteration_code})
@@ -348,8 +355,7 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
             str, fractions.Fraction
         ] = {}
 
-        # start with hex x12 like in ekmel.ily
-        nth_alteration = 18
+        nth_alteration = 0
         for (
             absolute_deviation_in_cents,
             accidental_group,
@@ -410,16 +416,6 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         # TODO(support more languages than English)
         language_table_entries = []
 
-        # 1. Append pitches without accidentals
-        for nth_diatonic_pitch, diatonic_pitch in enumerate(
-            pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES
-        ):
-            natural_pitch_entry = "({} {} . 0)".format(
-                diatonic_pitch, nth_diatonic_pitch
-            )
-            language_table_entries.append(natural_pitch_entry)
-
-        # 2. Append pitches with accidentals
         for accidental in self._ekmelily_accidentals:
             for nth_diatonic_pitch, diatonic_pitch in enumerate(
                 pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES
@@ -436,45 +432,9 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         )
         return languages_table
 
-    def _add_natural_alteration(
-        self, notations_table_entries: typing.List[str]
-    ) -> None:
-        natural_alteration_code = EkmelilyTuningFileConverter._accidental_index_to_alteration_code(
-            0
-        )
-        if (
-            natural_alteration_code
-            not in self._accidental_to_alteration_code_mapping.values()
-        ):
-            natural_alteration_entry = "({} {})".format(
-                natural_alteration_code,
-                frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH[
-                    (
-                        None,
-                        None,
-                        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
-                            fractions.Fraction(0, 1)
-                        ],
-                    )
-                ],
-            )
-            notations_table_entries.append(natural_alteration_entry)
-            message = (
-                "No EkmelilyAccidental with cents_deviation = 0 has been found."
-                " Therefore mutwo automatically added natural sign with glyph '#xE261'"
-                " for natural pitches."
-            )
-            warnings.warn(message)
-
     def _make_notations_table(self) -> str:
-        # add natural accidental for diatonic pitches without alterations
         notations_table_entries: typing.List[str] = []
 
-        # add glyph for natural if it hasn't been defined in ekmelily_accidentals
-        # argument of __init__
-        self._add_natural_alteration(notations_table_entries)
-
-        # add glyphs for all remaining accidentals
         for accidental in self._ekmelily_accidentals:
             alteration_code = self._accidental_to_alteration_code_mapping[accidental]
             accidental_notation = "({} {})".format(
@@ -855,8 +815,6 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
                     ]
                     - difference_in_cents_from_tempered_pitch_class
                 )
-                if deviation_in_cents == 0:
-                    deviation_in_cents = 0.2
 
                 accidental = EkmelilyAccidental(
                     accidental_name,
@@ -901,8 +859,22 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             tempered_pitch_indicator,
         )
 
+        # add natural accidental
+        natural_accidental = (
+            EkmelilyAccidental(
+                "",
+                (
+                    frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH[
+                        (None, None, "")
+                    ],
+                ),
+                0
+            ),
+        )
+
         return (
-            pythagorean_accidentals
+            natural_accidental
+            + pythagorean_accidentals
             + accidentals_for_higher_primes
             + tempered_accidentals
         )
