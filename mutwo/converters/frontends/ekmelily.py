@@ -7,8 +7,7 @@ to build tuning files to be used with the 'ekmel-main.ily' script from Thomas Ri
 
 **Disclaimer:**
 
-For now the converters of this file only support making notation tables for
-English note names.
+For now the converters only support making notation tables for English note names.
 """
 
 import dataclasses
@@ -516,30 +515,38 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         The suffix '.ily' is recommended, but not necessary.
     :type path: str
     :param reference_pitch: The reference pitch (1/1). Should be a diatonic
-        pitch name (see :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
-        in English nomenclature. For any reference pitch != 'c' Lilyponds midi rendering
-        won't be correct.
+        pitch name (see
+        :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
+        in English nomenclature. For any other reference pitch than 'c', Lilyponds
+        midi rendering for pitches with the diatonic pitch 'c' will be slightly
+        out of tune (because the first value of :arg:`global_scale`
+        always have to be 0).
     :type reference_pitch: str, optional
     :param prime_to_heji_accidental_name: Mapping of a prime number
         to a string which indicates the respective prime number in the resulting
-        accidental name. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
+        accidental name. See
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
         for the default mapping.
     :type prime_to_heji_accidental_name: typing.Dict[int, str], optional
     :param otonality_indicator: String which indicates that the
-        respective prime alteration is otonal. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+        respective prime alteration is otonal. See
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
         for the default value.
     :type otonality_indicator: str, optional
     :param utonality_indicator: String which indicates that the
-        respective prime alteration is utonal. See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
+        respective prime alteration is utonal. See
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
         for the default value.
     :type utonality_indicator: str, optional
     :param exponent_to_exponent_indicator: Function to convert the
         exponent of a prime number to string which indicates the respective
-        exponent. See :func:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
+        exponent. See
+        :func:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR`
         for the default function.
     :type exponent_to_exponent_indicator: typing.Callable[[int], str], optional
     :param tempered_pitch_indicator: String which indicates that the
-        respective accidental is tempered (12 EDO). See :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
+        respective accidental is tempered (12 EDO). See
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_TEMPERED_PITCH_INDICATOR`
         for the default value.
     :type tempered_pitch_indicator: str, optional
     """

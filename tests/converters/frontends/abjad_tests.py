@@ -53,7 +53,7 @@ class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
 
 class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
     def test_convert(self):
-        converter = frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter(reference="c")
+        converter = frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter(reference_pitch="c")
         self.assertEqual(
             abjad.lilypond(
                 converter.convert(parameters.pitches.JustIntonationPitch("1/1"))

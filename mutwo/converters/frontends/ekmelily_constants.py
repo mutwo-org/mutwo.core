@@ -1,5 +1,8 @@
 """Constants to be used for and with :mod:`mutwo.converters.frontends.ekmelily`.
 
+Some constants are also used for default values of
+:class:`~mutwo.converters.frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter`
+__init__ method.
 """
 
 try:
@@ -20,8 +23,9 @@ DEFAULT_GLOBAL_SCALE = (
     fractions.Fraction(9, 2),
     fractions.Fraction(11, 2),
 )
-"""Default value for :class:`EkmelilyTuningFileConverter` argument
-`global_scale`."""
+"""Default value for
+:class:`~mutwo.converters.frontends.ekmelily.EkmelilyTuningFileConverter`
+argument `global_scale`."""
 
 
 # TODO(find glyph names in 'EkmelosGlyphNames.nam' file, provided
@@ -431,8 +435,9 @@ DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME = {
         (5, 7, 11, 13, 17, 19, 23), "a b c d e f g".split(" ")
     )
 }
-"""Default mapping for :class:`HEJIEkmelilyTuningFileConverter` argument
-`prime_to_heji_accidental_name`."""
+"""Default mapping for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `prime_to_heji_accidental_name`."""
 
 DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT = {
     prime: highest_allowed_comma
@@ -444,25 +449,30 @@ DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT = {
     # )
     for prime, highest_allowed_comma in zip((5, 7, 11, 13, 17), (3, 2, 1, 1, 1),)
 }
-"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
-`prime_to_highest_allowed_exponent`."""
+"""Default value for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `prime_to_highest_allowed_exponent`."""
 
 DEFAULT_TEMPERED_PITCH_INDICATOR = "t"
-"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
-`tempered_pitch_indicator`."""
+"""Default value for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `tempered_pitch_indicator`."""
 
 DEFAULT_OTONALITY_INDICATOR = "o"
-"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
-`otonality_indicator`."""
+"""Default value for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `otonality_indicator`."""
 
 DEFAULT_UTONALITY_INDICATOR = "u"
-"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
-`utonality_indicator`."""
+"""Default value for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `utonality_indicator`."""
 
 # solution from: https://stackoverflow.com/questions/23199733/convert-numbers-into-corresponding-letter-using-python
 DEFAULT_EXPONENT_TO_EXPONENT_INDICATOR = lambda exponent: chr(ord("a") + exponent)
-"""Default value for :class:`HEJIEkmelilyTuningFileConverter` argument
-`exponent_to_exponent_indicator`."""
+"""Default function for
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
+argument `exponent_to_exponent_indicator`."""
 
 PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE = round(
     (pitches.JustIntonationPitch((0, 7)).normalize(mutate=False).cents), 2  # type: ignore
@@ -494,4 +504,6 @@ DIFFERENCE_BETWEEN_PYTHAGOREAN_AND_TEMPERED_FIFTH = (
     pitches.JustIntonationPitch("3/2").cents - 700
 )
 """The difference in cents between a just fifth (3/2) and
-a 12-EDO fifth."""
+a 12-EDO fifth. This constant is used in
+:class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`.
+"""
