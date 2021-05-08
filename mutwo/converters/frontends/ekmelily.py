@@ -62,6 +62,7 @@ class EkmelilyAccidental(object):
     **Example:**
 
     >>> from mutwo.converter.frontends import ekmelily
+    >>> natural = ekmelily.EkmelilyAccidental('', ("#xE261",), 0)
     >>> sharp = ekmelily.EkmelilyAccidental('s', ("#xE262",), 100)
     >>> flat = ekmelily.EkmelilyAccidental('f', ("#xE260",), -100)
     """
