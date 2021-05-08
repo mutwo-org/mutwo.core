@@ -647,11 +647,10 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             cents_deviation = frontends.ekmelily_constants.PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS[
                 alteration_name
             ]
-            if cents_deviation != 0:
-                accidental = EkmelilyAccidental(
-                    alteration_name, (glyph,), cents_deviation
-                )
-                accidentals.append(accidental)
+            accidental = EkmelilyAccidental(
+                alteration_name, (glyph,), cents_deviation
+            )
+            accidentals.append(accidental)
 
         return tuple(accidentals)
 
@@ -688,19 +687,16 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
     @staticmethod
     def _make_higher_prime_accidental(
         pythagorean_accidental: str,
+        pythagorean_accidental_cents_deviation: float,
+        exponents: typing.Tuple[int, ...],
         prime_to_highest_allowed_exponent: typing.Dict[int, int],
         prime_to_heji_accidental_name: typing.Dict[int, str],
-        exponents: typing.Tuple[int, ...],
         otonality_indicator: str,
         utonality_indicator: str,
         exponent_to_exponent_indicator: typing.Callable[[int], str],
     ) -> EkmelilyAccidental:
         accidental_parts = ["{}".format(pythagorean_accidental)]
-        cents_deviation = float(
-            frontends.ekmelily_constants.PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS[
-                pythagorean_accidental
-            ]
-        )
+        cents_deviation = float(pythagorean_accidental_cents_deviation)
         glyphs = []
         for prime, exponent in zip(
             prime_to_highest_allowed_exponent.keys(), exponents,
@@ -764,15 +760,17 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         for exponents in itertools.product(*allowed_exponents):
             if any(tuple(exp != 0 for exp in exponents)):
                 for (
-                    pythagorean_accidental
+                    pythagorean_accidental,
+                    pythagorean_accidental_cents_deviation,
                 ) in (
-                    frontends.ekmelily_constants.PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS.keys()
+                    frontends.ekmelily_constants.PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS.items()
                 ):
                     accidental = HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
                         pythagorean_accidental,
+                        pythagorean_accidental_cents_deviation,
+                        exponents,
                         prime_to_highest_allowed_exponent,
                         prime_to_heji_accidental_name,
-                        exponents,
                         otonality_indicator,
                         utonality_indicator,
                         exponent_to_exponent_indicator,
@@ -836,12 +834,10 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         tempered_pitch_indicator: str,
     ) -> typing.Tuple[EkmelilyAccidental, ...]:
 
-        # standard flat / sharp
         pythagorean_accidentals = (
             HEJIEkmelilyTuningFileConverter._make_pythagorean_accidentals()
         )
 
-        # add accidentals with commas
         accidentals_for_higher_primes = HEJIEkmelilyTuningFileConverter._make_accidentals_for_higher_primes(
             prime_to_highest_allowed_exponent,
             prime_to_heji_accidental_name,
@@ -850,28 +846,13 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
             exponent_to_exponent_indicator,
         )
 
-        # make tempered accidentals
         tempered_accidentals = HEJIEkmelilyTuningFileConverter._make_tempered_accidentals(
             difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches,
             tempered_pitch_indicator,
         )
 
-        # add natural accidental
-        natural_accidental = (
-            EkmelilyAccidental(
-                "",
-                (
-                    frontends.ekmelily_constants.PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH[
-                        (None, None, "")
-                    ],
-                ),
-                0
-            ),
-        )
-
         return (
-            natural_accidental
-            + pythagorean_accidentals
+            pythagorean_accidentals
             + accidentals_for_higher_primes
             + tempered_accidentals
         )

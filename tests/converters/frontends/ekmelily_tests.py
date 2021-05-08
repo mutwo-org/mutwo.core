@@ -8,6 +8,7 @@ except ImportError:
     import fractions  # type: ignore
 
 from mutwo.converters.frontends import ekmelily
+from mutwo.converters.frontends import ekmelily_constants
 
 
 class EkmelilyTuningFileConverterTest(unittest.TestCase):
@@ -106,7 +107,7 @@ class EkmelilyTuningFileConverterTest(unittest.TestCase):
         )
 
         test_file_path = "tests/converters/frontends/ekme-test.ily"
-        natural = ekmelily.EkmelilyAccidental('', ("#xE261",), 0)
+        natural = ekmelily.EkmelilyAccidental("", ("#xE261",), 0)
         sharp = ekmelily.EkmelilyAccidental("s", ("#xE262",), 100)
         flat = ekmelily.EkmelilyAccidental("f", ("#xE260",), -100)
         eigth_tone_sharp = ekmelily.EkmelilyAccidental("es", ("#xE2C7",), 25)
@@ -121,6 +122,123 @@ class EkmelilyTuningFileConverterTest(unittest.TestCase):
 
 
 class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
+    def test_find_difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches(
+        self,
+    ):
+        diff_just_and_tempered_fifth = 1.955000865387433
+        self.assertEqual(
+            ekmelily.HEJIEkmelilyTuningFileConverter._find_difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches(
+                "c"
+            ),
+            (
+                0,
+                diff_just_and_tempered_fifth * 2,
+                diff_just_and_tempered_fifth * 4,
+                -diff_just_and_tempered_fifth,
+                diff_just_and_tempered_fifth,
+                diff_just_and_tempered_fifth * 3,
+                diff_just_and_tempered_fifth * 5,
+            ),
+        )
+        self.assertEqual(
+            ekmelily.HEJIEkmelilyTuningFileConverter._find_difference_in_cents_from_tempered_pitch_class_for_diatonic_pitches(
+                "a"
+            ),
+            (
+                diff_just_and_tempered_fifth * -3,
+                diff_just_and_tempered_fifth * -1,
+                diff_just_and_tempered_fifth * 1,
+                diff_just_and_tempered_fifth * -4,
+                diff_just_and_tempered_fifth * -2,
+                0,
+                diff_just_and_tempered_fifth * 2,
+            ),
+        )
+
+    def test_make_higher_prime_accidental(self):
+        def round_deviation_in_cents(
+            ekmelily_accidental: ekmelily.EkmelilyAccidental,
+        ) -> ekmelily.EkmelilyAccidental:
+            return ekmelily.EkmelilyAccidental(
+                ekmelily_accidental.accidental_name,
+                ekmelily_accidental.accidental_glyphs,
+                round(ekmelily_accidental.deviation_in_cents, 3),
+                ekmelily_accidental.available_diatonic_pitch_indices,
+            )
+
+        default_args = (
+            ekmelily_constants.DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT,
+            {5: "five", 7: "seven", 11: "eleven"},
+            "o",
+            "u",
+            lambda exponent: ("one", "two", "three")[exponent],
+        )
+
+        self.assertEqual(
+            round_deviation_in_cents(
+                ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
+                    "", 0, (1, 0, 0), *default_args
+                )
+            ),
+            round_deviation_in_cents(
+                ekmelily.EkmelilyAccidental("ofiveone", ("#xE2C2",), -21.50628959671495)
+            ),
+        )
+
+        self.assertEqual(
+            round_deviation_in_cents(
+                ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
+                    "", 0, (-2, 0, 0), *default_args
+                )
+            ),
+            round_deviation_in_cents(
+                ekmelily.EkmelilyAccidental(
+                    "ufivetwo", ("#xE2D1",), 2 * 21.50628959671495
+                )
+            ),
+        )
+
+        self.assertEqual(
+            round_deviation_in_cents(
+                ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
+                    "", 0, (1, -1, 0), *default_args
+                )
+            ),
+            round_deviation_in_cents(
+                ekmelily.EkmelilyAccidental(
+                    "ofiveoneusevenone",
+                    ("#xE2DF", "#xE2C2",),
+                    -21.50628959671495 + 27.264091800100235,
+                )
+            ),
+        )
+
+        self.assertEqual(
+            round_deviation_in_cents(
+                ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
+                    "s", 113.7, (0, 0, 1), *default_args
+                )
+            ),
+            round_deviation_in_cents(
+                ekmelily.EkmelilyAccidental(
+                    "soelevenone", ("#xE2E3", "#xE262"), 53.27294323014408 + 113.7
+                )
+            ),
+        )
+
+        self.assertEqual(
+            round_deviation_in_cents(
+                ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
+                    "ss", 2 * 113.7, (3, 0, 0), *default_args
+                )
+            ),
+            round_deviation_in_cents(
+                ekmelily.EkmelilyAccidental(
+                    "ssofivethree", ("#xE2D8",), (3 * -21.50628959671495) + (2 * 113.7)
+                )
+            ),
+        )
+
     def test_convert(self):
         # regression test with doc string example
         comparision_file_path = (
