@@ -1,3 +1,6 @@
+"""Submodule for the parameter tempo.
+"""
+
 import typing
 
 from mutwo import parameters
