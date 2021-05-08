@@ -67,8 +67,6 @@ class EkmelilyAccidental(object):
     >>> flat = ekmelily.EkmelilyAccidental('f', ("#xE260",), -100)
     """
 
-    # TODO(add possibility to declare different languages)
-    # typing.Union[str, typing.Dict[str, str]]
     accidental_name: str
     accidental_glyphs: typing.Tuple[str, ...]
     deviation_in_cents: float
@@ -414,7 +412,6 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
         return None
 
     def _make_languages_table(self) -> str:
-        # TODO(support more languages than English)
         language_table_entries = []
 
         for accidental in self._ekmelily_accidentals:
@@ -455,7 +452,6 @@ class EkmelilyTuningFileConverter(converters_abc.Converter):
     def convert(self):
         """Render tuning file to :attr:`path`."""
 
-        # TODO(Make docstring with example!)
         ekmelily_tuning_file = (
             self._make_tuning_table(),
             self._make_languages_table(),
