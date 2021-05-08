@@ -514,6 +514,12 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
     :param path: Path where the new Ekmelily tuning file shall be written.
         The suffix '.ily' is recommended, but not necessary.
     :type path: str
+    :param prime_to_highest_allowed_exponent: Mapping of prime number to
+        highest exponent that should occur. Take care not to add
+        higher exponents than the HEJI Notation supports. See
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT`
+        for the default mapping.
+    :type prime_to_highest_allowed_exponent: typing.Dict[int, int], optional
     :param reference_pitch: The reference pitch (1/1). Should be a diatonic
         pitch name (see
         :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
