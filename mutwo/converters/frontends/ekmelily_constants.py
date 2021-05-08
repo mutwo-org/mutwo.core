@@ -1,6 +1,6 @@
 """Constants to be used for and with :mod:`mutwo.converters.frontends.ekmelily`.
 
-Some constants are also used for default values of
+Some constants are also used as default values of
 :class:`~mutwo.converters.frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter`
 __init__ method.
 """
