@@ -125,7 +125,7 @@ class TempoConverter(converters.abc.EventConverter):
     >>>     levels=[tempos.TempoPoint(60), 60, 30, 50],
     >>>     durations=[3, 0, 2],
     >>> )
-    >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
+    >>> my_tempo_converter = symmetrical.TempoConverter(tempo_envelope)
     """
 
     _tempo_point_converter = TempoPointConverter()
@@ -192,15 +192,15 @@ class TempoConverter(converters.abc.EventConverter):
 
         **Example:**
 
+        >>> import expenvelope
         >>> from mutwo.events import basic
         >>> from mutwo.parameters import tempos
         >>> from mutwo.converters import symmetrical
-        >>> tempo_events = basic.SequentialEvent(
-        >>>     [basic.EnvelopeEvent(3, tempos.TempoPoint(60)),  # start with bpm = 60
-        >>>      basic.EnvelopeEvent(2, 60, 120),                # acc. from 60 to 120
-        >>>      basic.EnvelopeEvent(5, 120)]                    # stay on bpm = 120
+        >>> tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+        >>>     levels=[tempos.TempoPoint(60), 60, 120, 120],
+        >>>     durations=[3, 2, 5],
         >>> )
-        >>> my_tempo_converter = symmetrical.TempoConverter(tempo_events)
+        >>> my_tempo_converter = symmetrical.TempoConverter(tempo_envelope)
         >>> my_events = basic.SequentialEvent([basic.SimpleEvent(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
         SequentialEvent([SimpleEvent(duration = 3.0), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2.5)])
