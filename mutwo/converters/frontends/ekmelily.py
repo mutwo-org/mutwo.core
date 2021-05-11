@@ -482,7 +482,7 @@ class HEJIEkmelilyTuningFileConverter(EkmelilyTuningFileConverter):
         :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
         in English nomenclature. For any other reference pitch than 'c', Lilyponds
         midi rendering for pitches with the diatonic pitch 'c' will be slightly
-        out of tune (because the first value of :arg:`global_scale`
+        out of tune (because the first value of `global_scale`
         always have to be 0).
     :type reference_pitch: str, optional
     :param prime_to_heji_accidental_name: Mapping of a prime number
