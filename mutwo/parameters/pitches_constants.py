@@ -1,8 +1,9 @@
 """This module adds several constants that are used for the different pitch classes.
 
 There are basically two types of constants:
-    1. Default values for initialisation method argument of the different pitch classes.
-    2. Values that are defined by general (cultural, physical, technical) standards
+
+1. Default values for initialisation method argument of the different pitch classes.
+2. Values that are defined by general (cultural, physical, technical) standards
 """
 
 import math

@@ -875,11 +875,20 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
-    :param referential_playing_indicator_collection:
+    :param referential_playing_indicator_collection: A
+        :class:`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection` class
+        from which to extract all :class:`~mutwo.parameters.abc.PlayingIndicator` for
+        which mutwo shall try to find valid
+        :class:`~mutwo.converters.frontends.abjad_attachments.AbjadAttachment` objects.
     :type referential_playing_indicator_collection: parameters.abc.IndicatorCollection, optional
-    :param referential_notation_indicator_collection:
+    :param referential_notation_indicator_collection: A
+        :class:`~mutwo.parameters.notation_indicators.NotationIndicatorCollection` class
+        from which to extract all :class:`~mutwo.parameters.abc.NotationIndicator` for
+        which mutwo shall try to find valid
+        :class:`~mutwo.converters.frontends.abjad_attachments.AbjadAttachment` objects.
     :type referential_notation_indicator_collection: parameters.abc.IndicatorCollection, optional
-    :param abjad_attachment_name_to_abjad_attachment:
+    :param abjad_attachment_name_to_abjad_attachment: A dictionary which contains
+        a mapping of all valid abjad attachment names to abjad attachment classes.
     :type abjad_attachment_name_to_abjad_attachment: typing.Dict[str, abjad_attachments.AbjadAttachment], optional
     """
 
