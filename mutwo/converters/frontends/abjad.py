@@ -234,7 +234,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
-    """Convert Mutwo Volume objects to :class:`mutwo.converters.frontends.abjad_attachments.Dynamic` objects.
+    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.abjad_attachments.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
     :class:`mutwo.parameters.volumes.WesternVolume`. If it does, Mutwo
@@ -257,7 +257,7 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
 
 
 class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
-    """Convert tempo envelope to :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_attachments.Tempo`.
 
     Abstract base class for tempo envelope conversion. See
     :class:`ComplexTempoEnvelopeToAbjadAttachmentTempoConverter` for a concrete
@@ -275,7 +275,7 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
 class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     TempoEnvelopeToAbjadAttachmentTempoConverter
 ):
-    """Convert tempo envelope to :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_attachments.Tempo`.
 
     This object tries to intelligently set correct tempo attachments to an
     :class:`abjad.Voice` object, appropriate to Western notation standards.
@@ -489,20 +489,20 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
 
 class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter):
-    """Quantize :class:`mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
+    """Quantize :class:`~mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
 
     :param time_signatures: Set time signatures to divide the quantized abjad data
-        in desired bar sizes. If the converted :class:`SequentialEvent` is longer than
-        the sum of all passed time signatures, the last time signature will be repeated
-        for the remaining bars.
+        in desired bar sizes. If the converted :class:`~mutwo.events.basic.SequentialEvent`
+        is longer than the sum of all passed time signatures, the last time signature
+        will be repeated for the remaining bars.
     :param duration_unit: This defines the `duration_unit` of the passed
-        :class:`SequentialEvent` (how the :attr:`mutwo.events.abc.Event.duration`
-        attribute will be interpreted). Can either be 'beats' (default) or
-        'miliseconds'.
+        :class:`~mutwo.events.basic.SequentialEvent` (how the
+        :attr:`~mutwo.events.abc.Event.duration` attribute will be
+        interpreted). Can either be 'beats' (default) or 'miliseconds'.
     :param tempo_envelope: Defines the tempo of the converted music. This is an
         :class:`expenvelope.Envelope` object which durations are beats and which
         levels are either numbers (that will be interpreted as beats per minute ('BPM'))
-        or :class:`mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
+        or :class:`~mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
         been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
     :param attack_point_optimizer: Optionally the user can pass a
         :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
@@ -782,66 +782,105 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
 
 class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
-    """Convert :class:`mutwo.events.basic.SequentialEvent` objects to :class:`abjad.Voice` objects.
+    """Convert :class:`~mutwo.events.basic.SequentialEvent` to :class:`abjad.Voice`.
 
     :param sequential_event_to_quantized_abjad_container_converter: Class which
         defines how the Mutwo data will be quantized. See
         :class:`SequentialEventToQuantizedAbjadContainerConverter` for more information.
+    :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter, optional
     :param simple_event_to_pitches: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
-        By default it asks the Event for its :attr:`pitch_or_pitches` attribute
+        By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than ``NoteLike`` with a different name for
-        their pitch property, this argument should be overridden. If the function call
-        raises an :obj:`AttributeError` (e.g. if no pitch can be extracted), mutwo
-        will assume an event without any pitches.
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their pitch property, this argument
+        should be overridden.
+        If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
+        extracted), mutwo will assume an event without any pitches.
+    :type simple_event_to_pitches: typing.Callable[
+            [events.basic.SimpleEvent], parameters.abc.Pitch
+        ], optional
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating dynamic
-        indicators. The function should return an object that inhertis from
+        indicators. The function should return an object that inherits from
         :class:`mutwo.parameters.abc.Volume`. By default it asks the Event for
-        its :attr:`volume` attribute (because by default
+        its :attr:`~mutwo.events.music.NoteLike.volume` attribute (because by default
         :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than ``NoteLike`` with a
-        different name for their volume property, this argument should be overridden.
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their volume property, this argument should
+        be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
-        extracted), mutwo will set `pitch_or_pitches` to an empty list and set
+        extracted), mutwo will set :attr:`pitch_or_pitches` to an empty list and set
         volume to 0.
+    :type simple_event_to_volume: typing.Callable[
+            [events.basic.SimpleEvent], parameters.abc.Volume
+        ], optional
     :param simple_event_to_playing_indicators: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
-        object. By default it asks the Event for its :attr:`playing_indicators` attribute
-        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
-        When using different Event classes than ``NoteLike`` with a different name for
-        their playing_indicators property, this argument should be overridden. If the
+        object. By default it asks the Event for its :attr:`playing_indicators`
+        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their playing_indicators property, this argument
+        should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
-        from :const:`mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+        from `referential_playing_indicator_collection`.
+    :type simple_event_to_playing_indicators: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.playing_indicators.PlayingIndicatorCollection,
+        ], optional
     :param simple_event_to_notation_indicators: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
-        object. By default it asks the Event for its :attr:`notation_indicators` attribute
+        object. By default it asks the Event for its
+        :attr:`notation_indicators` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than ``NoteLike`` with a different name for
         their playing_indicators property, this argument should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
-        from :const:`mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`.
+        from `referential_notation_indicator_collection`.
+    :type simple_event_to_notation_indicators: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.notation_indicators.NotationIndicatorCollection,
+        ], optional
     :param does_extracted_data_indicate_rest: Function to detect from the extracted
         data if the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
         default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
         the Event will be interpreted as a rest.
+    :type does_extracted_data_indicate_rest: typing.Callable[
+            [
+                typing.List[parameters.abc.Pitch],
+                parameters.abc.Volume,
+                parameters.playing_indicators.PlayingIndicatorCollection,
+                parameters.notation_indicators.NotationIndicatorCollection,
+            ],
+            bool,
+        ], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
         :class:`mutwo.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitchConverter` for more information.
+    :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter, optional
     :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
         to convert :class:`mutwo.parameters.abc.Volume` objects to
-        :class:`mutwo.converts.frontends.abjad_attachments.Dynamic` objects.
+        :class:`mutwo.converters.frontends.abjad_attachments.Dynamic` objects.
         See :class:`MutwoVolumeToAbjadAttachmentDynamicConverter` for more information.
+    :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter, optional
     :param tempo_envelope_to_abjad_attachment_tempo_converter: Class which defines how
         to convert tempo envelopes to
-        :class:`mutwo.converts.frontends.abjad_attachments.Tempo` objects.
+        :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
+    :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
+    :param referential_playing_indicator_collection:
+    :type referential_playing_indicator_collection: parameters.abc.IndicatorCollection, optional
+    :param referential_notation_indicator_collection:
+    :type referential_notation_indicator_collection: parameters.abc.IndicatorCollection, optional
+    :param abjad_attachment_name_to_abjad_attachment:
+    :type abjad_attachment_name_to_abjad_attachment: typing.Dict[str, abjad_attachments.AbjadAttachment], optional
     """
 
     def __init__(
@@ -876,7 +915,45 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter = MutwoVolumeToAbjadAttachmentDynamicConverter(),
         tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
+        referential_playing_indicator_collection: typing.Type[
+            parameters.playing_indicators.PlayingIndicatorCollection
+        ] = None,
+        referential_notation_indicator_collection: typing.Type[
+            parameters.notation_indicators.NotationIndicatorCollection
+        ] = None,
+        abjad_attachment_name_to_abjad_attachment: typing.Dict[
+            str, typing.Type[abjad_attachments.AbjadAttachment]
+        ] = None,
     ):
+        if referential_playing_indicator_collection is None:
+            referential_playing_indicator_collection = (
+                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS
+            )
+
+        if referential_notation_indicator_collection is None:
+            referential_notation_indicator_collection = (
+                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS
+            )
+
+        if abjad_attachment_name_to_abjad_attachment is None:
+            abjad_attachment_name_to_abjad_attachment = (
+                abjad_constants.DEFAULT_ABJAD_ATTACHMENT_NAME_TO_ABJAD_ATTACHMENT
+            )
+
+        self._available_abjad_attachments = tuple(
+            abjad_attachment_name_to_abjad_attachment.keys()
+        )
+
+        self._playing_indicator_to_abjad_attachment = SequentialEventToAbjadVoiceConverter._make_indicator_name_to_abjad_attachment_mapping(
+            referential_playing_indicator_collection,
+            abjad_attachment_name_to_abjad_attachment,
+        )
+
+        self._notation_indicator_to_abjad_attachment = SequentialEventToAbjadVoiceConverter._make_indicator_name_to_abjad_attachment_mapping(
+            referential_notation_indicator_collection,
+            abjad_attachment_name_to_abjad_attachment,
+        )
+
         self._sequential_event_to_quantized_abjad_container_converter = (
             sequential_event_to_quantized_abjad_container_converter
         )
@@ -898,6 +975,19 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     # ###################################################################### #
     #                          static methods                                #
     # ###################################################################### #
+
+    @staticmethod
+    def _make_indicator_name_to_abjad_attachment_mapping(
+        indicator_collection: typing.Type[parameters.abc.IndicatorCollection],
+        abjad_attachment_name_to_abjad_attachment: typing.Dict[
+            str, typing.Type[abjad_attachments.AbjadAttachment]
+        ],
+    ) -> typing.Dict[str, typing.Type[abjad_attachments.AbjadAttachment]]:
+        return {
+            indicator_name: abjad_attachment_name_to_abjad_attachment[indicator_name]
+            for indicator_name in indicator_collection.__dataclass_fields__.keys()  # type: ignore
+            if indicator_name in abjad_attachment_name_to_abjad_attachment
+        }
 
     @staticmethod
     def _detect_abjad_event_type(pitches: typing.List[parameters.abc.Pitch]) -> type:
@@ -934,7 +1024,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     @staticmethod
     def _indicator_collection_to_abjad_attachments(
         indicator_collection: parameters.abc.IndicatorCollection,
-        indicator_name_to_abjad_attachment_mapping: typing.Dict[str, type],
+        indicator_name_to_abjad_attachment_mapping: typing.Dict[
+            str, typing.Type[abjad_attachments.AbjadAttachment]
+        ],
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
         attachments = {}
         for (
@@ -942,28 +1034,14 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             indicator,
         ) in indicator_collection.get_indicator_dict().items():
             if indicator_name in indicator_name_to_abjad_attachment_mapping:
-                new_attachment = indicator_name_to_abjad_attachment_mapping[
+                new_attachment = indicator_name_to_abjad_attachment_mapping[  # type: ignore
                     indicator_name
-                ](**indicator.get_arguments_dict())
+                ](
+                    **indicator.get_arguments_dict()
+                )
                 attachments.update({indicator_name: new_attachment})
 
         return attachments
-
-    @staticmethod
-    def _playing_indicator_collection_to_abjad_attachments(
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
-    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
-            playing_indicators, abjad_constants.PLAYING_INDICATOR_TO_ABJAD_ATTACHMENT
-        )
-
-    @staticmethod
-    def _notation_indicator_collection_to_abjad_attachments(
-        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection,
-    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
-            notation_indicators, abjad_constants.NOTATION_INDICATOR_TO_ABJAD_ATTACHMENT
-        )
 
     @staticmethod
     def _find_absolute_times_of_abjad_leaves(
@@ -992,6 +1070,22 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     #                          private methods                               #
     # ###################################################################### #
 
+    def _playing_indicator_collection_to_abjad_attachments(
+        self,
+        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
+    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
+            playing_indicators, self._playing_indicator_to_abjad_attachment
+        )
+
+    def _notation_indicator_collection_to_abjad_attachments(
+        self,
+        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection,
+    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
+            notation_indicators, self._notation_indicator_to_abjad_attachment
+        )
+
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
@@ -1003,7 +1097,15 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
 
     def _get_tempo_attachments_for_quantized_abjad_leaves(
         self, abjad_voice: abjad.Voice,
-    ) -> typing.Tuple[typing.Tuple[int, abjad_attachments.Tempo], ...]:
+    ) -> typing.Tuple[
+        typing.Tuple[
+            int,
+            typing.Union[
+                abjad_attachments.Tempo, abjad_attachments.DynamicChangeIndicationStop
+            ],
+        ],
+        ...,
+    ]:
         absolute_time_per_leaf = SequentialEventToAbjadVoiceConverter._find_absolute_times_of_abjad_leaves(
             abjad_voice
         )
@@ -1011,7 +1113,13 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         assert absolute_time_per_leaf == tuple(sorted(absolute_time_per_leaf))
 
         leaf_index_to_tempo_attachment_pairs: typing.List[
-            typing.Tuple[int, abjad_attachments.Tempo]
+            typing.Tuple[
+                int,
+                typing.Union[
+                    abjad_attachments.Tempo,
+                    abjad_attachments.DynamicChangeIndicationStop,
+                ],
+            ]
         ] = []
         for absolute_time, tempo_attachment in self._tempo_attachments:
             closest_leaf = tools.find_closest_index(
@@ -1050,18 +1158,18 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             str, typing.List[typing.Optional[abjad_attachments.AbjadAttachment]]
         ] = {
             attachment_name: [None for _ in extracted_data_per_simple_event]
-            for attachment_name in abjad_constants.AVAILABLE_ABJAD_ATTACHMENTS
+            for attachment_name in self._available_abjad_attachments
         }
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             _, volume, playing_indicators, notation_indicators = extracted_data
             attachments = self._volume_to_abjad_attachment(volume)
             attachments.update(
-                SequentialEventToAbjadVoiceConverter._playing_indicator_collection_to_abjad_attachments(
+                self._playing_indicator_collection_to_abjad_attachments(
                     playing_indicators
                 )
             )
             attachments.update(
-                SequentialEventToAbjadVoiceConverter._notation_indicator_collection_to_abjad_attachments(
+                self._notation_indicator_collection_to_abjad_attachments(
                     notation_indicators
                 )
             )
@@ -1262,6 +1370,45 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             events.basic.SimpleEvent
         ],
     ) -> abjad.Voice:
+        """Convert passed :class:`~mutwo.events.basic.SequentialEvent`.
+
+        :param sequential_event_to_convert: The
+            :class:`~mutwo.events.basic.SequentialEvent` which shall
+            be converted to the :class:`abjad.Voice` object.
+        :type sequential_event_to_convert: mutwo.events.basic.SequentialEvent
+
+        **Example:**
+
+        >>> import abjad
+        >>> from mutwo.events import basic, music
+        >>> from mutwo.converters.frontends import abjad as mutwo_abjad
+        >>> mutwo_melody = basic.SequentialEvent(
+        >>>     [
+        >>>         music.NoteLike(pitch, duration)
+        >>>         for pitch, duration in zip("c a g e".split(" "), (1, 1 / 6, 1 / 6, 1 / 6))
+        >>>     ]
+        >>> )
+        >>> converter = mutwo_abjad.SequentialEventToAbjadVoiceConverter()
+        >>> abjad_melody = converter.convert(mutwo_melody)
+        >>> abjad.lilypond(abjad_melody)
+        \\new Voice
+        {
+            {
+                \\tempo 4=120
+                %%% \\time 4/4 %%%
+                c'1
+                \\mf
+            }
+            {
+                \\times 2/3 {
+                    a'4
+                    g'4
+                    e'4
+                }
+                r2
+            }
+        }
+        """
         # first, extract data from simple events
         extracted_data_per_simple_event = tuple(
             self._extract_data_from_simple_event(simple_event)
@@ -1280,7 +1427,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             sequential_event_to_convert, is_simple_event_rest_per_simple_event
         )
 
-        # third, apply pitches on abjad voice
+        # third, apply pitches on Abjad voice
         self._apply_pitches_on_quantized_abjad_leaves(
             quanitisized_abjad_leaves,
             related_abjad_leaves_per_simple_event,
