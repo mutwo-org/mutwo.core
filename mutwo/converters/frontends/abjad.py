@@ -379,7 +379,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         stop_dynamic_change_indicaton: bool,
     ) -> typing.Tuple[
         typing.Optional[typing.Tuple[int, int]],
-        typing.Optional[float],
+        typing.Optional[typing.Union[int, typing.Tuple[int, int]]],
         typing.Optional[str],
     ]:
         if write_metronome_mark:
@@ -391,8 +391,17 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
                 reference.numerator,
                 reference.denominator,
             )
-            units_per_minute: typing.Optional[int] = int(
-                tempo_point.tempo_in_beats_per_minute
+            units_per_minute: typing.Optional[
+                typing.Union[int, typing.Tuple[int, int]]
+            ] = (
+                (
+                    int(tempo_point.tempo_or_tempo_range_in_beats_per_minute[0]),
+                    int(tempo_point.tempo_or_tempo_range_in_beats_per_minute[1]),
+                )
+                if isinstance(
+                    tempo_point.tempo_or_tempo_range_in_beats_per_minute, tuple
+                )
+                else int(tempo_point.tempo_or_tempo_range_in_beats_per_minute)
             )
 
         else:

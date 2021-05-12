@@ -8,15 +8,23 @@ from mutwo.utilities import constants
 
 __all__ = ("TempoPoint",)
 
+TempoInBeatsPerMinute = float
+TempoRangeInBeatsPerMinute = typing.Tuple[TempoInBeatsPerMinute, TempoInBeatsPerMinute]
+TempoOrTempoRangeInBeatsPerMinute = typing.Union[
+    TempoInBeatsPerMinute, TempoRangeInBeatsPerMinute
+]
+
 
 class TempoPoint(parameters.abc.Parameter):
     def __init__(
         self,
-        tempo_in_beats_per_minute: float,
+        tempo_or_tempo_range_in_beats_per_minute: TempoOrTempoRangeInBeatsPerMinute,
         reference: constants.Real = 1,
         textual_indication: typing.Optional[str] = None,
     ):
-        self.tempo_in_beats_per_minute = tempo_in_beats_per_minute
+        self.tempo_or_tempo_range_in_beats_per_minute = (
+            tempo_or_tempo_range_in_beats_per_minute
+        )
         self.reference = reference
         self.textual_indication = textual_indication
 
@@ -46,6 +54,13 @@ class TempoPoint(parameters.abc.Parameter):
                 )
             )
         )
+
+    @property
+    def tempo_in_beats_per_minute(self) -> TempoInBeatsPerMinute:
+        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, tuple):
+            return self.tempo_or_tempo_range_in_beats_per_minute[0]
+        else:
+            return self.tempo_or_tempo_range_in_beats_per_minute
 
     @property
     def absolute_tempo_in_beat_per_minute(self) -> float:

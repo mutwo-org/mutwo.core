@@ -53,7 +53,9 @@ class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
 
 class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
     def test_convert(self):
-        converter = frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter(reference_pitch="c")
+        converter = frontends.abjad.MutwoPitchToHEJIAbjadPitchConverter(
+            reference_pitch="c"
+        )
         self.assertEqual(
             abjad.lilypond(
                 converter.convert(parameters.pitches.JustIntonationPitch("1/1"))
@@ -513,13 +515,14 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
 
             self.assertEqual(indicators0, indicators1)
 
-    def test_convert_with_lilypond_output(self):
+    def test_general_convert_with_lilypond_output(self):
         # basically an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         converted_sequential_event = self.complex_converter.convert(
             self.complex_sequential_event
         )
         tests_path = "tests/converters/frontends"
+        png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
         new_png_file_path = "{}/abjad_png_output.png".format(tests_path)
         lilypond_file = abjad.LilyPondFile()
         header_block = abjad.Block(name="header")
@@ -531,7 +534,54 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
         )
 
-        png_file_to_compare_path = "{}/abjad_expected_png_output.png".format(tests_path)
+        self.assertTrue(
+            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
+    def test_tempo_range_conversion(self):
+        # basically an integration test (testing if the rendered png
+        # is equal to the previously rendered and manually checked png)
+        # -> this tests, if the resulting notation prints tempo ranges
+
+        tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+            levels=[
+                parameters.tempos.TempoPoint((30, 50), 2),
+                parameters.tempos.TempoPoint((30, 50), 2),
+            ],
+            durations=[2],
+        )
+        converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
+            frontends.abjad.SequentialEventToQuantizedAbjadContainerConverter(
+                tempo_envelope=tempo_envelope
+            )
+        )
+        sequential_event_to_convert = basic.SequentialEvent(
+            [music.NoteLike("c", 1), music.NoteLike("c", 1), music.NoteLike("c", 1)]
+        )
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+
+        tests_path = "tests/converters/frontends"
+        png_file_to_compare_path = (
+            "{}/abjad_expected_png_output_for_tempo_range_test.png".format(tests_path)
+        )
+        new_png_file_path = "{}/abjad_png_output_for_tempo_range_test.png".format(
+            tests_path
+        )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
 
         self.assertTrue(
             SequentialEventToAbjadVoiceConverterTest._are_png_equal(
