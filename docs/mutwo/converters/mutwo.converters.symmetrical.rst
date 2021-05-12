@@ -2,14 +2,18 @@ mutwo.converters.symmetrical
 ============================
 
 .. automodule:: mutwo.converters.symmetrical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
+----
 
-   
-   
+Submodules are:
 
+.. autosummary::
+   :toctree: symmetrical
+
+   mutwo.converters.symmetrical.loudness
+   mutwo.converters.symmetrical.metricities
+   mutwo.converters.symmetrical.tempos
    
+  
+Submodules that contain constants are:
    
    

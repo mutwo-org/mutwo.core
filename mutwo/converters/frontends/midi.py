@@ -115,7 +115,7 @@ class MidiFileConverter(abc.Converter):
         dynamically changing tempo (ritardando or accelerando).
     """
 
-    _tempo_point_converter = symmetrical.TempoPointConverter()
+    _tempo_point_converter = symmetrical.tempos.TempoPointConverter()
 
     def __init__(
         self,

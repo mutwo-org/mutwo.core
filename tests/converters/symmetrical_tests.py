@@ -2,6 +2,9 @@ import unittest
 
 import expenvelope  # type: ignore
 
+import mutwo.converters.symmetrical.loudness
+import mutwo.converters.symmetrical.metricities
+import mutwo.converters.symmetrical.tempos
 from mutwo import converters
 from mutwo.events import basic
 from mutwo.parameters import tempos
@@ -10,18 +13,18 @@ from mutwo.parameters import tempos
 class LoudnessToAmplitudeConverterTest(unittest.TestCase):
     def test_sone_to_phon(self):
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(1), 40
+            mutwo.converters.symmetrical.loudness.LoudnessToAmplitudeConverter._sone_to_phon(1), 40
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(2), 50
+            mutwo.converters.symmetrical.loudness.LoudnessToAmplitudeConverter._sone_to_phon(2), 50
         )
         self.assertEqual(
-            converters.symmetrical.LoudnessToAmplitudeConverter._sone_to_phon(0.5),
+            mutwo.converters.symmetrical.loudness.LoudnessToAmplitudeConverter._sone_to_phon(0.5),
             31.39434452534506,
         )
 
     def test_convert(self):
-        converter = converters.symmetrical.LoudnessToAmplitudeConverter(1)
+        converter = mutwo.converters.symmetrical.loudness.LoudnessToAmplitudeConverter(1)
 
         # test different frequencies
         self.assertAlmostEqual(converter.convert(50), 0.1549792455)
@@ -32,7 +35,7 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
         self.assertAlmostEqual(converter.convert(10000), 0.010357060382149575)
 
         # test different loudness
-        converter = converters.symmetrical.LoudnessToAmplitudeConverter(0.5)
+        converter = mutwo.converters.symmetrical.loudness.LoudnessToAmplitudeConverter(0.5)
         self.assertAlmostEqual(converter.convert(50), 0.08150315492680121)
         self.assertAlmostEqual(converter.convert(100), 0.015624188922340446)
         self.assertAlmostEqual(converter.convert(200), 0.003994808241065453)
@@ -41,7 +44,7 @@ class LoudnessToAmplitudeConverterTest(unittest.TestCase):
 
 class RhythmicalStrataToIndispensabilityConverterTest(unittest.TestCase):
     def test_convert(self):
-        converter = converters.symmetrical.RhythmicalStrataToIndispensabilityConverter()
+        converter = mutwo.converters.symmetrical.metricities.RhythmicalStrataToIndispensabilityConverter()
 
         # 3/4
         self.assertEqual(converter.convert((2, 3)), (5, 0, 3, 1, 4, 2))
@@ -52,19 +55,19 @@ class RhythmicalStrataToIndispensabilityConverterTest(unittest.TestCase):
 class TempoPointConverterTest(unittest.TestCase):
     def test_convert_beats_per_minute_to_seconds_per_beat(self):
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 60
             ),
             1,
         )
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 30
             ),
             2,
         )
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._beats_per_minute_to_seconds_per_beat(
                 120
             ),
             0.5,
@@ -75,7 +78,7 @@ class TempoPointConverterTest(unittest.TestCase):
     ):
         tempo_point = tempos.TempoPoint(40, 2)
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, tempo_point.reference),
@@ -86,7 +89,7 @@ class TempoPointConverterTest(unittest.TestCase):
     ):
         tempo_point = tempos.TempoPoint(40)
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, 1),
@@ -95,7 +98,7 @@ class TempoPointConverterTest(unittest.TestCase):
     def test_extract_beats_per_minute_and_reference_from_number(self):
         tempo_point = 60
         self.assertEqual(
-            converters.symmetrical.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
+            mutwo.converters.symmetrical.tempos.TempoPointConverter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (60, 1),
@@ -108,7 +111,7 @@ class TempoPointConverterTest(unittest.TestCase):
         tempo_point3 = 60
         tempo_point4 = 120
 
-        converter = converters.symmetrical.TempoPointConverter()
+        converter = mutwo.converters.symmetrical.tempos.TempoPointConverter()
 
         self.assertEqual(converter.convert(tempo_point0), 1)
         self.assertEqual(converter.convert(tempo_point1), 0.5)
@@ -123,7 +126,7 @@ class TempoConverterTest(unittest.TestCase):
             levels=[30, 60], durations=[4]
         )
         simple_event = basic.SimpleEvent(4)
-        converter = converters.symmetrical.TempoConverter(tempo_envelope)
+        converter = mutwo.converters.symmetrical.tempos.TempoConverter(tempo_envelope)
         converted_simple_event = converter.convert(simple_event)
         expected_duration = 6
         self.assertEqual(converted_simple_event.duration, expected_duration)
@@ -149,7 +152,7 @@ class TempoConverterTest(unittest.TestCase):
             durations=[2, 0, 1, 0, 1, 2, 0, 2, 0, 2],
             curve_shapes=[0, 0, 0, 0, 0, 0, 0, 10, 0, -10],
         )
-        converter = converters.symmetrical.TempoConverter(tempo_envelope)
+        converter = mutwo.converters.symmetrical.tempos.TempoConverter(tempo_envelope)
         converted_sequential_event = converter.convert(sequential_event)
         expected_durations = (4, 3, 3, 3.8000908039820196, 2.1999091960179804)
         self.assertEqual(
@@ -165,7 +168,7 @@ class TempoConverterTest(unittest.TestCase):
         simultaneous_event = basic.SimultaneousEvent(
             [simple_event0, simple_event0, simple_event1]
         )
-        converter = converters.symmetrical.TempoConverter(tempo_envelope)
+        converter = mutwo.converters.symmetrical.tempos.TempoConverter(tempo_envelope)
         converted_simultaneous_event = converter.convert(simultaneous_event)
         expected_duration0 = simultaneous_event[0].duration * 1.5
         expected_duration1 = 10

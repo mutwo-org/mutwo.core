@@ -27,7 +27,9 @@ This tree provides a deep overview of all submodules:
    :toctree: mutwo
 
    mutwo.converters.abc
-   mutwo.converters.symmetrical
+   mutwo.converters.symmetrical.metricities
+   mutwo.converters.symmetrical.loudness
+   mutwo.converters.symmetrical.tempos
    mutwo.converters.frontends.abjad
    mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
