@@ -11,6 +11,7 @@ Submodules are:
 
    mutwo.converters.symmetrical.loudness
    mutwo.converters.symmetrical.metricities
+   mutwo.converters.symmetrical.playing_indicators
    mutwo.converters.symmetrical.tempos
    
   

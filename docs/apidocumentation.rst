@@ -29,6 +29,7 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.abc
    mutwo.converters.symmetrical.metricities
    mutwo.converters.symmetrical.loudness
+   mutwo.converters.symmetrical.playing_indicators
    mutwo.converters.symmetrical.tempos
    mutwo.converters.frontends.abjad
    mutwo.converters.frontends.abjad_attachments
