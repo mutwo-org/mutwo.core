@@ -1,2 +1,2 @@
 sphinx==3.0.0
-autodocsumm==0.2.2
+autodocsumm==0.2.4
