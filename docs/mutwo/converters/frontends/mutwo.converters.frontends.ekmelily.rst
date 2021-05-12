@@ -2,30 +2,7 @@
 ===================================
 
 .. automodule:: mutwo.converters.frontends.ekmelily
-
-   
-   
-   
-
-   
-   
-   
-
-   
-   
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      EkmelilyAccidental
-      EkmelilyTuningFileConverter
-      HEJIEkmelilyTuningFileConverter
-   
-   
-
-   
-   
-   
-
-
-
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
