@@ -9,6 +9,9 @@ from mutwo import converters
 from mutwo.utilities import constants
 
 
+__all__ = ("LoudnessToAmplitudeConverter",)
+
+
 class LoudnessToAmplitudeConverter(converters.abc.Converter):
     """Make an approximation of the needed amplitude for a perceived Loudness.
 

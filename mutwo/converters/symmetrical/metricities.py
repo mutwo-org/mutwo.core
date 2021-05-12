@@ -8,6 +8,8 @@ import typing
 from mutwo import converters
 from mutwo.utilities import prime_factors
 
+__all__ = ("RhythmicalStrataToIndispensabilityConverter",)
+
 
 class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
     """Builds metrical indispensability for a rhythmical strata.
