@@ -1,4 +1,4 @@
-"""
+"""Build Abjad attachments from Mutwo data.
 """
 
 import abc
@@ -11,9 +11,34 @@ import abjad  # type: ignore
 from mutwo.parameters import abc as parameters_abc
 from mutwo.parameters import notation_indicators
 from mutwo.parameters import playing_indicators
+from mutwo.utilities import tools
 
 
 class AbjadAttachment(abc.ABC):
+    """Abstract base class for all Abjad attachments."""
+
+    @classmethod
+    def get_class_name(cls):
+        return tools.class_name_to_object_name(cls.__name__)
+
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Initialize :class:`AbjadAttachment` from :class:`~mutwo.parameters.abc.IndicatorCollection`.
+
+        If no suitable :class:`~mutwo.parameters.abc.Indicator` could be found in the collection
+        the method will simply return None.
+        """
+
+        class_name = cls.get_class_name()
+        try:
+            indicator = getattr(indicator_collection, class_name)
+        except AttributeError:
+            return None
+
+        return cls(**indicator.get_arguments_dict())
+
     @abc.abstractmethod
     def process_leaves(
         self,
@@ -29,6 +54,15 @@ class AbjadAttachment(abc.ABC):
 
 
 class ToggleAttachment(AbjadAttachment):
+    """Abstract base class for Abjad attachments which behave like a toggle.
+
+    In Western notation one can differentiate between elements which only get
+    notated if they change (for instance dynamics, tempo) and elements which
+    have to be notated again and again (for instance arpeggi or tremolo).
+    Attachments that inherit from :class:`ToggleAttachment` represent elements
+    which only get notated if their value changes.
+    """
+
     @abc.abstractmethod
     def process_leaf(
         self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
@@ -47,6 +81,15 @@ class ToggleAttachment(AbjadAttachment):
 
 
 class BangAttachment(AbjadAttachment):
+    """Abstract base class for Abjad attachments which behave like a bang.
+
+    In Western notation one can differentiate between elements which only get
+    notated if they change (for instance dynamics, tempo) and elements which
+    have to be notated again and again to be effective (for instance arpeggi or
+    tremolo). Attachments that inherit from :class:`BangAttachment` represent
+    elements which have to be notated again and again to be effective.
+    """
+
     @abc.abstractmethod
     def process_first_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         raise NotImplementedError()
@@ -440,6 +483,16 @@ class Ornamentation(playing_indicators.Ornamentation, BangFirstAttachment):
 class Dynamic(ToggleAttachment):
     dynamic_indicator: str = "mf"  # TODO(for future usage add typing.Literal)
 
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Always return None.
+
+        Dynamic can't be initialised from IndicatorCollection.
+        """
+        return None
+
     @property
     def is_active(self) -> bool:
         return True
@@ -460,6 +513,16 @@ class Tempo(BangFirstAttachment):
     dynamic_change_indication: typing.Optional[str] = None
     stop_dynamic_change_indicaton: bool = False
     print_metronome_mark: bool = True
+
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Always return None.
+
+        Tempo can't be initialised from IndicatorCollection.
+        """
+        return None
 
     @property
     def is_active(self) -> bool:
@@ -489,6 +552,16 @@ class Tempo(BangFirstAttachment):
 
 
 class DynamicChangeIndicationStop(BangFirstAttachment):
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Always return None.
+
+        DynamicChangeIndicationStop can't be initialised from IndicatorCollection.
+        """
+        return None
+
     @property
     def is_active(self) -> bool:
         return True

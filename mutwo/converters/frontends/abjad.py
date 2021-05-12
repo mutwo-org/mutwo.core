@@ -875,21 +875,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
-    :param referential_playing_indicator_collection: A
-        :class:`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection` class
-        from which to extract all :class:`~mutwo.parameters.abc.PlayingIndicator` for
-        which mutwo shall try to find valid
-        :class:`~mutwo.converters.frontends.abjad_attachments.AbjadAttachment` objects.
-    :type referential_playing_indicator_collection: parameters.abc.IndicatorCollection, optional
-    :param referential_notation_indicator_collection: A
-        :class:`~mutwo.parameters.notation_indicators.NotationIndicatorCollection` class
-        from which to extract all :class:`~mutwo.parameters.abc.NotationIndicator` for
-        which mutwo shall try to find valid
-        :class:`~mutwo.converters.frontends.abjad_attachments.AbjadAttachment` objects.
-    :type referential_notation_indicator_collection: parameters.abc.IndicatorCollection, optional
-    :param abjad_attachment_name_to_abjad_attachment: A dictionary which contains
-        a mapping of all valid abjad attachment names to abjad attachment classes.
-    :type abjad_attachment_name_to_abjad_attachment: typing.Dict[str, abjad_attachments.AbjadAttachment], optional
+    :param abjad_attachment_classes: A tuple which contains all available abjad attachment classes
+        which shall be used by the converter.
+    :type abjad_attachment_classes: typing.Sequence[abjad_attachments.AbjadAttachment], optional
     """
 
     def __init__(
@@ -924,43 +912,20 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter = MutwoVolumeToAbjadAttachmentDynamicConverter(),
         tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
-        referential_playing_indicator_collection: typing.Type[
-            parameters.playing_indicators.PlayingIndicatorCollection
-        ] = None,
-        referential_notation_indicator_collection: typing.Type[
-            parameters.notation_indicators.NotationIndicatorCollection
-        ] = None,
-        abjad_attachment_name_to_abjad_attachment: typing.Dict[
-            str, typing.Type[abjad_attachments.AbjadAttachment]
+        abjad_attachment_classes: typing.Sequence[
+            typing.Type[abjad_attachments.AbjadAttachment]
         ] = None,
     ):
-        if referential_playing_indicator_collection is None:
-            referential_playing_indicator_collection = (
-                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS
-            )
+        if abjad_attachment_classes is None:
+            abjad_attachment_classes = abjad_constants.DEFAULT_ABJAD_ATTACHMENT_CLASSES
+        else:
+            abjad_attachment_classes = tuple(abjad_attachment_classes)
 
-        if referential_notation_indicator_collection is None:
-            referential_notation_indicator_collection = (
-                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS
-            )
-
-        if abjad_attachment_name_to_abjad_attachment is None:
-            abjad_attachment_name_to_abjad_attachment = (
-                abjad_constants.DEFAULT_ABJAD_ATTACHMENT_NAME_TO_ABJAD_ATTACHMENT
-            )
+        self._abjad_attachment_classes = abjad_attachment_classes
 
         self._available_abjad_attachments = tuple(
-            abjad_attachment_name_to_abjad_attachment.keys()
-        )
-
-        self._playing_indicator_to_abjad_attachment = SequentialEventToAbjadVoiceConverter._make_indicator_name_to_abjad_attachment_mapping(
-            referential_playing_indicator_collection,
-            abjad_attachment_name_to_abjad_attachment,
-        )
-
-        self._notation_indicator_to_abjad_attachment = SequentialEventToAbjadVoiceConverter._make_indicator_name_to_abjad_attachment_mapping(
-            referential_notation_indicator_collection,
-            abjad_attachment_name_to_abjad_attachment,
+            abjad_attachment_class.get_class_name()
+            for abjad_attachment_class in self._abjad_attachment_classes
         )
 
         self._sequential_event_to_quantized_abjad_container_converter = (
@@ -984,19 +949,6 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     # ###################################################################### #
     #                          static methods                                #
     # ###################################################################### #
-
-    @staticmethod
-    def _make_indicator_name_to_abjad_attachment_mapping(
-        indicator_collection: typing.Type[parameters.abc.IndicatorCollection],
-        abjad_attachment_name_to_abjad_attachment: typing.Dict[
-            str, typing.Type[abjad_attachments.AbjadAttachment]
-        ],
-    ) -> typing.Dict[str, typing.Type[abjad_attachments.AbjadAttachment]]:
-        return {
-            indicator_name: abjad_attachment_name_to_abjad_attachment[indicator_name]
-            for indicator_name in indicator_collection.__dataclass_fields__.keys()  # type: ignore
-            if indicator_name in abjad_attachment_name_to_abjad_attachment
-        }
 
     @staticmethod
     def _detect_abjad_event_type(pitches: typing.List[parameters.abc.Pitch]) -> type:
@@ -1031,7 +983,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
                 sequence = sequence[index]
 
     @staticmethod
-    def _indicator_collection_to_abjad_attachments(
+    def _indicator_collection_to_abjad_attachments_depr(
         indicator_collection: parameters.abc.IndicatorCollection,
         indicator_name_to_abjad_attachment_mapping: typing.Dict[
             str, typing.Type[abjad_attachments.AbjadAttachment]
@@ -1079,21 +1031,20 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     #                          private methods                               #
     # ###################################################################### #
 
-    def _playing_indicator_collection_to_abjad_attachments(
-        self,
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
+    def _indicator_collection_to_abjad_attachments(
+        self, indicator_collection: parameters.abc.IndicatorCollection,
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
-            playing_indicators, self._playing_indicator_to_abjad_attachment
-        )
+        attachments = {}
+        for abjad_attachment_class in self._abjad_attachment_classes:
+            abjad_attachment = abjad_attachment_class.from_indicator_collection(
+                indicator_collection
+            )
+            if abjad_attachment:
+                attachments.update(
+                    {abjad_attachment_class.get_class_name(): abjad_attachment}
+                )
 
-    def _notation_indicator_collection_to_abjad_attachments(
-        self,
-        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection,
-    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        return SequentialEventToAbjadVoiceConverter._indicator_collection_to_abjad_attachments(
-            notation_indicators, self._notation_indicator_to_abjad_attachment
-        )
+        return attachments
 
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
@@ -1171,18 +1122,14 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         }
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             _, volume, playing_indicators, notation_indicators = extracted_data
-            attachments = self._volume_to_abjad_attachment(volume)
-            attachments.update(
-                self._playing_indicator_collection_to_abjad_attachments(
-                    playing_indicators
-                )
+            attachments_for_nth_event = self._volume_to_abjad_attachment(volume)
+            attachments_for_nth_event.update(
+                self._indicator_collection_to_abjad_attachments(playing_indicators)
             )
-            attachments.update(
-                self._notation_indicator_collection_to_abjad_attachments(
-                    notation_indicators
-                )
+            attachments_for_nth_event.update(
+                self._indicator_collection_to_abjad_attachments(notation_indicators)
             )
-            for attachment_name, attachment in attachments.items():
+            for attachment_name, attachment in attachments_for_nth_event.items():
                 attachments_per_type_per_event[attachment_name][nth_event] = attachment
 
         return tuple(

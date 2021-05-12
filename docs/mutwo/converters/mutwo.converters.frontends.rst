@@ -12,6 +12,7 @@ Submodules are:
    :toctree: frontends
 
    mutwo.converters.frontends.abjad
+   mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
    mutwo.converters.frontends.ekmelily
    mutwo.converters.frontends.isis
@@ -30,11 +31,3 @@ Submodules that contain constants are:
    mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants
-
-
-Submodules not intented for public use are:
-
-.. autosummary::
-   :toctree: frontends
-
-   mutwo.converters.frontends.abjad_attachments

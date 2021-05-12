@@ -29,6 +29,7 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.abc
    mutwo.converters.symmetrical
    mutwo.converters.frontends.abjad
+   mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
    mutwo.converters.frontends.ekmelily
    mutwo.converters.frontends.isis
@@ -40,7 +41,6 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants
-   mutwo.converters.frontends.abjad_attachments
    mutwo.events.abc
    mutwo.events.basic
    mutwo.events.music
