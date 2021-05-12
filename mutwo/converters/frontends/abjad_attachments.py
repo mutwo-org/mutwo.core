@@ -427,7 +427,15 @@ class Ottava(notation_indicators.Ottava, ToggleAttachment):
 class Markup(notation_indicators.Markup, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Markup(self.content), leaf,
+            abjad.Markup(self.content, direction=self.direction), leaf,
+        )
+        return leaf
+
+
+class RehearsalMark(notation_indicators.RehearsalMark, BangFirstAttachment):
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        abjad.attach(
+            abjad.RehearsalMark(markup=self.markup), leaf,
         )
         return leaf
 

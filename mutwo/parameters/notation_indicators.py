@@ -38,13 +38,16 @@ __all__ = (
     "Ottava",
     "MarginMarkup",
     "Markup",
+    "RehearsalMark",
     "NotationIndicatorCollection",
 )
 
 
 @dataclasses.dataclass()
 class BarLine(parameters.abc.NotationIndicator):
-    abbreviation: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
+    abbreviation: typing.Optional[
+        str
+    ] = None  # TODO(for future usage add typing.Literal)
 
 
 @dataclasses.dataclass()
@@ -66,6 +69,12 @@ class MarginMarkup(parameters.abc.NotationIndicator):
 @dataclasses.dataclass()
 class Markup(parameters.abc.NotationIndicator):
     content: typing.Optional[str] = None
+    direction: typing.Optional[str] = None
+
+
+@dataclasses.dataclass()
+class RehearsalMark(parameters.abc.NotationIndicator):
+    markup: typing.Optional[str] = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -77,3 +86,4 @@ class NotationIndicatorCollection(
     ottava: Ottava = dataclasses.field(default_factory=Ottava)
     margin_markup: MarginMarkup = dataclasses.field(default_factory=MarginMarkup)
     markup: Markup = dataclasses.field(default_factory=Markup)
+    rehearsal_mark: RehearsalMark = dataclasses.field(default_factory=RehearsalMark)
