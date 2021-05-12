@@ -799,9 +799,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         should be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
         extracted), mutwo will assume an event without any pitches.
-    :type simple_event_to_pitches: typing.Callable[
-            [events.basic.SimpleEvent], parameters.abc.Pitch
-        ], optional
+    :type simple_event_to_pitches: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating dynamic
         indicators. The function should return an object that inherits from
@@ -814,9 +812,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
         extracted), mutwo will set :attr:`pitch_or_pitches` to an empty list and set
         volume to 0.
-    :type simple_event_to_volume: typing.Callable[
-            [events.basic.SimpleEvent], parameters.abc.Volume
-        ], optional
+    :type simple_event_to_volume: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Volume], optional
     :param simple_event_to_playing_indicators: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
@@ -830,10 +826,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
-    :type simple_event_to_playing_indicators: typing.Callable[
-            [events.basic.SimpleEvent],
-            parameters.playing_indicators.PlayingIndicatorCollection,
-        ], optional
+    :type simple_event_to_playing_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
     :param simple_event_to_notation_indicators: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
@@ -845,23 +838,12 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
-    :type simple_event_to_notation_indicators: typing.Callable[
-            [events.basic.SimpleEvent],
-            parameters.notation_indicators.NotationIndicatorCollection,
-        ], optional
+    :type simple_event_to_notation_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
     :param does_extracted_data_indicate_rest: Function to detect from the extracted
         data if the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
         default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
         the Event will be interpreted as a rest.
-    :type does_extracted_data_indicate_rest: typing.Callable[
-            [
-                typing.List[parameters.abc.Pitch],
-                parameters.abc.Volume,
-                parameters.playing_indicators.PlayingIndicatorCollection,
-                parameters.notation_indicators.NotationIndicatorCollection,
-            ],
-            bool,
-        ], optional
+    :type does_extracted_data_indicate_rest: typing.Callable[[typing.List[parameters.abc.Pitch], parameters.abc.Volume, parameters.playing_indicators.PlayingIndicatorCollection, parameters.notation_indicators.NotationIndicatorCollection,],bool,], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
         :class:`mutwo.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitchConverter` for more information.
