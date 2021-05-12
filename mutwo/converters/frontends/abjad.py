@@ -820,7 +820,8 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     :param simple_event_to_playing_indicators: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
-        object. By default it asks the Event for its :attr:`playing_indicators`
+        object. By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.playing_indicators`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
@@ -837,7 +838,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`notation_indicators` attribute
+        :attr:`~mutwo.events.music.NoteLike.notation_indicators`
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than ``NoteLike`` with a different name for
         their playing_indicators property, this argument should be overridden. If the
