@@ -1,8 +1,31 @@
-mutwo.converters.frontends.ekmelily module
-------------------------------------------
+﻿mutwo.converters.frontends.ekmelily
+===================================
 
 .. automodule:: mutwo.converters.frontends.ekmelily
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EkmelilyAccidental
+      EkmelilyTuningFileConverter
+      HEJIEkmelilyTuningFileConverter
+   
+   
+
+   
+   
+   
+
+
+
