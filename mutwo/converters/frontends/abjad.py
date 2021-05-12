@@ -828,7 +828,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
-        from `referential_playing_indicator_collection`.
+        from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
     :type simple_event_to_playing_indicators: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
@@ -843,7 +843,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         their playing_indicators property, this argument should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
-        from `referential_notation_indicator_collection`.
+        from :const:`~mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
     :type simple_event_to_notation_indicators: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.notation_indicators.NotationIndicatorCollection,
