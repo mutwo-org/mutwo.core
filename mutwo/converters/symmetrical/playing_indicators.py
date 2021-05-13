@@ -230,5 +230,25 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
 
         return events.basic.SequentialEvent(converted_event)
 
+    def _convert_simultaneous_event(
+        self,
+        simultaneous_event: events.basic.SimultaneousEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> events.basic.SimultaneousEvent:
+        return events.basic.SimultaneousEvent(
+            super()._convert_simultaneous_event(
+                simultaneous_event, absolute_entry_delay
+            )
+        )
+
+    def _convert_sequential_event(
+        self,
+        sequential_event: events.basic.SequentialEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> typing.Tuple[typing.Any, ...]:
+        return events.basic.SequentialEvent(
+            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
+        )
+
     def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
         return self._convert_event(event_to_convert, 0)
