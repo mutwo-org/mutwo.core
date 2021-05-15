@@ -21,6 +21,8 @@ __all__ = (
     "find_closest_index",
     "find_closest_item",
     # "class_name_to_object_name",  # not for public use
+    "get_nested_item_from_indices",
+    "set_nested_item_from_indices",
 )
 
 
@@ -281,3 +283,57 @@ def class_name_to_object_name(class_name: str) -> str:
         characters.append(character)
 
     return "".join(characters)
+
+
+def get_nested_item_from_indices(
+    indices: typing.Sequence[int], sequence: typing.Sequence
+) -> typing.Any:
+    """Get item in nested Sequence.
+
+    :param indices: The indices of the nested item.
+    :type indices: typing.Sequence[int]
+    :param sequence: A nested sequence.
+    :type sequence: typing.Sequence[typing.Any]
+
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> nested_sequence = (1, 2, (4, (5, 1), (9, (3,))))
+    >>> tools.get_nested_item_from_indices((2, 2, 0), nested_sequence)
+    9
+    >>> nested_sequence[2][2][0]  # is equal
+    9
+    """
+
+    for index in indices:
+        sequence = sequence[index]
+    return sequence
+
+
+def set_nested_item_from_indices(
+    indices: typing.Sequence[int], sequence: typing.MutableSequence, item: typing.Any,
+) -> None:
+    """Set item in nested Sequence.
+
+    :param indices: The indices of the nested item which shall be set.
+    :type indices: typing.Sequence[int]
+    :param sequence: A nested sequence.
+    :type sequence: typing.MutableSequence[typing.Any]
+    :param item: The new item value.
+    :type item: typing.Any
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]]
+    >>> tools.set_nested_item_from_indices((2, 2, 0), nested_sequence, 100)
+    >>> nested_sequence[2][2][0] = 100  # is equal
+    """
+
+    n_indices = len(indices)
+    for nth_index, index in enumerate(indices):
+        if n_indices == nth_index + 1:
+            sequence.__setitem__(index, item)
+        else:
+            sequence = sequence[index]

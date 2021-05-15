@@ -97,7 +97,9 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_parameter(self, parameter_name: str) -> typing.Union[typing.Tuple[typing.Any, ...], typing.Any]:
+    def get_parameter(
+        self, parameter_name: str
+    ) -> typing.Union[typing.Tuple[typing.Any, ...], typing.Any]:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -283,7 +285,9 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     def __getitem__(self, index_or_slice: slice) -> ComplexEvent[T]:
         ...
 
-    def __getitem__(self, index_or_slice: typing.Union[int, slice]) -> typing.Union[T, ComplexEvent[T]]:
+    def __getitem__(
+        self, index_or_slice: typing.Union[int, slice]
+    ) -> typing.Union[T, ComplexEvent[T]]:
         event = super().__getitem__(index_or_slice)
         if isinstance(index_or_slice, slice):
             event = type(self)(event)  # type: ignore
@@ -330,6 +334,25 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
 
     def destructive_copy(self) -> ComplexEvent[T]:
         return type(self)([event.destructive_copy() for event in self])  # type: ignore
+
+    def get_event_from_indices(self, indices: typing.Sequence[int]) -> Event:
+        """Get nested :class:`Event` from a sequence of indices.
+
+        :param indices: The indices of the nested :class:`Event`.
+        :type indices: typing.Sequence[int]
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> nested_sequential_event = basic.SequentialEvent([basic.SequentialEvent([basic.SimpleEvent(2)])])
+        >>> nested_sequential_event.get_event_from_indices((0, 0))
+        SimpleEvent(duration = 2)
+        >>> # this is equal to:
+        >>> nested_sequential_event[0][0]
+        SimpleEvent(duration = 2)
+        """
+
+        return tools.get_nested_item_from_indices(indices, self)
 
     def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any, ...]:
         return tuple(event.get_parameter(parameter_name) for event in self)

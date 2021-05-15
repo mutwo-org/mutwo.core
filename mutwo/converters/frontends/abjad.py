@@ -954,27 +954,6 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         return abjad_event_type
 
     @staticmethod
-    def _get_item_from_indices(
-        sequence: typing.Sequence, indices: typing.Tuple[int, ...]
-    ) -> typing.Any:
-        for index in indices:
-            sequence = sequence[index]
-        return sequence
-
-    @staticmethod
-    def _set_item_from_indices(
-        sequence: typing.MutableSequence,
-        indices: typing.Tuple[int, ...],
-        item: typing.Any,
-    ) -> None:
-        n_indices = len(indices)
-        for nth_index, index in enumerate(indices):
-            if n_indices == nth_index + 1:
-                sequence.__setitem__(index, item)
-            else:
-                sequence = sequence[index]
-
-    @staticmethod
     def _indicator_collection_to_abjad_attachments_depr(
         indicator_collection: parameters.abc.IndicatorCollection,
         indicator_name_to_abjad_attachment_mapping: typing.Dict[
@@ -1156,8 +1135,8 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             ):
                 if attachment and attachment.is_active:
                     abjad_leaves = tuple(
-                        SequentialEventToAbjadVoiceConverter._get_item_from_indices(
-                            quanitisized_abjad_leaves, indices
+                        tools.get_nested_item_from_indices(
+                            indices, quanitisized_abjad_leaves,
                         )
                         for indices in related_abjad_leaves_indices
                     )
@@ -1167,8 +1146,8 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
                     for processed_abjad_leaf, indices in zip(
                         processed_abjad_leaves, related_abjad_leaves_indices
                     ):
-                        SequentialEventToAbjadVoiceConverter._set_item_from_indices(
-                            quanitisized_abjad_leaves, indices, processed_abjad_leaf
+                        tools.set_nested_item_from_indices(
+                            indices, quanitisized_abjad_leaves, processed_abjad_leaf
                         )
 
                     previous_attachment = attachment
@@ -1223,8 +1202,8 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             leaf_class = abjad.Chord
 
         for related_abjad_leaf_indices in related_abjad_leaves_indices:
-            abjad_leaf = SequentialEventToAbjadVoiceConverter._get_item_from_indices(
-                quanitisized_abjad_leaves, related_abjad_leaf_indices
+            abjad_leaf = tools.get_nested_item_from_indices(
+                related_abjad_leaf_indices, quanitisized_abjad_leaves
             )
             if leaf_class == abjad.Note:
                 abjad_leaf.note_head._written_pitch = abjad_pitches[0]
@@ -1243,9 +1222,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
                 ):
                     note_head._written_pitch = abjad_pitch
 
-                SequentialEventToAbjadVoiceConverter._set_item_from_indices(
-                    quanitisized_abjad_leaves,
+                tools.set_nested_item_from_indices(
                     related_abjad_leaf_indices,
+                    quanitisized_abjad_leaves,
                     new_abjad_leaf,
                 )
 

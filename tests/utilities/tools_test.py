@@ -113,6 +113,21 @@ class ToolsTest(unittest.TestCase):
             tools.class_name_to_object_name("MySecondClassName"), "my_second_class_name"
         )
 
+    def test_get_nested_item_from_indices(self):
+        nested_sequence = (1, 2, (4, (5, 1), (9, (3,))))
+        self.assertEqual(
+            tools.get_nested_item_from_indices((2, 2, 0), nested_sequence), 9
+        )
+        self.assertEqual(
+            tools.get_nested_item_from_indices((2, 2, 0), nested_sequence),
+            nested_sequence[2][2][0],
+        )
+
+    def test_set_nested_item_from_indices(self):
+        nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]
+        tools.set_nested_item_from_indices((2, 2, 0), nested_sequence, 100)
+        self.assertEqual(nested_sequence[2][2][0], 100)
+
 
 if __name__ == "__main__":
     unittest.main()

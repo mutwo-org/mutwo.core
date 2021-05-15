@@ -224,9 +224,14 @@ class SequentialEventTest(unittest.TestCase):
 
 class SimultaneousEventTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.sequence: basic.SimultaneousEvent[basic.SimpleEvent] = basic.SimultaneousEvent(
+        self.sequence: basic.SimultaneousEvent[
+            basic.SimpleEvent
+        ] = basic.SimultaneousEvent(
             [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
         )
+
+    def test_get_event_from_indices(self):
+        self.assertEqual(self.sequence.get_event_from_indices((0,)), self.sequence[0])
 
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, 3)
