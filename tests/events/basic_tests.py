@@ -232,6 +232,7 @@ class SimultaneousEventTest(unittest.TestCase):
 
     def test_get_event_from_indices(self):
         self.assertEqual(self.sequence.get_event_from_indices((0,)), self.sequence[0])
+        self.assertEqual(self.sequence.get_event_from_indices([]), self.sequence)
 
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, 3)
