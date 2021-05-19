@@ -27,11 +27,6 @@ This tree provides a deep overview of all submodules:
    :toctree: mutwo
 
    mutwo.converters.abc
-   mutwo.converters.symmetrical.metricities
-   mutwo.converters.symmetrical.loudness
-   mutwo.converters.symmetrical.playing_indicators
-   mutwo.converters.symmetrical.tempos
-   mutwo.converters.frontends.abjad
    mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
    mutwo.converters.frontends.ekmelily
@@ -44,6 +39,11 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants
+   mutwo.converters.symmetrical.metricities
+   mutwo.converters.symmetrical.loudness
+   mutwo.converters.symmetrical.playing_indicators
+   mutwo.converters.symmetrical.tempos
+   mutwo.converters.frontends.abjad
    mutwo.events.abc
    mutwo.events.basic
    mutwo.events.music
