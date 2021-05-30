@@ -38,6 +38,7 @@ __all__ = (
     "TempoEnvelopeToAbjadAttachmentTempoConverter",
     "ComplexTempoEnvelopeToAbjadAttachmentTempoConverter",
     "SequentialEventToQuantizedAbjadContainerConverter",
+    "SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
     "SequentialEventToAbjadVoiceConverter",
 )
 
@@ -790,6 +791,171 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         )
 
 
+class SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
+    SequentialEventToQuantizedAbjadContainerConverter
+):
+    """Quantize :class:`~mutwo.events.basic.SequentialEvent` objects via :mod:`abjadext.nauert`.
+
+    :param time_signatures: Set time signatures to divide the quantized abjad data
+        in desired bar sizes. If the converted :class:`~mutwo.events.basic.SequentialEvent`
+        is longer than the sum of all passed time signatures, the last time signature
+        will be repeated for the remaining bars.
+    :param duration_unit: This defines the `duration_unit` of the passed
+        :class:`~mutwo.events.basic.SequentialEvent` (how the
+        :attr:`~mutwo.events.abc.Event.duration` attribute will be
+        interpreted). Can either be 'beats' (default) or 'miliseconds'.
+    :param tempo_envelope: Defines the tempo of the converted music. This is an
+        :class:`expenvelope.Envelope` object which durations are beats and which
+        levels are either numbers (that will be interpreted as beats per minute ('BPM'))
+        or :class:`~mutwo.parameters.tempos.TempoPoint` objects. If no tempo envelope has
+        been defined, Mutwo will assume a constant tempo of 1/4 = 120 BPM.
+    :param attack_point_optimizer: Optionally the user can pass a
+        :class:`nauert.AttackPointOptimizer` object. Attack point optimizer help to
+        split events and tie them for better looking notation. The default attack point
+        optimizer is :class:`nauert.MeasurewiseAttackPointOptimizer` which splits events
+        to better represent metrical structures within bars. If no optimizer is desired
+        this argument can be set to ``None``.
+    :param duration_line_minimum_length: The minimum length of a duration line.
+    :type duration_line_minimum_length: int
+    :param duration_line_thickness: The thickness of a duration line.
+    :type duration_line_thickness: int
+
+    This converter differs from
+    :class:`SequentialEventToQuantizedAbjadContainerConverter` through
+    the usage of duration lines for indicating rhythm instead of using
+    flags, beams, dots and note head colors.
+
+    **Note**:
+
+    Don't forget to add the 'Duration_line_engraver' to the resulting
+    abjad Voice, otherwise Lilypond won't be able to render the desired output.
+
+    **Example:**
+
+    >>> import abjad
+    >>> from mutwo.converters.frontends import abjad as mutwo_abjad
+    >>> from mutwo.events import basic, music
+    >>> converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
+    >>>     frontends.abjad.SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
+    >>>        )
+    >>>    )
+    >>> sequential_event_to_convert = basic.SequentialEvent(
+    >>>     [music.NoteLike("c", 0.125), music.NoteLike("d", 1), music.NoteLike([], 0.125), music.NoteLike("e", 0.16666), music.NoteLike("e", 0.08333333333333333)]
+    >>>    )
+    >>> converted_sequential_event = converter.convert(sequential_event_to_convert)
+    >>> converted_sequential_event.consists_commands.append("Duration_line_engraver")
+    """
+
+    def __init__(
+        self,
+        time_signatures: typing.Sequence[abjad.TimeSignature] = (
+            abjad.TimeSignature((4, 4)),
+        ),
+        duration_unit: str = "beats",  # for future: typing.Literal["beats", "miliseconds"]
+        tempo_envelope: expenvelope.Envelope = None,
+        attack_point_optimizer: typing.Optional[
+            nauert.AttackPointOptimizer
+        ] = nauert.MeasurewiseAttackPointOptimizer(),
+        duration_line_minimum_length: int = 6,
+        duration_line_thickness: int = 3,
+    ):
+        super().__init__(
+            time_signatures, duration_unit, tempo_envelope, attack_point_optimizer
+        )
+        self._duration_line_minimum_length = duration_line_minimum_length
+        self._duration_line_thickness = duration_line_thickness
+
+    def _prepare_first_element(self, first_element: abjad.Leaf):
+        # don't write rests (simply write empty space)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Rest"), first_element)
+        abjad.attach(abjad.LilyPondLiteral("\\omit MultiMeasureRest"), first_element)
+        # don't write stems (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Stem"), first_element)
+        # don't write flags (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Flag"), first_element)
+        # don't write beams (Rhythm get defined by duration line)
+        abjad.attach(abjad.LilyPondLiteral("\\omit Beam"), first_element)
+        # don't write dots (Rhythm get defined by duration line)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override Dots.dot-count = #0"), first_element,
+        )
+        # only write black note heads (Rhythm get defined by duration line)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override NoteHead.duration-log = 2"),
+            first_element,
+        )
+        # set duration line properties
+        abjad.attach(
+            abjad.LilyPondLiteral(
+                "\\override DurationLine.minimum-length = {}".format(
+                    self._duration_line_minimum_length
+                )
+            ),
+            first_element,
+        )
+        abjad.attach(
+            abjad.LilyPondLiteral(
+                "\\override DurationLine.thickness = {}".format(
+                    self._duration_line_thickness
+                )
+            ),
+            first_element,
+        )
+
+    def _adjust_quantisized_abjad_leaves(
+        self,
+        quanitisized_abjad_leaves: abjad.Container,
+        related_abjad_leaves_per_simple_event: typing.Tuple[
+            typing.Tuple[typing.Tuple[int, ...], ...], ...
+        ],
+    ):
+        is_first = True
+
+        for abjad_leaves_indices in related_abjad_leaves_per_simple_event:
+            first_element = tools.get_nested_item_from_indices(
+                abjad_leaves_indices[0], quanitisized_abjad_leaves
+            )
+            if is_first:
+                self._prepare_first_element(first_element)
+                is_first = False
+
+            is_active = bool(abjad.get.pitches(first_element))
+            if is_active:
+                if len(abjad_leaves_indices) > 1:
+                    abjad.detach(abjad.Tie(), first_element)
+
+                abjad.attach(
+                    abjad.LilyPondLiteral("\\-", format_slot="after"), first_element
+                )
+
+                for indices in abjad_leaves_indices[1:]:
+                    element = tools.get_nested_item_from_indices(
+                        indices, quanitisized_abjad_leaves
+                    )
+                    tools.set_nested_item_from_indices(
+                        indices,
+                        quanitisized_abjad_leaves,
+                        abjad.Skip(element.written_duration),
+                    )
+
+    def convert(
+        self, sequential_event_to_convert: events.basic.SequentialEvent
+    ) -> typing.Tuple[
+        abjad.Container, typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
+    ]:
+
+        (
+            quanitisized_abjad_leaves,
+            related_abjad_leaves_per_simple_event,
+        ) = super().convert(sequential_event_to_convert)
+
+        self._adjust_quantisized_abjad_leaves(
+            quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+        )
+
+        return quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+
+
 class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     """Convert :class:`~mutwo.events.basic.SequentialEvent` to :class:`abjad.Voice`.
 
@@ -1206,7 +1372,9 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
                 related_abjad_leaf_indices, quanitisized_abjad_leaves
             )
             if leaf_class == abjad.Note:
-                abjad_leaf.note_head._written_pitch = abjad_pitches[0]
+                # skip don't have note heads
+                if hasattr(abjad_leaf, 'note_head'):
+                    abjad_leaf.note_head._written_pitch = abjad_pitches[0]
 
             else:
                 new_abjad_leaf = leaf_class(

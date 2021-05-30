@@ -592,6 +592,56 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # remove test file
         os.remove(new_png_file_path)
 
+    def test_duration_line_notation(self):
+        # basically an integration test (testing if the rendered png
+        # is equal to the previously rendered and manually checked png)
+        # -> this tests, if duration lines are printed in a correct manner
+
+        converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
+            frontends.abjad.SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
+        )
+        sequential_event_to_convert = basic.SequentialEvent(
+            [
+                music.NoteLike([], 1),
+                music.NoteLike("c", 0.125),
+                music.NoteLike("d", 1),
+                music.NoteLike([], 0.375),
+                music.NoteLike("e", 0.25),
+                music.NoteLike("d", 0.5),
+                music.NoteLike("c", 0.75),
+                music.NoteLike("a", 0.25),
+            ]
+        )
+        converted_sequential_event = converter.convert(sequential_event_to_convert)
+        converted_sequential_event.consists_commands.append("Duration_line_engraver")
+
+        tests_path = "tests/converters/frontends"
+        png_file_to_compare_path = (
+            "{}/abjad_expected_png_output_for_duration_line_test.png".format(tests_path)
+        )
+        new_png_file_path = "{}/abjad_png_output_for_duration_line_test.png".format(
+            tests_path
+        )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        score_block = abjad.Block(name="score")
+        score_block.items.append([abjad.Staff([converted_sequential_event])])
+        lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        self.assertTrue(
+            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
 
 if __name__ == "__main__":
     unittest.main()
