@@ -249,11 +249,14 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
 
     def convert(
         self, volume_to_convert: parameters.abc.Volume
-    ) -> abjad_attachments.Dynamic:
+    ) -> typing.Optional[abjad_attachments.Dynamic]:
         if not isinstance(volume_to_convert, parameters.volumes.WesternVolume):
-            volume_to_convert = parameters.volumes.WesternVolume.from_amplitude(
-                volume_to_convert.amplitude
-            )
+            if volume_to_convert.amplitude > 0:
+                volume_to_convert = parameters.volumes.WesternVolume.from_amplitude(
+                    volume_to_convert.amplitude
+                )
+            else:
+                return None
         return abjad_attachments.Dynamic(dynamic_indicator=volume_to_convert.name)
 
 
@@ -1186,11 +1189,13 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        return {
-            "dynamic": self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(
-                volume
-            )
-        }
+        abjad_attachment_dynamic = self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(
+            volume
+        )
+        if abjad_attachment_dynamic:
+            return {"dynamic": abjad_attachment_dynamic}
+        else:
+            return {}
 
     def _get_tempo_attachments_for_quantized_abjad_leaves(
         self, abjad_voice: abjad.Voice,
@@ -1333,7 +1338,10 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
 
         # TODO(Add option: no dynamic indicator if there aren't any pitches)
         try:
-            volume = self._simple_event_to_volume(simple_event)
+            if pitches:
+                volume = self._simple_event_to_volume(simple_event)
+            else:
+                volume = parameters.volumes.DirectVolume(0)
         except AttributeError:
             volume = parameters.volumes.DirectVolume(0)
             pitches = []
@@ -1373,7 +1381,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             )
             if leaf_class == abjad.Note:
                 # skip don't have note heads
-                if hasattr(abjad_leaf, 'note_head'):
+                if hasattr(abjad_leaf, "note_head"):
                     abjad_leaf.note_head._written_pitch = abjad_pitches[0]
 
             else:
