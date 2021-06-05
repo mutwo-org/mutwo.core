@@ -209,7 +209,7 @@ class Volume(Parameter):
         -6.020599913279624
         """
         if amplitude == 0:
-            return float("inf")
+            return float("-inf")
         else:
             return float(20 * math.log10(amplitude / reference_amplitude))
 
@@ -233,7 +233,7 @@ class Volume(Parameter):
         -3.010299956639812
         """
         if amplitude == 0:
-            return float("inf")
+            return float("-inf")
         else:
             return float(10 * math.log10(amplitude / reference_amplitude))
 
