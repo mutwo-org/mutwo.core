@@ -23,7 +23,7 @@ class DirectVolumeTest(unittest.TestCase):
 
     def test_decibel(self):
         self.assertEqual(volumes.DirectVolume(1).decibel, 0)
-        self.assertEqual(volumes.DirectVolume(0).decibel, float("inf"))
+        self.assertEqual(volumes.DirectVolume(0).decibel, float("-inf"))
         self.assertAlmostEqual(volumes.DirectVolume(0.5).decibel, -6, places=1)
 
 

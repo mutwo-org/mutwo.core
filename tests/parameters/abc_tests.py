@@ -99,7 +99,7 @@ class VolumeTest(unittest.TestCase):
             parameters.abc.Volume.amplitude_ratio_to_decibel(0.25), -12.041, places=3
         )
         self.assertEqual(
-            parameters.abc.Volume.amplitude_ratio_to_decibel(0), float("inf"),
+            parameters.abc.Volume.amplitude_ratio_to_decibel(0), float("-inf"),
         )
 
     def test_power_ratio_to_decibel(self):
@@ -117,7 +117,7 @@ class VolumeTest(unittest.TestCase):
             parameters.abc.Volume.power_ratio_to_decibel(0.06309), -12, places=3
         )
         self.assertEqual(
-            parameters.abc.Volume.power_ratio_to_decibel(0), float("inf"),
+            parameters.abc.Volume.power_ratio_to_decibel(0), float("-inf"),
         )
 
     def test_amplitude_to_velocity(self):
