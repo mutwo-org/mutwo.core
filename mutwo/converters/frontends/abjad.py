@@ -539,7 +539,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
-        search_tree: nauert.SearchTree = nauert.WeightedSearchTree(),
+        search_tree: typing.Optional[nauert.SearchTree] = None,
     ):
         if duration_unit == "miliseconds":
             # warning for not well implemented miliseconds conversion
@@ -720,18 +720,22 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
     @staticmethod
     def _make_q_schema(
-        time_signatures: typing.Tuple[abjad.TimeSignature, ...], search_tree: nauert.SearchTree
+        time_signatures: typing.Tuple[abjad.TimeSignature, ...],
+        search_tree: typing.Optional[nauert.SearchTree],
     ) -> nauert.QSchema:
         formated_time_signatures = []
         for time_signature in time_signatures:
             formated_time_signatures.append({"time_signature": time_signature})
 
-        return nauert.MeasurewiseQSchema(
-            *formated_time_signatures,
-            use_full_measure=True,
-            tempo=abjad.MetronomeMark((1, 4), 60),
-            search_tree=search_tree
-        )
+        keyword_arguments = {
+            "use_full_measure": True,
+            "tempo": abjad.MetronomeMark((1, 4), 60),
+        }
+
+        if search_tree:
+            keyword_arguments.update({"search_tree": search_tree})
+
+        return nauert.MeasurewiseQSchema(*formated_time_signatures, **keyword_arguments)
 
     # ###################################################################### #
     #                         private methods                                #
@@ -862,12 +866,16 @@ class SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
-        search_tree: nauert.SearchTree = nauert.WeightedSearchTree(),
+        search_tree: typing.Optional[nauert.SearchTree] = None,
         duration_line_minimum_length: int = 6,
         duration_line_thickness: int = 3,
     ):
         super().__init__(
-            time_signatures, duration_unit, tempo_envelope, attack_point_optimizer, search_tree
+            time_signatures,
+            duration_unit,
+            tempo_envelope,
+            attack_point_optimizer,
+            search_tree,
         )
         self._duration_line_minimum_length = duration_line_minimum_length
         self._duration_line_thickness = duration_line_thickness
