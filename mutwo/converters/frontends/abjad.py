@@ -539,6 +539,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
+        search_tree: nauert.SearchTree = nauert.WeightedSearchTree(),
     ):
         if duration_unit == "miliseconds":
             # warning for not well implemented miliseconds conversion
@@ -576,7 +577,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
         self._tempo_envelope = tempo_envelope
         self._attack_point_optimizer = attack_point_optimizer
         self._q_schema = SequentialEventToQuantizedAbjadContainerConverter._make_q_schema(
-            self._time_signatures
+            self._time_signatures, search_tree
         )
 
     # ###################################################################### #
@@ -620,8 +621,9 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
             related_abjad_leaves_per_simple_event[index_of_previous_q_event].append(
                 tuple(indices)
             )
-        else:
-            related_abjad_leaves_per_simple_event.append([tuple(indices)])
+        # skip leaves without any links
+        # else:
+        #     related_abjad_leaves_per_simple_event.append([tuple(indices)])
 
         has_tie = abjad.get.has_indicator(abjad_leaf, abjad.Tie)
 
@@ -718,7 +720,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
     @staticmethod
     def _make_q_schema(
-        time_signatures: typing.Tuple[abjad.TimeSignature, ...]
+        time_signatures: typing.Tuple[abjad.TimeSignature, ...], search_tree: nauert.SearchTree
     ) -> nauert.QSchema:
         formated_time_signatures = []
         for time_signature in time_signatures:
@@ -728,6 +730,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
             *formated_time_signatures,
             use_full_measure=True,
             tempo=abjad.MetronomeMark((1, 4), 60),
+            search_tree=search_tree
         )
 
     # ###################################################################### #
@@ -859,11 +862,12 @@ class SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         attack_point_optimizer: typing.Optional[
             nauert.AttackPointOptimizer
         ] = nauert.MeasurewiseAttackPointOptimizer(),
+        search_tree: nauert.SearchTree = nauert.WeightedSearchTree(),
         duration_line_minimum_length: int = 6,
         duration_line_thickness: int = 3,
     ):
         super().__init__(
-            time_signatures, duration_unit, tempo_envelope, attack_point_optimizer
+            time_signatures, duration_unit, tempo_envelope, attack_point_optimizer, search_tree
         )
         self._duration_line_minimum_length = duration_line_minimum_length
         self._duration_line_thickness = duration_line_thickness
@@ -915,31 +919,32 @@ class SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
         is_first = True
 
         for abjad_leaves_indices in related_abjad_leaves_per_simple_event:
-            first_element = tools.get_nested_item_from_indices(
-                abjad_leaves_indices[0], quanitisized_abjad_leaves
-            )
-            if is_first:
-                self._prepare_first_element(first_element)
-                is_first = False
-
-            is_active = bool(abjad.get.pitches(first_element))
-            if is_active:
-                if len(abjad_leaves_indices) > 1:
-                    abjad.detach(abjad.Tie(), first_element)
-
-                abjad.attach(
-                    abjad.LilyPondLiteral("\\-", format_slot="after"), first_element
+            if abjad_leaves_indices:
+                first_element = tools.get_nested_item_from_indices(
+                    abjad_leaves_indices[0], quanitisized_abjad_leaves
                 )
+                if is_first:
+                    self._prepare_first_element(first_element)
+                    is_first = False
 
-                for indices in abjad_leaves_indices[1:]:
-                    element = tools.get_nested_item_from_indices(
-                        indices, quanitisized_abjad_leaves
+                is_active = bool(abjad.get.pitches(first_element))
+                if is_active:
+                    if len(abjad_leaves_indices) > 1:
+                        abjad.detach(abjad.Tie(), first_element)
+
+                    abjad.attach(
+                        abjad.LilyPondLiteral("\\-", format_slot="after"), first_element
                     )
-                    tools.set_nested_item_from_indices(
-                        indices,
-                        quanitisized_abjad_leaves,
-                        abjad.Skip(element.written_duration),
-                    )
+
+                    for indices in abjad_leaves_indices[1:]:
+                        element = tools.get_nested_item_from_indices(
+                            indices, quanitisized_abjad_leaves
+                        )
+                        tools.set_nested_item_from_indices(
+                            indices,
+                            quanitisized_abjad_leaves,
+                            abjad.Skip(element.written_duration),
+                        )
 
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
