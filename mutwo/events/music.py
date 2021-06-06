@@ -173,6 +173,16 @@ class NoteLike(events.basic.SimpleEvent):
     # ###################################################################### #
 
     @property
+    def _parameters_to_print(self) -> typing.Tuple[str, ...]:
+        """Return tuple of attribute names which shall be printed for repr.
+        """
+        return tuple(
+            attribute
+            for attribute in self._parameters_to_compare
+            if attribute not in ("playing_indicators", "notation_indicators")
+        )
+
+    @property
     def pitch_or_pitches(self) -> typing.Any:
         """The pitch or pitches of the event."""
 

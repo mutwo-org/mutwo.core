@@ -53,13 +53,19 @@ class SimpleEvent(events.abc.Event):
     def __repr__(self) -> str:
         attributes = (
             "{} = {}".format(attribute, getattr(self, attribute))
-            for attribute in self._parameters_to_compare
+            for attribute in self._parameters_to_print
         )
         return "{}({})".format(type(self).__name__, ", ".join(attributes))
 
     # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
+
+    @property
+    def _parameters_to_print(self) -> typing.Tuple[str, ...]:
+        """Return tuple of attribute names which shall be printed for repr.
+        """
+        return self._parameters_to_compare
 
     @property
     def _parameters_to_compare(self) -> typing.Tuple[str, ...]:
