@@ -141,8 +141,6 @@ class TempoConverter(converters.abc.EventConverter):
             )
             levels.append(beat_length_in_seconds)
 
-        print(levels, tempo_envelope.durations, tempo_envelope.curve_shapes)
-
         return expenvelope.Envelope.from_levels_and_durations(
             levels, tempo_envelope.durations, tempo_envelope.curve_shapes
         )
