@@ -213,11 +213,17 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         abjad_pitch_class._accidental = accidental
 
         octave = pitch_to_convert.octave + 4
-        if (
-            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
-                closest_pythagorean_pitch_name[0]
-            )
-            < self._reference_index
+        closest_pythagorean_pitch_index = parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+            closest_pythagorean_pitch_name[0]
+        )
+        if closest_pythagorean_pitch_index < self._reference_index:
+            octave += 1
+
+        # for pitches which are written with the same diatonic pitch as
+        # the reference_pitch, but which are slightly deeper
+        elif (
+            closest_pythagorean_pitch_index == self._reference_index
+            and pitch_to_convert.normalize(mutate=False).cents > 600
         ):
             octave += 1
 
