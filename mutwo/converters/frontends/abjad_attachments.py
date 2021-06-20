@@ -37,7 +37,11 @@ class AbjadAttachment(abc.ABC):
         except AttributeError:
             return None
 
-        return cls(**indicator.get_arguments_dict())
+        # typing will run a correct error:
+        # to make this method working, we also need to inherit
+        # the inherited subclass from a mutwo.parameters.abc.Indicator
+        # class
+        return cls(**indicator.get_arguments_dict())  # type: ignore
 
     @abc.abstractmethod
     def process_leaves(
@@ -515,7 +519,7 @@ class Dynamic(ToggleAttachment):
 @dataclasses.dataclass()
 class Tempo(BangFirstAttachment):
     reference_duration: typing.Optional[typing.Tuple[int, int]] = (1, 4)
-    units_per_minute: typing.Optional[int] = 60
+    units_per_minute: typing.Union[int, typing.Tuple[int, int], None] = 60
     textual_indication: typing.Optional[str] = None
     # TODO(for future usage add typing.Literal['rit.', 'acc.'])
     dynamic_change_indication: typing.Optional[str] = None

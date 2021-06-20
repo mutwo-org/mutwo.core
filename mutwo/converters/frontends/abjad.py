@@ -204,9 +204,11 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
                     else self._utonality_indicator
                 )
                 heji_accidental_name = self._prime_to_heji_accidental_name[prime]
-                exponent = self._exponent_to_exponent_indicator(abs(exponent) - 1)
+                exponent_indicator = self._exponent_to_exponent_indicator(
+                    abs(exponent) - 1
+                )
                 accidental_parts.append(
-                    "{}{}{}".format(tonality, heji_accidental_name, exponent)
+                    "{}{}{}".format(tonality, heji_accidental_name, exponent_indicator)
                 )
 
         accidental = _HEJIAccidental("".join(accidental_parts))
@@ -223,7 +225,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         # the reference_pitch, but which are slightly deeper
         elif (
             closest_pythagorean_pitch_index == self._reference_index
-            and pitch_to_convert.normalize(mutate=False).cents > 600
+            and pitch_to_convert.normalize(mutate=False).cents > 600  # type: ignore
         ):
             octave += 1
 
@@ -370,7 +372,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _shall_stop_dynamic_change_indication(
-        tempo_attachments: typing.Tuple[abjad_attachments.Tempo, ...]
+        tempo_attachments: typing.Tuple[
+            typing.Tuple[constants.Real, abjad_attachments.Tempo], ...
+        ]
     ) -> bool:
         stop_dynamic_change_indicaton = False
         for _, previous_tempo_attachment in reversed(tempo_attachments):
@@ -431,7 +435,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         nth_tempo_point: int,
         tempo_point: parameters.tempos.TempoPoint,
         tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
-        tempo_attachments: typing.Tuple[abjad_attachments.Tempo, ...],
+        tempo_attachments: typing.Tuple[
+            typing.Tuple[constants.Real, abjad_attachments.Tempo], ...
+        ],
     ) -> abjad_attachments.Tempo:
         try:
             next_tempo_point: typing.Optional[
@@ -486,7 +492,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             tempo_envelope_to_convert.levels
         )
 
-        tempo_attachments = []
+        tempo_attachments: typing.List[
+            typing.Tuple[constants.Real, abjad_attachments.Tempo]
+        ] = []
         for nth_tempo_point, absolute_time, duration, tempo_point in zip(
             range(len(tempo_points)),
             tools.accumulate_from_zero(tempo_envelope_to_convert.durations),
@@ -566,11 +574,10 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
             )
             raise ValueError(message)
 
-        # nauert will raise an error if there is only one time signature
-        elif n_time_signatures == 1:
-            time_signatures += time_signatures
-
         time_signatures = tuple(time_signatures)
+        # nauert will raise an error if there is only one time signature
+        if n_time_signatures == 1:
+            time_signatures += time_signatures
 
         if tempo_envelope is None:
             tempo_envelope = expenvelope.Envelope.from_points(

@@ -131,7 +131,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
         set_pitches_for_simple_event: typing.Callable[
             [events.basic.SimpleEvent, typing.List[parameters.abc.Pitch]], None
-        ] = lambda simple_event, pitch_or_pitches: simple_event.set_parameter(
+        ] = lambda simple_event, pitch_or_pitches: simple_event.set_parameter(  # type: ignore
             "pitch_or_pitches", pitch_or_pitches, set_unassigned_parameter=True
         ),
     ):
@@ -157,7 +157,9 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         # sort pitches according to Arpeggio direction
         pitch_or_pitches.sort(reverse=arpeggio.direction != "up")
 
-        converted_event = events.basic.SequentialEvent(
+        converted_event: events.basic.SequentialEvent[
+            events.basic.SimpleEvent
+        ] = events.basic.SequentialEvent(
             [copy.copy(simple_event_to_convert) for _ in pitch_or_pitches]
         )
 
@@ -196,7 +198,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
             return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
 
 
-class PlayingIndicatorsConverter(converters.abc.EventConverter):
+class PlayingIndicatorsConverter(converters.abc.SymmetricalEventConverter):
     """Apply :class:`~mutwo.parameters.abc.PlayingIndicator` on any :class:`~mutwo.events.abc.Event`.
 
     :param playing_indicator_converters: A sequence of :class:`PlayingIndicatorConverter` which shall
@@ -214,12 +216,11 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
-        """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
-
+        """Convert instance of :class:`mutwo.events.basic.SimpleEvent`.""" 
         converted_event = [event_to_convert]
 
         for playing_indicator_converter in self._playing_indicator_converters:
-            new_converted_event = []
+            new_converted_event: typing.List[events.basic.SimpleEvent] = []
             for simple_event in converted_event:
                 converted_simple_event = playing_indicator_converter.convert(
                     simple_event
@@ -229,26 +230,6 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
             converted_event = new_converted_event
 
         return events.basic.SequentialEvent(converted_event)
-
-    def _convert_simultaneous_event(
-        self,
-        simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
-    ) -> events.basic.SimultaneousEvent:
-        return events.basic.SimultaneousEvent(
-            super()._convert_simultaneous_event(
-                simultaneous_event, absolute_entry_delay
-            )
-        )
-
-    def _convert_sequential_event(
-        self,
-        sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
-        return events.basic.SequentialEvent(
-            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
-        )
 
     def convert(self, event_to_convert: events.abc.Event) -> events.abc.Event:
         return self._convert_event(event_to_convert, 0)

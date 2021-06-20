@@ -2,7 +2,7 @@
 
 import math
 
-import expenvelope
+import expenvelope  # type: ignore
 
 import mutwo_third_party
 from mutwo import converters

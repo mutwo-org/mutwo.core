@@ -6,7 +6,7 @@ import typing
 from mutwo import events
 from mutwo import parameters
 
-__all__ = ("Converter", "EventConverter")
+__all__ = ("Converter", "EventConverter", "SymmetricalEventConverter")
 
 
 class Converter(abc.ABC):
@@ -28,9 +28,9 @@ class EventConverter(Converter):
 
     This class helps building new classes which convert mutwo events
     with few general private methods (and without adding any new public
-    method). Converting mutwo event always involves the same pattern:
+    method). Converting mutwo event often involves the same pattern:
     due to the nested structure of an Event, the converter has
-    to iterate through the different layers until it reaches leafs
+    to iterate through the different layers until it reaches leaves
     (any class that inherits from :class:`mutwo.events.basic.SimpleEvent`).
     This common iteration process and the different time treatment
     between :class:`mutwo.events.basic.SequentialEvent` and
@@ -80,7 +80,7 @@ class EventConverter(Converter):
         self,
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
         raise NotImplementedError
@@ -89,7 +89,7 @@ class EventConverter(Converter):
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
         data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
@@ -104,7 +104,7 @@ class EventConverter(Converter):
         self,
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
 
         data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
@@ -120,7 +120,7 @@ class EventConverter(Converter):
         self,
         event_to_convert: events.abc.Event,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> typing.Any:
         """Convert :class:`mutwo.events.abc.Event` of unknown type.
 
         The method calls different subroutines depending on whether
@@ -154,3 +154,47 @@ class EventConverter(Converter):
             message += " Supported types only include all inherited classes "
             message += "from '{}'.".format(events.abc.Event)
             raise TypeError(message)
+
+
+class SymmetricalEventConverter(EventConverter):
+    """Abstract base class for Converter which handle mutwo events.
+
+    This converter is a more specified version of the :class:`EventConverter`.
+    It helps for building converters which aim to return mutwo events.
+    """
+
+    def _convert_simple_event(
+        self,
+        event_to_convert: events.basic.SimpleEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
+
+        raise NotImplementedError
+
+    def _convert_simultaneous_event(
+        self,
+        simultaneous_event: events.basic.SimultaneousEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> events.basic.SimultaneousEvent[events.abc.Event]:
+        return events.basic.SimultaneousEvent(
+            super()._convert_simultaneous_event(
+                simultaneous_event, absolute_entry_delay
+            )
+        )
+
+    def _convert_sequential_event(
+        self,
+        sequential_event: events.basic.SequentialEvent,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> events.basic.SequentialEvent[events.abc.Event]:
+        return events.basic.SequentialEvent(
+            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
+        )
+
+    def _convert_event(
+        self,
+        event_to_convert: events.abc.Event,
+        absolute_entry_delay: parameters.abc.DurationType,
+    ) -> events.abc.ComplexEvent[events.abc.Event]:
+        return super()._convert_event(event_to_convert, absolute_entry_delay)

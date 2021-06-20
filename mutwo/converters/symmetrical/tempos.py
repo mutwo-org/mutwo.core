@@ -2,11 +2,10 @@
 
 """
 
-from math import pi
 import typing
 import warnings
 
-import expenvelope
+import expenvelope  # type: ignore
 
 from mutwo import converters, events, parameters
 from mutwo.utilities import constants

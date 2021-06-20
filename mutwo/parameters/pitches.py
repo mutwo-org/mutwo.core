@@ -669,7 +669,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
             )
             closest_pythagorean_interval.normalize()
         else:
-            closest_pythagorean_interval = self.normalize(mutate=False)
+            closest_pythagorean_interval = self.normalize(mutate=False)  # type: ignore
 
         return closest_pythagorean_interval
 
