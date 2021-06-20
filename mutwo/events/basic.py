@@ -63,8 +63,7 @@ class SimpleEvent(events.abc.Event):
 
     @property
     def _parameters_to_print(self) -> typing.Tuple[str, ...]:
-        """Return tuple of attribute names which shall be printed for repr.
-        """
+        """Return tuple of attribute names which shall be printed for repr."""
         return self._parameters_to_compare
 
     @property
@@ -455,8 +454,8 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
             except AttributeError:
                 message = (
                     "Can't squash '{}' in '{}'. Does the SimultaneousEvent contain"
-                    " events that inherit from SimpleEvent? For being able to"
-                    " squash in, the SimultaneousEvent needs to contain"
+                    " SimpleEvents or events that inherit from SimpleEvent? For being"
+                    " able to squash in, the SimultaneousEvent needs to only contain"
                     " SequentialEvents or SimultaneousEvents.".format(
                         event_to_squash_in, self
                     )
