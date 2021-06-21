@@ -1043,11 +1043,11 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
     :type simple_event_to_notation_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
-    :param does_extracted_data_indicate_rest: Function to detect from the extracted
-        data if the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
+    :param is_simple_event_rest: Function to detect if the
+        the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
         default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
         the Event will be interpreted as a rest.
-    :type does_extracted_data_indicate_rest: typing.Callable[[typing.List[parameters.abc.Pitch], parameters.abc.Volume, parameters.playing_indicators.PlayingIndicatorCollection, parameters.notation_indicators.NotationIndicatorCollection,],bool,], optional
+    :type is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
         :class:`mutwo.parameters.abc.Pitch` objects to :class:`abjad.Pitch` objects.
         See :class:`MutwoPitchToAbjadPitchConverter` for more information.
@@ -1084,18 +1084,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             [events.basic.SimpleEvent],
             parameters.notation_indicators.NotationIndicatorCollection,
         ] = lambda simple_event: simple_event.notation_indicators,  # type: ignore
-        does_extracted_data_indicate_rest: typing.Callable[
-            [
-                typing.List[parameters.abc.Pitch],
-                parameters.abc.Volume,
-                parameters.playing_indicators.PlayingIndicatorCollection,
-                parameters.notation_indicators.NotationIndicatorCollection,
-            ],
-            bool,
-        ] = lambda pitches, volume, playing_indicators, notation_indicators: len(
-            pitches
-        )
-        == 0,
+        is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool] = None,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter = MutwoVolumeToAbjadAttachmentDynamicConverter(),
         tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
@@ -1107,6 +1096,16 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             abjad_attachment_classes = abjad_constants.DEFAULT_ABJAD_ATTACHMENT_CLASSES
         else:
             abjad_attachment_classes = tuple(abjad_attachment_classes)
+
+        if is_simple_event_rest is None:
+
+            def is_simple_event_rest(simple_event: events.basic.SimpleEvent) -> bool:
+                try:
+                    pitch_or_pitches = simple_event_to_pitches(simple_event)
+                except AttributeError:
+                    pitch_or_pitches = []
+
+                return not bool(pitch_or_pitches)
 
         self._abjad_attachment_classes = abjad_attachment_classes
 
@@ -1122,7 +1121,7 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         self._simple_event_to_volume = simple_event_to_volume
         self._simple_event_to_playing_indicators = simple_event_to_playing_indicators
         self._simple_event_to_notation_indicators = simple_event_to_notation_indicators
-        self._does_extracted_data_indicate_rest = does_extracted_data_indicate_rest
+        self._is_simple_event_rest = is_simple_event_rest
         self._mutwo_pitch_to_abjad_pitch_converter = (
             mutwo_pitch_to_abjad_pitch_converter
         )
@@ -1538,14 +1537,14 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             }
         }
         """
-        # first, extract data from simple events
+        # first, extract data from simple events and find rests
         extracted_data_per_simple_event = tuple(
             self._extract_data_from_simple_event(simple_event)
             for simple_event in sequential_event_to_convert
         )
         is_simple_event_rest_per_simple_event = tuple(
-            self._does_extracted_data_indicate_rest(*extracted_data)
-            for extracted_data in extracted_data_per_simple_event
+            self._is_simple_event_rest(simple_event)
+            for simple_event in sequential_event_to_convert
         )
 
         # second, quantize the sequential event
