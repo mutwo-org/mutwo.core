@@ -36,8 +36,7 @@ class IsisScoreConverterTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # remove score files
-        # os.remove(cls.converter.path)
-        pass
+        os.remove(cls.converter.path)
 
     def test_convert_simple_event(self):
         simple_event = NoteLikeWithText(
