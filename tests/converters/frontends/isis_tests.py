@@ -36,7 +36,8 @@ class IsisScoreConverterTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # remove score files
-        os.remove(cls.converter.path)
+        # os.remove(cls.converter.path)
+        pass
 
     def test_convert_simple_event(self):
         simple_event = NoteLikeWithText(
@@ -59,6 +60,37 @@ class IsisScoreConverterTest(unittest.TestCase):
         with open(self.converter.path, "r") as f:
             self.assertEqual(f.read(), expected_score)
 
+    def test_convert_sequential_event(self):
+        # Test if auto tie works!
+        sequential_event = events.basic.SequentialEvent(
+            [
+                NoteLikeWithText(
+                    parameters.pitches.WesternPitch(), 2, 0.5, ("t",), "a"
+                ),
+                events.basic.SimpleEvent(4),
+                NoteLikeWithText([], 3, 1, tuple([]), ""),
+                NoteLikeWithText(
+                    parameters.pitches.WesternPitch(), 2, 0.5, ("t",), "a"
+                ),
+            ]
+        )
+        expected_score = (
+            "[lyrics]\nxsampa: {0} {1}\n        _ {0} {1}\n\n[score]\nmidiNotes: {2},\n"
+            "           0.0, {2}\nglobalTransposition: 0\nrhythm: {3},\n        7,"
+            " {3}\nloud_accents: {4},\n              0, {4}\ntempo: {5}".format(
+                sequential_event[0].consonants[0],
+                sequential_event[0].vowel,
+                sequential_event[0].pitch_or_pitches[0].midi_pitch_number,
+                sequential_event[0].duration,
+                sequential_event[0].volume.amplitude,
+                self.converter._tempo,
+            )
+        )
+
+        self.converter.convert(sequential_event)
+        with open(self.converter.path, "r") as f:
+            self.assertEqual(f.read(), expected_score)
+
     def test_convert_rest(self):
         simple_event = events.basic.SimpleEvent(3)
         self.converter.convert(simple_event)
@@ -66,8 +98,7 @@ class IsisScoreConverterTest(unittest.TestCase):
         expected_score = (
             "[lyrics]\nxsampa: _\n\n[score]\nmidiNotes: 0.0\nglobalTransposition:"
             " 0\nrhythm: {}\nloud_accents: 0\ntempo: {}".format(
-                simple_event.duration,
-                self.converter._tempo,
+                simple_event.duration, self.converter._tempo,
             )
         )
 

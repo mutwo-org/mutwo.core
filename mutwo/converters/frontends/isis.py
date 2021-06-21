@@ -9,7 +9,7 @@ them from melody and lyrics."
 import os
 import typing
 
-from mutwo.events import basic
+from mutwo import events
 
 from mutwo import converters
 from mutwo.converters.frontends import isis_constants
@@ -19,7 +19,7 @@ from mutwo.utilities import constants
 __all__ = ("IsisScoreConverter", "IsisConverter")
 
 ConvertableEvents = typing.Union[
-    basic.SimpleEvent, basic.SequentialEvent[basic.SimpleEvent],
+    events.basic.SimpleEvent, events.basic.SequentialEvent[events.basic.SimpleEvent],
 ]
 ExtractedData = typing.Tuple[
     # duration, consonants, vowel, pitch, volume
@@ -40,30 +40,35 @@ class IsisScoreConverter(converters.abc.EventConverter):
     :param simple_event_to_volume:
     :param simple_event_to_vowel:
     :param simple_event_to_consonants:
+    :param is_simple_event_rest:
     :param tempo: Tempo in beats per minute (BPM). Defaults to 60.
     :param global_transposition: global transposition in midi numbers. Defaults to 0.
     :param n_events_per_line: How many events the score shall contain per line.
         Defaults to 5.
     """
 
-    # TODO(auto-tie rests (because ISiS doesn't understand more than one rests
-    # between notes)
-
     def __init__(
         self,
         path: str,
         simple_event_to_pitch: typing.Callable[
-            [basic.SimpleEvent], parameters.abc.Pitch
-        ] = lambda simple_event: simple_event.pitch_or_pitches[0],  # type: ignore
+            [events.basic.SimpleEvent], parameters.abc.Pitch
+        ] = lambda simple_event: simple_event.pitch_or_pitches[
+            0
+        ],  # type: ignore
         simple_event_to_volume: typing.Callable[
-            [basic.SimpleEvent], parameters.abc.Volume
+            [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
         simple_event_to_vowel: typing.Callable[
-            [basic.SimpleEvent], str
+            [events.basic.SimpleEvent], str
         ] = lambda simple_event: simple_event.vowel,  # type: ignore
         simple_event_to_consonants: typing.Callable[
-            [basic.SimpleEvent], typing.Tuple[str, ...]
+            [events.basic.SimpleEvent], typing.Tuple[str, ...]
         ] = lambda simple_event: simple_event.consonants,  # type: ignore
+        is_simple_event_rest: typing.Callable[
+            [events.basic.SimpleEvent], bool
+        ] = lambda simple_event: not (
+            hasattr(simple_event, "pitch_or_pitches") and simple_event.pitch_or_pitches
+        ),
         tempo: constants.Real = 60,
         global_transposition: int = 0,
         default_sentence_loudness: typing.Union[constants.Real, None] = None,
@@ -74,6 +79,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self._global_transposition = global_transposition
         self._default_sentence_loudness = default_sentence_loudness
         self._n_events_per_line = n_events_per_line
+        self._is_simple_event_rest = is_simple_event_rest
 
         self._extraction_functions = (
             simple_event_to_consonants,
@@ -151,7 +157,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
     def _convert_simple_event(
         self,
-        simple_event_to_convert: basic.SimpleEvent,
+        simple_event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> typing.Tuple[ExtractedData]:
         duration = simple_event_to_convert.duration
@@ -183,7 +189,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
     def _convert_simultaneous_event(
         self,
-        simultaneous_event_to_convert: basic.SimultaneousEvent,
+        simultaneous_event_to_convert: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ):
         message = (
@@ -204,10 +210,10 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
         **Example:**
 
-        >>> from mutwo.events import basic, music
+        >>> from mutwo.events import events.basic, music
         >>> from mutwo.parameters import pitches
         >>> from mutwo.converters.frontends import isis
-        >>> notes = basic.SequentialEvent(
+        >>> notes = events.basic.SequentialEvent(
         >>>    [
         >>>         music.NoteLike(pitches.WesternPitch(pitch_name), 0.5, 0.5)
         >>>         for pitch_name in 'c f d g'.split(' ')
@@ -219,6 +225,14 @@ class IsisScoreConverter(converters.abc.EventConverter):
         >>> isis_score_converter = isis.IsisScoreConverter('my_singing_score')
         >>> isis_score_converter.convert(notes)
         """
+
+        if isinstance(event_to_convert, events.abc.ComplexEvent):
+            event_to_convert = event_to_convert.tie_by(
+                lambda event0, event1: self._is_simple_event_rest(event0)
+                and self._is_simple_event_rest(event1),
+                event_type_to_examine=events.basic.SimpleEvent,
+                mutate=False,
+            )
 
         extracted_data_per_event = self._convert_event(event_to_convert, 0)
         lyrics_section = self._make_lyrics_section_from_extracted_data_per_event(
