@@ -1537,6 +1537,15 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
             }
         }
         """
+
+        # tie rests before processing the event!
+        sequential_event_to_convert = sequential_event_to_convert.tie_by(
+            lambda event0, event1: self._is_simple_event_rest(event0)
+            and self._is_simple_event_rest(event1),
+            event_type_to_examine=events.basic.SimpleEvent,
+            mutate=False,
+        )
+
         # first, extract data from simple events and find rests
         extracted_data_per_simple_event = tuple(
             self._extract_data_from_simple_event(simple_event)
