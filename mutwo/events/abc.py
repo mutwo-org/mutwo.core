@@ -388,6 +388,76 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     ) -> typing.Optional[ComplexEvent[T]]:
         [event.mutate_parameter(parameter_name, function) for event in self]
 
+    @decorators.add_return_option
+    def tie_by(  # type: ignore
+        self,
+        condition: typing.Callable[[Event, Event], bool],
+        process_surviving_event: typing.Callable[
+            [Event, Event], None
+        ] = lambda event_to_survive, event_to_delete: event_to_survive.__setattr__(
+            "duration", event_to_delete.duration + event_to_survive.duration
+        ),
+        event_type_to_examine: typing.Type[Event] = Event,
+        event_to_remove: bool = True,
+    ) -> typing.Optional[ComplexEvent[T]]:
+        """Condition-based deletion of neighboring events.
+
+        :param condition: Function which compares two neighboring
+            events and decides whether one of those events shall be
+            removed. The function should return `True` for deletion and
+            `False` for keeping both events.
+        :param process_surviving_event: Function which gets two arguments: first
+            the surviving event and second the event which shall be removed.
+            The function should process the surviving event depending on
+            the removed event. By default, mutwo will simply add the
+            :attr:`duration` of the removed event to the duration of the surviving
+            event.
+        :param event_type_to_examine: Defines which events shall be compared.
+            If one only wants to process the leaves, this should perhaps be
+            :class:`mutwo.events.basic.SimpleEvent`.
+        :param event_to_remove: `True` if the second (left) event shall be removed
+            and `False` if the first (right) event shall be removed.
+        """
+
+        def tie_by_if_available(event_to_tie: Event):
+            if hasattr(event_to_tie, "tie_by"):
+                event_to_tie.tie_by(
+                    condition,
+                    process_surviving_event,
+                    event_type_to_examine,
+                    event_to_remove,
+                )
+
+        pointer = 0
+        while pointer + 1 < len(self):
+            events = self[pointer], self[pointer + 1]
+            if all(isinstance(event, event_type_to_examine) for event in events):
+                shall_delete = condition(*events)
+                if shall_delete:
+                    if event_to_remove:
+                        process_surviving_event(*events)
+                        del self[pointer + 1]
+                    else:
+                        process_surviving_event(*reversed(events))
+                        del self[pointer]
+                else:
+                    pointer += 1
+            # if event doesn't contain the event type which shall be tied,
+            # it may still contain nested events which contains events with
+            # the searched type
+            else:
+                tie_by_if_available(events[0])
+                pointer += 1
+
+        # Previously only the first event of the examined pairs has been tied,
+        # therefore the very last event could have been forgotten.
+        if not isinstance(self[-1], event_type_to_examine):
+            tie_by_if_available(self[-1])
+
+    # ###################################################################### #
+    #                           abstract methods                             #
+    # ###################################################################### #
+
     @abc.abstractmethod
     def squash_in(
         self, start: parameters.abc.DurationType, event_to_squash_in: Event

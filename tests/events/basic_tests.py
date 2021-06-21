@@ -221,6 +221,81 @@ class SequentialEventTest(unittest.TestCase):
             lambda: self.sequence.squash_in(7, basic.SimpleEvent(1.5), mutate=False),
         )
 
+    def test_tie_by(self):
+        self.assertEqual(
+            self.sequence.tie_by(
+                lambda event_left, event_right: event_left.duration + 1
+                == event_right.duration,
+                event_type_to_examine=basic.SimpleEvent,
+                mutate=False,
+            ),
+            basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(3)]),
+        )
+        self.assertEqual(
+            self.sequence.tie_by(
+                lambda event_left, event_right: event_left.duration + 1
+                == event_right.duration,
+                lambda event_to_survive, event_to_remove: None,
+                event_type_to_examine=basic.SimpleEvent,
+                event_to_remove=False,
+                mutate=False,
+            ),
+            basic.SequentialEvent([basic.SimpleEvent(3)]),
+        )
+        self.assertEqual(
+            self.sequence.tie_by(
+                lambda event_left, event_right: event_left.duration + 1
+                == event_right.duration,
+                lambda event_to_survive, event_to_remove: None,
+                event_type_to_examine=basic.SimpleEvent,
+                event_to_remove=True,
+                mutate=False,
+            ),
+            basic.SequentialEvent([basic.SimpleEvent(1), basic.SimpleEvent(3)]),
+        )
+
+    def test_tie_by_for_nested_events(self):
+        nested_sequential_event0 = basic.SequentialEvent(
+            [
+                basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)]),
+                basic.SequentialEvent([basic.SimpleEvent(4), basic.SimpleEvent(2)]),
+            ]
+        )
+        nested_sequential_event0.tie_by(
+            lambda event_left, event_right: event_left.duration - 1
+            == event_right.duration,
+            event_type_to_examine=basic.SimpleEvent,
+            event_to_remove=True,
+        )
+
+        self.assertEqual(
+            nested_sequential_event0,
+            basic.SequentialEvent(
+                [
+                    basic.SequentialEvent([basic.SimpleEvent(5)]),
+                    basic.SequentialEvent([basic.SimpleEvent(4), basic.SimpleEvent(2)]),
+                ]
+            ),
+        )
+
+        nested_sequential_event1 = basic.SequentialEvent(
+            [
+                basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)]),
+                basic.SequentialEvent([basic.SimpleEvent(5)]),
+            ]
+        )
+        nested_sequential_event1.tie_by(
+            lambda event_left, event_right: event_left.duration == event_right.duration,
+            event_to_remove=True,
+        )
+        print(nested_sequential_event1)
+        self.assertEqual(
+            nested_sequential_event1,
+            basic.SequentialEvent(
+                [basic.SequentialEvent([basic.SimpleEvent(6), basic.SimpleEvent(4)])]
+            ),
+        )
+
 
 class SimultaneousEventTest(unittest.TestCase):
     def setUp(self) -> None:
