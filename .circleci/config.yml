@@ -4,21 +4,8 @@ orbs:
   python: circleci/python@1.2
   coveralls: coveralls/coveralls@1.0.6
 
-workflows:
-  build_test_publish:
-    jobs:
-      - build_test
-      - pypi_publish:
-          requires:
-            - build_test
-          filters:
-            branches:
-              only:
-                - main
-
-
 jobs:
-  build_test_publish:
+  build-and-test:
     docker:
       - image: cimg/python:3.8
     steps:
@@ -40,3 +27,16 @@ jobs:
             sudo pip install pipenv
             pipenv install twine
             pipenv run twine upload dist/*
+
+workflows:
+  build_test_publish:
+    jobs:
+      - build_test
+      - pypi_publish:
+          requires:
+            - build_test
+          filters:
+            branches:
+              only:
+                - main
+
