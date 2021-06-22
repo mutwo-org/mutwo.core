@@ -31,10 +31,10 @@ jobs:
 workflows:
   build_test_publish:
     jobs:
-      - build_test
+      - build-and-test
       - pypi_publish:
           requires:
-            - build_test
+            - build-and-test
           filters:
             branches:
               only:
