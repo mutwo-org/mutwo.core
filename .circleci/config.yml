@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   python: circleci/python@1.2
-  coveralls: coveralls/coveralls@1.0.6
 
 jobs:
   build-and-test:
@@ -10,12 +9,11 @@ jobs:
       - image: cimg/python:3.8
     steps:
       - checkout
-      - run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install csound && wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh && sh lilypond-2.22.0-1.linux-64.sh --batch && sudo apt-get install nodejs npm
+      - run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install csound && wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh && sh lilypond-2.22.0-1.linux-64.sh --batch
       - run: pip3 install .[testing] && pip3 install coveralls
       - run:
           name: Run tests
           command: nosetests --with-coverage --cover-package=mutwo
-      - coveralls/upload
   pypi_publish:
     docker:
       - image: circleci/python:3.6.4
