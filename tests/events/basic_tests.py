@@ -288,13 +288,36 @@ class SequentialEventTest(unittest.TestCase):
             lambda event_left, event_right: event_left.duration == event_right.duration,
             event_to_remove=True,
         )
-        print(nested_sequential_event1)
         self.assertEqual(
             nested_sequential_event1,
             basic.SequentialEvent(
                 [basic.SequentialEvent([basic.SimpleEvent(6), basic.SimpleEvent(4)])]
             ),
         )
+
+    def test_split_child_at(self):
+        sequential_event0 = basic.SequentialEvent([basic.SimpleEvent(3)])
+        sequential_event0.split_child_at(1)
+        sequential_event_to_compare0 = basic.SequentialEvent(
+            [basic.SimpleEvent(1), basic.SimpleEvent(2)]
+        )
+        self.assertEqual(sequential_event0, sequential_event_to_compare0)
+
+        sequential_event1 = basic.SequentialEvent(
+            [basic.SimpleEvent(4), basic.SimpleEvent(1)]
+        )
+        sequential_event1.split_child_at(3)
+        sequential_event_to_compare1 = basic.SequentialEvent(
+            [basic.SimpleEvent(3), basic.SimpleEvent(1), basic.SimpleEvent(1)]
+        )
+        self.assertEqual(sequential_event1, sequential_event_to_compare1)
+
+        sequential_event2 = basic.SequentialEvent(
+            [basic.SimpleEvent(3), basic.SimpleEvent(2)]
+        )
+        sequential_event2_copy = sequential_event2.copy()
+        sequential_event2.split_at(3)
+        self.assertEqual(sequential_event2, sequential_event2_copy)
 
 
 class SimultaneousEventTest(unittest.TestCase):
@@ -434,6 +457,16 @@ class SimultaneousEventTest(unittest.TestCase):
             ),
             expected_simultaneous_event,
         )
+
+    def test_split_child_at(self):
+        simultaneous_event0 = basic.SimultaneousEvent(
+            [basic.SequentialEvent([basic.SimpleEvent(3)])]
+        )
+        simultaneous_event0.split_child_at(1)
+        simultaneous_event_to_compare0 = basic.SimultaneousEvent(
+            [basic.SequentialEvent([basic.SimpleEvent(1), basic.SimpleEvent(2)])]
+        )
+        self.assertEqual(simultaneous_event0, simultaneous_event_to_compare0)
 
 
 if __name__ == "__main__":

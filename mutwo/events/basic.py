@@ -254,6 +254,17 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Events which happen in a linear order."""
 
     # ###################################################################### #
+    #                    private static methods                              #
+    # ###################################################################### #
+
+    @staticmethod
+    def _get_index_at_from_absolute_times(
+        absolute_time: parameters.abc.DurationType,
+        absolute_times: typing.Tuple[parameters.abc.DurationType, ...],
+    ) -> int:
+        return bisect.bisect_right(absolute_times, absolute_time) - 1
+
+    # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
@@ -282,7 +293,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def get_event_index_at(self, absolute_time: constants.Real) -> int:
+    def get_event_index_at(self, absolute_time: parameters.abc.DurationType) -> int:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
@@ -299,9 +310,11 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         """
 
         absolute_times = self.absolute_times
-        return bisect.bisect_right(absolute_times, absolute_time) - 1
+        return SequentialEvent._get_index_at_from_absolute_times(
+            absolute_time, absolute_times
+        )
 
-    def get_event_at(self, absolute_time: constants.Real) -> T:
+    def get_event_at(self, absolute_time: parameters.abc.DurationType) -> T:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
@@ -410,6 +423,25 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
             self.insert(active_event_index, event_to_squash_in)
 
+    @decorators.add_return_option
+    def split_child_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Optional[SequentialEvent[T]]:
+        absolute_times = self.absolute_times
+        nth_event = SequentialEvent._get_index_at_from_absolute_times(
+            absolute_time, absolute_times
+        )
+        if absolute_time != absolute_times[nth_event]:
+            try:
+                end = absolute_times[nth_event + 1]
+            except IndexError:
+                end = self.duration
+
+            difference = end - absolute_time
+            first_event, second_event = self[nth_event].split_at(difference)
+            self[nth_event] = first_event
+            self.insert(nth_event, second_event)
+
 
 class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
@@ -461,3 +493,15 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
                     )
                 )
                 raise TypeError(message)
+
+    @decorators.add_return_option
+    def split_child_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Optional[SimultaneousEvent[T]]:
+        for nth_event, event in enumerate(self):
+            try:
+                event.split_child_at(absolute_time)
+            # simple events don't have a 'split_child_at' method
+            except AttributeError:
+                split_event = event.split_at(absolute_time)
+                self[nth_event] = SequentialEvent(split_event)

@@ -480,3 +480,22 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         """
 
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def split_child_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Optional[ComplexEvent[T]]:
+        """Split child event in two events at :attr:`absolute_time`.
+
+        :param absolute_time: where child event shall be split
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
+        >>> sequential_event.split_child_at(1)
+        >>> sequential_event
+        SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 2)])
+        """
+
+        raise NotImplementedError
