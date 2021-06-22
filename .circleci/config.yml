@@ -10,7 +10,7 @@ jobs:
       - image: cimg/python:3.8
     steps:
       - checkout
-      - run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install csound && wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh && sh lilypond-2.22.0-1.linux-64.sh --batch
+      - run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install csound && wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh && sh lilypond-2.22.0-1.linux-64.sh --batch && sudo apt-get install nodejs npm
       - run: pip3 install .[testing] && pip3 install coveralls
       - run:
           name: Run tests
