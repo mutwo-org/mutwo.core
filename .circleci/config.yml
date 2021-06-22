@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   python: circleci/python@1.2
+  coveralls: coveralls/coveralls@1.0.6
 
 workflows:
   sample:
@@ -20,3 +21,4 @@ jobs:
       - run:
           name: Run tests
           command: nosetests --with-coverage --cover-package=mutwo
+      - coveralls/upload
