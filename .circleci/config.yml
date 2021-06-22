@@ -5,9 +5,16 @@ orbs:
   coveralls: coveralls/coveralls@1.0.6
 
 workflows:
-  sample:
+  build_test_publish:
     jobs:
-      - build-and-test
+      - build_test
+      - pypi_publish:
+          requires:
+            - build_test
+          filters:
+            branches:
+              only:
+                - main
 
 
 jobs:
@@ -22,3 +29,14 @@ jobs:
           name: Run tests
           command: nosetests --with-coverage --cover-package=mutwo
       - coveralls/upload
+  pypi_publish:
+    docker:
+      - image: circleci/python:3.6.4
+    steps:
+      - checkout  # checkout source code to working directory
+      - run:
+          command: |  # create whl, install twine and publish to PyPI
+            python setup.py sdist bdist_wheel
+            sudo pip install pipenv
+            pipenv install twine
+            pipenv run twine upload dist/*
