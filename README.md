@@ -2,7 +2,6 @@
 
 [![Build Status](https://circleci.com/gh/mutwo-org/mutwo.svg?style=shield)](https://circleci.com/gh/mutwo-org/mutwo)
 [![docs](https://readthedocs.org/projects/docs/badge/?version=latest)](https://mutwo.readthedocs.io/en/latest/)
-[![Coverage Status](https://coveralls.io/repos/github/mutwo-org/mutwo/badge.svg?branch=main)](https://coveralls.io/github/mutwo-org/mutwo?branch=main)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI version](https://badge.fury.io/py/mutwo.svg)](https://badge.fury.io/py/mutwo)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
