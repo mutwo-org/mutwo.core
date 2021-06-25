@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@1.2
 
 jobs:
-  build-and-test:
+  build_test:
     docker:
       - image: cimg/python:3.8
     steps:
@@ -29,7 +29,7 @@ jobs:
 workflows:
   build_test_publish:
     jobs:
-      - build-and-test
+      - build_test
       - pypi_publish:
           requires:
             - build_test
