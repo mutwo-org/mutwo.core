@@ -23,7 +23,7 @@ jobs:
           command: |  # create whl, install twine and publish to PyPI
             python3 setup.py sdist bdist_wheel
             sudo pip3 install pipenv
-            pipenv install -U twine
+            pipenv install twine wheel setuptools
             pipenv twine check dist/*
             pipenv run twine upload dist/*
 
