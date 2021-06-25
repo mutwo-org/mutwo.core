@@ -1,7 +1,7 @@
 """Module for converting MMML text to Mutwo objects.
 
 MMML is an abbreviation for 'Mutwos Music Markup Language'.
-Similarly to [Music Macro Language](https://en.wikipedia.org/wiki/Music_Macro_Language)
+Similarly to `Music Macro Language <https://en.wikipedia.org/wiki/Music_Macro_Language>`_
 it is intended to be a easy human readable and writeable plain text encoding
 for musical data. The language is inspired by Lilypond, ABC Notation, Guido and Alda.
 It differs from the former insofar as that the render engine (frontend) is
@@ -73,7 +73,7 @@ class MMMLSingleJIPitchConverter(MMMLSinglePitchConverter):
     ) -> typing.Tuple[str, int]:
         base = int(current_base)
         if base in prime_to_exponent:
-            message = f"Found duplicate base {base} in {mmml_pitch_class_to_convert}!"
+            message = f"Found duplicate base {base}!"
             raise ValueError(message)
         prime_to_exponent.update({base: current_exponent})
         current_base = element
