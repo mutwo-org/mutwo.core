@@ -14,8 +14,26 @@ jobs:
       - run:
           name: Run tests
           command: nosetests --with-coverage --cover-package=mutwo
+  pypi_publish:
+    docker:
+      - image: circleci/python:3.6.4
+    steps:
+      - checkout  # checkout source code to working directory
+      - run:
+          command: |  # create whl, install twine and publish to PyPI
+            python setup.py sdist bdist_wheel
+            sudo pip install pipenv
+            pipenv install twine
+            pipenv run twine upload dist/*
 
 workflows:
   build_test_publish:
     jobs:
       - build-and-test
+      - pypi_publish:
+          requires:
+            - build_test
+          filters:
+            branches:
+              only:
+                - main
