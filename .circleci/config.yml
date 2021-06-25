@@ -21,13 +21,12 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl, install twine and publish to PyPI
-            sudo pip3 install --upgrade pip3
+            sudo pip3 install --upgrade pip
             pip3 install -U twine wheel setuptools
             python3 setup.py sdist bdist_wheel
             sudo pip3 install pipenv
-            pipenv install twine wheel setuptools
-            pipenv run twine check dist/*
-            pipenv run twine upload dist/*
+            twine check dist/*
+            twine upload dist/*
 
 workflows:
   build_test_publish:
