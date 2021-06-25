@@ -21,8 +21,8 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl, install twine and publish to PyPI
-            python setup.py sdist bdist_wheel
-            sudo pip install pipenv
+            python3 setup.py sdist bdist_wheel
+            sudo pip3 install pipenv
             pipenv install twine
             pipenv run twine upload dist/*
 
