@@ -22,7 +22,7 @@ jobs:
       - run:
           command: |  # create whl, install twine and publish to PyPI
             pip3 install virtualenv
-            virtualenv virtualenv
+            virtualenv venv
             source venv/bin/activate
             pip3 install --upgrade pip
             pip3 install -U twine wheel setuptools
