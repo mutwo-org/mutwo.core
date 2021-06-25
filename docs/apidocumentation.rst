@@ -27,6 +27,9 @@ This tree provides a deep overview of all submodules:
    :toctree: mutwo
 
    mutwo.converters.abc
+   mutwo.converters.backends.mmml
+   mutwo.converters.backends.mmml_constants
+   mutwo.converters.frontends.abjad
    mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
    mutwo.converters.frontends.ekmelily

@@ -1,4 +1,4 @@
-"""Routines that convert external data to mutwo objects."""
+"""Convert external data to mutwo objects."""
 
 from . import mmml_constants
 
