@@ -35,3 +35,22 @@ def add_return_option(function: F) -> F:
     wrapped_function = typing.cast(F, wrapper)
     wrapped_function.__annotations__.update({"mutate": bool})
     return wrapped_function
+
+
+G = typing.TypeVar("G")
+
+
+def add_tag_to_class(class_to_decorate: G) -> G:
+    """This decorator adds a 'tag' argument to the init method of a class.
+
+    :arg class_to_decorate: The class which shall be decorated.
+    """
+
+    init = class_to_decorate.__init__
+
+    def init_with_tag(self, *args, tag: typing.Optional[str] = None, **kwargs):
+        init(self, *args, **kwargs)
+        self.tag = tag
+
+    class_to_decorate.__init__ = init_with_tag
+    return class_to_decorate

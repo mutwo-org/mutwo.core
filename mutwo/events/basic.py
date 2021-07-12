@@ -18,7 +18,14 @@ from mutwo.utilities import decorators
 from mutwo.utilities import tools
 
 
-__all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent")
+__all__ = (
+    "SimpleEvent",
+    "SequentialEvent",
+    "SimultaneousEvent",
+    "TaggedSimpleEvent",
+    "TaggedSequentialEvent",
+    "TaggedSimultaneousEvent",
+)
 
 
 class SimpleEvent(events.abc.Event):
@@ -505,3 +512,24 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
             except AttributeError:
                 split_event = event.split_at(absolute_time)
                 self[nth_event] = SequentialEvent(split_event)
+
+
+@decorators.add_tag_to_class
+class TaggedSimpleEvent(SimpleEvent):
+    """:class:`SimpleEvent` with tag."""
+
+    pass
+
+
+@decorators.add_tag_to_class
+class TaggedSequentialEvent(SequentialEvent):
+    """:class:`SequentialEvent` with tag."""
+
+    pass
+
+
+@decorators.add_tag_to_class
+class TaggedSimultaneousEvent(SimultaneousEvent):
+    """:class:`SimultaneousEvent` with tag."""
+
+    pass
