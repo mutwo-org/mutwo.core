@@ -10,5 +10,7 @@ term for specific functions with the 'yield' keyword.
 
 from . import brown
 from . import edwards
+from . import generic
 from . import gray
+from . import koenig
 from . import toussaint

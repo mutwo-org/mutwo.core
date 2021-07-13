@@ -8,7 +8,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
+## [0.20.0] - 2021-07-13
+
+### Added
+- Koenig Generator: Tendency (original name: "Tendenzmasken")
+- Generic Generator
+
+
 ## [0.19.0] - 2021-07-12
+
 ### Added
 - time bracket events
 - abstract bracket events
