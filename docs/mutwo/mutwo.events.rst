@@ -12,4 +12,14 @@ Submodules are:
 
    mutwo.events.abc
    mutwo.events.basic
+   mutwo.events.brackets
    mutwo.events.music
+   mutwo.events.time_brackets
+
+
+Submodules that contain constants are:
+
+.. autosummary::
+   :toctree: events
+
+   mutwo.events.music_constants
