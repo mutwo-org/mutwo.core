@@ -15,6 +15,7 @@ from mutwo import events
 from mutwo import parameters
 from mutwo.utilities import constants
 from mutwo.utilities import decorators
+from mutwo.utilities import exceptions
 from mutwo.utilities import tools
 
 
@@ -268,8 +269,12 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def _get_index_at_from_absolute_times(
         absolute_time: parameters.abc.DurationType,
         absolute_times: typing.Tuple[parameters.abc.DurationType, ...],
-    ) -> int:
-        return bisect.bisect_right(absolute_times, absolute_time) - 1
+        duration: parameters.abc.DurationType,
+    ) -> typing.Optional[int]:
+        if absolute_time < duration and absolute_time >= 0:
+            return bisect.bisect_right(absolute_times, absolute_time) - 1
+        else:
+            return None
 
     # ###################################################################### #
     #                           properties                                   #
@@ -300,11 +305,16 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def get_event_index_at(self, absolute_time: parameters.abc.DurationType) -> int:
+    def get_event_index_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Optional[int]:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
+        :type absolute_time: parameters.abc.DurationType
+        :return: Index of event if there is any event at the requested absolute time
+            and ``None`` if there isn't any event.
 
         **Example:**
 
@@ -314,18 +324,25 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         0
         >>> sequential_event.get_event_index_at(3)
         1
+        >>> sequential_event.get_event_index_at(100)
+        None
         """
 
         absolute_times = self.absolute_times
         return SequentialEvent._get_index_at_from_absolute_times(
-            absolute_time, absolute_times
+            absolute_time, absolute_times, self.duration
         )
 
-    def get_event_at(self, absolute_time: parameters.abc.DurationType) -> T:
+    def get_event_at(
+        self, absolute_time: parameters.abc.DurationType
+    ) -> typing.Optional[T]:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
+        :type absolute_time: parameters.abc.DurationType
+        :return: Event if there is any event at the requested absolute time
+            and ``None`` if there isn't any event.
 
         **Example:**
 
@@ -335,9 +352,15 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         SimpleEvent(duration = 2)
         >>> sequential_event.get_event_at(3)
         SimpleEvent(duration = 3)
+        >>> sequential_event.get_event_at(100)
+        None
         """
 
-        return self[self.get_event_index_at(absolute_time)]  # type: ignore
+        event_index = self.get_event_index_at(absolute_time)
+        if event_index is None:
+            return None
+        else:
+            return self[event_index]  # type: ignore
 
     @decorators.add_return_option
     def cut_out(  # type: ignore
@@ -436,9 +459,16 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> typing.Optional[SequentialEvent[T]]:
         absolute_times = self.absolute_times
         nth_event = SequentialEvent._get_index_at_from_absolute_times(
-            absolute_time, absolute_times
+            absolute_time, absolute_times, self.duration
         )
-        if absolute_time != absolute_times[nth_event]:
+
+        # if there is no event at the requested time, raise error
+        if nth_event is None:
+            raise exceptions.SplitUnavailableChildError(absolute_time)
+
+        # only try to split child event at the requested time if there isn't
+        # a segregation already anyway
+        elif absolute_time != absolute_times[nth_event]:
             try:
                 end = absolute_times[nth_event + 1]
             except IndexError:

@@ -5,6 +5,7 @@ from mutwo.events import music
 
 
 from mutwo import parameters
+from mutwo.utilities import exceptions
 
 
 class SimpleEventTest(unittest.TestCase):
@@ -147,6 +148,10 @@ class SequentialEventTest(unittest.TestCase):
     def test_get_event_at(self):
         result = self.sequence.get_event_at(1.5)
         self.assertEqual(result, self.sequence[1])
+
+    def test_get_event_at_for_unavailable_event(self):
+        result_for_unavailable_event = self.sequence.get_event_at(100)
+        self.assertEqual(result_for_unavailable_event, None)
 
     def test_cut_up(self):
         result0 = basic.SequentialEvent(
@@ -318,6 +323,12 @@ class SequentialEventTest(unittest.TestCase):
         sequential_event2_copy = sequential_event2.copy()
         sequential_event2.split_at(3)
         self.assertEqual(sequential_event2, sequential_event2_copy)
+
+    def test_split_child_at_unavailable_time(self):
+        self.assertRaises(
+            exceptions.SplitUnavailableChildError,
+            lambda: self.sequence.split_child_at(1000),
+        )
 
 
 class SimultaneousEventTest(unittest.TestCase):

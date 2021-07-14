@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.20.1] - 2021-07-14
+
+### Fixed
+- Return None for unavailable event in `get_event_at` and `get_event_index_at` methods.
+
 
 ## [0.20.0] - 2021-07-13
 
