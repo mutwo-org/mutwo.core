@@ -389,6 +389,33 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         [event.mutate_parameter(parameter_name, function) for event in self]
 
     @decorators.add_return_option
+    def filter(  # type: ignore
+        self, condition: typing.Callable[[Event], bool]
+    ) -> typing.Optional[ComplexEvent[T]]:
+        """Condition-based deletion of child events.
+
+        :param condition: Function which takes a :class:`Event` and returns ``True``
+            or ``False``. If the return value of the function is ``False`` the
+            respective `Event` will be deleted.
+        :type condition: typing.Callable[[Event], bool]
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> simultaneous_event = basic.SimultaneousEvent(
+            [basic.SimpleEvent(1), basic.SimpleEvent(3), basic.SimpleEvent(2)]
+        )
+        >>> simultaneous_event.filter(lambda event: event.duration > 2)
+        >>> simultaneous_event
+        SimultaneousEvent([SimpleEvent(duration = 3)])
+        """
+
+        for nth_item, item in zip(reversed(range(len(self))), reversed(self)):
+            shall_survive = condition(item)
+            if not shall_survive:
+                del self[nth_item]
+
+    @decorators.add_return_option
     def tie_by(  # type: ignore
         self,
         condition: typing.Callable[[Event, Event], bool],
@@ -400,7 +427,7 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         event_type_to_examine: typing.Type[Event] = Event,
         event_to_remove: bool = True,
     ) -> typing.Optional[ComplexEvent[T]]:
-        """Condition-based deletion of neighboring events.
+        """Condition-based deletion of neighboring child events.
 
         :param condition: Function which compares two neighboring
             events and decides whether one of those events shall be
@@ -453,7 +480,7 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         # therefore the very last event could have been forgotten.
         if not isinstance(self[-1], event_type_to_examine):
             tie_by_if_available(self[-1])
-
+ 
     # ###################################################################### #
     #                           abstract methods                             #
     # ###################################################################### #

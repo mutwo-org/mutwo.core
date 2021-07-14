@@ -479,6 +479,16 @@ class SimultaneousEventTest(unittest.TestCase):
         )
         self.assertEqual(simultaneous_event0, simultaneous_event_to_compare0)
 
+    def test_filter(self):
+        simultaneous_event_to_filter = basic.SimultaneousEvent(
+            [basic.SimpleEvent(1), basic.SimpleEvent(3), basic.SimpleEvent(2)]
+        )
+        simultaneous_event_to_filter.filter(lambda event: event.duration > 2)
+        self.assertEqual(
+            simultaneous_event_to_filter,
+            basic.SimultaneousEvent([basic.SimpleEvent(3)]),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
