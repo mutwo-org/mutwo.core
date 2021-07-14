@@ -20,6 +20,7 @@ Submodules are:
    mutwo.generators.gray
    mutwo.generators.koenig
    mutwo.generators.toussaint
+   mutwo.generators.wilson
   
 
 Submodules that contain constants are:
@@ -28,3 +29,4 @@ Submodules that contain constants are:
    :toctree: generators
 
    mutwo.generators.edwards_constants
+   mutwo.generators.sabat_constants

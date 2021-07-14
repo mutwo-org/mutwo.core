@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.22.0] - 2021-07-14
+
+### Added
+- Sabat constants Generator: List of tuneable Just Intonation Intervals according to Marc Sabat
+
+
 ## [0.21.0] - 2021-07-14
 
 ### Added

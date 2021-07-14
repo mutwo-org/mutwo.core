@@ -8,6 +8,9 @@ The term 'generators' simply labels the functionality of the module and shouldn'
 term for specific functions with the 'yield' keyword.
 """
 
+from . import edwards_constants
+from . import sabat_constants
+
 from . import brown
 from . import edwards
 from . import generic
