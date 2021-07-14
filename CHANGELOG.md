@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.21.0] - 2021-07-14
+
+### Added
+- Wilson Generator: function to make common product set scales
+
+
 ## [0.20.1] - 2021-07-14
 
 ### Fixed
@@ -27,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - abstract bracket events
 - Tagged basic events
 - custom exceptions module
+
 
 ## [0.18.0] - 2021-06-25
 

@@ -14,3 +14,4 @@ from . import generic
 from . import gray
 from . import koenig
 from . import toussaint
+from . import wilson
