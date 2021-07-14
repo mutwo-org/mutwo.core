@@ -234,8 +234,8 @@ class SimpleEvent(events.abc.Event):
             assert difference_to_duration < duration
         except AssertionError:
             message = (
-                "Can't cut out SimpleEvent '{}' with duration '{}' from (start = {} to"
-                " end = {}).".format(self, duration, start, end)
+                f"Can't cut out SimpleEvent '{self}' with duration '{duration}' from"
+                f" (start = {start} to end = {end})."
             )
             raise ValueError(message)
 
