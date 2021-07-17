@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.23.1] - 2021-07-14
+
+### Added
+- `empty_copy` method to `ComplexEvent`
+
+### Fixed
+- issues with ComplexEvent that own additional attributes
+
+
 ## [0.23.0] - 2021-07-14
 
 ### Added

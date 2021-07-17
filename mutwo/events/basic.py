@@ -555,11 +555,11 @@ class TaggedSimpleEvent(SimpleEvent):
 class TaggedSequentialEvent(SequentialEvent):
     """:class:`SequentialEvent` with tag."""
 
-    pass
+    _class_specific_side_attributes = ("tag",)
 
 
 @decorators.add_tag_to_class
 class TaggedSimultaneousEvent(SimultaneousEvent):
     """:class:`SimultaneousEvent` with tag."""
 
-    pass
+    _class_specific_side_attributes = ("tag",)

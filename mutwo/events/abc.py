@@ -261,6 +261,8 @@ T = typing.TypeVar("T", bound=Event)
 class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
+    _class_specific_side_attributes: typing.Tuple[str, ...] = tuple([])
+
     def __init__(self, iterable: typing.Iterable[T]):
         super().__init__(iterable)
 
@@ -272,10 +274,14 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         return "{}({})".format(type(self).__name__, super().__repr__())
 
     def __add__(self, event: typing.List[T]) -> ComplexEvent[T]:
-        return type(self)(super().__add__(event))
+        empty_copy = self.empty_copy()
+        empty_copy.extend(super().__add__(event))
+        return empty_copy
 
     def __mul__(self, factor: int) -> ComplexEvent[T]:
-        return type(self)(super().__mul__(factor))
+        empty_copy = self.empty_copy()
+        empty_copy.extend(super().__mul__(factor))
+        return empty_copy
 
     @typing.overload
     def __getitem__(self, index_or_slice: int) -> T:
@@ -290,8 +296,11 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     ) -> typing.Union[T, ComplexEvent[T]]:
         event = super().__getitem__(index_or_slice)
         if isinstance(index_or_slice, slice):
-            event = type(self)(event)  # type: ignore
-        return event  # type: ignore
+            empty_event = self.empty_copy()
+            empty_event.extend(event)
+            return empty_event
+        else:
+            return event
 
     # ###################################################################### #
     #                           properties                                   #
@@ -333,7 +342,34 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         return copy.deepcopy(self)
 
     def destructive_copy(self) -> ComplexEvent[T]:
-        return type(self)([event.destructive_copy() for event in self])  # type: ignore
+        empty_copy = self.empty_copy()
+        empty_copy.extend([event.destructive_copy() for event in self])
+        return empty_copy
+
+    def empty_copy(self) -> ComplexEvent[T]:
+        """Make a copy of the `ComplexEvent` without any child events.
+
+        This method is useful if one wants to copy an instance of :class:`ComplexEvent`
+        and make sure that all side attributes (e.g. any assigned properties specific
+        to the respective subclass) get saved.
+
+        **Example:**
+
+        >>> from mutwo.events import basic
+        >>> piano_voice_0 = basic.TaggedSequentialEvent([basic.SimpleEvent(2)], tag="piano")
+        >>> piano_voice_1 = piano_voice_0.empty_copy()
+        >>> piano_voice_1.tag
+        'piano'
+        >>> piano_voice_1
+        TaggedSequentialEvent([])
+        """
+        return type(self)(
+            [],
+            **{
+                attribute_name: getattr(self, attribute_name)
+                for attribute_name in self._class_specific_side_attributes
+            }
+        )
 
     def get_event_from_indices(self, indices: typing.Sequence[int]) -> Event:
         """Get nested :class:`Event` from a sequence of indices.
@@ -480,7 +516,7 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
         # therefore the very last event could have been forgotten.
         if not isinstance(self[-1], event_type_to_examine):
             tie_by_if_available(self[-1])
- 
+
     # ###################################################################### #
     #                           abstract methods                             #
     # ###################################################################### #

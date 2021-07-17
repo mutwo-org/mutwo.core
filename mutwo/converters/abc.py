@@ -163,11 +163,12 @@ class SymmetricalEventConverter(EventConverter):
     It helps for building converters which aim to return mutwo events.
     """
 
+    @abc.abstractmethod
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+    ) -> events.basic.SimpleEvent:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
         raise NotImplementedError
@@ -176,21 +177,34 @@ class SymmetricalEventConverter(EventConverter):
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> events.basic.SimultaneousEvent[events.abc.Event]:
-        return events.basic.SimultaneousEvent(
-            super()._convert_simultaneous_event(
-                simultaneous_event, absolute_entry_delay
-            )
+    ) -> events.basic.SimultaneousEvent:
+        """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
+
+        converted_simultaneous_event: events.basic.SimultaneousEvent = (
+            simultaneous_event.empty_copy()
         )
+
+        for event in simultaneous_event:
+            converted_simultaneous_event.append(
+                self._convert_event(event, absolute_entry_delay)
+            )
+        return converted_simultaneous_event
 
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> events.basic.SequentialEvent[events.abc.Event]:
-        return events.basic.SequentialEvent(
-            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
-        )
+    ) -> events.basic.SequentialEvent:
+        """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
+
+        converted_sequential_event : events.basic.SequentialEvent = sequential_event.empty_copy()
+        for event_start, event in zip(
+            sequential_event.absolute_times, sequential_event
+        ):
+            converted_sequential_event.append(
+                self._convert_event(event, event_start + absolute_entry_delay)
+            )
+        return converted_sequential_event
 
     def _convert_event(
         self,
