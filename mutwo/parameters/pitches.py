@@ -1124,20 +1124,34 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_return_option
     def intersection(
-        self, other: "JustIntonationPitch"
+        self, other: "JustIntonationPitch", strict: bool = False
     ) -> typing.Optional["JustIntonationPitch"]:
         """Make intersection with other :class:`JustIntonationPitch`.
 
         :param other: The :class:`JustIntonationPitch` to build the
             intersection with.
+        :param strict: If set to ``True`` only exponents are included
+            into the intersection if their value is equal. If set to
+            ``False`` the method will also include exponents if both
+            pitches own them on the same axis but with different values
+            (the method will take the smaller exponent).
+        :type strict: bool
 
         **Example:**
 
         >>> from mutwo.parameters import pitches
-        >>> p = pitches.JustIntonationPitch('5/3')
-        >>> p.intersection(pitches.JustIntonationPitch('7/6'))
-        >>> p
+        >>> p0 = pitches.JustIntonationPitch('5/3')
+        >>> p0.intersection(pitches.JustIntonationPitch('7/6'))
+        >>> p0
         JustIntonationPitch(1/3)
+        >>> p1 = pitches.JustIntonationPitch('9/7')
+        >>> p1.intersection(pitches.JustIntonationPitch('3/2'))
+        >>> p1
+        JustIntonationPitch(3/1)
+        >>> p2 = pitches.JustIntonationPitch('9/7')
+        >>> p2.intersection(pitches.JustIntonationPitch('3/2'), strict=True)
+        >>> p2
+        JustIntonationPitch(1/1)
         """
 
         def is_negative(number: int):
@@ -1146,7 +1160,12 @@ class JustIntonationPitch(parameters.abc.Pitch):
         def intersect_exponents(exponents: typing.Tuple[int, int]) -> int:
             intersected_exponent = 0
 
-            if 0 not in exponents:
+            if strict:
+                test_for_valid_strict_mode = exponents[0] == exponents[1]
+            else:
+                test_for_valid_strict_mode = True
+
+            if 0 not in exponents and test_for_valid_strict_mode:
                 are_negative = (is_negative(exponent) for exponent in exponents)
                 all_are_negative = all(are_negative)
                 all_are_positive = all(not boolean for boolean in are_negative)

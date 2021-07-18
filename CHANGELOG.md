@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.25.0] - 2021-07-18
+
+### Added
+- strict keyword for intersection method in JustIntonationPitch class
+
+
 ## [0.24.0] - 2021-07-18
 
 ### Added
