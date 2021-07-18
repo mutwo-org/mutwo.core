@@ -534,13 +534,32 @@ class JustIntonationPitchTest(unittest.TestCase):
             "af",
         )
         self.assertEqual(
-            pitches.JustIntonationPitch("128/25").get_closest_pythagorean_pitch_name("c"),
+            pitches.JustIntonationPitch("128/25").get_closest_pythagorean_pitch_name(
+                "c"
+            ),
             "ff",
         )
         self.assertEqual(
             pitches.JustIntonationPitch("11/8").get_closest_pythagorean_pitch_name("e"),
             "a",
         )
+
+    def test_intersection(self):
+        p0 = pitches.JustIntonationPitch("5/3")
+        p0.intersection(pitches.JustIntonationPitch("7/6"))
+        self.assertEqual(p0, pitches.JustIntonationPitch("1/3"))
+
+        p1 = pitches.JustIntonationPitch("27/1")
+        p1.intersection(pitches.JustIntonationPitch("9/1"))
+        self.assertEqual(p1, pitches.JustIntonationPitch("9/1"))
+
+        p2 = pitches.JustIntonationPitch("11/15")
+        p2.intersection(pitches.JustIntonationPitch("11/5"))
+        self.assertEqual(p2, pitches.JustIntonationPitch("11/5"))
+
+        p3 = pitches.JustIntonationPitch("15/8")
+        p3.intersection(pitches.JustIntonationPitch("21/16"))
+        self.assertEqual(p3, pitches.JustIntonationPitch("3/8"))
 
 
 if __name__ == "__main__":

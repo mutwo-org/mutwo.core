@@ -1122,6 +1122,47 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
         self._math(other, operator.sub)
 
+    @decorators.add_return_option
+    def intersection(
+        self, other: "JustIntonationPitch"
+    ) -> typing.Optional["JustIntonationPitch"]:
+        """Make intersection with other :class:`JustIntonationPitch`.
+
+        :param other: The :class:`JustIntonationPitch` to build the
+            intersection with.
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('5/3')
+        >>> p.intersection(pitches.JustIntonationPitch('7/6'))
+        >>> p
+        JustIntonationPitch(1/3)
+        """
+
+        def is_negative(number: int):
+            return number < 0
+
+        def intersect_exponents(exponents: typing.Tuple[int, int]) -> int:
+            intersected_exponent = 0
+
+            if 0 not in exponents:
+                are_negative = (is_negative(exponent) for exponent in exponents)
+                all_are_negative = all(are_negative)
+                all_are_positive = all(not boolean for boolean in are_negative)
+
+                if all_are_negative:
+                    intersected_exponent = max(exponents)
+                elif all_are_positive:
+                    intersected_exponent = min(exponents)
+
+            return intersected_exponent
+
+        intersected_exponents = tuple(
+            map(intersect_exponents, zip(self.exponents, other.exponents))
+        )
+        self.exponents = intersected_exponents
+
 
 class EqualDividedOctavePitch(parameters.abc.Pitch):
     """Pitch that is tuned to an Equal divided octave tuning system.

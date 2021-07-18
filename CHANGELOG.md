@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [0.23.1] - 2021-07-14
+## [0.24.0] - 2021-07-18
+
+### Added
+- intersection method to `JustIntonationPitch`
+
+
+## [0.23.1] - 2021-07-17
 
 ### Added
 - `empty_copy` method to `ComplexEvent`
