@@ -982,6 +982,27 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_return_option
     def register(self, octave: int) -> typing.Optional["JustIntonationPitch"]:  # type: ignore
+        """Move :class:`JustIntonationPitch` to the given octave.
+
+        :param octave: 0 for the octave from 1/1 to 2/1, negative values for octaves
+            below 1/1 and positive values for octaves above 2/1.
+        :type octave: int
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('3/2')
+        >>> p.register(1)
+        >>> p
+        JustIntonationPitch(6/2)
+        >>> p.register(-1)
+        >>> p
+        JustIntonationPitch(3/4)
+        >>> p.register(0)
+        >>> p
+        JustIntonationPitch(3/2)
+        """
+
         normalized_just_intonation_pitch = self.normalize(mutate=False)  # type: ignore
         factor = 2 ** abs(octave)
         if octave < 1:
