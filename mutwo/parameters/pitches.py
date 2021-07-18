@@ -84,11 +84,11 @@ class JustIntonationPitch(parameters.abc.Pitch):
     """Pitch that is defined by a frequency ratio and a reference pitch.
 
     :param ratio_or_exponents: The frequency ratio of the ``JustIntonationPitch``.
-        This can either be (A) a string that indicates the frequency ratio (for
-        instance: "1/1", "3/2", "9/2", etc.), or (B) a ``fractions.Fraction``
-        (or ``quicktions.Fraction``) object that indicates the frequency ratio
-        (for instance: ``fractions.Fraction(3, 2)``, ``fractions.Fraction(7, 4)``)
-        or (C) an Iterable that is filled with integer that represents the exponents
+        This can either be a string that indicates the frequency ratio (for
+        instance: "1/1", "3/2", "9/2", etc.), or a ``fractions.Fraction``
+        object that indicates the frequency ratio (for instance:
+        ``fractions.Fraction(3, 2)``, ``fractions.Fraction(7, 4)``) or
+        an Iterable that is filled with integer that represents the exponents
         of the respective prime numbers of the decomposed frequency ratio. The prime
         numbers are rising and start with 2. Therefore the tuple ``(2, 0, -1)``
         would return the frequency ratio ``4/5`` because
@@ -99,6 +99,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     The resulting frequency is calculated by multiplying the frequency ratio
     with the respective reference pitch.
+
+    **Example:**
 
     >>> from mutwo.parameters import pitches
     >>> # 3 different variations of initialising the same pitch
@@ -160,7 +162,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         until it is equal or bigger than 1 and smaller than border.
 
         Arguments:
-            * rratio: The Ratio, which shall be adjusted
+            * ratio: The Ratio, which shall be adjusted
             * border
         >>> ratio0 = fractions.Fraction(1, 3)
         >>> ratio1 = fractions.Fraction(8, 3)
@@ -324,6 +326,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
                       ._exponents - Argument (see JustIntonationPitch._exponents).
             * primes-shift -> how many prime numbers shall be skipped
                             (see JustIntonationPitch.primes_shift)
+
         >>> myJustIntonationPitch0 = (1, 0, -1)
         >>> myJustIntonationPitch1 = (0, 2, 0)
         >>> myPrimes = (2, 3, 5)
@@ -343,8 +346,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def _ratio_to_exponents(ratio: fractions.Fraction) -> tuple:
         r"""Transform a fractions.Fraction - Object to a vector of exponents.
 
-        Arguments are:
-            * ratio -> The fractions.Fraction, which shall be transformed
+        :param ratio: The fractions.Fraction, which shall be transformed
+
+        **Example:**
+
         >>> try:
         >>>     from quicktions import fractions.Fraction
         >>> except ImportError:
@@ -381,6 +386,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
         given in 'The Ratio Book' (1992).
         Arguments:
             * num -> integer, whose _indigestibility value shall be calculated
+
+        **Example:**
 
         >>> JustIntonationPitch._indigestibility(1)
         0
@@ -471,6 +478,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
         Note the difference that the second version might be slightly
         more performant.
 
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((-1, 1))
         >>> float(jip0)
         1.5
@@ -512,6 +521,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def primes(self) -> tuple:
         r"""Return ascending list of primes, until the highest contained Prime.
 
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((0, 1, 2))
         >>> jip0.exponents
         (2, 3, 5)
@@ -551,6 +562,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def ratio(self) -> fractions.Fraction:
         """Return the JustIntonationPitch transformed to a Ratio.
 
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((0, 0, 1,))
         >>> jip0.ratio
         fractions.Fraction(5, 4)
@@ -565,6 +578,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def numerator(self) -> int:
         """Return the numerator of a JustIntonationPitch - object.
 
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((0, -1,))
         >>> jip0.numerator
         1
@@ -578,7 +593,9 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @property
     def denominator(self) -> int:
-        """Return the denominator of a JustIntonationPitch - object.
+        """Return the denominator of :class:`JustIntonationPitch`.
+
+        **Example:**
 
         >>> jip0 = JustIntonationPitch((0, 1,))
         >>> jip0.denominator
@@ -598,6 +615,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
     @property
     def factorised(self) -> tuple:
         """Return factorised / decomposed version of itsef.
+
+        **Example:**
 
         >>> jip0 = JustIntonationPitch((0, 0, 1,))
         >>> jip0.factorised
@@ -697,6 +716,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
         positive number and False if the exponent is a
         negative number (utonality).
 
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((-2. 1))
         >>> jip0.tonality
         True
@@ -725,12 +746,14 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def harmonic(self) -> int:
         """Return the nth - harmonic / subharmonic the pitch may represent.
 
-        May be positive for harmonic and negative for
-        subharmonic pitches. If the return - value is 0,
-        the interval may occur neither between the first harmonic
-        and any other pitch of the harmonic scale nor
-        between the first subharmonic in the and any other
-        pitch of the subharmonic scale.
+        :return: May be positive for harmonic and negative for
+            subharmonic pitches. If the return - value is 0,
+            the interval may occur neither between the first harmonic
+            and any other pitch of the harmonic scale nor
+            between the first subharmonic in the and any other
+            pitch of the subharmonic scale.
+
+        **Example:**
 
         >>> jip0 = JustIntonationPitch((0, 1))
         >>> jip0.ratio
@@ -779,6 +802,9 @@ class JustIntonationPitch(parameters.abc.Pitch):
         A higher number means a less consonant interval /
         a more complicated harmony.
         euler(1/1) is definied as 1.
+
+        **Example:**
+
         >>> jip0 = JustIntonationPitch((0, 1,))
         >>> jip1 = JustIntonationPitch()
         >>> jip2 = JustIntonationPitch((0, 0, 1,))
@@ -807,6 +833,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
         complex harmony.
 
         barlow(1/1) is definied as infinite.
+
+        **Example:**
 
         >>> jip0 = JustIntonationPitch((0, 1,))
         >>> jip1 = JustIntonationPitch()
@@ -983,14 +1011,25 @@ class JustIntonationPitch(parameters.abc.Pitch):
             self.exponents = best[0].exponents
         else:
             raise NotImplementedError(
-                "Couldn't find closest register of '{}' to '{}'.".format(
-                    self, reference
-                )
+                f"Couldn't find closest register of '{self}' to '{reference}'."
             )
 
     @decorators.add_return_option
     def normalize(self, prime: int = 2) -> typing.Optional["JustIntonationPitch"]:  # type: ignore
-        """Normalize JustIntonationPitch."""
+        """Normalize :class:`JustIntonationPitch`.
+
+        :param prime: The normalization period (2 for octave,
+            3 for twelfth, ...). Default to 2.
+        :type prime: int
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('12/2')
+        >>> p.normalize()
+        >>> p
+        JustIntonationPitch(3/2)
+        """
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
         self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
@@ -1001,6 +1040,21 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def inverse(  # type: ignore
         self, axis: typing.Optional["JustIntonationPitch"] = None
     ) -> typing.Optional["JustIntonationPitch"]:
+        """Inverse current pitch on given axis.
+
+        :param axis: The :class:`JustIntonationPitch` from which the
+            pitch shall be inversed.
+        :type axis: JustIntonationPitch, optional
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('3/2')
+        >>> p.inverse()
+        >>> p
+        JustIntonationPitch(2/3)
+        """
+
         if axis is None:
             exponents = tuple(map(lambda x: -x, self.exponents))
         else:
@@ -1012,12 +1066,39 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def add(  # type: ignore
         self, other: "JustIntonationPitch"
     ) -> typing.Optional["JustIntonationPitch"]:
+        """Add :class:`JustIntonationPitch` to current pitch.
+
+        :param other: The :class:`JustIntonationPitch` to add to
+            the current pitch.
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('3/2')
+        >>> p.add(pitches.JustIntonationPitch('3/2'))
+        >>> p
+        JustIntonationPitch(9/4)
+        """
         self._math(other, operator.add)
 
     @decorators.add_return_option
     def subtract(  # type: ignore
         self, other: "JustIntonationPitch"
     ) -> typing.Optional["JustIntonationPitch"]:
+        """Subtract :class:`JustIntonationPitch` from current pitch.
+
+        :param other: The :class:`JustIntonationPitch` to subtract from
+            the current pitch.
+
+        **Example:**
+
+        >>> from mutwo.parameters import pitches
+        >>> p = pitches.JustIntonationPitch('9/4')
+        >>> p.subtract(pitches.JustIntonationPitch('3/2'))
+        >>> p
+        JustIntonationPitch(3/2)
+        """
+
         self._math(other, operator.sub)
 
 
