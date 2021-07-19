@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- TempoBasedTimeBracket
+- automatic attachment of Duration_line_engraver in SequentialEventToAbjadVoiceConverter for SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter
+- SimultaneousEventToAbjadStaffConverter
+- TaggedSimultaneousEventsToAbjadScoreConverter
+- TimeBracketToAbjadScoreConverter
+- Option for not adding Dynamics and Tempos in SequentialEventToAbjadVoiceConverter through passing 'None' to the respective argument
+
+
+## [0.26.0] - 2021-07-19
+
+### Added
+- "compute_lazy" method in mutwo.utilities.decorators
+
+
 ## [0.25.0] - 2021-07-18
 
 ### Added

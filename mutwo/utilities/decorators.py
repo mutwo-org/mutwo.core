@@ -2,9 +2,11 @@
 
 import copy
 import functools
+import os
+import pickle
 import typing
 
-__all__ = ("add_return_option",)
+__all__ = ("add_return_option", "compute_lazy")
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
@@ -54,3 +56,59 @@ def add_tag_to_class(class_to_decorate: G) -> G:
 
     class_to_decorate.__init__ = init_with_tag
     return class_to_decorate
+
+
+def compute_lazy(path: str):
+    """Only run function if its input changes and otherwise load return value from disk.
+
+    :param path: Where to save the computed result.
+    :type path: str
+
+    This function is helpful if there is a complex, long-taking calculation,
+    which should only run once or from time to time if the input changes.
+
+    **Example:**
+
+    >>> from mutwo.utilities import decorators
+    >>> @decorators.compute_lazy("magic_output", False)
+        def my_super_complex_calculation(n_numbers):
+            return sum(number for number in range(n_numbers))
+    >>> N_NUMBERS = 100000000
+    >>> my_super_complex_calculation(N_NUMBERS)
+    4999999950000000
+    >>> # takes very little time when calling the function the second time
+    >>> my_super_complex_calculation(N_NUMBERS)
+    4999999950000000
+    >>> # takes long again, because the input changed
+    >>> my_super_complex_calculation(N_NUMBERS + 10)
+    4999999950000000
+    """
+
+    def decorator(function_to_decorate: F) -> F:
+        @functools.wraps(function_to_decorate)
+        def wrapper(*args, **kwargs) -> typing.Any:
+            has_to_compute = False
+
+            current_args_and_kwargs = (args, kwargs)
+            is_file = os.path.isfile(path)
+
+            if not is_file:
+                has_to_compute = True
+            else:
+                with open(path, "rb") as f:
+                    function_result, previous_args_and_kwargs = pickle.load(f)
+
+                if previous_args_and_kwargs != current_args_and_kwargs:
+                    has_to_compute = True
+
+            if has_to_compute:
+                function_result = function_to_decorate(*args, **kwargs)
+                with open(path, "wb") as f:
+                    pickle.dump((function_result, current_args_and_kwargs), f)
+
+            return function_result
+
+        wrapped_function = typing.cast(F, wrapper)
+        return wrapped_function
+
+    return decorator
