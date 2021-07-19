@@ -58,11 +58,13 @@ def add_tag_to_class(class_to_decorate: G) -> G:
     return class_to_decorate
 
 
-def compute_lazy(path: str):
+def compute_lazy(path: str, force_to_compute: bool = False):
     """Only run function if its input changes and otherwise load return value from disk.
 
     :param path: Where to save the computed result.
     :type path: str
+    :param force_to_compute: Set to ``True`` if function has to be re-computed.
+    :type force_to_compute: bool
 
     This function is helpful if there is a complex, long-taking calculation,
     which should only run once or from time to time if the input changes.
@@ -101,7 +103,7 @@ def compute_lazy(path: str):
                 if previous_args_and_kwargs != current_args_and_kwargs:
                     has_to_compute = True
 
-            if has_to_compute:
+            if has_to_compute or force_to_compute:
                 function_result = function_to_decorate(*args, **kwargs)
                 with open(path, "wb") as f:
                     pickle.dump((function_result, current_args_and_kwargs), f)
