@@ -11,7 +11,18 @@ from mutwo.parameters import pitches
 def make_product_pitch(
     numbers: typing.Sequence[int], tonality: bool, normalize: bool = False,
 ) -> pitches.JustIntonationPitch:
-    """Make pitch from the product of one, two or more numbers."""
+    """Make :class:`~mutwo.parameters.pitches.JustIntonationPitch` from the product of one, two or more numbers.
+
+    :param numbers: The number which shall be multiplied to make a new pitch.
+    :type numbers: typing.Sequence[int]
+    :param tonality: ``True`` for putting the resulting product to the numerator of the
+        frequency ratio and ``False`` for putting the resulting product to the
+        denominator.
+    :type tonality: bool
+    :param normalize: ``True`` to normalize the new pitch to the middle octave.
+        Default to ``False``.
+    :type normalize: bool, optional
+    """
 
     product = functools.reduce(operator.mul, numbers)
     if tonality:
