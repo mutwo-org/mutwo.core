@@ -8,6 +8,8 @@ setting is :class:`SequentialEventToAbjadVoiceConverter`.
 """
 
 import abc
+import datetime
+import itertools
 import typing
 import warnings
 
@@ -40,6 +42,9 @@ __all__ = (
     "SequentialEventToQuantizedAbjadContainerConverter",
     "SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter",
     "SequentialEventToAbjadVoiceConverter",
+    "SimultaneousEventToAbjadStaffGroupConverter",
+    "TaggedSimultaneousEventsToAbjadScoreConverter",
+    "TimeBracketToAbjadScoreConverter",
 )
 
 
@@ -128,6 +133,8 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
     `Ekmelily <http://www.ekmelic-music.org/en/extra/ekmelily.htm>`_.
     You can find pre-generated tuning files
     `here <https://github.com/levinericzimmermann/ekme-heji.ily>`_.
+
+    **Example:**
 
     >>> from mutwo.parameters import pitches
     >>> from mutwo.converters.frontends import abjad
@@ -1065,6 +1072,10 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     :param abjad_attachment_classes: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
     :type abjad_attachment_classes: typing.Sequence[abjad_attachments.AbjadAttachment], optional
+    :param write_multimeasure_rests: Set to ``True`` if the converter should replace
+        rests that last a complete bar with multimeasure rests (rests with uppercase
+        "R" in Lilypond). Default to ``True``.
+    :type write_multimeasure_rests: bool
     """
 
     def __init__(
@@ -1086,11 +1097,16 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         ] = lambda simple_event: simple_event.notation_indicators,  # type: ignore
         is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool] = None,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
-        mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter = MutwoVolumeToAbjadAttachmentDynamicConverter(),
-        tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
+        mutwo_volume_to_abjad_attachment_dynamic_converter: typing.Optional[
+            MutwoVolumeToAbjadAttachmentDynamicConverter
+        ] = MutwoVolumeToAbjadAttachmentDynamicConverter(),
+        tempo_envelope_to_abjad_attachment_tempo_converter: typing.Optional[
+            TempoEnvelopeToAbjadAttachmentTempoConverter
+        ] = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
         abjad_attachment_classes: typing.Sequence[
             typing.Type[abjad_attachments.AbjadAttachment]
         ] = None,
+        write_multimeasure_rests: bool = True,
     ):
         if abjad_attachment_classes is None:
             abjad_attachment_classes = abjad_constants.DEFAULT_ABJAD_ATTACHMENT_CLASSES
@@ -1128,9 +1144,15 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         self._mutwo_volume_to_abjad_attachment_dynamic_converter = (
             mutwo_volume_to_abjad_attachment_dynamic_converter
         )
-        self._tempo_attachments = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
-            self._sequential_event_to_quantized_abjad_container_converter._tempo_envelope
-        )
+        if tempo_envelope_to_abjad_attachment_tempo_converter:
+            tempo_attachments = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
+                self._sequential_event_to_quantized_abjad_container_converter._tempo_envelope
+            )
+        else:
+            tempo_attachments = None
+        self._tempo_attachments = tempo_attachments
+
+        self._write_multimeasure_rests = write_multimeasure_rests
 
     # ###################################################################### #
     #                          static methods                                #
@@ -1214,13 +1236,13 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
     ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
-        abjad_attachment_dynamic = self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(
-            volume
-        )
-        if abjad_attachment_dynamic:
-            return {"dynamic": abjad_attachment_dynamic}
-        else:
-            return {}
+        if self._mutwo_volume_to_abjad_attachment_dynamic_converter:
+            abjad_attachment_dynamic = self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(
+                volume
+            )
+            if abjad_attachment_dynamic:
+                return {"dynamic": abjad_attachment_dynamic}
+        return {}
 
     def _get_tempo_attachments_for_quantized_abjad_leaves(
         self, abjad_voice: abjad.Voice,
@@ -1307,12 +1329,13 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
     def _apply_tempos_on_quantized_abjad_leaves(
         self, quanitisized_abjad_leaves: abjad.Voice,
     ):
-        leaves = abjad.select(quanitisized_abjad_leaves).leaves()
-        tempo_attachment_data = self._get_tempo_attachments_for_quantized_abjad_leaves(
-            quanitisized_abjad_leaves
-        )
-        for nth_event, tempo_attachment in tempo_attachment_data:
-            tempo_attachment.process_leaves((leaves[nth_event],), None)
+        if self._tempo_attachments:
+            leaves = abjad.select(quanitisized_abjad_leaves).leaves()
+            tempo_attachment_data = self._get_tempo_attachments_for_quantized_abjad_leaves(
+                quanitisized_abjad_leaves
+            )
+            for nth_event, tempo_attachment in tempo_attachment_data:
+                tempo_attachment.process_leaves((leaves[nth_event],), None)
 
     def _apply_attachments_on_quantized_abjad_leaves(
         self,
@@ -1488,6 +1511,15 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         )
         return quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
 
+    def _prepare_voice_depending_on_quanisation_class(
+        self, abjad_voice_to_prepare: abjad.Voice
+    ):
+        if isinstance(
+            self._sequential_event_to_quantized_abjad_container_converter,
+            SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+        ):
+            abjad_voice_to_prepare.consists_commands.append("Duration_line_engraver")
+
     # ###################################################################### #
     #               public methods for interaction with the user             #
     # ###################################################################### #
@@ -1584,8 +1616,369 @@ class SequentialEventToAbjadVoiceConverter(converters_abc.Converter):
         self._apply_tempos_on_quantized_abjad_leaves(quanitisized_abjad_leaves)
 
         # fifth, replace rests lasting one bar with full measure rests
-        SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(
-            quanitisized_abjad_leaves
-        )
+        if self._write_multimeasure_rests:
+            SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(
+                quanitisized_abjad_leaves
+            )
+
+        # sixth, prepare voice depending on the choosen quantisation clas
+        self._prepare_voice_depending_on_quanisation_class(quanitisized_abjad_leaves)
 
         return quanitisized_abjad_leaves
+
+
+class SimultaneousEventToAbjadStaffGroupConverter(converters_abc.Converter):
+    """Convert :class:`~mutwo.events.basic.SimultaneousEvent` to :class:`abjad.StaffGroup`.
+
+    :param sequential_event_to_abjad_voice_converter_or_sequential_event_to_abjad_voice_converters:
+        Class or classes which defines how to convert one :class:`~mutwo.events.basic.SequentialEvent`
+        to :class:`abjad.Voice`. If a sequence of converter is passed, mutwo will cycle through the
+        converters during the conversion method.
+    :type sequential_event_to_abjad_voice_converter: typing.Union[SequentialEventToAbjadVoiceConverter, typing.Sequence[SequentialEventToAbjadVoiceConverter]],
+        optional
+    :param instrument_name:
+    :type instrument_name: typing.Optional[str]
+    :param short_instrument_name:
+    :type short_instrument_name: typing.Optional[str]
+    :param lilypond_type_of_staff: Set the Lilypond context for the Staff. Could be
+        "RhythmicStaff", "PianoStaff", etc. For a complete list of allowed context, take
+        a look at the official
+        `Lilypond documentation <https://lilypond.org/doc/v2.20/Documentation/notation/contexts-explained>`_.
+    :type lilypond_type_of_staff: str
+    :param accidental_style:
+    :type accidental_style: typing.Optional[str]
+
+    For customizing the :class:`SimultaneousEventToAbjadStaffGroupConverter` it is
+    recommended to override the `_prepare_staff_group` method when inheriting from
+    this class. By default Mutwo only attaches the instrument names and the
+    accidental style. If one wants to use for instance single digit style
+    time signatures for a complete composition, one could simply define ones
+    own converter:
+
+    >>> import abjad
+    >>> from mutwo.converters import frontends
+    >>> class MySequentialEventToAbjadStaffGroupConverter(frontends.abjad.SimultaneousEventToAbjadStaffGroupConverter):
+            def _prepare_staff_group(self, simultaneous_event_to_convert, staff_group_to_prepare):
+                # call super method for not loosing the parents functionality
+                super()._prepare_staff_group(simultaneous_event_to_convert, staff_group_to_prepare)
+                # then get the first leaf of the passed staff
+                first_leaf = abjad.get.leaf(staff_group_to_prepare, 0)
+                # and finally attach the single digit time signature style
+                abjad.attach(
+                    abjad.LilyPondLiteral(
+                        "\\override Staff.TimeSignature.style = #'single-digit"
+                    ),
+                    first_leaf,
+                )
+    """
+
+    def __init__(
+        self,
+        sequential_event_to_abjad_voice_converter_or_sequential_event_to_abjad_voice_converters: typing.Union[
+            SequentialEventToAbjadVoiceConverter,
+            typing.Sequence[SequentialEventToAbjadVoiceConverter],
+        ] = SequentialEventToAbjadVoiceConverter(),
+        instrument_name: typing.Optional[str] = None,
+        short_instrument_name: typing.Optional[str] = None,
+        lilypond_type_of_staff: str = "Staff",
+        instrument_name_font_size: str = "teeny",
+        short_instrument_name_font_size: str = "teeny",
+        accidental_style: typing.Optional[str] = None,
+    ):
+        if not hasattr(
+            sequential_event_to_abjad_voice_converter_or_sequential_event_to_abjad_voice_converters,
+            "__getitem__",
+        ):
+            sequential_event_to_abjad_voice_converters = (
+                sequential_event_to_abjad_voice_converter_or_sequential_event_to_abjad_voice_converters,
+            )
+        else:
+            sequential_event_to_abjad_voice_converters = tuple(
+                sequential_event_to_abjad_voice_converter_or_sequential_event_to_abjad_voice_converters
+            )
+
+        self._sequential_event_to_abjad_voice_converters = (
+            sequential_event_to_abjad_voice_converters
+        )
+        self._instrument_name = instrument_name
+        self._short_instrument_name = short_instrument_name
+        self._instrument_name_font_size = instrument_name_font_size
+        self._short_instrument_name_font_size = short_instrument_name_font_size
+        self._lilypond_type_of_staff = lilypond_type_of_staff
+        self._accidental_style = accidental_style
+
+    # ###################################################################### #
+    #                         private methods                                #
+    # ###################################################################### #
+
+    def _prepare_staff_group(
+        self,
+        simultaneous_event_to_convert: events.basic.SimultaneousEvent[
+            events.basic.SequentialEvent[events.basic.SimpleEvent]
+        ],
+        staff_group_to_prepare: abjad.StaffGroup,
+    ):
+        """Attach instrument names to staff."""
+
+        first_leaf = abjad.get.leaf(staff_group_to_prepare[0], 0)
+
+        if self._instrument_name:
+            set_instrument_name_command = (
+                "\\set StaffGroup.instrumentName = \\markup { "
+                f" \\{self._instrument_name_font_size} {{ {self._instrument_name} }} }}"
+            )
+            abjad.attach(
+                abjad.LilyPondLiteral(set_instrument_name_command), first_leaf,
+            )
+        if self._short_instrument_name:
+            set_short_instrument_name_command = (
+                "\\set StaffGroup.shortInstrumentName = \\markup { "
+                f" \\{self._short_instrument_name_font_size} {{"
+                f" {self._short_instrument_name} }} }}"
+            )
+            abjad.attach(
+                abjad.LilyPondLiteral(set_short_instrument_name_command), first_leaf,
+            )
+
+        if self._accidental_style:
+            abjad.attach(
+                abjad.LilyPondLiteral(f'\\accidentalStyle "{self._accidental_style}"'),
+                first_leaf,
+            )
+
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
+
+    def convert(
+        self,
+        simultaneous_event_to_convert: events.basic.SimultaneousEvent[
+            events.basic.SequentialEvent[events.basic.SimpleEvent]
+        ],
+    ) -> abjad.StaffGroup:
+        """Convert passed :class:`~mutwo.events.basic.SimultaneousEvent`.
+
+        :param simultaneous_event_to_convert: The
+            :class:`~mutwo.events.basic.SimultaneousEvent` which shall
+            be converted to the :class:`abjad.Staff` object.
+        :type sequential_event_to_convert: events.basic.SimultaneousEvent[
+            events.basic.SequentialEvent[events.basic.SimpleEvent]]
+        """
+
+        abjad_staves = []
+        sequential_event_to_abjad_voice_converters_cycle = itertools.cycle(
+            self._sequential_event_to_abjad_voice_converters
+        )
+        for sequential_event_to_convert in simultaneous_event_to_convert:
+            sequential_event_to_abjad_voice_converter = next(
+                sequential_event_to_abjad_voice_converters_cycle
+            )
+            abjad_voice = sequential_event_to_abjad_voice_converter.convert(
+                sequential_event_to_convert
+            )
+            abjad_staff = abjad.Staff(
+                [abjad_voice], lilypond_type=self._lilypond_type_of_staff
+            )
+            abjad_staves.append(abjad_staff)
+
+        abjad_staff_group = abjad.StaffGroup(abjad_staves)
+        self._prepare_staff_group(simultaneous_event_to_convert, abjad_staff_group)
+        return abjad_staff_group
+
+
+class TaggedSimultaneousEventsToAbjadScoreConverter(converters_abc.Converter):
+    def __init__(
+        self,
+        tag_to_simultaneous_event_to_abjad_staff_group_converter: typing.Dict[
+            str, SimultaneousEventToAbjadStaffGroupConverter
+        ],
+    ):
+        self._tag_to_simultaneous_event_to_abjad_staff_group_converter = (
+            tag_to_simultaneous_event_to_abjad_staff_group_converter
+        )
+
+    # ###################################################################### #
+    #                         private methods                                #
+    # ###################################################################### #
+
+    def _prepare_score(
+        self,
+        tagged_simultaneous_events_to_convert: events.basic.SimultaneousEvent[
+            events.basic.TaggedSimultaneousEvent[
+                events.basic.SequentialEvent[events.basic.SimpleEvent]
+            ]
+        ],
+        score_to_prepare: abjad.Score,
+    ):
+        pass
+
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
+
+    def convert(
+        self,
+        tagged_simultaneous_events_to_convert: events.basic.SimultaneousEvent[
+            events.basic.TaggedSimultaneousEvent[
+                events.basic.SequentialEvent[events.basic.SimpleEvent]
+            ]
+        ],
+    ) -> abjad.Score:
+        abjad_score = abjad.Score([])
+        for (
+            tagged_simultaneous_event_to_convert
+        ) in tagged_simultaneous_events_to_convert:
+            try:
+                simultaneous_event_to_abjad_staff_group_converter = self._tag_to_simultaneous_event_to_abjad_staff_group_converter[
+                    tagged_simultaneous_event_to_convert.tag
+                ]
+            except KeyError:
+                raise KeyError(
+                    f"Found undefined tag '{tagged_simultaneous_event_to_convert.tag}'."
+                    " This object only knows the following tags:"
+                    f" '{self._tag_to_simultaneous_event_to_abjad_staff_group_converter.keys()}'"
+                )
+
+            abjad_staff = simultaneous_event_to_abjad_staff_group_converter.convert(
+                tagged_simultaneous_event_to_convert
+            )
+            abjad_score.append(abjad_staff)
+
+        self._prepare_score(tagged_simultaneous_events_to_convert, abjad_score)
+
+        return abjad_score
+
+
+class TimeBracketToAbjadScoreConverter(TaggedSimultaneousEventsToAbjadScoreConverter):
+
+    # ###################################################################### #
+    #                     private static methods                             #
+    # ###################################################################### #
+
+    @staticmethod
+    def _format_time(time: constants.Real) -> str:
+        return format(datetime.timedelta(seconds=round(time)))[2:]
+
+    @staticmethod
+    def _attach_time_bracket_mark(
+        leaf_to_attach_to: abjad.Leaf,
+        time_bracket_mark: abjad.RehearsalMark,
+        format_slot: str,
+    ):
+        abjad.attach(
+            abjad.LilyPondLiteral(format(time_bracket_mark), format_slot=format_slot),
+            leaf_to_attach_to,
+        )
+
+    @staticmethod
+    def _add_time_bracket_mark_for_time(
+        leaf_to_attach_to: abjad.Leaf,
+        time: parameters.abc.DurationType,
+        format_slot: str,
+    ):
+        if format_slot == "after":
+            hint = "end at: "
+        else:
+            hint = "\\hspace #-8 start at: "
+        formated_time = TimeBracketToAbjadScoreConverter._format_time(time)
+        markup_command = (
+            f"\\teeny {{ {hint} }} \\normalsize {{ \\smallCaps {{ {formated_time} "
+            " } }"
+        )
+        time_bracket_mark = abjad.RehearsalMark(markup=abjad.Markup(markup_command))
+        TimeBracketToAbjadScoreConverter._attach_time_bracket_mark(
+            leaf_to_attach_to, time_bracket_mark, format_slot
+        )
+
+    @staticmethod
+    def _add_time_bracket_mark_for_time_range(
+        leaf_to_attach_to: abjad.Leaf,
+        time_range: typing.Tuple[
+            parameters.abc.DurationType, parameters.abc.DurationType
+        ],
+        format_slot: str,
+    ):
+        if format_slot == "after":
+            hint = "\\hspace #-10 end in range: "
+        else:
+            hint = "\\hspace #-10 start in range: "
+
+        formated_time_range = tuple(
+            TimeBracketToAbjadScoreConverter._format_time(time) for time in time_range
+        )
+        time_bracket_mark = (
+            f"\\mark \\markup {{ \\teeny {{ {hint} }} \\normalsize {{ \\smallCaps {{"
+            f" {formated_time_range[0]}  }} }} \n\\raise #0.55 \n\\teeny {{ \\concat {{"
+            " \\arrow-head #X #LEFT ##t \\draw-line #'(1 . 0) \\arrow-head #X #RIGHT"
+            f" ##t }} }}\n\\normalsize {{ \\smallCaps {{ {formated_time_range[1]} }}"
+            " } }"
+        )
+        TimeBracketToAbjadScoreConverter._attach_time_bracket_mark(
+            leaf_to_attach_to, time_bracket_mark, format_slot
+        )
+
+    @staticmethod
+    def _add_time_bracket_mark_for_time_or_time_range(
+        leaf_to_attach_to: abjad.Leaf,
+        time_or_time_range: events.time_brackets.TimeOrTimeRange,
+        format_slot: str,
+    ):
+        if hasattr(time_or_time_range, "__getitem__"):
+            TimeBracketToAbjadScoreConverter._add_time_bracket_mark_for_time_range(
+                leaf_to_attach_to, time_or_time_range, format_slot
+            )
+        else:
+            TimeBracketToAbjadScoreConverter._add_time_bracket_mark_for_time(
+                leaf_to_attach_to, time_or_time_range, format_slot
+            )
+
+    # ###################################################################### #
+    #                         private methods                                #
+    # ###################################################################### #
+
+    def _prepare_score(
+        self,
+        tagged_simultaneous_events_to_convert: events.time_brackets.TimeBracket[
+            events.basic.TaggedSimultaneousEvent[
+                events.basic.SequentialEvent[events.basic.SimpleEvent]
+            ]
+        ],
+        score_to_prepare: abjad.Score,
+    ):
+        first_leaf = abjad.get.leaf(score_to_prepare[0], 0)
+        last_leaf = abjad.get.leaf(score_to_prepare[0], -1)
+        for leaf_to_attach_to, time_or_time_range, format_slot in (
+            (
+                first_leaf,
+                tagged_simultaneous_events_to_convert.start_or_start_range,
+                "before",
+            ),
+            (
+                last_leaf,
+                tagged_simultaneous_events_to_convert.end_or_end_range,
+                "after",
+            ),
+        ):
+            # don't add the ending time range for a tempo based time bracket
+            # (only rely on the tempo mark in this case!)
+            if format_slot != "after" or not isinstance(
+                tagged_simultaneous_events_to_convert,
+                events.time_brackets.TempoBasedTimeBracket,
+            ):
+                TimeBracketToAbjadScoreConverter._add_time_bracket_mark_for_time_or_time_range(
+                    leaf_to_attach_to, time_or_time_range, format_slot
+                )
+
+    # ###################################################################### #
+    #               public methods for interaction with the user             #
+    # ###################################################################### #
+
+    def convert(
+        self,
+        tagged_simultaneous_events_to_convert: events.time_brackets.TimeBracket[
+            events.basic.TaggedSimultaneousEvent[
+                events.basic.SequentialEvent[events.basic.SimpleEvent]
+            ]
+        ],
+    ) -> abjad.Score:
+        return super().convert(tagged_simultaneous_events_to_convert)

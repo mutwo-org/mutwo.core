@@ -19,7 +19,6 @@ from mutwo import parameters
 
 # TODO(Add more unit tests to make abjad conversion more reliable!)
 
-
 class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
     def test_convert(self):
         converter = frontends.abjad.MutwoPitchToAbjadPitchConverter()
@@ -613,7 +612,6 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             ]
         )
         converted_sequential_event = converter.convert(sequential_event_to_convert)
-        converted_sequential_event.consists_commands.append("Duration_line_engraver")
 
         tests_path = "tests/converters/frontends"
         png_file_to_compare_path = (
