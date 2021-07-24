@@ -552,14 +552,14 @@ class TaggedSimpleEvent(SimpleEvent):
 
 
 @decorators.add_tag_to_class
-class TaggedSequentialEvent(SequentialEvent):
+class TaggedSequentialEvent(SequentialEvent, typing.Generic[T]):
     """:class:`SequentialEvent` with tag."""
 
     _class_specific_side_attributes = ("tag",)
 
 
 @decorators.add_tag_to_class
-class TaggedSimultaneousEvent(SimultaneousEvent):
+class TaggedSimultaneousEvent(SimultaneousEvent, typing.Generic[T]):
     """:class:`SimultaneousEvent` with tag."""
 
     _class_specific_side_attributes = ("tag",)
