@@ -11,6 +11,7 @@ Submodules are:
    :toctree: utilities
 
    mutwo.utilities.decorators
+   mutwo.utilities.exceptions
    mutwo.utilities.prime_factors
    mutwo.utilities.tools
   

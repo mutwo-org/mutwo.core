@@ -27,8 +27,6 @@ This tree provides a deep overview of all submodules:
    :toctree: mutwo
 
    mutwo.converters.abc
-   mutwo.converters.backends.mmml
-   mutwo.converters.backends.mmml_constants
    mutwo.converters.frontends.abjad
    mutwo.converters.frontends.abjad_attachments
    mutwo.converters.frontends.csound
@@ -42,19 +40,25 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.frontends.isis_constants
    mutwo.converters.frontends.midi_constants
    mutwo.converters.frontends.reaper_constants
+   mutwo.converters.backends.mmml
+   mutwo.converters.backends.mmml_constants
    mutwo.converters.symmetrical.metricities
    mutwo.converters.symmetrical.loudness
    mutwo.converters.symmetrical.playing_indicators
    mutwo.converters.symmetrical.tempos
-   mutwo.converters.frontends.abjad
    mutwo.events.abc
    mutwo.events.basic
    mutwo.events.music
+   mutwo.events.time_brackets
    mutwo.generators.brown
    mutwo.generators.edwards
+   mutwo.generators.generic
    mutwo.generators.gray
+   mutwo.generators.koenig
    mutwo.generators.toussaint
+   mutwo.generators.wilson
    mutwo.generators.edwards_constants
+   mutwo.generators.sabat_constants
    mutwo.parameters.abc
    mutwo.parameters.commas
    mutwo.parameters.notation_indicators
@@ -65,5 +69,6 @@ This tree provides a deep overview of all submodules:
    mutwo.parameters.pitches_constants
    mutwo.parameters.volumes_constants
    mutwo.utilities.decorators
+   mutwo.utilities.exceptions
    mutwo.utilities.prime_factors
    mutwo.utilities.tools

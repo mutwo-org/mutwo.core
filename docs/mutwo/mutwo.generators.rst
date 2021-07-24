@@ -17,6 +17,7 @@ Submodules are:
    mutwo.generators.brown
    mutwo.generators.edwards
    mutwo.generators.generic
+   mutwo.generators.generic
    mutwo.generators.gray
    mutwo.generators.koenig
    mutwo.generators.toussaint
