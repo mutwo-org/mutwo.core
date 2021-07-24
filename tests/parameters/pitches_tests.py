@@ -263,6 +263,40 @@ class JustIntonationPitchTest(unittest.TestCase):
             pitches.JustIntonationPitch("9/8"),
         )
 
+    def test_property_cent_deviation_from_closest_western_pitch_class(self):
+        self.assertEqual(
+            round(
+                pitches.JustIntonationPitch(
+                    "5/4"
+                ).cent_deviation_from_closest_western_pitch_class
+            ),
+            -14,
+        )
+        self.assertEqual(
+            round(
+                pitches.JustIntonationPitch(
+                    "5/3"
+                ).cent_deviation_from_closest_western_pitch_class
+            ),
+            -16,
+        )
+        self.assertEqual(
+            round(
+                pitches.JustIntonationPitch(
+                    "9/8"
+                ).cent_deviation_from_closest_western_pitch_class
+            ),
+            4,
+        )
+        self.assertEqual(
+            round(
+                pitches.JustIntonationPitch(
+                    "11/8"
+                ).cent_deviation_from_closest_western_pitch_class
+            ),
+            51,
+        )
+
     def test_count_accidentals(self):
         self.assertEqual(pitches.JustIntonationPitch._count_accidentals("f"), -1)
         self.assertEqual(pitches.JustIntonationPitch._count_accidentals("s"), 1)
@@ -560,6 +594,15 @@ class JustIntonationPitchTest(unittest.TestCase):
         p3 = pitches.JustIntonationPitch("15/8")
         p3.intersection(pitches.JustIntonationPitch("21/16"))
         self.assertEqual(p3, pitches.JustIntonationPitch("3/8"))
+
+    def test_intersection_strict(self):
+        p0 = pitches.JustIntonationPitch("5/3")
+        p0.intersection(pitches.JustIntonationPitch("7/6"), strict=True)
+        self.assertEqual(p0, pitches.JustIntonationPitch("1/3"))
+
+        p1 = pitches.JustIntonationPitch("27/1")
+        p1.intersection(pitches.JustIntonationPitch("9/1"), strict=True)
+        self.assertEqual(p1, pitches.JustIntonationPitch("1/1"))
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ defined by the
 `Helmholtz-Ellis JI Pitch Notation <https://marsbat.space/pdfs/notation.pdf>`_.
 """
 
+import functools
+import operator
 import typing
 
 try:
@@ -59,3 +61,10 @@ class CommaCompound(typing.Iterable[Comma]):
     @property
     def prime_to_exponent(self) -> typing.Dict[int, int]:
         return dict(self._prime_to_exponent)
+
+    @property
+    def ratio(self) -> fractions.Fraction:
+        if self.prime_to_exponent:
+            return functools.reduce(operator.mul, iter(self))
+        else:
+            return fractions.Fraction(1, 1)

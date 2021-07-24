@@ -693,6 +693,23 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return closest_pythagorean_interval
 
     @property
+    def cent_deviation_from_closest_western_pitch_class(self) -> float:
+        deviation_by_helmholtz_ellis_just_intonation_notation_commas = JustIntonationPitch(
+            self.helmholtz_ellis_just_intonation_notation_commas.ratio
+        ).cents
+        closest_pythagorean_interval = self.closest_pythagorean_interval
+        if len(closest_pythagorean_interval.exponents) >= 2:
+            pythagorean_deviation = self.closest_pythagorean_interval.exponents[1] * (
+                JustIntonationPitch("3/2").cents - 700
+            )
+        else:
+            pythagorean_deviation = 0
+        return (
+            deviation_by_helmholtz_ellis_just_intonation_notation_commas
+            + pythagorean_deviation
+        )
+
+    @property
     def blueprint(  # type: ignore
         self, ignore: typing.Sequence[int] = (2,)
     ) -> typing.Tuple[typing.Tuple[int, ...], ...]:

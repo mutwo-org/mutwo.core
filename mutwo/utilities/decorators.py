@@ -3,8 +3,12 @@
 import copy
 import functools
 import os
-import pickle
 import typing
+
+try:
+    import dill as pickle
+except ImportError:
+    import pickle
 
 __all__ = ("add_return_option", "compute_lazy")
 
