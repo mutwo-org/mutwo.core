@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.27.0] - 2021-07-24
+
 ### Added
 - TempoBasedTimeBracket
 - automatic attachment of Duration_line_engraver in SequentialEventToAbjadVoiceConverter for SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter
@@ -14,6 +17,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - TaggedSimultaneousEventsToAbjadScoreConverter
 - TimeBracketToAbjadScoreConverter
 - Option for not adding Dynamics and Tempos in SequentialEventToAbjadVoiceConverter through passing 'None' to the respective argument
+- "write_multimeasure_rests" option in SequentialEventToAbjadVoiceConverter
+- add "ratio" property to CommaCompound class
+- add "cent_deviation_from_closest_western_pitch_class" property to JustIntonationPitch
+
+### Changed
+- calculation for midi velocity is now depending on decibel and the global "DEFAULT_MINIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR" and "DEFAULT_MAXIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR" constants in 'mutwo.parameters.volumes_constants'
+
+### Deprecated
+- ReaperFileConverter (not updated for months, out-dated converter class structure)
 
 
 ## [0.26.0] - 2021-07-19
