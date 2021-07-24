@@ -8,6 +8,23 @@ import typing
 from mutwo.parameters import pitches
 
 
+def make_product_pitch(
+    numbers: typing.Sequence[int], tonality: bool, normalize: bool = False,
+) -> pitches.JustIntonationPitch:
+    """Make pitch from the product of one, two or more numbers."""
+
+    product = functools.reduce(operator.mul, numbers)
+    if tonality:
+        ratio = f"{product}/1"
+    else:
+        ratio = f"1/{product}"
+
+    pitch = pitches.JustIntonationPitch(ratio)
+    if normalize:
+        pitch.normalize()
+    return pitch
+
+
 def make_common_product_set_scale(
     numbers: typing.Sequence[int],
     n_combinations: int,
@@ -46,16 +63,8 @@ def make_common_product_set_scale(
 
     common_product_set_scale = []
     for combined_numbers in itertools.combinations(numbers, n_combinations):
-        product = functools.reduce(operator.mul, combined_numbers)
-        if tonality:
-            ratio = f"{product}/1"
-        else:
-            ratio = f"1/{product}"
-
-        common_product_set_scale.append(pitches.JustIntonationPitch(ratio))
-
-    if normalize:
-        for pitch in common_product_set_scale:
-            pitch.normalize()
+        common_product_set_scale.append(
+            make_product_pitch(combined_numbers, tonality, normalize)
+        )
 
     return tuple(common_product_set_scale)
