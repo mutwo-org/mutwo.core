@@ -120,32 +120,14 @@ class VolumeTest(unittest.TestCase):
             parameters.abc.Volume.power_ratio_to_decibel(0), float("-inf"),
         )
 
-    def test_amplitude_to_velocity(self):
+    def test_amplitude_ratio_to_velocity(self):
         amplitude0 = 1
         amplitude1 = 0
-        amplitude2 = 2
-        amplitude3 = -100
-        amplitude4 = 0.5
-        amplitude5 = 0.2
         self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude0), 127
+            parameters.abc.Volume.amplitude_ratio_to_midi_velocity(amplitude0), 127
         )
         self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude1), 0
-        )
-        self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude2), 127
-        )
-        self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude3), 0
-        )
-        self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude4),
-            int(round(127 * amplitude4)),
-        )
-        self.assertEqual(
-            parameters.abc.Volume.amplitude_to_midi_velocity(amplitude5),
-            int(round(127 * amplitude5)),
+            parameters.abc.Volume.amplitude_ratio_to_midi_velocity(amplitude1), 0
         )
 
 

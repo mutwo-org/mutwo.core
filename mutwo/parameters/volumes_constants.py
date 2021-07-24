@@ -13,11 +13,16 @@ STANDARD_DYNAMIC_INDICATOR = tuple(
     "ppppp pppp ppp pp p mp mf f ff fff ffff fffff".split(" ")
 )
 
-MINIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR: float = -52
-"""decibel value for lowest dynamic indicator ('ppppp')"""
+DEFAULT_MINIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR: float = -40
+"""Default value for ``minimum_decibel`` in
+:class:`~mutwo.parameter.volumes.WesternVolume` and in
+:method:`~mutwo.parameters.abc.Volume.decibel_to_midi_velocity`."""
 
-MAXIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR: float = 0
-"""decibel value for highest dynamic indicator ('fffff')"""
+DEFAULT_MAXIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR: float = 0
+"""Default value for ``maximum_decibel`` in
+:class:`~mutwo.parameter.volumes.WesternVolume` and in
+:method:`~mutwo.parameters.abc.Volume.decibel_to_midi_velocity`."""
+
 
 SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING = {
     "fp": "mf",

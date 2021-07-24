@@ -19,7 +19,7 @@ class DirectVolumeTest(unittest.TestCase):
     def test_midi_velocity(self):
         self.assertEqual(volumes.DirectVolume(1).midi_velocity, 127)
         self.assertEqual(volumes.DirectVolume(0).midi_velocity, 0)
-        self.assertEqual(volumes.DirectVolume(0.5).midi_velocity, 64)
+        self.assertEqual(volumes.DirectVolume(0.5).midi_velocity, 107)
 
     def test_decibel(self):
         self.assertEqual(volumes.DirectVolume(1).decibel, 0)

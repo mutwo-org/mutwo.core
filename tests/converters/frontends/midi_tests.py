@@ -430,14 +430,14 @@ class MidiFileConverterTest(unittest.TestCase):
                 mido.Message(
                     "note_on",
                     note=60,
-                    velocity=64,
+                    velocity=107,
                     time=absolute_time2_in_ticks,
                     channel=midi_channels[0],
                 ),
                 mido.Message(
                     "note_off",
                     note=60,
-                    velocity=64,
+                    velocity=107,
                     time=absolute_time2_in_ticks
                     + self.converter._beats_to_ticks(tone.duration),
                     channel=midi_channels[0],
@@ -451,14 +451,14 @@ class MidiFileConverterTest(unittest.TestCase):
                 mido.Message(
                     "note_on",
                     note=69,
-                    velocity=64,
+                    velocity=107,
                     time=absolute_time2_in_ticks,
                     channel=midi_channels[1],
                 ),
                 mido.Message(
                     "note_off",
                     note=69,
-                    velocity=64,
+                    velocity=107,
                     time=absolute_time2_in_ticks
                     + self.converter._beats_to_ticks(tone.duration),
                     channel=midi_channels[1],

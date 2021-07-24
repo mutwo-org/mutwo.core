@@ -238,11 +238,14 @@ class Volume(Parameter):
             return float(10 * math.log10(amplitude / reference_amplitude))
 
     @staticmethod
-    def amplitude_to_midi_velocity(amplitude: constants.Real) -> int:
-        """Convert volume (floating point number from 0 to 1) to midi velocity.
+    def amplitude_ratio_to_midi_velocity(
+        amplitude: constants.Real, reference_amplitude: constants.Real = 1
+    ) -> int:
+        """Convert amplitude ratio to midi velocity.
 
-        :param amplitude: A value from 0 to 1 that shall be converted to midi
-            velocity (0 to 127).
+        :param amplitude: The amplitude which shall be converted.
+        :type amplitude: constants.Real
+        :param reference_amplitude: The amplitude for decibel == 0.
         :return: The midi velocity.
 
         The method clips values that are higher than 1 / lower than 0.
@@ -250,18 +253,73 @@ class Volume(Parameter):
         **Example:**
 
         >>> from mutwo.parameters import abc
-        >>> abc.Volume.amplitude_to_midi_velocity(1)
+        >>> abc.Volume.amplitude_ratio_to_midi_velocity(1)
         127
-        >>> abc.Volume.amplitude_to_midi_velocity(0)
+        >>> abc.Volume.amplitude_ratio_to_midi_velocity(0)
         0
         """
-        velocity = int(round(amplitude * volumes_constants.MAXIMUM_VELOCITY))
 
-        # clip velocity
-        if velocity < volumes_constants.MINIMUM_VELOCITY:
-            velocity = volumes_constants.MINIMUM_VELOCITY
-        if velocity > volumes_constants.MAXIMUM_VELOCITY:
-            velocity = volumes_constants.MAXIMUM_VELOCITY
+        return Volume.decibel_to_midi_velocity(
+            Volume.amplitude_ratio_to_decibel(
+                amplitude, reference_amplitude=reference_amplitude
+            )
+        )
+
+    @staticmethod
+    def decibel_to_midi_velocity(
+        decibel_to_convert: constants.Real,
+        minimum_decibel: typing.Optional[constants.Real] = None,
+        maximum_decibel: typing.Optional[constants.Real] = None,
+    ) -> int:
+        """Convert decibel to midi velocity (0 to 127).
+
+        :param decibel: The decibel value which shall be converted..
+        :type decibel: constants.Real
+        :param minimum_decibel: The decibel value which is equal to the lowest
+            midi velocity (0).
+        :type minimum_decibel: constants.Real, optional
+        :param maximum_decibel: The decibel value which is equal to the highest
+            midi velocity (127).
+        :type maximum_decibel: constants.Real, optional
+        :return: The midi velocity.
+
+        The method clips values which are higher than 'maximum_decibel' and lower than
+        'minimum_decibel'.
+
+        **Example:**
+
+        >>> from mutwo.parameters import abc
+        >>> abc.Volume.decibel_to_midi_velocity(0)
+        127
+        >>> abc.Volume.decibel_to_midi_velocity(-40)
+        0
+        """
+
+        if minimum_decibel is None:
+            minimum_decibel = (
+                volumes_constants.DEFAULT_MINIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR
+            )
+
+        if maximum_decibel is None:
+            maximum_decibel = (
+                volumes_constants.DEFAULT_MAXIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR
+            )
+
+        if decibel_to_convert > maximum_decibel:
+            decibel_to_convert = maximum_decibel
+
+        if decibel_to_convert < minimum_decibel:
+            decibel_to_convert = minimum_decibel
+
+        velocity = int(
+            tools.scale(
+                decibel_to_convert,
+                minimum_decibel,
+                maximum_decibel,
+                volumes_constants.MINIMUM_VELOCITY,
+                volumes_constants.MAXIMUM_VELOCITY,
+            )
+        )
 
         return velocity
 
@@ -279,8 +337,8 @@ class Volume(Parameter):
 
     @property
     def midi_velocity(self) -> int:
-        """The velocity of the volume (from 0 to 1)."""
-        return self.amplitude_to_midi_velocity(self.amplitude)
+        """The velocity of the volume (from 0 to 127)."""
+        return self.decibel_to_midi_velocity(self.decibel)
 
     # comparison methods
     def __lt__(self, other: "Volume") -> bool:

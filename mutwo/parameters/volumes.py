@@ -65,17 +65,42 @@ class WesternVolume(parameters.abc.Volume):
     :param name: Dynamic indicator in traditional Western nomenclature
         ('f', 'pp', 'mf', 'sfz', etc.). For a list of all supported
         indicators, see :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR`.
+    :type name: str
+    :param minimum_decibel: The decibel value which is equal to the lowest dynamic indicator
+        (ppppp).
+    :type minimum_decibel: constants.Real, optional
+    :param maximum_decibel: The decibel value which is equal to the highest dynamic indicator
+        (fffff).
+    :type maximum_decibel: constants.Real, optional
+
+    **Example:**
 
     >>> from mutwo.parameters import volumes
     >>> volumes.WesternVolume('fff')
+    WesternVolume(fff)
     """
 
-    def __init__(self, name: str):
+    def __init__(
+        self,
+        name: str,
+        minimum_decibel: typing.Optional[constants.Real] = None,
+        maximum_decibel: typing.Optional[constants.Real] = None,
+    ):
+        if minimum_decibel is None:
+            minimum_decibel = (
+                parameters.volumes_constants.DEFAULT_MINIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR
+            )
+
+        if maximum_decibel is None:
+            maximum_decibel = (
+                parameters.volumes_constants.DEFAULT_MAXIMUM_DECIBEL_FOR_MIDI_VELOCITY_AND_STANDARD_DYNAMIC_INDICATOR
+            )
+
         self.name = name
-        self._standard_dynamic_indicator_to_decibel_mapping = (
-            WesternVolume._make_standard_dynamic_indicator_to_decibel_mapping()
+        self._standard_dynamic_indicator_to_decibel_mapping = WesternVolume._make_standard_dynamic_indicator_to_value_mapping(
+            minimum_decibel, maximum_decibel, float,
         )
-        self._dynamic_indicator_to_decibel_mapping = WesternVolume._make_dynamic_indicator_to_decibel_mapping(
+        self._dynamic_indicator_to_decibel_mapping = WesternVolume._make_dynamic_indicator_to_value_mapping(
             self._standard_dynamic_indicator_to_decibel_mapping
         )
         self._decibel_to_standard_dynamic_indicator_mapping = {
@@ -84,36 +109,36 @@ class WesternVolume(parameters.abc.Volume):
         }
 
     def __repr__(self) -> str:
-        return "{}({})".format(type(self).__name__, self.name)
+        return f"{type(self).__name__}({self.name})"
 
     # ###################################################################### #
     #                      static private methods                            #
     # ###################################################################### #
 
     @staticmethod
-    def _make_standard_dynamic_indicator_to_decibel_mapping() -> typing.Dict[
-        str, float
-    ]:
+    def _make_standard_dynamic_indicator_to_value_mapping(
+        minima: float, maxima: float, dtype: typing.Type[float] = float
+    ) -> typing.Dict[str, float]:
         return {
             dynamic_indicator: decibel
             for dynamic_indicator, decibel in zip(
                 parameters.volumes_constants.STANDARD_DYNAMIC_INDICATOR,
                 np.linspace(
-                    parameters.volumes_constants.MINIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR,
-                    parameters.volumes_constants.MAXIMUM_DECIBEL_FOR_STANDARD_DYNAMIC_INDICATOR,
+                    minima,
+                    maxima,
                     len(parameters.volumes_constants.STANDARD_DYNAMIC_INDICATOR),
-                    dtype=float,
+                    dtype=dtype,
                 ),
             )
         }
 
     @staticmethod
-    def _make_dynamic_indicator_to_decibel_mapping(
-        standard_dynamic_indicator_to_decibel_mapping: typing.Dict[str, float]
+    def _make_dynamic_indicator_to_value_mapping(
+        standard_dynamic_indicator_to_value_mapping: typing.Dict[str, float]
     ) -> typing.Dict[str, float]:
-        dynamic_indicator_to_decibel_mapping = {}
-        dynamic_indicator_to_decibel_mapping.update(
-            standard_dynamic_indicator_to_decibel_mapping
+        dynamic_indicator_to_value_mapping = {}
+        dynamic_indicator_to_value_mapping.update(
+            standard_dynamic_indicator_to_value_mapping
         )
         for (
             special_dynamic_indicator,
@@ -121,14 +146,14 @@ class WesternVolume(parameters.abc.Volume):
         ) in (
             parameters.volumes_constants.SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING.items()
         ):
-            dynamic_indicator_to_decibel_mapping.update(
+            dynamic_indicator_to_value_mapping.update(
                 {
-                    special_dynamic_indicator: dynamic_indicator_to_decibel_mapping[
+                    special_dynamic_indicator: dynamic_indicator_to_value_mapping[
                         standard_dynamic_indicator
                     ]
                 }
             )
-        return dynamic_indicator_to_decibel_mapping
+        return dynamic_indicator_to_value_mapping
 
     # ###################################################################### #
     #                class methods (alternative constructors)                #
