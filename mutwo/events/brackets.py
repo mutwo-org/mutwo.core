@@ -20,9 +20,14 @@ AbstractTimeOrAbstractTimeRange = typing.Union[
 
 
 class Bracket(basic.SimultaneousEvent):
+    _class_specific_side_attributes = (
+        "start_or_start_range",
+        "end_or_end_range",
+    )
+
     def __init__(
         self,
-        tagged_events: typing.Sequence[
+        tagged_event_or_tagged_events: typing.Sequence[
             typing.Union[
                 basic.TaggedSimpleEvent,
                 basic.TaggedSequentialEvent,
@@ -32,7 +37,7 @@ class Bracket(basic.SimultaneousEvent):
         start_or_start_range: AbstractTimeOrAbstractTimeRange,
         end_or_end_range: AbstractTimeOrAbstractTimeRange,
     ):
-        super().__init__(tagged_events)
+        super().__init__(tagged_event_or_tagged_events)
         self.start_or_start_range = start_or_start_range
         self.end_or_end_range = end_or_end_range
 
