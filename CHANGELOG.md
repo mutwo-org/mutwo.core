@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.28.0] - 2021-07-26
+
+### Added
+- mutwo.converters.frontends.ComplexEventToAbjadContainerConverter
+- mutwo.converters.frontends.NestedComplexEventToAbjadContainerConverter
+- mutwo.converters.frontends.NestedComplexEventToComplexEventToAbjadContainerConvertersConverter
+- mutwo.converters.frontends.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter
+- mutwo.converters.frontends.TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter
+- mutwo.converters.frontends.abjad_process_container_routines module
+
+
+### Removed
+- mutwo.converters.frontends.SimultaneousEventToAbjadStaffConverter
+- mutwo.converters.frontends.TaggedSimultaneousEventsToAbjadScoreConverter
+- mutwo.converters.frontends.TimeBracketToAbjadScoreConverter
+
+
 
 ## [0.27.0] - 2021-07-24
 

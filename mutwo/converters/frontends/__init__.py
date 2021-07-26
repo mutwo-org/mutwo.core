@@ -13,7 +13,15 @@ from . import isis
 for modules, dependencies in (
     (("midi_constants", "midi"), ("mido",)),
     (("reaper",), ("rpp",)),
-    (("abjad_attachments", "abjad_constants", "abjad",), ("abjad", "abjadext.nauert")),
+    (
+        (
+            "abjad_attachments",
+            "abjad_process_container_routines",
+            "abjad_constants",
+            "abjad",
+        ),
+        ("abjad", "abjadext.nauert"),
+    ),
 ):
     for module in modules:
         tools.import_module_if_dependencies_have_been_installed(

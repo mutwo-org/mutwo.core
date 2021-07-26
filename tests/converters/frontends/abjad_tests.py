@@ -19,6 +19,7 @@ from mutwo import parameters
 
 # TODO(Add more unit tests to make abjad conversion more reliable!)
 
+
 class MutwoPitchToAbjadPitchConverterTest(unittest.TestCase):
     def test_convert(self):
         converter = frontends.abjad.MutwoPitchToAbjadPitchConverter()
@@ -627,6 +628,131 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         score_block = abjad.Block(name="score")
         score_block.items.append([abjad.Staff([converted_sequential_event])])
         lilypond_file.items.extend((header_block, score_block))
+        abjad.persist.as_png(
+            lilypond_file, png_file_path=new_png_file_path, remove_ly=True
+        )
+
+        self.assertTrue(
+            SequentialEventToAbjadVoiceConverterTest._are_png_equal(
+                new_png_file_path, png_file_to_compare_path
+            )
+        )
+
+        # remove test file
+        os.remove(new_png_file_path)
+
+
+class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
+    def test_nested_conversion(self):
+        # basically an integration test (testing if the rendered png
+        # is equal to the previously rendered and manually checked png)
+
+        nested_score = basic.TaggedSimultaneousEvent(
+            [
+                basic.TaggedSimultaneousEvent(
+                    [
+                        basic.SequentialEvent(
+                            [
+                                music.NoteLike(pitch, duration)
+                                for pitch, duration in zip(
+                                    "c d e f g a b".split(" "), (1 / 4,) * 7
+                                )
+                            ]
+                        ),
+                        basic.SequentialEvent(
+                            [
+                                music.NoteLike(pitch, duration)
+                                for pitch, duration in [
+                                    [parameters.pitches.WesternPitch("c", 3), 1 / 2]
+                                ]
+                                * 4
+                            ]
+                        ),
+                    ],
+                    tag="Piano",
+                ),
+                basic.TaggedSimultaneousEvent(
+                    [
+                        basic.SequentialEvent(
+                            [
+                                music.NoteLike(pitch, duration)
+                                for pitch, duration in [
+                                    [parameters.pitches.WesternPitch("es", 5), 1 / 2]
+                                ]
+                                * 4
+                            ]
+                        ),
+                        basic.SequentialEvent(
+                            [
+                                music.NoteLike(pitch, duration)
+                                for pitch, duration in [
+                                    [parameters.pitches.WesternPitch("b", 3), 1 / 2]
+                                ]
+                                * 4
+                            ]
+                        ),
+                    ],
+                    tag="Violin",
+                ),
+            ],
+            tag="Integrating duo",
+        )
+
+        converter = frontends.abjad.NestedComplexEventToAbjadContainerConverter(
+            frontends.abjad.TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+                {
+                    "Piano": frontends.abjad.NestedComplexEventToAbjadContainerConverter(
+                        frontends.abjad.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+                            [frontends.abjad.SequentialEventToAbjadVoiceConverter(),]
+                        ),
+                        abjad.StaffGroup,
+                        "PianoStaff",
+                        post_process_abjad_container_routines=(
+                            frontends.abjad_process_container_routines.AddInstrumentName(
+                                complex_event_to_instrument_name=lambda complex_event: complex_event.tag
+                            ),
+                        ),
+                    ),
+                    "Violin": frontends.abjad.NestedComplexEventToAbjadContainerConverter(
+                        frontends.abjad.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
+                            [frontends.abjad.SequentialEventToAbjadVoiceConverter(),]
+                        ),
+                        abjad.Staff,
+                        "Staff",
+                        post_process_abjad_container_routines=(
+                            frontends.abjad_process_container_routines.AddInstrumentName(
+                                complex_event_to_instrument_name=lambda complex_event: complex_event.tag
+                            ),
+                        ),
+                    ),
+                }
+            ),
+            abjad.Score,
+            "Score",
+        )
+
+        abjad_score = converter.convert(nested_score)
+
+        # check if abjad container type is correct
+        self.assertEqual(type(abjad_score), abjad.Score)
+
+        # check if abjad container name is correct
+        self.assertEqual(abjad_score.name, "Integrating duo")
+
+        tests_path = "tests/converters/frontends"
+        png_file_to_compare_path = (
+            "{}/abjad_expected_png_output_for_nested_complex_event_test.png".format(
+                tests_path
+            )
+        )
+        new_png_file_path = (
+            "{}/abjad_png_output_for_nested_complex_event_test.png".format(tests_path)
+        )
+
+        lilypond_file = abjad.LilyPondFile()
+        header_block = abjad.Block(name="header")
+        header_block.tagline = abjad.Markup("---integration-test---")
+        lilypond_file.items.extend((header_block, abjad_score))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
         )
