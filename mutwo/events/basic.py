@@ -449,9 +449,16 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             absolute_times = self.absolute_times
             active_event_index = self.get_event_index_at(start)
             split_position = start - absolute_times[active_event_index]
+            # avoid floating point error
+            rounded_split_position = tools.round_floats(
+                split_position, events.basic_constants.ROUND_DURATION_TO_N_DIGITS,
+            )
             # potentially split event
-            if split_position > 0:
-                split_active_event = self[active_event_index].split_at(split_position)
+            if (
+                rounded_split_position > 0
+                and rounded_split_position < self[active_event_index].duration
+            ):
+                split_active_event = self[active_event_index].split_at(rounded_split_position)
                 self[active_event_index] = split_active_event[1]
                 self.insert(active_event_index, split_active_event[0])
                 active_event_index += 1
