@@ -92,7 +92,9 @@ class SimpleEvent(events.abc.Event):
 
     @property
     def duration(self) -> parameters.abc.DurationType:
-        return self._duration
+        return tools.round_floats(
+            self._duration, events.basic_constants.ROUND_DURATION_TO_N_DIGITS
+        )
 
     @duration.setter
     def duration(self, new_duration: parameters.abc.DurationType):
@@ -282,7 +284,10 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
     @events.abc.ComplexEvent.duration.getter
     def duration(self) -> parameters.abc.DurationType:
-        return sum(event.duration for event in self)
+        return tools.round_floats(
+            sum(event.duration for event in self),
+            events.basic_constants.ROUND_DURATION_TO_N_DIGITS,
+        )
 
     @property
     def absolute_times(self) -> typing.Tuple[constants.Real, ...]:
@@ -445,7 +450,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             active_event_index = self.get_event_index_at(start)
             split_position = start - absolute_times[active_event_index]
             # potentially split event
-            if split_position > 6e-14:  # avoid floating point errors
+            if split_position > 0:
                 split_active_event = self[active_event_index].split_at(split_position)
                 self[active_event_index] = split_active_event[1]
                 self.insert(active_event_index, split_active_event[0])
@@ -489,7 +494,10 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
     @events.abc.ComplexEvent.duration.getter
     def duration(self) -> parameters.abc.DurationType:
-        return max(event.duration for event in self)
+        return tools.round_floats(
+            max(event.duration for event in self),
+            events.basic_constants.ROUND_DURATION_TO_N_DIGITS,
+        )
 
     # ###################################################################### #
     #                           public methods                               #
@@ -522,12 +530,11 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
             # simple events don't have a 'squash_in' method
             except AttributeError:
                 message = (
-                    "Can't squash '{}' in '{}'. Does the SimultaneousEvent contain"
-                    " SimpleEvents or events that inherit from SimpleEvent? For being"
-                    " able to squash in, the SimultaneousEvent needs to only contain"
-                    " SequentialEvents or SimultaneousEvents.".format(
-                        event_to_squash_in, self
-                    )
+                    f"Can't squash '{event_to_squash_in}' in '{self}'. Does the"
+                    " SimultaneousEvent contain SimpleEvents or events that inherit"
+                    " from SimpleEvent? For being able to squash in, the"
+                    " SimultaneousEvent needs to only contain SequentialEvents or"
+                    " SimultaneousEvents."
                 )
                 raise TypeError(message)
 

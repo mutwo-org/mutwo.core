@@ -337,3 +337,18 @@ def set_nested_item_from_indices(
             sequence.__setitem__(index, item)
         else:
             sequence = sequence[index]
+
+
+def round_floats(number_to_round: constants.Real, n_digits: int) -> constants.Real:
+    """Round number if it is an instance of float, otherwise unaltered number.
+
+    :param number_to_round: The number which shall be rounded.
+    :type number_to_round: constants.Real
+    :param n_digits: How many digits shall the number be rounded.
+    :type n_digits: int
+    """
+
+    if isinstance(number_to_round, float):
+        return round(number_to_round, n_digits)
+    else:
+        return number_to_round

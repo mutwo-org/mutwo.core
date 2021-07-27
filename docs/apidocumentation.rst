@@ -50,6 +50,8 @@ This tree provides a deep overview of all submodules:
    mutwo.events.basic
    mutwo.events.music
    mutwo.events.time_brackets
+   mutwo.events.basic_constants
+   mutwo.events.music_constants
    mutwo.generators.brown
    mutwo.generators.edwards
    mutwo.generators.generic

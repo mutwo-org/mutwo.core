@@ -14,10 +14,12 @@ The most often used classes may be:
     - :class:`mutwo.events.basic.SimultaneousEvent`
 """
 
+from . import basic_constants
 from . import music_constants
 
 from . import abc
 from . import basic
+from . import families
 from . import music
 from . import brackets
 from . import time_brackets

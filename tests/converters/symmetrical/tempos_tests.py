@@ -111,7 +111,7 @@ class TempoConverterTest(unittest.TestCase):
         converted_sequential_event = converter.convert(sequential_event)
         expected_durations = (4, 3, 3, 3.8000908039820196, 2.1999091960179804)
         self.assertEqual(
-            converted_sequential_event.get_parameter("duration"), expected_durations
+            converted_sequential_event.get_parameter("_duration"), expected_durations
         )
 
     def test_convert_simultaneous_event(self):

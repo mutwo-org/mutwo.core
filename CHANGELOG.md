@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.28.1] - 2021-07-27
+
+### Added
+- automatic rounding of duration property for all basic event classes to avoid floating point rounding errors
+
+
 ## [0.28.0] - 2021-07-26
 
 ### Added

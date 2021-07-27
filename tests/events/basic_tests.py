@@ -226,6 +226,14 @@ class SequentialEventTest(unittest.TestCase):
             lambda: self.sequence.squash_in(7, basic.SimpleEvent(1.5), mutate=False),
         )
 
+    def test_squash_in_with_minor_differences(self):
+        self.assertEqual(
+            self.sequence.squash_in(6e-10, basic.SimpleEvent(1), mutate=False),
+            basic.SequentialEvent(
+                [basic.SimpleEvent(duration) for duration in (6e-10, 1, 2 - 6e-10, 3)]
+            ),
+        )
+
     def test_tie_by(self):
         self.assertEqual(
             self.sequence.tie_by(

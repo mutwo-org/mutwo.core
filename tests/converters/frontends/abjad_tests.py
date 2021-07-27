@@ -477,7 +477,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             [
                 abjad.score.Container("c'2. a'4"),
                 abjad.score.Container(
-                    [abjad.Tuplet(components="g'4 es'8"), abjad.Rest((3, 4))]
+                    [abjad.Tuplet(components="g'4 es'8 r8 r1")]
                 ),
             ]
         )
