@@ -2,7 +2,8 @@
 
 import typing
 
-import expenvelope
+import expenvelope  # type: ignore
+import numpy as np  # type: ignore
 
 
 class Tendency(object):
@@ -40,14 +41,10 @@ class Tendency(object):
         maxima_curve: expenvelope.Envelope,
         random_seed: int = 100,
     ):
-        import random
-
-        random.seed(random_seed)
-
         self._assert_curves_are_valid(minima_curve, maxima_curve)
         self._minima_curve = minima_curve
         self._maxima_curve = maxima_curve
-        self._random = random
+        self._random = np.random.default_rng(random_seed)
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.minima_curve}, {self.maxima_curve})"

@@ -5,6 +5,8 @@ Time brackets are events which are defined by unspecified start and end times.
 
 import typing
 
+import numpy as np  # type: ignore
+
 from mutwo.events import abc as events_abc
 from mutwo.events import basic
 from mutwo.events import brackets
@@ -49,10 +51,7 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
             tagged_event_or_tagged_events, start_or_start_range, end_or_end_range
         )
 
-        import random as time_bracket_random
-
-        if seed:
-            time_bracket_random.seed(seed)
+        time_bracket_random = np.random.default_rng(seed)
 
         self._seed = seed
         self._time_bracket_random = time_bracket_random

@@ -1,6 +1,7 @@
 """Generic utility functions."""
 
 import bisect
+import copy
 import functools
 import importlib
 import itertools
@@ -12,6 +13,7 @@ from mutwo.utilities import constants
 
 __all__ = (
     "scale",
+    "scale_sequence_to_sum",
     "accumulate_from_n",
     "accumulate_from_zero",
     "insert_next_to",
@@ -55,12 +57,45 @@ def scale(
     try:
         assert old_min <= value <= old_max
     except AssertionError:
-        msg = (
-            "Input value '{}' has to be in the range of (old_min = {}, old_max = {})."
-            .format(value, old_min, old_max)
+        message = (
+            f"Input value '{value}' has to be in the range of (old_min = {old_min},"
+            f" old_max = {old_max})."
         )
-        raise ValueError(msg)
+        raise ValueError(message)
     return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
+
+
+def scale_sequence_to_sum(
+    sequence_to_scale: typing.Sequence[constants.Real], sum_to_scale_to: constants.Real
+) -> typing.Sequence[constants.Real]:
+    """Scale numbers in a sequence so that the resulting sum fits to the given value.
+
+    :param sequence_to_scale: The sequence filled with real numbers which sum should fit
+        to the given `sum_to_scale_to` argument.
+    :type sequence_to_scale: typing.Sequence[constants.Real]
+    :param sum_to_scale_to: The resulting sum of the sequence.
+    :type sum_to_scale_to: constants.Real
+
+    **Example:**
+
+    >>> from mutwo import utilities
+    >>> sequence_to_scale = [1, 3, 2]
+    >>> utilities.tools.scale_sequence_to_sum(sequence_to_scale, 3)
+    [0.5, 1.5, 1]
+    """
+
+    if sequence_to_scale:
+        current_sum = sum(sequence_to_scale)
+        if current_sum:
+            factor = sum_to_scale_to / current_sum
+            scaled_sequence = map(lambda number: number * factor, sequence_to_scale)
+        else:
+            n_items_to_scale = len(sequence_to_scale)
+            size_per_item = sum_to_scale_to / n_items_to_scale
+            scaled_sequence = (size_per_item for _ in sequence_to_scale)
+        return type(sequence_to_scale)(scaled_sequence)
+    else:
+        return copy.copy(sequence_to_scale)
 
 
 def accumulate_from_n(

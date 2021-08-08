@@ -17,6 +17,10 @@ class ToolsTest(unittest.TestCase):
         result = tools.scale(0, -1, 1, 1, 2)
         self.assertEqual(result, 1.5)
 
+    def test_scale_sequence_to_sum(self):
+        result = tools.scale_sequence_to_sum([1, 3, 2], 3)
+        self.assertEqual(result, [0.5, 1.5, 1])
+
     def test_accumulate_from_value(self):
         result = tuple(tools.accumulate_from_n((1, 2, 3), 6))
         self.assertEqual(result, (6, 7, 9, 12))

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.28.4] - 2021-07-27
+
+### Changed
+- Migrated from Python standard library random module to numpy random module to allow independent seeds for each class which uses random functions
+
+
 ## [0.28.1] - 2021-07-27
 
 ### Added
