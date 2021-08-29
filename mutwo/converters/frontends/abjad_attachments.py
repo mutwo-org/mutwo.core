@@ -229,7 +229,10 @@ class ArtificalHarmonic(playing_indicators.ArtificalHarmonic, BangEachAttachment
             return leaf, True
 
         elif isinstance(leaf, abjad.Note):
-            new_abjad_leaf = abjad.Chord([leaf.written_pitch], leaf.written_duration,)
+            new_abjad_leaf = abjad.Chord(
+                [leaf.written_pitch],
+                leaf.written_duration,
+            )
             for indicator in abjad.get.indicators(leaf):
                 if type(indicator) != dict:
                     abjad.attach(indicator, new_abjad_leaf)
@@ -237,9 +240,8 @@ class ArtificalHarmonic(playing_indicators.ArtificalHarmonic, BangEachAttachment
             return new_abjad_leaf, True
 
         else:
-            message = (
-                "Can't attach artifical harmonic on abjad leaf '{}' of type '{}'!"
-                .format(leaf, type(leaf))
+            message = "Can't attach artifical harmonic on abjad leaf '{}' of type '{}'!".format(
+                leaf, type(leaf)
             )
             warnings.warn(message)
             return leaf, False
@@ -254,6 +256,46 @@ class ArtificalHarmonic(playing_indicators.ArtificalHarmonic, BangEachAttachment
             second_pitch = self._get_second_pitch(first_pitch)
             leaf.written_pitches = abjad.PitchSegment([first_pitch, second_pitch])
             ArtificalHarmonic._change_note_head_style(leaf)
+        return leaf
+
+
+class PreciseNaturalHarmonic(
+    playing_indicators.PreciseNaturalHarmonic, BangEachAttachment
+):
+    @staticmethod
+    def _convert_leaf(leaf: abjad.Leaf) -> typing.Tuple[abjad.Leaf, bool]:
+        if isinstance(leaf, abjad.Chord):
+            return leaf
+
+        else:
+            new_abjad_leaf = abjad.Chord(
+                "c",
+                leaf.written_duration,
+            )
+            for indicator in abjad.get.indicators(leaf):
+                if type(indicator) != dict:
+                    abjad.attach(indicator, new_abjad_leaf)
+
+            return new_abjad_leaf
+
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        if isinstance(leaf, (abjad.Chord, abjad.Note)):
+            leaf = PreciseNaturalHarmonic._convert_leaf(leaf)
+            leaf.written_pitches = abjad.PitchSegment(
+                [
+                    self.string_pitch,
+                    abjad.NamedPitch(
+                        self.string_pitch.name,
+                        octave=self.string_pitch.octave.number + 1,
+                    ),
+                ]
+            )
+            leaf.note_heads[1]._written_pitch = self.played_pitch
+            if self.harmonic_note_head_style:
+                ArtificalHarmonic._change_note_head_style(leaf)
+            if self.parenthesize_lower_note_head:
+                leaf.note_heads[0].is_parenthesized = True
+
         return leaf
 
 
@@ -331,11 +373,13 @@ class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
     ) -> typing.Tuple[abjad.Leaf, ...]:
         if self.symbol == "!":
             abjad.attach(
-                abjad.StopHairpin(), leaf,
+                abjad.StopHairpin(),
+                leaf,
             )
         else:
             abjad.attach(
-                abjad.StartHairpin(self.symbol), leaf,
+                abjad.StartHairpin(self.symbol),
+                leaf,
             )
         return leaf
 
@@ -343,7 +387,16 @@ class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
 class BartokPizzicato(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.LilyPondLiteral("\\snappizzicato", format_slot="absolute_after"),
+            abjad.LilyPondLiteral("\\snappizzicato", format_slot="after"),
+            leaf,
+        )
+        return leaf
+
+
+class BreathMark(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        abjad.attach(
+            abjad.LilyPondLiteral("\\breathe", format_slot="before"),
             leaf,
         )
         return leaf
@@ -352,7 +405,8 @@ class BartokPizzicato(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachme
 class Fermata(playing_indicators.Fermata, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Fermata(self.fermata_type), leaf,
+            abjad.Fermata(self.fermata_type),
+            leaf,
         )
         return leaf
 
@@ -370,7 +424,8 @@ class NaturalHarmonic(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachme
 class Prall(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.LilyPondLiteral("^\\prall", format_slot="after"), leaf,
+            abjad.LilyPondLiteral("^\\prall", format_slot="after"),
+            leaf,
         )
         return leaf
 
@@ -378,7 +433,8 @@ class Prall(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
 class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Tie(), leaf,
+            abjad.Tie(),
+            leaf,
         )
         return leaf
 
@@ -386,7 +442,8 @@ class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
 class LaissezVibrer(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.LaissezVibrer(), leaf,
+            abjad.LaissezVibrer(),
+            leaf,
         )
         return leaf
 
@@ -394,7 +451,8 @@ class LaissezVibrer(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment)
 class BarLine(notation_indicators.BarLine, BangLastAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.BarLine(self.abbreviation), leaf,
+            abjad.BarLine(self.abbreviation),
+            leaf,
         )
         return leaf
 
@@ -402,7 +460,8 @@ class BarLine(notation_indicators.BarLine, BangLastAttachment):
 class Clef(notation_indicators.Clef, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Clef(self.name), leaf,
+            abjad.Clef(self.name),
+            leaf,
         )
         return leaf
 
@@ -412,7 +471,8 @@ class Ottava(notation_indicators.Ottava, ToggleAttachment):
         self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
     ) -> abjad.Leaf:
         abjad.attach(
-            abjad.Ottava(self.n_octaves, format_slot="before"), leaf,
+            abjad.Ottava(self.n_octaves, format_slot="before"),
+            leaf,
         )
         return leaf
 
@@ -431,7 +491,8 @@ class Ottava(notation_indicators.Ottava, ToggleAttachment):
 class Markup(notation_indicators.Markup, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Markup(self.content, direction=self.direction), leaf,
+            abjad.Markup(self.content, direction=self.direction),
+            leaf,
         )
         return leaf
 
@@ -439,7 +500,8 @@ class Markup(notation_indicators.Markup, BangFirstAttachment):
 class RehearsalMark(notation_indicators.RehearsalMark, BangFirstAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.RehearsalMark(markup=self.markup), leaf,
+            abjad.RehearsalMark(markup=self.markup),
+            leaf,
         )
         return leaf
 
@@ -449,7 +511,8 @@ class MarginMarkup(notation_indicators.MarginMarkup, BangFirstAttachment):
         command = "\\set {}.instrumentName = \\markup ".format(self.context)
         command += "{ " + self.content + " }"  # type: ignore
         abjad.attach(
-            abjad.LilyPondLiteral(command), leaf,
+            abjad.LilyPondLiteral(command),
+            leaf,
         )
         return leaf
 

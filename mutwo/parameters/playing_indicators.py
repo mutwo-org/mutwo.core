@@ -60,6 +60,7 @@ __all__ = (
     "Hairpin",
     "Ornamentation",
     "ArtificalHarmonic",
+    "PreciseNaturalHarmonic",
     "Fermata",
     "PlayingIndicatorCollection",
 )
@@ -105,6 +106,14 @@ class ArtificalHarmonic(parameters.abc.ImplicitPlayingIndicator):
 
 
 @dataclasses.dataclass()
+class PreciseNaturalHarmonic(parameters.abc.ImplicitPlayingIndicator):
+    string_pitch: typing.Optional[parameters.pitches.WesternPitch] = None
+    played_pitch: typing.Optional[parameters.pitches.WesternPitch] = None
+    harmonic_note_head_style: bool = True
+    parenthesize_lower_note_head: bool = False
+
+
+@dataclasses.dataclass()
 class Fermata(parameters.abc.ImplicitPlayingIndicator):
     fermata_type: typing.Optional[
         str
@@ -115,6 +124,7 @@ class Fermata(parameters.abc.ImplicitPlayingIndicator):
 class Hairpin(parameters.abc.ImplicitPlayingIndicator):
     # TODO(for future usage add typing.Literal['<', '>', '!')
     symbol: typing.Optional[str] = None
+
 
 
 @dataclasses.dataclass(frozen=True)
@@ -131,6 +141,9 @@ class PlayingIndicatorCollection(
     bartok_pizzicato: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
+    breath_mark: parameters.abc.PlayingIndicator = dataclasses.field(
+        default_factory=parameters.abc.ExplicitPlayingIndicator
+    )
     fermata: Fermata = dataclasses.field(default_factory=Fermata)
     hairpin: Hairpin = dataclasses.field(default_factory=Hairpin)
     natural_harmonic: parameters.abc.PlayingIndicator = dataclasses.field(
@@ -143,6 +156,9 @@ class PlayingIndicatorCollection(
     pedal: Pedal = dataclasses.field(default_factory=Pedal)
     prall: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
+    )
+    precise_natural_harmonic: PreciseNaturalHarmonic = dataclasses.field(
+        default_factory=PreciseNaturalHarmonic
     )
     string_contact_point: StringContactPoint = dataclasses.field(
         default_factory=StringContactPoint
