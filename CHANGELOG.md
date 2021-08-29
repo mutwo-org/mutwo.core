@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.30.0] - 2021-07-29
+
+### Changed
+- Refactorised midi frontend converter module: split mutwo pitch to midi pitch conversion to external class (MutwoPitchToMidiPitchConverter)
+
+
 ## [0.29.0] - 2021-07-29
 
 ### Added

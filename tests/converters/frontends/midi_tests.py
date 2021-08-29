@@ -20,6 +20,86 @@ from mutwo.parameters import volumes
 from mutwo.utilities import tools
 
 
+class MutwoPitchToMidiPitchConverterTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.converter = midi.MutwoPitchToMidiPitchConverter()
+
+    def test_cent_deviation_to_pitch_bending_number(self):
+        converter0 = midi.MutwoPitchToMidiPitchConverter(
+            maximum_pitch_bend_deviation=200
+        )
+        converter1 = midi.MutwoPitchToMidiPitchConverter(
+            maximum_pitch_bend_deviation=500
+        )
+
+        # first test all 'border values'
+        self.assertEqual(converter0._cent_deviation_to_pitch_bending_number(0), 0)
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(200),
+            midi_constants.NEUTRAL_PITCH_BEND,
+        )
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(-200),
+            -midi_constants.NEUTRAL_PITCH_BEND,
+        )
+        self.assertEqual(
+            converter1._cent_deviation_to_pitch_bending_number(-500),
+            -midi_constants.NEUTRAL_PITCH_BEND,
+        )
+        self.assertEqual(
+            converter1._cent_deviation_to_pitch_bending_number(5000),
+            midi_constants.NEUTRAL_PITCH_BEND,
+        )
+
+        # test too high / too low values
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(250),
+            midi_constants.NEUTRAL_PITCH_BEND,
+        )
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(-250),
+            -midi_constants.NEUTRAL_PITCH_BEND,
+        )
+
+        # now test values inbetween
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(100),
+            int(midi_constants.NEUTRAL_PITCH_BEND * 0.5),
+        )
+        self.assertEqual(
+            converter0._cent_deviation_to_pitch_bending_number(200 * 0.3),
+            int(midi_constants.NEUTRAL_PITCH_BEND * 0.3),
+        )
+
+    def test_convert(self):
+        pitch_to_tune_per_test = (
+            pitches.WesternPitch("c", 4),
+            pitches.WesternPitch("c", 4),
+            pitches.WesternPitch("c", 4),
+            pitches.WesternPitch("a", 4),
+            pitches.WesternPitch("c", 3),
+            pitches.WesternPitch("cqs", 3),
+            pitches.WesternPitch("cqf", 3),
+            pitches.WesternPitch("ces", 4),
+        )
+        expected_midi_data_per_test = (
+            # expected midi note, expected pitch bending
+            (60, 0),
+            (60, 0),
+            (60, 0),
+            (69, 0),
+            (48, 0),
+            (48, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (47, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
+            (60, round(midi_constants.NEUTRAL_PITCH_BEND * 0.125)),
+        )
+        for pitch_to_tune, expected_midi_data in zip(
+            pitch_to_tune_per_test, expected_midi_data_per_test
+        ):
+            self.assertEqual(self.converter.convert(pitch_to_tune), expected_midi_data)
+
+
 class MidiFileConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -139,93 +219,6 @@ class MidiFileConverterTest(unittest.TestCase):
                     converter._beats_to_ticks(n_beats),
                     int(converter._ticks_per_beat * n_beats),
                 )
-
-    def test_cent_deviation_to_pitch_bending_number(self):
-        converter0 = midi.MidiFileConverter(
-            "test.mid", maximum_pitch_bend_deviation=200
-        )
-        converter1 = midi.MidiFileConverter(
-            "test.mid", maximum_pitch_bend_deviation=500
-        )
-
-        # first test all 'border values'
-        self.assertEqual(converter0._cent_deviation_to_pitch_bending_number(0), 0)
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(200),
-            midi_constants.NEUTRAL_PITCH_BEND,
-        )
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(-200),
-            -midi_constants.NEUTRAL_PITCH_BEND,
-        )
-        self.assertEqual(
-            converter1._cent_deviation_to_pitch_bending_number(-500),
-            -midi_constants.NEUTRAL_PITCH_BEND,
-        )
-        self.assertEqual(
-            converter1._cent_deviation_to_pitch_bending_number(5000),
-            midi_constants.NEUTRAL_PITCH_BEND,
-        )
-
-        # test too high / too low values
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(250),
-            midi_constants.NEUTRAL_PITCH_BEND,
-        )
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(-250),
-            -midi_constants.NEUTRAL_PITCH_BEND,
-        )
-
-        # now test values inbetween
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(100),
-            int(midi_constants.NEUTRAL_PITCH_BEND * 0.5),
-        )
-        self.assertEqual(
-            converter0._cent_deviation_to_pitch_bending_number(200 * 0.3),
-            int(midi_constants.NEUTRAL_PITCH_BEND * 0.3),
-        )
-
-    def test_tune_pitch(self):
-        data_to_tune_per_test = (
-            # absolute_tick_start, pitch_to_tune, channel
-            (0, pitches.WesternPitch("c", 4), 0),
-            (0, pitches.WesternPitch("c", 4), 1),
-            (1, pitches.WesternPitch("c", 4), 0),
-            (1, pitches.WesternPitch("a", 4), 1),
-            (7, pitches.WesternPitch("c", 3), 10),
-            (4, pitches.WesternPitch("cqs", 3), 10),
-            (4, pitches.WesternPitch("cqf", 3), 10),
-            (0, pitches.WesternPitch("ces", 4), 12),
-        )
-        expected_midi_data_per_test = (
-            # expected midi note, expected pitch bending
-            (60, 0),
-            (60, 0),
-            (60, 0),
-            (69, 0),
-            (48, 0),
-            (48, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
-            (47, round(midi_constants.NEUTRAL_PITCH_BEND * 0.25)),
-            (60, round(midi_constants.NEUTRAL_PITCH_BEND * 0.125)),
-        )
-        for data_to_tune, expected_midi_data in zip(
-            data_to_tune_per_test, expected_midi_data_per_test
-        ):
-            expected_midi_data = (
-                expected_midi_data[0],
-                mido.Message(
-                    "pitchwheel",
-                    time=data_to_tune[0] - 1 if data_to_tune[0] > 0 else 0,
-                    channel=data_to_tune[2],
-                    pitch=expected_midi_data[1],
-                ),
-            )
-
-            self.assertEqual(
-                self.converter._tune_pitch(*data_to_tune), expected_midi_data
-            )
 
     def test_tempo_envelope_to_midi_messages(self):
         tempo_envelope = expenvelope.Envelope.from_points(
@@ -523,7 +516,8 @@ class MidiFileConverterTest(unittest.TestCase):
             if message.type == "note_on":
                 self.assertAlmostEqual(message.note, constant_pitch.midi_pitch_number)
                 self.assertEqual(
-                    message.velocity, constant_volume.midi_velocity,
+                    message.velocity,
+                    constant_volume.midi_velocity,
                 )
                 n_note_on_messages += 1
             elif message.type == "control_change":
@@ -540,7 +534,15 @@ class MidiFileConverterTest(unittest.TestCase):
         # available and furthermore cycles through all available midi
         # channels!
 
-        for available_midi_channels in ((0,), (0, 1, 2, 3), (0, 3, 4), (2, 11,)):
+        for available_midi_channels in (
+            (0,),
+            (0, 1, 2, 3),
+            (0, 3, 4),
+            (
+                2,
+                11,
+            ),
+        ):
             converter = midi.MidiFileConverter(
                 self.midi_file_path, available_midi_channels=available_midi_channels
             )

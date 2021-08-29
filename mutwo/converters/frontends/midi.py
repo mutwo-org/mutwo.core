@@ -19,7 +19,10 @@ from mutwo import events
 from mutwo import parameters
 from mutwo import utilities
 
-__all__ = ("MidiFileConverter",)
+__all__ = (
+    "MutwoPitchToMidiPitchConverter",
+    "MidiFileConverter",
+)
 
 ConvertableEvents = typing.Union[
     events.basic.SimpleEvent,
@@ -28,6 +31,74 @@ ConvertableEvents = typing.Union[
         events.basic.SequentialEvent[events.basic.SimpleEvent]
     ],
 ]
+
+MidiNote = int
+PitchBend = int
+
+MidiPitch = typing.Tuple[MidiNote, PitchBend]
+
+
+class MutwoPitchToMidiPitchConverter(abc.Converter):
+    """Convert mutwo pitch to midi pitch number and midi pitch bend number.
+
+    :param maximum_pitch_bend_deviation: sets the maximum pitch bending range in cents.
+        This value depends on the particular used software synthesizer and its settings,
+        because it is up to the respective synthesizer how to interpret the pitch
+        bending messages. By default mutwo sets the value to 200 cents which
+        seems to be the most common interpretation among different manufacturers.
+    :type maximum_pitch_bend_deviation: int
+    """
+
+    def __init__(self, maximum_pitch_bend_deviation: typing.Optional[float] = None):
+        if maximum_pitch_bend_deviation is None:
+            maximum_pitch_bend_deviation = (
+                midi_constants.DEFAULT_MAXIMUM_PITCH_BEND_DEVIATION_IN_CENTS
+            )
+
+        self._maximum_pitch_bend_deviation = maximum_pitch_bend_deviation
+        self._pitch_bending_warning = (
+            f"Maximum pitch bending is {maximum_pitch_bend_deviation} cents up or down!"
+        )
+
+    def _cent_deviation_to_pitch_bending_number(
+        self,
+        cent_deviation: utilities.constants.Real,
+    ) -> int:
+        pitch_bend_percent = (cent_deviation + self._maximum_pitch_bend_deviation) / (
+            self._maximum_pitch_bend_deviation * 2
+        )
+
+        if pitch_bend_percent > 1:
+            pitch_bend_percent = 1
+            warnings.warn(self._pitch_bending_warning)
+
+        if pitch_bend_percent < 0:
+            pitch_bend_percent = 0
+            warnings.warn(self._pitch_bending_warning)
+
+        pitch_bending_number = round(
+            midi_constants.MAXIMUM_PITCH_BEND * pitch_bend_percent
+        )
+        pitch_bending_number -= midi_constants.NEUTRAL_PITCH_BEND
+
+        return pitch_bending_number
+
+    def convert(self, mutwo_pitch_to_convert: parameters.abc.Pitch) -> MidiPitch:
+        """This method finds midi data to represent the entered mutwo pitch."""
+
+        frequency = mutwo_pitch_to_convert.frequency
+        closest_midi_pitch = utilities.tools.find_closest_index(
+            frequency, parameters.pitches_constants.MIDI_PITCH_FREQUENCIES
+        )
+        difference_in_cents_to_closest_midi_pitch = parameters.abc.Pitch.hertz_to_cents(
+            parameters.pitches_constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
+            frequency,
+        )
+        pitch_bending_number = self._cent_deviation_to_pitch_bending_number(
+            difference_in_cents_to_closest_midi_pitch
+        )
+
+        return closest_midi_pitch, pitch_bending_number
 
 
 class MidiFileConverter(abc.Converter):
@@ -41,6 +112,7 @@ class MidiFileConverter(abc.Converter):
 
     :param path: where to write the midi file. The typical file type extension '.mid'
         is recommended, but not mandatory.
+    :type path: str
     :param simple_event_to_pitches: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
@@ -50,6 +122,8 @@ class MidiFileConverter(abc.Converter):
         their pitch property, this argument should be overridden. If the function call
         raises an :obj:`AttributeError` (e.g. if no pitch can be extracted),
         mutwo will interpret the event as a rest.
+    :type simple_event_to_pitches: typing.Callable[
+            [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch, ...]]
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating midi notes.
         The function should return an object that inhertis from
@@ -60,44 +134,54 @@ class MidiFileConverter(abc.Converter):
         different name for their volume property, this argument should be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
         extracted), mutwo will interpret the event as a rest.
+    :type simple_event_to_volume: typing.Callable[
+            [events.basic.SimpleEvent], parameters.abc.Volume]
     :param simple_event_to_control_messages: Function to generate midi control messages
         from a simple event. By default no control messages are generated. If the
         function call raises an AttributeError (e.g. if an expected control value isn't
         available) mutwo will interpret the event as a rest.
+    :type simple_event_to_control_messages: typing.Callable[
+            [events.basic.SimpleEvent], typing.Tuple[mido.Message, ...]]
     :param midi_file_type: Can either be 0 (for one-track midi files) or 1 (for
          synchronous multi-track midi files). Mutwo doesn't offer support for generating
          type 2 midi files (midi files with asynchronous tracks).
+    :type midi_file_type: int
     :param available_midi_channels: tuple containing integer where each integer
         represents the number of the used midi channel. Integer can range from 0 to 15.
         Higher numbers of available_midi_channels (like all 16) are recommended when
         rendering microtonal music. It shall be remarked that midi-channel 9 (or midi
         channel 10 when starting to count from 1) is often ignored by several software
         synthesizer, because this channel is reserved for percussion instruments.
+    :type available_midi_channels: typing.Tuple[int, ...]
     :param distribute_midi_channels: This parameter is only relevant if more than one
-        SequentialEvent is passed to the convert method. If set to True each
-        SequentialEvent only makes use of exactly n_midi_channel (see next parameter).
-        If set to False each converted SequentialEvent is allowed to make use of all
-        available channels. If set to True and the amount of necessary MidiTracks is
+        :class:`~mutwo.events.basic.SequentialEvent` is passed to the convert method.
+        If set to ``True`` each :class:`~mutwo.events.basic.SequentialEvent`
+        only makes use of exactly n_midi_channel (see next parameter).
+        If set to ``False`` each converted :class:`SequentialEvent` is allowed to make use of all
+        available channels. If set to ``True`` and the amount of necessary MidiTracks is
         higher than the amount of available channels, mutwo will silently cycle through
         the list of available midi channel.
+    :type distribute_midi_channels: bool
     :param n_midi_channels_per_track: This parameter is only relevant for
         distribute_midi_channels == True. It sets how many midi channels are assigned
         to one SequentialEvent. If microtonal chords shall be played by
         one SequentialEvent (via pitch bending messages) a higher number than 1 is
         recommended. Defaults to 1.
-    :param maximum_pitch_bend_deviation: sets the maximum pitch bending range in cents.
-        This value depends on the particular used software synthesizer and its settings,
-        because it is up to the respective synthesizer how to interpret the pitch
-        bending messages. By default mutwo sets the value to 200 cents which
-        seems to be the most common interpretation among different manufacturers.
+    :type n_midi_channels_per_track: int
+    :param mutwo_pitch_to_midi_pitch_converter: class to convert from mutwo pitches
+        to midi pitches. Default to :class:`MutwoPitchToMidiPitchConverter`.
+    :type mutwo_pitch_to_midi_pitch_converter: :class:`MutwoPitchToMidiPitchConverter`
     :param ticks_per_beat: Sets the timing precision of the midi file. From the mido
         documentation: "Typical values range from 96 to 480 but some use even more
         ticks per beat".
+    :type ticks_per_beat: int
     :param instrument_name: Sets the midi instrument of all channels.
+    :type instrument_name: str
     :param tempo_envelope: All Midi files should specify their tempo. The default
         value of mutwo is 120 BPM (this is also the value that is assumed by any
         midi-file-reading-software if no tempo has been specified). Tempo changes
         are supported (and will be written to the resulting midi file).
+    :type tempo_envelope: expenvelope.Envelope
 
     **Example**:
 
@@ -132,11 +216,11 @@ class MidiFileConverter(abc.Converter):
         midi_file_type: int = None,
         available_midi_channels: typing.Tuple[int, ...] = None,
         distribute_midi_channels: bool = False,
-        n_midi_channels_per_track: int = None,
-        maximum_pitch_bend_deviation: float = None,
-        ticks_per_beat: int = None,
-        instrument_name: str = None,
-        tempo_envelope: expenvelope.Envelope = None,
+        n_midi_channels_per_track: typing.Optional[int] = None,
+        mutwo_pitch_to_midi_pitch_converter: MutwoPitchToMidiPitchConverter = MutwoPitchToMidiPitchConverter(),
+        ticks_per_beat: typing.Optional[int] = None,
+        instrument_name: typing.Optional[str] = None,
+        tempo_envelope: typing.Optional[expenvelope.Envelope] = None,
     ):
         # TODO(find a less redundant way of setting default values)
         # set current default values if parameters aren't defined
@@ -148,11 +232,6 @@ class MidiFileConverter(abc.Converter):
 
         if n_midi_channels_per_track is None:
             n_midi_channels_per_track = midi_constants.DEFAULT_N_MIDI_CHANNELS_PER_TRACK
-
-        if maximum_pitch_bend_deviation is None:
-            maximum_pitch_bend_deviation = (
-                midi_constants.DEFAULT_MAXIMUM_PITCH_BEND_DEVIATION_IN_CENTS
-            )
 
         if ticks_per_beat is None:
             ticks_per_beat = midi_constants.DEFAULT_TICKS_PER_BEAT
@@ -179,17 +258,11 @@ class MidiFileConverter(abc.Converter):
         self._n_midi_channels_per_track = n_midi_channels_per_track
         self._available_midi_channels = available_midi_channels
         self._midi_file_type = midi_file_type
-        self._maximum_pitch_bend_deviation = maximum_pitch_bend_deviation
+        self._mutwo_pitch_to_midi_pitch_converter = mutwo_pitch_to_midi_pitch_converter
         self._ticks_per_beat = ticks_per_beat
         self._instrument_name = instrument_name
 
         self._tempo_envelope = tempo_envelope
-
-        self._pitch_bending_warning = (
-            "Maximum pitch bending is {} cents up or down!".format(
-                maximum_pitch_bend_deviation
-            )
-        )
 
     # ###################################################################### #
     #                          static methods                                #
@@ -214,9 +287,8 @@ class MidiFileConverter(abc.Converter):
             try:
                 assert midi_channel in midi_constants.ALLOWED_MIDI_CHANNELS
             except AssertionError:
-                message = (
-                    "Found unknown midi channel '{}' in available_midi_channels."
-                    .format(midi_constants.ALLOWED_MIDI_CHANNELS)
+                message = "Found unknown midi channel '{}' in available_midi_channels.".format(
+                    midi_constants.ALLOWED_MIDI_CHANNELS
                 )
                 message += " Only midi channel '{}' are allowed.".format(
                     midi_constants.ALLOWED_MIDI_CHANNELS
@@ -314,58 +386,6 @@ class MidiFileConverter(abc.Converter):
     def _beats_to_ticks(self, absolute_time: parameters.abc.DurationType) -> int:
         return int(self._ticks_per_beat * absolute_time)
 
-    def _cent_deviation_to_pitch_bending_number(
-        self, cent_deviation: utilities.constants.Real,
-    ) -> int:
-        pitch_bend_percent = (cent_deviation + self._maximum_pitch_bend_deviation) / (
-            self._maximum_pitch_bend_deviation * 2
-        )
-
-        if pitch_bend_percent > 1:
-            pitch_bend_percent = 1
-            warnings.warn(self._pitch_bending_warning)
-
-        if pitch_bend_percent < 0:
-            pitch_bend_percent = 0
-            warnings.warn(self._pitch_bending_warning)
-
-        pitch_bending_number = round(
-            midi_constants.MAXIMUM_PITCH_BEND * pitch_bend_percent
-        )
-        pitch_bending_number -= midi_constants.NEUTRAL_PITCH_BEND
-
-        return pitch_bending_number
-
-    def _tune_pitch(
-        self, absolute_tick_start: int, pitch: parameters.abc.Pitch, midi_channel: int,
-    ) -> typing.Tuple[int, mido.Message]:
-        """This method finds midi data to represent the entered mutwo pitch."""
-
-        frequency = pitch.frequency
-        closest_midi_pitch = utilities.tools.find_closest_index(
-            frequency, parameters.pitches_constants.MIDI_PITCH_FREQUENCIES
-        )
-        difference_in_cents_to_closest_midi_pitch = parameters.abc.Pitch.hertz_to_cents(
-            parameters.pitches_constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
-            frequency,
-        )
-        pitch_bending_number = self._cent_deviation_to_pitch_bending_number(
-            difference_in_cents_to_closest_midi_pitch
-        )
-
-        if absolute_tick_start != 0:
-            # if possible add bending one tick earlier to avoid glitches
-            absolute_tick_start -= 1
-
-        pitch_bending_message = mido.Message(
-            "pitchwheel",
-            channel=midi_channel,
-            pitch=pitch_bending_number,
-            time=absolute_tick_start,
-        )
-
-        return closest_midi_pitch, pitch_bending_message
-
     # ###################################################################### #
     #             methods for converting mutwo data to midi data             #
     # ###################################################################### #
@@ -380,12 +400,14 @@ class MidiFileConverter(abc.Converter):
         midi_messages = []
         for absolute_time, tempo_point in zip(absolute_times, tempo_envelope.levels):
             absolute_tick = self._beats_to_ticks(absolute_time)
-            beat_length_in_microseconds = self._beats_per_minute_to_beat_length_in_microseconds(
-                tempo_point
+            beat_length_in_microseconds = (
+                self._beats_per_minute_to_beat_length_in_microseconds(tempo_point)
             )
 
-            beat_length_in_microseconds = MidiFileConverter._adjust_beat_length_in_microseconds(
-                tempo_point, beat_length_in_microseconds
+            beat_length_in_microseconds = (
+                MidiFileConverter._adjust_beat_length_in_microseconds(
+                    tempo_point, beat_length_in_microseconds
+                )
             )
 
             tempo_message = mido.MetaMessage(
@@ -394,6 +416,29 @@ class MidiFileConverter(abc.Converter):
             midi_messages.append(tempo_message)
 
         return tuple(midi_messages)
+
+    def _tune_pitch(
+        self,
+        absolute_tick_start: int,
+        pitch_to_tune: parameters.abc.Pitch,
+        midi_channel: int,
+    ) -> typing.Tuple[MidiNote, mido.Message]:
+        (
+            midi_pitch,
+            pitch_bending_number,
+        ) = self._mutwo_pitch_to_midi_pitch_converter.convert(pitch_to_tune)
+        pitch_bending_message_time = absolute_tick_start
+        if absolute_tick_start != 0:
+            # if possible add bending one tick earlier to avoid glitches
+            pitch_bending_message_time -= 1
+
+        pitch_bending_message = mido.Message(
+            "pitchwheel",
+            channel=midi_channel,
+            pitch=pitch_bending_number,
+            time=pitch_bending_message_time,
+        )
+        return midi_pitch, pitch_bending_message
 
     def _note_information_to_midi_messages(
         self,
@@ -407,7 +452,9 @@ class MidiFileConverter(abc.Converter):
 
         midi_channel = next(available_midi_channels_cycle)
         midi_pitch, pitch_bending_message = self._tune_pitch(
-            absolute_tick_start, pitch, midi_channel
+            absolute_tick_start,
+            pitch,
+            midi_channel,
         )
 
         midi_messages = [pitch_bending_message]
@@ -507,7 +554,7 @@ class MidiFileConverter(abc.Converter):
             absolute_time,
             simple_event.duration,
             available_midi_channels_cycle,
-            *extracted_data  # type: ignore
+            *extracted_data,  # type: ignore
         )
         return tuple(midi_messages)
 
@@ -618,8 +665,8 @@ class MidiFileConverter(abc.Converter):
 
         # TODO(split this method, make it more readable!)
 
-        available_midi_channels_per_sequential_event = self._find_available_midi_channels_per_sequential_event(
-            simultaneous_event
+        available_midi_channels_per_sequential_event = (
+            self._find_available_midi_channels_per_sequential_event(simultaneous_event)
         )
 
         midi_data_per_sequential_event = tuple(
