@@ -177,7 +177,7 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         self.assertEqual(
             round_deviation_in_cents(
                 ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
-                    "", 0, (1, 0, 0), *default_args
+                    "", 0, (1, 0, 0), *default_args, True
                 )
             ),
             round_deviation_in_cents(
@@ -188,7 +188,7 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         self.assertEqual(
             round_deviation_in_cents(
                 ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
-                    "", 0, (-2, 0, 0), *default_args
+                    "", 0, (-2, 0, 0), *default_args, True
                 )
             ),
             round_deviation_in_cents(
@@ -201,7 +201,7 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         self.assertEqual(
             round_deviation_in_cents(
                 ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
-                    "", 0, (1, -1, 0), *default_args
+                    "", 0, (1, -1, 0), *default_args, True
                 )
             ),
             round_deviation_in_cents(
@@ -216,7 +216,7 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         self.assertEqual(
             round_deviation_in_cents(
                 ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
-                    "s", 113.7, (0, 0, 1), *default_args
+                    "s", 113.7, (0, 0, 1), *default_args, True
                 )
             ),
             round_deviation_in_cents(
@@ -229,7 +229,7 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         self.assertEqual(
             round_deviation_in_cents(
                 ekmelily.HEJIEkmelilyTuningFileConverter._make_higher_prime_accidental(
-                    "ss", 2 * 113.7, (3, 0, 0), *default_args
+                    "ss", 2 * 113.7, (3, 0, 0), *default_args, True
                 )
             ),
             round_deviation_in_cents(
