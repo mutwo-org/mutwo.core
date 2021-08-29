@@ -98,7 +98,7 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def get_parameter(
-        self, parameter_name: str
+        self, parameter_name: str, flat: bool = False
     ) -> typing.Union[typing.Tuple[typing.Any, ...], typing.Any]:
         """Return event attribute with the entered name.
 
@@ -106,6 +106,9 @@ class Event(abc.ABC):
         :returns: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
             add None to the tuple for the respective event.
+        :param flat: ``True`` for flat sequence of parameter values, ``False`` if the
+            resulting ``tuple`` shall repeat the nested structure of the event.
+        :type flat: bool
 
         **Example:**
 
@@ -390,8 +393,17 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
 
         return tools.get_nested_item_from_indices(indices, self)
 
-    def get_parameter(self, parameter_name: str) -> typing.Tuple[typing.Any, ...]:
-        return tuple(event.get_parameter(parameter_name) for event in self)
+    def get_parameter(
+        self, parameter_name: str, flat: bool = False
+    ) -> typing.Tuple[typing.Any, ...]:
+        parameter_values = []
+        for event in self:
+            parameter_values_of_event = event.get_parameter(parameter_name, flat=flat)
+            if flat:
+                parameter_values.extend(parameter_values_of_event)
+            else:
+                parameter_values.append(parameter_values_of_event)
+        return tuple(parameter_values)
 
     @decorators.add_return_option
     def set_parameter(  # type: ignore

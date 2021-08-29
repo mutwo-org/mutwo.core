@@ -131,7 +131,7 @@ class SimpleEvent(events.abc.Event):
     def destructive_copy(self) -> SimpleEvent:
         return copy.deepcopy(self)
 
-    def get_parameter(self, parameter_name: str) -> typing.Any:
+    def get_parameter(self, parameter_name: str, flat: bool = False) -> typing.Any:
         """Return event attribute with the entered name.
 
         :parameter_name: The name of the attribute that shall be returned.
@@ -150,9 +150,14 @@ class SimpleEvent(events.abc.Event):
         None
         """
         try:
-            return getattr(self, parameter_name)
+            parameter_value = getattr(self, parameter_name)
         except AttributeError:
-            return None
+            parameter_value = None
+
+        if flat:
+            return (parameter_value,)
+        else:
+            return parameter_value
 
     @decorators.add_return_option
     def set_parameter(  # type: ignore
@@ -458,7 +463,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
                 rounded_split_position > 0
                 and rounded_split_position < self[active_event_index].duration
             ):
-                split_active_event = self[active_event_index].split_at(rounded_split_position)
+                split_active_event = self[active_event_index].split_at(
+                    rounded_split_position
+                )
                 self[active_event_index] = split_active_event[1]
                 self.insert(active_event_index, split_active_event[0])
                 active_event_index += 1

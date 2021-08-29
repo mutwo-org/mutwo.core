@@ -18,6 +18,13 @@ class SimpleEventTest(unittest.TestCase):
     def test_get_not_assigned_parameter(self):
         self.assertEqual(basic.SimpleEvent(1).get_parameter("anyParameter"), None)
 
+    def test_get_flat_assigned_parameter(self):
+        duration = 10
+        self.assertEqual(
+            basic.SimpleEvent(duration).get_parameter("duration", flat=True),
+            (duration,),
+        )
+
     def test_set_assigned_parameter_by_object(self):
         simple_event = basic.SimpleEvent(1)
         new_duration = 10
@@ -346,6 +353,16 @@ class SimultaneousEventTest(unittest.TestCase):
         ] = basic.SimultaneousEvent(
             [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
         )
+        self.nested_sequence: basic.SimultaneousEvent[
+            basic.SequentialEvent[basic.SimpleEvent]
+        ] = basic.SimultaneousEvent(
+            [
+                basic.SequentialEvent(
+                    [basic.SimpleEvent(1), basic.SimpleEvent(2), basic.SimpleEvent(3)]
+                )
+                for _ in range(2)
+            ]
+        )
 
     def test_get_event_from_indices(self):
         self.assertEqual(self.sequence.get_event_from_indices((0,)), self.sequence[0])
@@ -372,6 +389,14 @@ class SimultaneousEventTest(unittest.TestCase):
     def test_get_parameter(self):
         result = self.sequence.get_parameter("duration")
         self.assertEqual(result, (1, 2, 3))
+
+    def test_get_nested_parameter(self):
+        result = self.nested_sequence.get_parameter("duration")
+        self.assertEqual(result, ((1, 2, 3), (1, 2, 3)))
+
+    def test_get_flat_parameter(self):
+        result = self.nested_sequence.get_parameter("duration", flat=True)
+        self.assertEqual(result, (1, 2, 3, 1, 2, 3))
 
     def test_set_parameter(self):
         self.sequence.set_parameter("duration", lambda x: 2 * x)
