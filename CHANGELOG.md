@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.29.0] - 2021-07-29
+
+### Added
+- 'flat' keyword argument for 'get_parameter' method
+- 'flexible_start_range' and 'flexible_end_range' for events.time_brackets.TimeBracket
+- 'set_microtonal_tuning' keyword for HEJIEkmelilyTuningFileConverter
+- 'PreciseNaturalHarmonic' and 'BreathMark' indicators in playing_indicators and abjad_attachments
+
+
 ## [0.28.4] - 2021-07-27
 
 ### Changed
