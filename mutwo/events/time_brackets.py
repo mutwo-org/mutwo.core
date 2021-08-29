@@ -66,6 +66,15 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
         else:
             return value_or_value_range
 
+    @staticmethod
+    def _get_flexible_range_of_value_or_value_range(
+        value_or_value_range: TimeOrTimeRange,
+    ) -> float:
+        if isinstance(value_or_value_range, typing.Sequence):
+            return value_or_value_range[1] - value_or_value_range[0]
+        else:
+            return 0
+
     # ###################################################################### #
     #                           private methods                              #
     # ###################################################################### #
@@ -151,6 +160,18 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
         as_active_event.append(active_event)
         return as_active_event
 
+    @property
+    def flexible_start_range(self) -> float:
+        return TimeBracket._get_flexible_range_of_value_or_value_range(
+            self.start_or_start_range
+        )
+
+    @property
+    def flexible_end_range(self) -> float:
+        return TimeBracket._get_flexible_range_of_value_or_value_range(
+            self.end_or_end_range
+        )
+
     # ###################################################################### #
     #                          public methods                                #
     # ###################################################################### #
@@ -194,13 +215,19 @@ class TempoBasedTimeBracket(TimeBracket, typing.Generic[T]):
     ):
         self.tempo = tempo
         super().__init__(
-            tagged_event_or_tagged_events, start_or_start_range, end_or_end_range, seed,
+            tagged_event_or_tagged_events,
+            start_or_start_range,
+            end_or_end_range,
+            seed,
         )
 
 
 class TimeBracketContainer(brackets.BracketContainer[TimeBracket]):
     def register(
-        self, bracket_to_register: T, test_for_overlapping_brackets: bool = True, tags_to_analyse: typing.Optional[typing.Tuple[str,...]] = None
+        self,
+        bracket_to_register: T,
+        test_for_overlapping_brackets: bool = True,
+        tags_to_analyse: typing.Optional[typing.Tuple[str, ...]] = None,
     ):
         """Add new bracket to :class:`TimeBracketContainer`.
 
