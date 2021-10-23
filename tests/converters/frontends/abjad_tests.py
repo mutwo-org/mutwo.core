@@ -110,6 +110,18 @@ class MutwoPitchToHEJIAbjadPitchConverterTest(unittest.TestCase):
             ),
             "d''",
         )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("32/33"))
+            ),
+            "cuca'",
+        )
+        self.assertEqual(
+            abjad.lilypond(
+                converter.convert(parameters.pitches.JustIntonationPitch("49/50"))
+            ),
+            "dffuabobb'",
+        )
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
@@ -446,7 +458,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
         # initialise complex converter and sequential event for complex tests
         cls.complex_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.SequentialEventToQuantizedAbjadContainerConverter(
+            frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter(
                 time_signatures=[
                     abjad.TimeSignature(ts)
                     for ts in (
@@ -556,7 +568,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             durations=[2],
         )
         converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.SequentialEventToQuantizedAbjadContainerConverter(
+            frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter(
                 tempo_envelope=tempo_envelope
             )
         )
@@ -598,7 +610,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # -> this tests, if duration lines are printed in a correct manner
 
         converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
+            frontends.abjad.ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
         )
         sequential_event_to_convert = basic.SequentialEvent(
             [
@@ -703,7 +715,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                 {
                     "Piano": frontends.abjad.NestedComplexEventToAbjadContainerConverter(
                         frontends.abjad.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
-                            [frontends.abjad.SequentialEventToAbjadVoiceConverter(),]
+                            [frontends.abjad.SequentialEventToAbjadVoiceConverter(frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter()),]
                         ),
                         abjad.StaffGroup,
                         "PianoStaff",
