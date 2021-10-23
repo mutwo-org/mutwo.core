@@ -432,8 +432,42 @@ class Prall(parameters_abc.ExplicitPlayingIndicator, BangFirstAttachment):
 
 class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
+        if isinstance(leaf, (abjad.Chord, abjad.Note)):
+            abjad.attach(
+                abjad.Tie(),
+                leaf,
+            )
+        return leaf
+
+
+class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
+    thickness = 3
+    minimum_length = 5
+
+    def process_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         abjad.attach(
-            abjad.Tie(),
+            abjad.LilyPondLiteral("\\override Glissando.thickness = #'{}".format(self.thickness)),
+            leaf,
+        )
+        abjad.attach(
+            abjad.LilyPondLiteral(
+                "\\override Glissando.minimum-length = #{}".format(self.minimum_length)
+            ),
+            leaf,
+        )
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override Glissando.breakable = ##t"),
+            leaf,
+        )
+        abjad.attach(
+            abjad.LilyPondLiteral("\\override Glissando.after-line-breaking = ##t"),
+            leaf,
+        )
+        cmd = "\\override "
+        cmd += "Glissando.springs-and-rods = #ly:spanner::set-spacing-rods"
+        abjad.attach(abjad.LilyPondLiteral(cmd), leaf)
+        abjad.attach(
+            abjad.Glissando(allow_ties=True),
             leaf,
         )
         return leaf
