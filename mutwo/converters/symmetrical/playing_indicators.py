@@ -198,7 +198,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
             return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
 
 
-class PlayingIndicatorsConverter(converters.abc.SymmetricalEventConverter):
+class PlayingIndicatorsConverter(converters.abc.EventConverter):
     """Apply :class:`~mutwo.parameters.abc.PlayingIndicator` on any :class:`~mutwo.events.abc.Event`.
 
     :param playing_indicator_converters: A sequence of :class:`PlayingIndicatorConverter` which shall
