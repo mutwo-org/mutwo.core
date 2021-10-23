@@ -83,13 +83,29 @@ class MutwoPitchToMidiPitchConverter(abc.Converter):
 
         return pitch_bending_number
 
-    def convert(self, mutwo_pitch_to_convert: parameters.abc.Pitch) -> MidiPitch:
-        """This method finds midi data to represent the entered mutwo pitch."""
+    def convert(
+        self,
+        mutwo_pitch_to_convert: parameters.abc.Pitch,
+        midi_note: typing.Optional[int] = None,
+    ) -> MidiPitch:
+        """Find midi note and pitch bending for given mutwo pitch
+
+        :param mutwo_pitch_to_convert: The mutwo pitch which shall be converted.
+        :type mutwo_pitch_to_convert: parameters.abc.Pitch
+        :param midi_note: Can be set to a midi note value if one wants to force
+            the converter to calculate the pitch bending deviation for the passed
+            midi note. If this argument is ``None`` the converter will simply use
+            the closest midi pitch number to the passed mutwo pitch. Default to ``None``.
+        :type midi_note: typing.Optional[int]
+        """
 
         frequency = mutwo_pitch_to_convert.frequency
-        closest_midi_pitch = utilities.tools.find_closest_index(
-            frequency, parameters.pitches_constants.MIDI_PITCH_FREQUENCIES
-        )
+        if midi_note:
+            closest_midi_pitch = midi_note
+        else:
+            closest_midi_pitch = utilities.tools.find_closest_index(
+                frequency, parameters.pitches_constants.MIDI_PITCH_FREQUENCIES
+            )
         difference_in_cents_to_closest_midi_pitch = parameters.abc.Pitch.hertz_to_cents(
             parameters.pitches_constants.MIDI_PITCH_FREQUENCIES[closest_midi_pitch],
             frequency,
