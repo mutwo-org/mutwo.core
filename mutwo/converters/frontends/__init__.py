@@ -22,13 +22,14 @@ for modules, dependencies in (
         ),
         ("abjad", "abjadext.nauert", "abjadext.rmakers"),
     ),
-    (
-        (
-            "abjad_video_constants",
-            "abjad_video",
-        ),
-        ("abjad", "PIL"),
-    ),
+    # for future
+    # (
+    #     (
+    #         "abjad_video_constants",
+    #         "abjad_video",
+    #     ),
+    #     ("abjad", "PIL"),
+    # ),
 ):
     for module in modules:
         tools.import_module_if_dependencies_have_been_installed(
