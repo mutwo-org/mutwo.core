@@ -20,7 +20,14 @@ for modules, dependencies in (
             "abjad_constants",
             "abjad",
         ),
-        ("abjad", "abjadext.nauert"),
+        ("abjad", "abjadext.nauert", "abjadext.rmakers"),
+    ),
+    (
+        (
+            "abjad_video_constants",
+            "abjad_video",
+        ),
+        ("abjad", "PIL"),
     ),
 ):
     for module in modules:
