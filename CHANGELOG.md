@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.31.0] - 2021-10-23
+
+### Added
+- `find_numbers_which_sums_up_to` - function in tools module
+- optional 'midi_note' attribute to `MutwoPitchToMidiPitchConverter` converter method in converters.frontends.midi module
+- manual glissando to PlayingIndicatorCollection and to abjad_attachments
+- manual tie to abjad_attachments
+- SetStaffSize to abjad_process_container_routines
+- FastSequentialEventToQuantizedAbjadContainerConverter
+- FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter
+
+### Changed
+- PlayingIndicatorsConverter in converters.symmetrical.playing_indicators module inherits from converters.abc.EventConverter (and no longer from converters.abc.SymmetricalEventConverter)
+- improved AddTimeBracketMarks in abjad_process_container_routines
+- renamed SequentialEventToQuantizedAbjadContainerConverter to ComplexSequentialEventToQuantizedAbjadContainerConverter
+- renamed SequentialEventToDurationLineBasedQuantizedAbjadContainerConverter to ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter
+- refactored mutwo.converters.frontends.abjad module
+- to Python 3.9 as minimal dependency
+
+### Removed
+- ReaperFileConverter
+- reaper_constants
+
 ## [0.30.0] - 2021-07-29
 
 ### Changed

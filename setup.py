@@ -8,7 +8,11 @@ extras_require = {
     "pyo": ["pyo>=1.0.3, <2"],
     "midi": ["mido>=1.2.9, <2"],
     "reaper": ["rpp>=0.4, <0.5"],
-    "abjad": ["abjad-ext-nauert>=3.3.0, <4", "abjad>=3.2.0, <4"],
+    "abjad": [
+        "abjad-ext-nauert>=3.3.0, <4",
+        "abjad>=3.2.0, <4",
+        "abjad-ext-rmakers>=3.4.0, <4",
+    ],
 }
 
 extras_require.update({"all": list(extras_require.values())})  # type: ignore
@@ -18,7 +22,7 @@ extras_require.update(
 
 setuptools.setup(
     name="mutwo",
-    version="0.30.0",
+    version="0.31.0",
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,
@@ -39,5 +43,5 @@ setuptools.setup(
         "natsort>=5.3.3, <6.0.0",
     ],
     extras_require=extras_require,
-    python_requires=">=3.7, <4",
+    python_requires=">=3.9, <4",
 )
