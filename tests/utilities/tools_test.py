@@ -132,6 +132,25 @@ class ToolsTest(unittest.TestCase):
         tools.set_nested_item_from_indices((2, 2, 0), nested_sequence, 100)
         self.assertEqual(nested_sequence[2][2][0], 100)
 
+    def test_find_numbers_which_sums_up_to(self):
+        self.assertEqual(
+            tools.find_numbers_which_sums_up_to(3), ((3,), (1, 2), (1, 1, 1))
+        )
+        self.assertEqual(
+            tools.find_numbers_which_sums_up_to(5),
+            ((5,), (1, 4), (2, 3), (1, 1, 3), (1, 2, 2), (1, 1, 1, 2), (1, 1, 1, 1, 1)),
+        )
+        # with custom argument for 'numbers_to_choose_from'
+        self.assertEqual(
+            tools.find_numbers_which_sums_up_to(6, (2, 3)),
+            ((3, 3), (2, 2, 2)),
+        )
+        # with custom argument for 'numbers_to_choose_from' and 'n_items_to_sum_up'
+        self.assertEqual(
+            tools.find_numbers_which_sums_up_to(12, (2, 3), (4,)),
+            ((3, 3, 3, 3),),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

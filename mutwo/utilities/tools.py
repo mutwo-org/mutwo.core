@@ -25,6 +25,7 @@ __all__ = (
     # "class_name_to_object_name",  # not for public use
     "get_nested_item_from_indices",
     "set_nested_item_from_indices",
+    "find_numbers_which_sums_up_to",
 )
 
 
@@ -347,7 +348,9 @@ def get_nested_item_from_indices(
 
 
 def set_nested_item_from_indices(
-    indices: typing.Sequence[int], sequence: typing.MutableSequence, item: typing.Any,
+    indices: typing.Sequence[int],
+    sequence: typing.MutableSequence,
+    item: typing.Any,
 ) -> None:
     """Set item in nested Sequence.
 
@@ -387,3 +390,38 @@ def round_floats(number_to_round: constants.Real, n_digits: int) -> constants.Re
         return round(number_to_round, n_digits)
     else:
         return number_to_round
+
+
+def find_numbers_which_sums_up_to(
+    given_sum: float,
+    numbers_to_choose_from: typing.Optional[typing.Sequence[float]] = None,
+    n_items_to_sum_up: typing.Optional[set[int]] = None,
+) -> tuple[tuple[float, ...], ...]:
+    """Find all combinations of numbers which sum is equal to the given sum.
+
+    :param given_sum:
+    :type given_sum: float
+    :param numbers_to_choose_from:
+    :type numbers_to_choose_from: typing.Optional[typing.Sequence[float]]
+    :param n_items_to_sum_up:
+    :type n_items_to_sum_up: typing.Optional[set[int]]
+    """
+
+    if not numbers_to_choose_from:
+        numbers_to_choose_from = tuple(range(1, int(given_sum) + 1))
+
+    if not n_items_to_sum_up:
+        n_items_to_sum_up = set(range(1, given_sum + 1))
+
+    numbers = []
+    for n_items in n_items_to_sum_up:
+        numbers.extend(
+            [
+                pair
+                for pair in itertools.combinations_with_replacement(
+                    numbers_to_choose_from, n_items
+                )
+                if sum(pair) == given_sum
+            ]
+        )
+    return tuple(numbers)
