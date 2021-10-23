@@ -78,7 +78,8 @@ class AddInstrumentName(ProcessAbjadContainerRoutine):
                 f" \\{self._instrument_name_font_size} {{ {instrument_name} }} }}"
             )
             abjad.attach(
-                abjad.LilyPondLiteral(set_instrument_name_command), first_leaf,
+                abjad.LilyPondLiteral(set_instrument_name_command),
+                first_leaf,
             )
         if short_instrument_name:
             set_short_instrument_name_command = (
@@ -87,7 +88,8 @@ class AddInstrumentName(ProcessAbjadContainerRoutine):
                 f" {short_instrument_name} }} }}"
             )
             abjad.attach(
-                abjad.LilyPondLiteral(set_short_instrument_name_command), first_leaf,
+                abjad.LilyPondLiteral(set_short_instrument_name_command),
+                first_leaf,
             )
 
 
@@ -116,8 +118,11 @@ class AddTimeBracketMarks(ProcessAbjadContainerRoutine):
     # ###################################################################### #
 
     @staticmethod
-    def _format_time(time: constants.Real) -> str:
-        return format(datetime.timedelta(seconds=round(time)))[2:]
+    def _format_time(
+        time: constants.Real,
+        round_function: typing.Callable[[float], int] = round,
+    ) -> str:
+        return format(datetime.timedelta(seconds=round_function(time)))[2:]
 
     @staticmethod
     def _attach_time_bracket_mark(
@@ -139,13 +144,12 @@ class AddTimeBracketMarks(ProcessAbjadContainerRoutine):
         if format_slot == "after":
             hint = "end at: "
         else:
-            hint = "\\hspace #-8 start at: "
+            hint = "\\hspace #-10 start at: "
         formated_time = AddTimeBracketMarks._format_time(time)
-        markup_command = (
-            f"\\teeny {{ {hint} }} \\normalsize {{ \\smallCaps {{ {formated_time} "
-            " } }"
+        time_bracket_mark = (
+            f"\\mark \\markup {{ \\teeny {{ {hint} }} \\override #'(font-family ."
+            f" typewriter) \\small {{ {formated_time} }} }}"
         )
-        time_bracket_mark = abjad.RehearsalMark(markup=abjad.Markup(markup_command))
         AddTimeBracketMarks._attach_time_bracket_mark(
             leaf_to_attach_to, time_bracket_mark, format_slot
         )
@@ -160,18 +164,21 @@ class AddTimeBracketMarks(ProcessAbjadContainerRoutine):
     ):
         if format_slot == "after":
             hint = "\\hspace #-10 end in range: "
+            hint = "\\hspace #-7"
         else:
             hint = "\\hspace #-10 start in range: "
+            hint = "\\hspace #-10"
 
         formated_time_range = tuple(
             AddTimeBracketMarks._format_time(time) for time in time_range
         )
         time_bracket_mark = (
-            f"\\mark \\markup {{ \\teeny {{ {hint} }} \\normalsize {{ \\smallCaps {{"
-            f" {formated_time_range[0]}  }} }} \n\\raise #0.55 \n\\teeny {{ \\concat {{"
-            " \\arrow-head #X #LEFT ##t \\draw-line #'(1 . 0) \\arrow-head #X #RIGHT"
-            f" ##t }} }}\n\\normalsize {{ \\smallCaps {{ {formated_time_range[1]} }}"
-            " } }"
+            f"\\mark \\markup {{ \\small {{ {hint} }} \\override #'(font-family ."
+            f" typewriter) \\small {{ {formated_time_range[0]}"
+            " } \n\\raise #0.55 \n\\teeny { \\concat { \\arrow-head #X #LEFT ##t"
+            " \\draw-line #'(1 . 0) \\arrow-head #X #RIGHT ##t } }\n\\override"
+            " #'(font-family . typewriter) \\small {"
+            f" {formated_time_range[1]} }} }}"
         )
         AddTimeBracketMarks._attach_time_bracket_mark(
             leaf_to_attach_to, time_bracket_mark, format_slot
@@ -204,14 +211,45 @@ class AddTimeBracketMarks(ProcessAbjadContainerRoutine):
         first_leaf = abjad.get.leaf(container_to_process[0], 0)
         last_leaf = abjad.get.leaf(container_to_process[0], -1)
         for leaf_to_attach_to, time_or_time_range, format_slot in (
-            (first_leaf, complex_event_to_convert.start_or_start_range, "before",),
-            (last_leaf, complex_event_to_convert.end_or_end_range, "after",),
+            (
+                first_leaf,
+                complex_event_to_convert.start_or_start_range,
+                "before",
+            ),
+            (
+                last_leaf,
+                complex_event_to_convert.end_or_end_range,
+                "after",
+            ),
         ):
             # don't add the ending time range for a tempo based time bracket
             # (only rely on the tempo mark in this case!)
-            if format_slot != "after" or not isinstance(
-                complex_event_to_convert, events.time_brackets.TempoBasedTimeBracket,
+            if format_slot != "after" or not (
+                isinstance(
+                    complex_event_to_convert,
+                    events.time_brackets.TempoBasedTimeBracket,
+                )
+                and not complex_event_to_convert.force_spanning_of_end_or_end_range
             ):
                 AddTimeBracketMarks._add_time_bracket_mark_for_time_or_time_range(
                     leaf_to_attach_to, time_or_time_range, format_slot
                 )
+
+
+class SetStaffSize(ProcessAbjadContainerRoutine):
+    def __init__(self, difference_of_size: int):
+        self._difference_of_size = difference_of_size
+
+    def __call__(
+        self,
+        complex_event_to_convert: events.abc.ComplexEvent,
+        container_to_process: abjad.Container,
+    ):
+        first_leaf = abjad.get.leaf(container_to_process[0], 0)
+        abjad.attach(
+            abjad.LilyPondLiteral(
+                f"\\magnifyStaff #(magstep {self._difference_of_size})",
+                format_slot="before",
+            ),
+            first_leaf,
+        )
