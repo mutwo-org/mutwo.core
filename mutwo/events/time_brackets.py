@@ -32,6 +32,7 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
         "start_or_start_range",
         "end_or_end_range",
         "seed",
+        "force_spanning_of_end_or_end_range",
     )
 
     def __init__(
@@ -46,12 +47,14 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
         start_or_start_range: TimeOrTimeRange,
         end_or_end_range: TimeOrTimeRange,
         seed: typing.Optional[int] = None,
+        force_spanning_of_end_or_end_range: bool = True,
     ):
         super().__init__(
             tagged_event_or_tagged_events, start_or_start_range, end_or_end_range
         )
 
         time_bracket_random = np.random.default_rng(seed)
+        self.force_spanning_of_end_or_end_range = force_spanning_of_end_or_end_range
 
         self._seed = seed
         self._time_bracket_random = time_bracket_random
@@ -74,6 +77,41 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
             return value_or_value_range[1] - value_or_value_range[0]
         else:
             return 0
+
+    @staticmethod
+    def _delay_value_or_value_range(
+        value_or_value_range: TimeOrTimeRange, delay: constants.Real
+    ) -> TimeOrTimeRange:
+        if isinstance(value_or_value_range, typing.Sequence):
+            return tuple(map(lambda value: value + delay, value_or_value_range))
+        else:
+            return value_or_value_range + delay
+
+    @staticmethod
+    def _extend_or_shrink_value_or_value_range(
+        value_or_value_range: TimeOrTimeRange,
+        difference: float,
+        direction: typing.Literal["right", "left"],
+    ) -> TimeOrTimeRange:
+        if not isinstance(value_or_value_range, typing.Sequence):
+            value_or_value_range = (value_or_value_range, value_or_value_range)
+
+        new_value_or_value_range = list(value_or_value_range)
+        if direction == "right":
+            index = 1
+        elif direction == "left":
+            index = 0
+        else:
+            raise NotImplementedError(f"Unknown direction {direction}!")
+
+        new_value_or_value_range[index] += difference
+
+        if new_value_or_value_range[0] == new_value_or_value_range[1]:
+            new_value_or_value_range = new_value_or_value_range[0]
+        else:
+            new_value_or_value_range = tuple(new_value_or_value_range)
+
+        return new_value_or_value_range
 
     # ###################################################################### #
     #                           private methods                              #
@@ -166,10 +204,26 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
             self.start_or_start_range
         )
 
+    @flexible_start_range.setter
+    def flexible_start_range(self, new_flexible_start_range: float):
+        assert new_flexible_start_range >= 0
+        difference = new_flexible_start_range - self.flexible_start_range
+        self.start_or_start_range = self._extend_or_shrink_value_or_value_range(
+            self.start_or_start_range, difference, "right"
+        )
+
     @property
     def flexible_end_range(self) -> float:
         return TimeBracket._get_flexible_range_of_value_or_value_range(
             self.end_or_end_range
+        )
+
+    @flexible_end_range.setter
+    def flexible_end_range(self, new_flexible_end_range: float):
+        assert new_flexible_end_range >= 0
+        difference = self.flexible_end_range - new_flexible_end_range
+        self.end_or_end_range = self._extend_or_shrink_value_or_value_range(
+            self.end_or_end_range, difference, "left"
         )
 
     # ###################################################################### #
@@ -193,6 +247,14 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
                     return True
         return False
 
+    def delay(self, value: constants.Real):
+        self._start_or_start_range = self._delay_value_or_value_range(
+            self.start_or_start_range, value
+        )
+        self._end_or_end_range = self._delay_value_or_value_range(
+            self.end_or_end_range, value
+        )
+
 
 class TempoBasedTimeBracket(TimeBracket, typing.Generic[T]):
     _class_specific_side_attributes = TimeBracket._class_specific_side_attributes + (
@@ -212,6 +274,7 @@ class TempoBasedTimeBracket(TimeBracket, typing.Generic[T]):
         end_or_end_range: TimeOrTimeRange,
         tempo: typing.Union[constants.Real, tempos.TempoPoint],
         seed: typing.Optional[int] = None,
+        force_spanning_of_end_or_end_range: bool = False,
     ):
         self.tempo = tempo
         super().__init__(
@@ -219,10 +282,38 @@ class TempoBasedTimeBracket(TimeBracket, typing.Generic[T]):
             start_or_start_range,
             end_or_end_range,
             seed,
+            force_spanning_of_end_or_end_range,
         )
 
 
 class TimeBracketContainer(brackets.BracketContainer[TimeBracket]):
+    def delay(
+        self,
+        value: constants.Real,
+        start: typing.Optional[constants.Real] = None,
+        end: typing.Optional[constants.Real] = None,
+        time_bracket_to_time_bracket_time: typing.Callable[
+            [TimeBracket], constants.Real
+        ] = lambda time_bracket: time_bracket.minimal_start,
+    ):
+        """Delay all time brackets in area from start to end by value.
+
+        WARNING: This function is not safe (wrong usage could create overlapping
+        time brackets with the same tags).
+        """
+
+        if not start:
+            start = 0
+        if not end:
+            end = self[-1].maximum_end
+
+        for time_bracket in self:
+            time_bracket_time = time_bracket_to_time_bracket_time(time_bracket)
+            if time_bracket_time >= start and time_bracket_time <= end:
+                time_bracket.delay(value)
+
+        self._resort()
+
     def register(
         self,
         bracket_to_register: T,

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.33.0] - 2021-10-25
+
+### Added
+- `_resort` method for BracketContainer
+- `__getitem__` method for BracketContainer
+- `force_spanning_of_end_or_end_range` argument to TimeBracket
+- `flexible_start_range` and `flexible_end_range` properties to TimeBracket
+- `delay` method to TimeBracket
+
+### Changed
+- OverlappingTimeBracketsError
+
 ## [0.32.0] - 2021-10-25
 
 ### Added

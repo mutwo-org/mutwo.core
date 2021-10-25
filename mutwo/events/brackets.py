@@ -86,15 +86,20 @@ T = typing.TypeVar("T", bound=Bracket)
 
 class BracketContainer(typing.Generic[T]):
     def __init__(self, brackets: typing.Sequence[T]):
-        self._brackets = basic.SequentialEvent(
-            sorted(brackets, key=lambda bracket: bracket.mean_start)
-        )
+        self._brackets = basic.SequentialEvent(brackets)
+        self._resort()
+
+    def _resort(self):
+        self._brackets.sort(key=lambda bracket: bracket.mean_start)
 
     def __repr__(self) -> str:
         return "BracketContainer({})".format(tuple(self._brackets))
 
     def __iter__(self):
         return iter(self._brackets)
+
+    def __getitem__(self, index: int) -> T:
+        return self._brackets[index]
 
     def register(self, bracket: T):
         """Add new bracket to BracketContainer.
