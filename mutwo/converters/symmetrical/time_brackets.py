@@ -8,6 +8,7 @@ import expenvelope  # type: ignore
 import numpy as np  # type: ignore
 
 from mutwo.converters import abc as converters_abc
+from mutwo.converters.symmetrical import time_brackets_constants
 from mutwo import events
 from mutwo import parameters
 from mutwo.utilities import constants
@@ -90,7 +91,9 @@ class TimeBracketsToEventConverter(converters_abc.Converter):
             # raise error if last bracket is still running while the current
             # time bracket already started
             elif previous_end_time > start_time:
-                raise exceptions.OverlappingTimeBracketsError()
+                raise exceptions.OverlappingTimeBracketsError(
+                    previous_end_time, start_time, time_bracket
+                )
 
             duration_in_seconds = end_time - start_time
             tagged_event = self._extract_tagged_event(
@@ -109,15 +112,25 @@ class EventToProbabilityCurveConverter(converters_abc.EventConverter):
         self,
         start_or_start_range: events.time_brackets.TimeOrTimeRange,
         end_or_end_range: events.time_brackets.TimeOrTimeRange,
-        time_grid: float = 0.5,
-        precision: int = 45,
+        time_grid: typing.Optional[float] = None,
+        precision: typing.Optional[int] = None,
     ):
+        if not time_grid:
+            time_grid = time_brackets_constants.DEFAULT_TIME_GRID
+
+        if not precision:
+            precision = time_brackets_constants.DEFAULT_PRECISION
+
         self._time_grid = time_grid
-        self._possible_start_times = EventToProbabilityCurveConverter._get_possible_times_range(
-            precision, start_or_start_range
+        self._possible_start_times = (
+            EventToProbabilityCurveConverter._get_possible_times_range(
+                precision, start_or_start_range
+            )
         )
-        self._possible_end_times = EventToProbabilityCurveConverter._get_possible_times_range(
-            precision, end_or_end_range
+        self._possible_end_times = (
+            EventToProbabilityCurveConverter._get_possible_times_range(
+                precision, end_or_end_range
+            )
         )
         self._init_grid(start_or_start_range[0], end_or_end_range[1])
 
@@ -145,7 +158,10 @@ class EventToProbabilityCurveConverter(converters_abc.EventConverter):
         typing.Tuple[parameters.abc.DurationType, parameters.abc.DurationType]
     ]:
         start_and_end_times = np.array(
-            [absolute_entry_delay, absolute_entry_delay + event_to_convert.duration]
+            [
+                float(absolute_entry_delay),
+                float(absolute_entry_delay + event_to_convert.duration),
+            ]
         )
 
         probability_array = np.zeros(self._grid_size)
@@ -155,8 +171,8 @@ class EventToProbabilityCurveConverter(converters_abc.EventConverter):
             if start_time < end_time:
                 start_of_event, end_of_event = np.interp(
                     start_and_end_times,
-                    (0, self._duration_of_event_to_convert),
-                    (start_time, end_time),
+                    (0, float(self._duration_of_event_to_convert)),
+                    (float(start_time), float(end_time)),
                 )
                 start_index, end_index = tuple(
                     bisect.bisect_left(self._grid, position_of_event)

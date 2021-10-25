@@ -8,6 +8,8 @@ import numpy as np  # type: ignore
 
 from mutwo import utilities
 
+__all__ = ("DynamicChoice",)
+
 
 class DynamicChoice(object):
     """Weighted random choices with dynamically changing weights.
