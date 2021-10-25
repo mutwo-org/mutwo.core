@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.32.0] - 2021-10-25
+
+### Added
+- MidiPitch
+- Partial
+- CommonHarmonic
+- spectral module in symmetrical with TwoPitchesToCommonHarmonicsConverter
+
+### Changed
+- '_translate_pitch_class_to_pitch_class_name' method of WesternPitch
+
 ## [0.31.0] - 2021-10-23
 
 ### Added
