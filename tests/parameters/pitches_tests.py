@@ -20,6 +20,14 @@ class DirectPitch_Test(unittest.TestCase):
         self.assertEqual(frequency2, pitches.DirectPitch(frequency2).frequency)
 
 
+class MidiPitch_Test(unittest.TestCase):
+    def test_property_frequency(self):
+        frequency0 = 440
+        frequency1 = 261.626
+        self.assertEqual(frequency0, pitches.MidiPitch(69).frequency)
+        self.assertEqual(frequency1, round(pitches.MidiPitch(60).frequency, 3))
+
+
 class EqualDividedOctavePitch_Test(unittest.TestCase):
     def test_false_pitch_class(self):
         self.assertRaises(
@@ -240,13 +248,16 @@ class JustIntonationPitchTest(unittest.TestCase):
         ratio1 = fractions.Fraction(25, 1)
         ratio2 = fractions.Fraction(11, 9)
         self.assertEqual(
-            pitches.JustIntonationPitch(ratio0).ratio, ratio0,
+            pitches.JustIntonationPitch(ratio0).ratio,
+            ratio0,
         )
         self.assertEqual(
-            pitches.JustIntonationPitch(ratio1).ratio, ratio1,
+            pitches.JustIntonationPitch(ratio1).ratio,
+            ratio1,
         )
         self.assertEqual(
-            pitches.JustIntonationPitch(ratio2).ratio, ratio2,
+            pitches.JustIntonationPitch(ratio2).ratio,
+            ratio2,
         )
 
     def test_property_closest_pythagorean_pitch(self):
@@ -315,13 +326,16 @@ class JustIntonationPitchTest(unittest.TestCase):
         ratio1 = fractions.Fraction(25, 1)
         ratio2 = fractions.Fraction(11, 9)
         self.assertEqual(
-            float(pitches.JustIntonationPitch(ratio0)), float(ratio0),
+            float(pitches.JustIntonationPitch(ratio0)),
+            float(ratio0),
         )
         self.assertEqual(
-            float(pitches.JustIntonationPitch(ratio1)), float(ratio1),
+            float(pitches.JustIntonationPitch(ratio1)),
+            float(ratio1),
         )
         self.assertEqual(
-            float(pitches.JustIntonationPitch(ratio2)), float(ratio2),
+            float(pitches.JustIntonationPitch(ratio2)),
+            float(ratio2),
         )
 
     def test_octave(self):
@@ -377,7 +391,12 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(pitches.JustIntonationPitch._indigestibility(8), 3)
 
     def test_harmonicity_barlow(self):
-        jip0 = pitches.JustIntonationPitch((-1, 1,))
+        jip0 = pitches.JustIntonationPitch(
+            (
+                -1,
+                1,
+            )
+        )
         jip1 = pitches.JustIntonationPitch([])
         jip2 = pitches.JustIntonationPitch((-2, 0, 1))
         jip3 = pitches.JustIntonationPitch((3, 0, -1))
@@ -387,7 +406,12 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip3.harmonicity_barlow, -0.10638297872340426)
 
     def test_harmonicity_euler(self):
-        jip0 = pitches.JustIntonationPitch((-1, 1,))
+        jip0 = pitches.JustIntonationPitch(
+            (
+                -1,
+                1,
+            )
+        )
         jip1 = pitches.JustIntonationPitch([])
         jip2 = pitches.JustIntonationPitch((-2, 0, 1))
         jip3 = pitches.JustIntonationPitch((3, 0, -1))
@@ -397,7 +421,12 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip3.harmonicity_euler, 8)
 
     def test_harmonicity_tenney(self):
-        jip0 = pitches.JustIntonationPitch((-1, 1,))
+        jip0 = pitches.JustIntonationPitch(
+            (
+                -1,
+                1,
+            )
+        )
         jip1 = pitches.JustIntonationPitch([])
         jip2 = pitches.JustIntonationPitch((-2, 0, 1))
         jip3 = pitches.JustIntonationPitch((3, 0, -1))
@@ -407,7 +436,12 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip3.harmonicity_tenney, 5.321928094887363)
 
     def test_harmonicity_vogel(self):
-        jip0 = pitches.JustIntonationPitch((-1, 1,))
+        jip0 = pitches.JustIntonationPitch(
+            (
+                -1,
+                1,
+            )
+        )
         jip1 = pitches.JustIntonationPitch([])
         jip2 = pitches.JustIntonationPitch((-2, 0, 1))
         jip3 = pitches.JustIntonationPitch((3, 0, -1))
@@ -417,7 +451,12 @@ class JustIntonationPitchTest(unittest.TestCase):
         self.assertEqual(jip3.harmonicity_vogel, 8)
 
     def test_harmonicity_wilson(self):
-        jip0 = pitches.JustIntonationPitch((-1, 1,))
+        jip0 = pitches.JustIntonationPitch(
+            (
+                -1,
+                1,
+            )
+        )
         jip1 = pitches.JustIntonationPitch([])
         jip2 = pitches.JustIntonationPitch((-2, 0, 1))
         jip3 = pitches.JustIntonationPitch((3, 0, -1))

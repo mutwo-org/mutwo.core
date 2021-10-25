@@ -17,6 +17,9 @@ overriding the default concert pitch value will by default use the new
 overridden default concert pitch value.
 """
 
+from __future__ import annotations
+
+import bisect
 import collections
 import copy
 import functools
@@ -78,6 +81,38 @@ class DirectPitch(parameters.abc.Pitch):
 
     def __repr__(self) -> str:
         return "DirectPitch(frequency = {})".format(self.frequency)
+
+
+class MidiPitch(parameters.abc.Pitch):
+    """Pitch that is defined by its midi pitch number.
+
+    :param midi_pitch_number: The midi pitch number of the pitch. Floating
+        point numbers are possible for microtonal deviations from the
+        chromatic scale.
+    :type midi_pitch_number: float
+
+    **Example:**
+
+    >>> from mutwo.parameters import pitches
+    >>> middle_c = pitches.MidiPitch(60)
+    >>> middle_c_quarter_tone_high = pitches.MidiPitch(60.5)
+    """
+
+    def __init__(self, midi_pitch_number: float):
+        self._midi_pitch_number = midi_pitch_number
+
+    @property
+    def frequency(self) -> float:
+        difference_to_middle_a = self.midi_pitch_number - 69
+        return float(440 * self.cents_to_ratio(difference_to_middle_a * 100))
+
+    @property
+    def midi_pitch_number(self) -> float:
+        return self._midi_pitch_number
+
+    @midi_pitch_number.setter
+    def midi_pitch_number(self, new_midi_pitch_number: float):
+        self._midi_pitch_number = new_midi_pitch_number
 
 
 class JustIntonationPitch(parameters.abc.Pitch):
@@ -450,9 +485,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
                 )
             )
         else:
-            message = (
-                "Unknown type '{}' of object '{}' for 'ratio_or_exponents' argument."
-                .format(type(ratio_or_exponents), ratio_or_exponents)
+            message = "Unknown type '{}' of object '{}' for 'ratio_or_exponents' argument.".format(
+                type(ratio_or_exponents), ratio_or_exponents
             )
             raise NotImplementedError(message)
         return exponents
@@ -514,7 +548,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return self._exponents
 
     @exponents.setter
-    def exponents(self, exponents: typing.Iterable[int],) -> None:
+    def exponents(
+        self,
+        exponents: typing.Iterable[int],
+    ) -> None:
         self._exponents = self._discard_nulls(exponents)
 
     @property
@@ -694,9 +731,11 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @property
     def cent_deviation_from_closest_western_pitch_class(self) -> float:
-        deviation_by_helmholtz_ellis_just_intonation_notation_commas = JustIntonationPitch(
-            self.helmholtz_ellis_just_intonation_notation_commas.ratio
-        ).cents
+        deviation_by_helmholtz_ellis_just_intonation_notation_commas = (
+            JustIntonationPitch(
+                self.helmholtz_ellis_just_intonation_notation_commas.ratio
+            ).cents
+        )
         closest_pythagorean_interval = self.closest_pythagorean_interval
         if len(closest_pythagorean_interval.exponents) >= 2:
             pythagorean_deviation = self.closest_pythagorean_interval.exponents[1] * (
@@ -874,8 +913,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
         indigestibility_numerator = JustIntonationPitch._indigestibility_of_factorised(
             numerator_denominator_decomposed[0]
         )
-        indigestibility_denominator = JustIntonationPitch._indigestibility_of_factorised(
-            numerator_denominator_decomposed[1]
+        indigestibility_denominator = (
+            JustIntonationPitch._indigestibility_of_factorised(
+                numerator_denominator_decomposed[1]
+            )
         )
         if indigestibility_numerator == 0 and indigestibility_denominator == 0:
             return float("inf")
@@ -966,8 +1007,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
         diatonic_pitch_name, accidentals = reference[0], reference[1:]
         n_accidentals_in_reference = JustIntonationPitch._count_accidentals(accidentals)
-        position_of_diatonic_pitch_in_cycle_of_fifths = parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
-            diatonic_pitch_name
+        position_of_diatonic_pitch_in_cycle_of_fifths = (
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
+                diatonic_pitch_name
+            )
         )
 
         closest_pythagorean_interval = self.closest_pythagorean_interval
@@ -983,9 +1026,11 @@ class JustIntonationPitch(parameters.abc.Pitch):
             position_of_diatonic_pitch_in_cycle_of_fifths
             + n_steps_in_diatonic_pitch_name
         ) % 7
-        new_diatonic_pitch = parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS[
-            nth_diatonic_pitch
-        ]
+        new_diatonic_pitch = (
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS[
+                nth_diatonic_pitch
+            ]
+        )
 
         # 2. Find new accidentals
         n_accidentals_in_closest_pythagorean_pitch = (
@@ -1198,6 +1243,69 @@ class JustIntonationPitch(parameters.abc.Pitch):
             map(intersect_exponents, zip(self.exponents, other.exponents))
         )
         self.exponents = intersected_exponents
+
+
+class Partial(object):
+    """Abstract representation of a harmonic spectrum partial.
+
+    :param nth_partial: The number of the partial (starting with 1
+        for the root note).
+    :type nth_partial: int
+    :param tonality: ``True`` for overtone and ``False`` for a (theoretical)
+        undertone. Default to ``True``.
+    :type tonality: bool
+
+    **Example:**
+
+    >>> from mutwo.parameters import pitches
+    >>> strong_clarinet_partials = (
+        pitches.Partial(1),
+        pitches.Partial(3),
+        pitches.Partial(5),
+        pitches.Partial(7),
+    )
+    """
+
+    def __init__(self, nth_partial: int, tonality: bool = True):
+        self._nth_partial = nth_partial
+        self._tonality = tonality
+
+    @property
+    def nth_partial(self) -> int:
+        return self._nth_partial
+
+    @property
+    def tonality(self) -> int:
+        return self._tonality
+
+    def __repr__(self) -> str:
+        return f"Partial({self.nth_partial}, {self.tonality})"
+
+
+class CommonHarmonic(JustIntonationPitch):
+    """:class:`JustIntonationPitch` which is the common harmonic between two or more other pitches.
+
+    :param partials: Tuple which contains partial numbers.
+    :type partials: tuple[Partial, ...]
+    :param ratio_or_exponents: see the documentation of :class:`JustIntonationPitch`
+    :type ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]]
+    :param concert_pitch: see the documentation of :class:`JustIntonationPitch`
+    :type concert_pitch: typing.Union[constants.Real, parameters.abc.Pitch]
+    """
+
+    def __init__(
+        self,
+        partials: tuple[Partial, ...],
+        ratio_or_exponents: typing.Union[
+            str, fractions.Fraction, typing.Iterable[int]
+        ] = "1/1",
+        concert_pitch: ConcertPitch = None,
+    ):
+        super().__init__(ratio_or_exponents, concert_pitch)
+        self.partials = partials
+
+    def __repr__(self) -> str:
+        return f"CommonHarmonic({self.ratio}, {self.partials})"
 
 
 class EqualDividedOctavePitch(parameters.abc.Pitch):
@@ -1470,7 +1578,9 @@ class WesternPitch(EqualDividedOctavePitch):
             raise NotImplementedError(message)
 
     @staticmethod
-    def _translate_pitch_class_name_to_pitch_class(pitch_class_name: str,) -> float:
+    def _translate_pitch_class_name_to_pitch_class(
+        pitch_class_name: str,
+    ) -> float:
         """Helper function to translate a pitch class name to its respective number.
 
         +/-1 is defined as one chromatic step. Smaller floating point numbers
@@ -1480,11 +1590,13 @@ class WesternPitch(EqualDividedOctavePitch):
             pitch_class_name[0],
             pitch_class_name[1:],
         )
-        diatonic_pitch_class = parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
-            diatonic_pitch_class_name
-        ]
-        pitch_class_modification = WesternPitch._translate_accidental_to_pitch_class_modifications(
-            accidental
+        diatonic_pitch_class = (
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+                diatonic_pitch_class_name
+            ]
+        )
+        pitch_class_modification = (
+            WesternPitch._translate_accidental_to_pitch_class_modifications(accidental)
         )
         return float(diatonic_pitch_class + pitch_class_modification)
 
@@ -1500,13 +1612,19 @@ class WesternPitch(EqualDividedOctavePitch):
                 parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME.keys()
             ),
         )
-        closest_accidental = parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
-            closest_pitch_class_modification
-        ]
+        closest_accidental = (
+            parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+                closest_pitch_class_modification
+            ]
+        )
         return closest_accidental
 
     @staticmethod
-    def _translate_pitch_class_to_pitch_class_name(pitch_class: constants.Real) -> str:
+    def _translate_pitch_class_to_pitch_class_name(
+        pitch_class: constants.Real,
+        previous_pitch_class: typing.Optional[constants.Real] = None,
+        previous_pitch_class_name: typing.Optional[str] = None,
+    ) -> str:
         """Helper function to translate a pitch class in number to a string.
 
         The returned pitch class name uses a Western nomenclature of English
@@ -1515,31 +1633,110 @@ class WesternPitch(EqualDividedOctavePitch):
         For floating point numbers the closest accidental will be chosen.
         """
 
-        diatonic_pitch_classes = tuple(
-            parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
-        )
-        closest_diatonic_pitch_class_index = tools.find_closest_index(
-            pitch_class, diatonic_pitch_classes
-        )
-        closest_diatonic_pitch_class = diatonic_pitch_classes[
-            closest_diatonic_pitch_class_index
-        ]
-        closest_diatonic_pitch = tuple(
-            parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys()
-        )[closest_diatonic_pitch_class_index]
-        difference_to_closest_diatonic_pitch = (
-            pitch_class - closest_diatonic_pitch_class
+        # NOTE: it is quite difficult to estimate a new pitch class name from the previous pitch
+        # class name. This doesn't work perfect. If this should work someday, you will need
+        # to write something like a "Interval" class.
+
+        if previous_pitch_class_name and previous_pitch_class and pitch_class != 0:
+            previous_diatonic_pitch_class_name = previous_pitch_class_name[0]
+            previous_diatonic_pitch_class_index = (
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+                    previous_diatonic_pitch_class_name
+                )
+            )
+            previous_diatonic_pitch_class = (
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+                    previous_diatonic_pitch_class_name
+                ]
+            )
+            n_pitch_classes_difference = pitch_class - previous_pitch_class
+            n_diatonic_pitches_to_move = bisect.bisect_left(
+                tuple(
+                    parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
+                ),
+                n_pitch_classes_difference % 12,
+            )
+            absolute_new_diatonic_pitch_class_index = (
+                previous_diatonic_pitch_class_index + n_diatonic_pitches_to_move
+            )
+            new_diatonic_pitch_class_index = (
+                absolute_new_diatonic_pitch_class_index
+                % len(parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES)
+            )
+            diatonic_pitch = (
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES[
+                    new_diatonic_pitch_class_index
+                ]
+            )
+            diatonic_pitch_class = (
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+                    diatonic_pitch
+                ]
+            )
+
+            n_pitch_classes_moved_between_diatonic_pitches = (
+                diatonic_pitch_class - previous_diatonic_pitch_class
+            )
+            accidental_adjustments = (
+                n_pitch_classes_difference
+                - n_pitch_classes_moved_between_diatonic_pitches
+            )
+
+            previous_accidental_adjustments = (
+                previous_pitch_class - previous_diatonic_pitch_class
+            )
+            accidental_adjustments += previous_accidental_adjustments
+
+            n_octaves_difference = absolute_new_diatonic_pitch_class_index // len(
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES
+            )
+
+        else:
+            diatonic_pitch_classes = tuple(
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
+            )
+            closest_diatonic_pitch_class_index = tools.find_closest_index(
+                pitch_class, diatonic_pitch_classes
+            )
+            diatonic_pitch_class = diatonic_pitch_classes[
+                closest_diatonic_pitch_class_index
+            ]
+            diatonic_pitch = tuple(
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys()
+            )[closest_diatonic_pitch_class_index]
+
+            accidental_adjustments = pitch_class - diatonic_pitch_class
+
+        accidental = (
+            WesternPitch._translate_difference_to_closest_diatonic_pitch_to_accidental(
+                accidental_adjustments
+            )
         )
 
-        accidental = WesternPitch._translate_difference_to_closest_diatonic_pitch_to_accidental(
-            difference_to_closest_diatonic_pitch
-        )
-
-        pitch_class_name = "{}{}".format(closest_diatonic_pitch, accidental)
+        pitch_class_name = f"{diatonic_pitch}{accidental}"
         return pitch_class_name
+
+    @classmethod
+    def from_midi_pitch_number(cls, midi_pitch_number: float) -> WesternPitch:
+        pitch_number = midi_pitch_number - 12
+        pitch_class_number = pitch_number % 12
+        octave_number = pitch_number // 12
+        return cls(pitch_class_number, octave=octave_number)
 
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, self.name)
+
+    def _math(
+        self,
+        n_pitch_classes_difference: constants.Real,
+        operator: typing.Callable[[constants.Real, constants.Real], constants.Real],
+    ) -> None:
+        new_pitch_class = operator(self.pitch_class, n_pitch_classes_difference)
+        n_octaves_difference = new_pitch_class // self.n_pitch_classes_per_octave
+        new_pitch_class = new_pitch_class % self.n_pitch_classes_per_octave
+        new_octave = self.octave + n_octaves_difference
+        self.pitch_class = new_pitch_class
+        self.octave = int(new_octave)
 
     @property
     def name(self) -> str:
@@ -1566,7 +1763,14 @@ class WesternPitch(EqualDividedOctavePitch):
 
     @EqualDividedOctavePitch.pitch_class.setter  # type: ignore
     def pitch_class(self, pitch_class: constants.Real):
+        if hasattr(self, "_pitch_class_name"):
+            previous_pitch_class = self._pitch_class
+            previous_pitch_class_name = self._pitch_class_name
+        else:
+            previous_pitch_class = None
+            previous_pitch_class_name = None
+
         self._pitch_class_name = self._translate_pitch_class_to_pitch_class_name(
-            pitch_class
+            pitch_class, previous_pitch_class, previous_pitch_class_name
         )
         self._pitch_class = pitch_class
