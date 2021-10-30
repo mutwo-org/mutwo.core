@@ -23,7 +23,8 @@ class NoteLikeTest(unittest.TestCase):
             music.NoteLike("ds5", 1, 1).pitch_or_pitches,
         )
         self.assertEqual(
-            [pitches.WesternPitch("f")], music.NoteLike("f", 1, 1).pitch_or_pitches,
+            [pitches.WesternPitch("f")],
+            music.NoteLike("f", 1, 1).pitch_or_pitches,
         )
         self.assertEqual(
             [
@@ -87,13 +88,35 @@ class NoteLikeTest(unittest.TestCase):
         self.assertEqual(volume, music.NoteLike(None, 1, n_decibel).volume)
 
     # ###################################################################### #
+    #                   test grace notes setter                              #
+    # ###################################################################### #
+
+    def test_grace_notes_setter_from_simple_event(self):
+        grace_notes = music.NoteLike()
+        self.assertEqual(
+            basic.SequentialEvent([grace_notes]),
+            music.NoteLike(None, 1, 1, grace_notes).grace_notes,
+        )
+
+    def test_grace_notes_setter_from_sequential_event(self):
+        grace_notes = basic.SequentialEvent([music.NoteLike()])
+        self.assertEqual(
+            grace_notes,
+            music.NoteLike(
+                None, 1, 1, basic.SequentialEvent([]), grace_notes
+            ).after_grace_notes,
+        )
+
+    # ###################################################################### #
     #                          other                                         #
     # ###################################################################### #
 
     def test_parameters_to_compare(self):
         note_like = music.NoteLike([pitches.WesternPitch()], 1, 1)
         expected_parameters_to_compare = (
+            "after_grace_notes",
             "duration",
+            "grace_notes",
             "notation_indicators",
             "pitch_or_pitches",
             "playing_indicators",

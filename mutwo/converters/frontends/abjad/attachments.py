@@ -740,3 +740,53 @@ class DynamicChangeIndicationStop(BangFirstAttachment):
     ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
         abjad.attach(abjad.StopTextSpan(), leaf)
         return leaf
+
+
+class GraceNotes(BangFirstAttachment):
+    def __init__(self, grace_notes: abjad.BeforeGraceContainer):
+        self._grace_notes = grace_notes
+
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Always return None.
+
+        GraceNotes can't be initialised from IndicatorCollection.
+        """
+        return None
+
+    @property
+    def is_active(self) -> bool:
+        return True
+
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
+        abjad.attach(self._grace_notes, leaf)
+        return leaf
+
+
+class AfterGraceNotes(BangLastAttachment):
+    def __init__(self, after_grace_notes: abjad.AfterGraceContainer):
+        self._after_grace_notes = after_grace_notes
+
+    @classmethod
+    def from_indicator_collection(
+        cls, indicator_collection: parameters_abc.IndicatorCollection
+    ) -> typing.Optional["AbjadAttachment"]:
+        """Always return None.
+
+        GraceNotes can't be initialised from IndicatorCollection.
+        """
+        return None
+
+    @property
+    def is_active(self) -> bool:
+        return True
+
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
+        abjad.attach(self._after_grace_notes, leaf)
+        return leaf
