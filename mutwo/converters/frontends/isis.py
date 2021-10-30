@@ -19,7 +19,8 @@ from mutwo.utilities import constants
 __all__ = ("IsisScoreConverter", "IsisConverter")
 
 ConvertableEvents = typing.Union[
-    events.basic.SimpleEvent, events.basic.SequentialEvent[events.basic.SimpleEvent],
+    events.basic.SimpleEvent,
+    events.basic.SequentialEvent[events.basic.SimpleEvent],
 ]
 ExtractedData = typing.Tuple[
     # duration, consonants, vowel, pitch, volume
@@ -34,7 +35,6 @@ ExtractedData = typing.Tuple[
 class IsisScoreConverter(converters.abc.EventConverter):
     """Class to convert mutwo events to a `ISiS score file. <https://isis-documentation.readthedocs.io/en/latest/score.html>`_
 
-    :param path: where to write the ISiS score file
     :param simple_event_to_pitch: Function to extract an instance of
         :class:`mutwo.parameters.abc.Pitch` from a simple event.
     :param simple_event_to_volume:
@@ -49,7 +49,6 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
     def __init__(
         self,
-        path: str,
         simple_event_to_pitch: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Pitch
         ] = lambda simple_event: simple_event.pitch_or_pitches[
@@ -74,7 +73,6 @@ class IsisScoreConverter(converters.abc.EventConverter):
         default_sentence_loudness: typing.Union[constants.Real, None] = None,
         n_events_per_line: int = 5,
     ):
-        self.path = path
         self._tempo = tempo
         self._global_transposition = global_transposition
         self._default_sentence_loudness = default_sentence_loudness
@@ -114,7 +112,8 @@ class IsisScoreConverter(converters.abc.EventConverter):
         return "{}: {}".format(key_name, line_join_string.join(lines))
 
     def _make_lyrics_section_from_extracted_data_per_event(
-        self, extracted_data_per_event: typing.Tuple[ExtractedData],
+        self,
+        extracted_data_per_event: typing.Tuple[ExtractedData],
     ) -> str:
         xsampa = self._make_key_from_extracted_data_per_event(
             "xsampa",
@@ -127,7 +126,8 @@ class IsisScoreConverter(converters.abc.EventConverter):
         return lyric_section
 
     def _make_score_section_from_extracted_data_per_event(
-        self, extracted_data_per_event: typing.Tuple[ExtractedData],
+        self,
+        extracted_data_per_event: typing.Tuple[ExtractedData],
     ) -> str:
         midi_notes = self._make_key_from_extracted_data_per_event(
             "midiNotes",
@@ -202,11 +202,14 @@ class IsisScoreConverter(converters.abc.EventConverter):
     #                             public api                                 #
     # ###################################################################### #
 
-    def convert(self, event_to_convert: ConvertableEvents) -> None:
+    def convert(self, event_to_convert: ConvertableEvents, path: str) -> None:
         """Render ISiS score file from the passed event.
 
         :param event_to_convert: The event that shall be rendered to a ISiS score
             file.
+        :type event_to_convert: typing.Union[events.basic.SimpleEvent, events.basic.SequentialEvent[events.basic.SimpleEvent]]
+        :param path: where to write the ISiS score file
+        :type path: str
 
         **Example:**
 
@@ -241,14 +244,13 @@ class IsisScoreConverter(converters.abc.EventConverter):
         score_section = self._make_score_section_from_extracted_data_per_event(
             extracted_data_per_event  # type: ignore
         )
-        with open(self.path, "w") as f:
+        with open(path, "w") as f:
             f.write("\n\n".join([lyrics_section, score_section]))
 
 
 class IsisConverter(converters.abc.Converter):
     """Generate audio files with `ISiS <https://forum.ircam.fr/projects/detail/isis/>`_.
 
-    :param path: where to write the sound file
     :param isis_score_converter: The :class:`IsisScoreConverter` that shall be used
         to render the ISiS score file from a mutwo event.
     :param *flag: Flag that shall be added when calling ISiS. Several of the supported
@@ -262,17 +264,15 @@ class IsisConverter(converters.abc.Converter):
 
     def __init__(
         self,
-        path: str,
         isis_score_converter: IsisScoreConverter,
         *flag: str,
         remove_score_file: bool = False
     ):
         self.flags = flag
-        self.path = path
         self.isis_score_converter = isis_score_converter
         self.remove_score_file = remove_score_file
 
-    def convert(self, event_to_convert: ConvertableEvents) -> None:
+    def convert(self, event_to_convert: ConvertableEvents, path: str) -> None:
         """Render sound file via ISiS from mutwo event.
 
         :param event_to_convert: The event that shall be rendered.
@@ -285,7 +285,9 @@ class IsisConverter(converters.abc.Converter):
 
         self.isis_score_converter.convert(event_to_convert)
         command = "{} -m {} -o {}".format(
-            isis_constants.ISIS_PATH, self.isis_score_converter.path, self.path,
+            isis_constants.ISIS_PATH,
+            path + ".sco",
+            path,
         )
         for flag in self.flags:
             command += " {} ".format(flag)

@@ -27,7 +27,6 @@ PFieldDict = typing.Dict[str, typing.Optional[PFieldFunction]]
 class CsoundScoreConverter(converters.abc.EventConverter):
     """Class to convert mutwo events to a Csound score file.
 
-    :param path: where to write the csound score file
     :param pfield: p-field / p-field-extraction-function pairs.
 
     This class helps generating score files for the `"domain-specific computer
@@ -54,7 +53,6 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     All p-fields can be overwritten in the following manner:
 
     >>> my_converter = CsoundScoreConverter(
-    >>>     path="my_csound_score.sco",
     >>>     p1=lambda event: 2,
     >>>     p4=lambda event: event.pitch.frequency,
     >>>     p5=lambda event: event.volume
@@ -73,7 +71,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         else None,  # default key for duration
     }
 
-    def __init__(self, path: str, **pfield: PFieldFunction):
+    def __init__(self, **pfield: PFieldFunction):
         concatenated_p_fields: PFieldDict = dict([])
         for default_p_field, default_p_field_function in self._default_p_fields.items():
             if default_p_field not in pfield:
@@ -83,7 +81,6 @@ class CsoundScoreConverter(converters.abc.EventConverter):
 
         concatenated_p_fields.update(pfield)
         self.pfields = self._generate_pfield_mapping(concatenated_p_fields)
-        self.path = path
 
     # ###################################################################### #
     #                          static methods                                #
@@ -102,9 +99,8 @@ class CsoundScoreConverter(converters.abc.EventConverter):
             try:
                 assert number0 >= 0
             except AssertionError:
-                message = (
-                    "Can't assign p-field '{}'. P-field number has to bigger than 0."
-                    .format(key0)
+                message = "Can't assign p-field '{}'. P-field number has to bigger than 0.".format(
+                    key0
                 )
                 raise ValueError(message)
 
@@ -114,9 +110,8 @@ class CsoundScoreConverter(converters.abc.EventConverter):
             if difference > 1:
                 for _ in range(difference - 1):
                     pfields.append(lambda event: 0)
-                message = (
-                    "Couldn't find any mapping for p-fields between '{}' and '{}'. "
-                    .format(key0, key1)
+                message = "Couldn't find any mapping for p-fields between '{}' and '{}'. ".format(
+                    key0, key1
                 )
                 message += "Assigned these p-fields to 0."
                 warnings.warn(message)
@@ -229,18 +224,21 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     #                             public api                                 #
     # ###################################################################### #
 
-    def convert(self, event_to_convert: events.abc.Event) -> None:
+    def convert(self, event_to_convert: events.abc.Event, path: str) -> None:
         """Render csound score file (.sco) from the passed event.
 
         :param event_to_convert: The event that shall be rendered to a csound score
             file.
+        :type event_to_convert: events.abc.Event
+        :param path: where to write the csound score file
+        :type path: str
 
         >>> import random
         >>> from mutwo.parameters import pitches
         >>> from mutwo.events import basic
         >>> from mutwo.converters.frontends import csound
         >>> converter = csound.CsoundScoreConverter(
-        >>>    path="score.sco", p4=lambda event: event.pitch.frequency
+        >>>    p4=lambda event: event.pitch.frequency
         >>> )
         >>> events = basic.SequentialEvent(
         >>>    [
@@ -249,20 +247,19 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         >>> )
         >>> for event in events:
         >>>     event.pitch = pitches.DirectPitch(random.uniform(100, 500))
-        >>> converter.convert(events)
+        >>> converter.convert(events, 'score.sco')
         """
 
         csound_score_lines = self._convert_event(event_to_convert, 0)
         # convert events to strings (where each string represents one csound score line)
         # write csound score lines to file
-        with open(self.path, "w") as f:
+        with open(path, "w") as f:
             f.write("\n".join(csound_score_lines))
 
 
 class CsoundConverter(converters.abc.Converter):
     """Generate audio files with `Csound <http://www.csounds.com/>`_.
 
-    :param path: where to write the sound file
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
     :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used
         to render the csound score file (.sco) from a mutwo event.
@@ -278,33 +275,42 @@ class CsoundConverter(converters.abc.Converter):
 
     def __init__(
         self,
-        path: str,
         csound_orchestra_path: str,
         csound_score_converter: CsoundScoreConverter,
         *flag: str,
         remove_score_file: bool = False
     ):
         self.flags = flag
-        self.path = path
         self.csound_orchestra_path = csound_orchestra_path
         self.csound_score_converter = csound_score_converter
         self.remove_score_file = remove_score_file
 
-    def convert(self, event_to_convert: events.abc.Event) -> None:
+    def convert(
+        self,
+        event_to_convert: events.abc.Event,
+        path: str,
+        score_path: typing.Optional[str] = None,
+    ) -> None:
         """Render sound file from the mutwo event.
 
         :param event_to_convert: The event that shall be rendered.
+        :type event_to_convert: events.abc.Event
+        :param path: where to write the sound file
+        :type path: str
+        :param score_path: where to write the score file
+        :type score_path: typing.Optional[str]
         """
 
-        self.csound_score_converter.convert(event_to_convert)
-        command = "csound -o {}".format(self.path)
+        if not score_path:
+            score_path = path + ".sco"
+
+        self.csound_score_converter.convert(event_to_convert, score_path)
+        command = "csound -o {}".format(path)
         for flag in self.flags:
             command += " {} ".format(flag)
-        command += " {} {}".format(
-            self.csound_orchestra_path, self.csound_score_converter.path
-        )
+        command += " {} {}".format(self.csound_orchestra_path, score_path)
 
         os.system(command)
 
         if self.remove_score_file:
-            os.remove(self.csound_score_converter.path)
+            os.remove(score_path)

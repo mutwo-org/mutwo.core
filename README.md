@@ -26,8 +26,8 @@ simple_melody = basic.SequentialEvent(
         )
     ]
 )
-midi_file_converter = frontends.midi.MidiFileConverter("my_simple_melody.mid")
-midi_file_converter.convert(simple_melody)
+midi_file_converter = frontends.midi.MidiFileConverter()
+midi_file_converter.convert(simple_melody, "my_simple_melody.mid")
 ```
 
 Making Western notation via [abjad](https://github.com/Abjad/abjad) of the same melody:

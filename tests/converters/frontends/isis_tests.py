@@ -27,22 +27,22 @@ class NoteLikeWithText(events.music.NoteLike):
 
 
 class IsisScoreConverterTest(unittest.TestCase):
+    score_path = "tests/converters/frontends/isis-score"
+
     @classmethod
     def setUpClass(cls):
-        cls.converter = converters.frontends.isis.IsisScoreConverter(
-            "tests/converters/frontends/isis-score",
-        )
+        cls.converter = converters.frontends.isis.IsisScoreConverter()
 
     @classmethod
     def tearDownClass(cls):
         # remove score files
-        os.remove(cls.converter.path)
+        os.remove(cls.score_path)
 
     def test_convert_simple_event(self):
         simple_event = NoteLikeWithText(
             parameters.pitches.WesternPitch(), 2, 0.5, ("t",), "a"
         )
-        self.converter.convert(simple_event)
+        self.converter.convert(simple_event, self.score_path)
 
         expected_score = (
             "[lyrics]\nxsampa: {} {}\n\n[score]\nmidiNotes: {}\nglobalTransposition:"
@@ -56,7 +56,7 @@ class IsisScoreConverterTest(unittest.TestCase):
             )
         )
 
-        with open(self.converter.path, "r") as f:
+        with open(self.score_path, "r") as f:
             self.assertEqual(f.read(), expected_score)
 
     def test_convert_sequential_event(self):
@@ -86,22 +86,23 @@ class IsisScoreConverterTest(unittest.TestCase):
             )
         )
 
-        self.converter.convert(sequential_event)
-        with open(self.converter.path, "r") as f:
+        self.converter.convert(sequential_event, self.score_path)
+        with open(self.score_path, "r") as f:
             self.assertEqual(f.read(), expected_score)
 
     def test_convert_rest(self):
         simple_event = events.basic.SimpleEvent(3)
-        self.converter.convert(simple_event)
+        self.converter.convert(simple_event, self.score_path)
 
         expected_score = (
             "[lyrics]\nxsampa: _\n\n[score]\nmidiNotes: 0.0\nglobalTransposition:"
             " 0\nrhythm: {}\nloud_accents: 0\ntempo: {}".format(
-                simple_event.duration, self.converter._tempo,
+                simple_event.duration,
+                self.converter._tempo,
             )
         )
 
-        with open(self.converter.path, "r") as f:
+        with open(self.score_path, "r") as f:
             self.assertEqual(f.read(), expected_score)
 
 

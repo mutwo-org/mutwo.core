@@ -1,4 +1,4 @@
-"""Defining the public api for any converter class."""
+"""Defining the public API for any converter class."""
 
 import abc
 import typing
@@ -14,12 +14,12 @@ class Converter(abc.ABC):
 
     Converter classes are defined as classes that convert data between
     two different encodings. Their only public method (besides initialisation)
-    should be a `convert` method that has exactly one argument (the data that
-    should be converted).
+    should be a `convert` method. The first argument of the convert method
+    should be the data to convert.
     """
 
     @abc.abstractmethod
-    def convert(self, event_or_parameter_or_file_to_convert: typing.Any) -> typing.Any:
+    def convert(self, event_or_parameter_or_file_to_convert: typing.Any, *args, **kwargs) -> typing.Any:
         raise NotImplementedError
 
 

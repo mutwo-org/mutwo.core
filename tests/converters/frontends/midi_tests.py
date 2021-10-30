@@ -104,7 +104,7 @@ class MidiFileConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.midi_file_path = "tests/converters/frontends/test.mid"
-        cls.converter = midi.MidiFileConverter(cls.midi_file_path)
+        cls.converter = midi.MidiFileConverter()
         cls.sequential_event = basic.SequentialEvent(
             [
                 music.NoteLike(pitches.WesternPitch(pitch), 1, 1)
@@ -173,9 +173,9 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
     def test_find_available_midi_channels(self):
-        converter0 = midi.MidiFileConverter("test.mid")
+        converter0 = midi.MidiFileConverter()
         converter1 = midi.MidiFileConverter(
-            "test.mid", distribute_midi_channels=True, n_midi_channels_per_track=1
+            distribute_midi_channels=True, n_midi_channels_per_track=1
         )
 
         n_sequential_events = 17
@@ -207,9 +207,9 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
     def test_beats_to_ticks(self):
-        converter0 = midi.MidiFileConverter("test.mid")
-        converter1 = midi.MidiFileConverter("test.mid", ticks_per_beat=100)
-        converter2 = midi.MidiFileConverter("test.mid", ticks_per_beat=1000)
+        converter0 = midi.MidiFileConverter()
+        converter1 = midi.MidiFileConverter(ticks_per_beat=100)
+        converter2 = midi.MidiFileConverter(ticks_per_beat=1000)
 
         n_beats_collection = (10, 30, 31.12, 11231.5523)
 
@@ -485,15 +485,15 @@ class MidiFileConverterTest(unittest.TestCase):
     def test_correct_midi_file_type(self):
         # make sure generated midi file has the correct midi file type
 
-        converter0 = midi.MidiFileConverter(self.midi_file_path, midi_file_type=0)
-        converter1 = midi.MidiFileConverter(self.midi_file_path, midi_file_type=1)
+        converter0 = midi.MidiFileConverter(midi_file_type=0)
+        converter1 = midi.MidiFileConverter(midi_file_type=1)
 
         for converter in (converter0, converter1):
             for event in (self.sequential_event, self.simultaneous_event):
-                converter.convert(self.simultaneous_event)
-                midi_file = mido.MidiFile(converter.path)
+                converter.convert(event, self.midi_file_path)
+                midi_file = mido.MidiFile(self.midi_file_path)
                 self.assertEqual(midi_file.type, converter._midi_file_type)
-                os.remove(converter.path)
+                os.remove(self.midi_file_path)
 
     def test_overriding_simple_event_to_arguments(self):
         # make sure generated midi file has the correct midi file type
@@ -502,14 +502,13 @@ class MidiFileConverterTest(unittest.TestCase):
         constant_volume = volumes.DirectVolume(1)
         constant_control_message = mido.Message("control_change", value=100)
         converter = midi.MidiFileConverter(
-            self.midi_file_path,
             simple_event_to_pitches=lambda event: (constant_pitch,),
             simple_event_to_volume=lambda event: constant_volume,
             simple_event_to_control_messages=lambda event: (constant_control_message,),
         )
 
-        converter.convert(self.sequential_event)
-        midi_file = mido.MidiFile(converter.path)
+        converter.convert(self.sequential_event, self.midi_file_path)
+        midi_file = mido.MidiFile(self.midi_file_path)
         n_control_message = 0
         n_note_on_messages = 0
         for message in midi_file:
@@ -527,7 +526,7 @@ class MidiFileConverterTest(unittest.TestCase):
         self.assertEqual(n_note_on_messages, len(self.sequential_event))
         self.assertEqual(n_control_message, len(self.sequential_event))
 
-        os.remove(converter.path)
+        os.remove(self.midi_file_path)
 
     def test_available_midi_channels_argument(self):
         # make sure mutwo only writes notes to midi channel that are
@@ -544,17 +543,17 @@ class MidiFileConverterTest(unittest.TestCase):
             ),
         ):
             converter = midi.MidiFileConverter(
-                self.midi_file_path, available_midi_channels=available_midi_channels
+                available_midi_channels=available_midi_channels
             )
-            converter.convert(self.sequential_event)
-            midi_file = mido.MidiFile(converter.path)
+            converter.convert(self.sequential_event, self.midi_file_path)
+            midi_file = mido.MidiFile(self.midi_file_path)
             available_midi_channels_cycle = itertools.cycle(available_midi_channels)
             for message in midi_file:
                 if message.type == "note_on":
                     self.assertEqual(
                         message.channel, next(available_midi_channels_cycle)
                     )
-            os.remove(converter.path)
+            os.remove(self.midi_file_path)
 
     def test_distribute_midi_channels_argument(self):
         # makes sure mutwo distributes midi channels on different

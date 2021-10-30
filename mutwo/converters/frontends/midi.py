@@ -126,9 +126,6 @@ class MidiFileConverter(abc.Converter):
     midi files. In this way the user can tweak the conversion routine to her
     or his individual needs.
 
-    :param path: where to write the midi file. The typical file type extension '.mid'
-        is recommended, but not mandatory.
-    :type path: str
     :param simple_event_to_pitches: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
@@ -205,7 +202,6 @@ class MidiFileConverter(abc.Converter):
     >>> from mutwo.parameters import pitches
     >>> # midi file converter that assign a middle c to all events
     >>> midi_converter = midi.MidiFileConverter(
-    >>>     'test.mid',
     >>>     simple_event_to_pitches=lambda event: (pitches.WesternPitch('c'),)
     >>> )
 
@@ -219,7 +215,6 @@ class MidiFileConverter(abc.Converter):
 
     def __init__(
         self,
-        path: str,
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch, ...]
         ] = lambda event: event.pitch_or_pitches,  # type: ignore
@@ -264,8 +259,6 @@ class MidiFileConverter(abc.Converter):
         self._assert_available_midi_channels_have_correct_value(available_midi_channels)
 
         # initialise the attributes of the class
-        self.path = path
-
         self._simple_event_to_pitches = simple_event_to_pitches
         self._simple_event_to_volume = simple_event_to_volume
         self._simple_event_to_control_messages = simple_event_to_control_messages
@@ -746,11 +739,15 @@ class MidiFileConverter(abc.Converter):
     #               public methods for interaction with the user             #
     # ###################################################################### #
 
-    def convert(self, event_to_convert: ConvertableEvents) -> None:
+    def convert(self, event_to_convert: ConvertableEvents, path: str) -> None:
         """Render a Midi file to the converters path attribute from the given event.
 
         :param event_to_convert: The given event that shall be translated
             to a Midi file.
+        :type event_to_convert: typing.Union[events.basic.SimpleEvent, events.basic.SequentialEvent[events.basic.SimpleEvent], events.basic.SimultaneousEvent[events.basic.SequentialEvent[events.basic.SimpleEvent]]]
+        :param path: where to write the midi file. The typical file type extension '.mid'
+            is recommended, but not mandatory.
+        :type path: str
 
         The following example generates a midi file that contains a simple ascending
         pentatonic scale:
@@ -765,9 +762,9 @@ class MidiFileConverter(abc.Converter):
         >>>     ]
         >>> )
         >>> midi_converter = midi.MidiFileConverter(
-        >>>     'ascending_scale.mid', available_midi_channels=(0,)
+        >>>     available_midi_channels=(0,)
         >>> )
-        >>> midi_converter.convert(ascending_scale)
+        >>> midi_converter.convert(ascending_scale, 'ascending_scale.mid')
 
         **Disclaimer:** when passing nested structures, make sure that the
         nested object matches the expected type. Unlike other mutwo
@@ -786,4 +783,4 @@ class MidiFileConverter(abc.Converter):
         """
 
         midi_file = self._event_to_midi_file(event_to_convert)
-        midi_file.save(filename=self.path)
+        midi_file.save(filename=path)

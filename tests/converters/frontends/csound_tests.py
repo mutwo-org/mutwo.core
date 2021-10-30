@@ -24,10 +24,11 @@ class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
 
 
 class CsoundScoreConverterTest(unittest.TestCase):
+    test_path = "tests/converters/frontends/test.sco"
+
     @classmethod
     def setUpClass(cls):
         cls.converter = converters.frontends.csound.CsoundScoreConverter(
-            "tests/converters/frontends/test.sco",
             p4=lambda event: event.pitch.frequency,
             p5=lambda event: event.path,
         )
@@ -35,20 +36,22 @@ class CsoundScoreConverterTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # remove score files
-        os.remove(cls.converter.path)
+        os.remove(cls.test_path)
 
     def test_convert_simple_event(self):
         duration = 2
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
-            parameters.pitches.JustIntonationPitch(), duration, "flute_sample.wav",
+            parameters.pitches.JustIntonationPitch(),
+            duration,
+            "flute_sample.wav",
         )
-        self.converter.convert(event_to_convert)
+        self.converter.convert(event_to_convert, self.test_path)
         expected_line = 'i 1 0 {} {} "{}"'.format(
             duration,
             float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
             event_to_convert.path,
         )
-        with open(self.converter.path, "r") as f:
+        with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_line)
 
     def test_convert_sequential_event(self):
@@ -67,7 +70,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
                 for pitch, duration, path in zip(pitches, durations, paths)
             ]
         )
-        self.converter.convert(event_to_convert)
+        self.converter.convert(event_to_convert, self.test_path)
 
         expected_lines = [
             converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
@@ -93,7 +96,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         expected_lines = "\n".join(expected_lines)
 
-        with open(self.converter.path, "r") as f:
+        with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
     def test_convert_sequential_event_with_rests(self):
@@ -113,7 +116,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
                 ),
             ]
         )
-        self.converter.convert(event_to_convert)
+        self.converter.convert(event_to_convert, self.test_path)
 
         expected_lines = [
             converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
@@ -139,7 +142,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         expected_lines = "\n".join(expected_lines)
 
-        with open(self.converter.path, "r") as f:
+        with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
     def test_convert_simultaneous_event(self):
@@ -158,7 +161,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
                 for pitch, duration, path in zip(pitches, durations, paths)
             ]
         )
-        self.converter.convert(event_to_convert)
+        self.converter.convert(event_to_convert, self.test_path)
 
         expected_lines = [
             converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
@@ -179,7 +182,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         expected_lines = "\n".join(expected_lines)
 
-        with open(self.converter.path, "r") as f:
+        with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
 
     def test_generate_p_field_mapping(self):
@@ -199,13 +202,16 @@ class CsoundScoreConverterTest(unittest.TestCase):
         # convert simple event with unsupported type (set) for path argument
         duration = 2
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
-            parameters.pitches.JustIntonationPitch(), duration, set([1, 2, 3]),
+            parameters.pitches.JustIntonationPitch(),
+            duration,
+            set([1, 2, 3]),
         )
-        self.converter.convert(event_to_convert)
+        self.converter.convert(event_to_convert, self.test_path)
         expected_line = "i 1 0 {} {}".format(
-            duration, float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
+            duration,
+            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
         )
-        with open(self.converter.path, "r") as f:
+        with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_line)
 
 
@@ -214,18 +220,19 @@ class CsoundConverterTest(unittest.TestCase):
     def setUpClass(cls):
         common_path = "tests/converters/frontends"
         cls.orchestra_path = "{}/test.orc".format(common_path)
+        cls.score_path = "{}/test.sco".format(common_path)
+        cls.soundfile_path = "{}/test.wav".format(common_path)
         with open(cls.orchestra_path, "w") as f:
             f.write(
                 "sr=44100\nksmps=1\n0dbfs=1\nnchnls=1\ninstr 1\nasig poscil3 p5,"
                 " p4\nout asig\nendin"
             )
         cls.score_converter = converters.frontends.csound.CsoundScoreConverter(
-            "{}/test.sco".format(common_path),
             p4=lambda event: event.pitch_or_pitches[0].frequency,
             p5=lambda event: event.volume.amplitude,
         )
         cls.converter = converters.frontends.csound.CsoundConverter(
-            "{}/test.wav".format(common_path), cls.orchestra_path, cls.score_converter
+            cls.orchestra_path, cls.score_converter
         )
 
         cls.event_to_convert = events.music.NoteLike(
@@ -238,26 +245,32 @@ class CsoundConverterTest(unittest.TestCase):
     def tearDownClass(cls):
         # remove csound and sound files
         os.remove(cls.orchestra_path)
-        os.remove(cls.score_converter.path)
-        os.remove(cls.converter.path)
+        os.remove(cls.score_path)
+        os.remove(cls.soundfile_path)
 
     def test_convert(self):
         # make sure conversion method run without any errors
         # (and sound file exists)
 
-        self.converter.convert(self.event_to_convert)
-        self.assertTrue(os.path.isfile(self.converter.path))
+        self.converter.convert(
+            self.event_to_convert, self.soundfile_path, self.score_path
+        )
+        self.assertTrue(os.path.isfile(self.soundfile_path))
 
     def test_convert_with_remove_score_file(self):
         # make sure csound converter removes / maintains score file
 
         self.converter.remove_score_file = True
-        self.converter.convert(self.event_to_convert)
-        self.assertFalse(os.path.isfile(self.score_converter.path))
+        self.converter.convert(
+            self.event_to_convert, self.soundfile_path, self.score_path
+        )
+        self.assertFalse(os.path.isfile(self.score_path))
 
         self.converter.remove_score_file = False
-        self.converter.convert(self.event_to_convert)
-        self.assertTrue(os.path.isfile(self.score_converter.path))
+        self.converter.convert(
+            self.event_to_convert, self.soundfile_path, self.score_path
+        )
+        self.assertTrue(os.path.isfile(self.score_path))
 
 
 if __name__ == "__main__":
