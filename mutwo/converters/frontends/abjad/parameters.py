@@ -12,7 +12,7 @@ import abjad  # type: ignore
 import expenvelope  # type: ignore
 
 from mutwo.converters import abc as converters_abc
-from mutwo.converters.frontends import abjad_attachments
+from mutwo.converters.frontends.abjad import attachments
 from mutwo.converters.frontends import ekmelily_constants
 
 from mutwo import parameters
@@ -293,7 +293,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
 
 
 class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
-    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.abjad_attachments.Dynamic`.
+    """Convert Mutwo Volume objects to :class:`~mutwo.converters.frontends.attachments.Dynamic`.
 
     This default class simply checks if the passed Mutwo object belongs to
     :class:`mutwo.parameters.volumes.WesternVolume`. If it does, Mutwo
@@ -307,7 +307,7 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
 
     def convert(
         self, volume_to_convert: parameters.abc.Volume
-    ) -> typing.Optional[abjad_attachments.Dynamic]:
+    ) -> typing.Optional[attachments.Dynamic]:
         if not isinstance(volume_to_convert, parameters.volumes.WesternVolume):
             if volume_to_convert.amplitude > 0:
                 volume_to_convert = parameters.volumes.WesternVolume.from_amplitude(
@@ -315,11 +315,11 @@ class MutwoVolumeToAbjadAttachmentDynamicConverter(converters_abc.Converter):
                 )
             else:
                 return None
-        return abjad_attachments.Dynamic(dynamic_indicator=volume_to_convert.name)
+        return attachments.Dynamic(dynamic_indicator=volume_to_convert.name)
 
 
 class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_attachments.Tempo`.
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.attachments.Tempo`.
 
     Abstract base class for tempo envelope conversion. See
     :class:`ComplexTempoEnvelopeToAbjadAttachmentTempoConverter` for a concrete
@@ -329,15 +329,15 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
     @abc.abstractmethod
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> typing.Tuple[typing.Tuple[constants.Real, abjad_attachments.Tempo], ...]:
-        # return tuple filled with subtuples (leaf_index, abjad_attachments.Tempo)
+    ) -> typing.Tuple[typing.Tuple[constants.Real, attachments.Tempo], ...]:
+        # return tuple filled with subtuples (leaf_index, attachments.Tempo)
         raise NotImplementedError()
 
 
 class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     TempoEnvelopeToAbjadAttachmentTempoConverter
 ):
-    """Convert tempo envelope to :class:`~mutwo.converters.frontends.abjad_attachments.Tempo`.
+    """Convert tempo envelope to :class:`~mutwo.converters.frontends.attachments.Tempo`.
 
     This object tries to intelligently set correct tempo attachments to an
     :class:`abjad.Voice` object, appropriate to Western notation standards.
@@ -423,7 +423,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     @staticmethod
     def _shall_stop_dynamic_change_indication(
         tempo_attachments: typing.Tuple[
-            typing.Tuple[constants.Real, abjad_attachments.Tempo], ...
+            typing.Tuple[constants.Real, attachments.Tempo], ...
         ]
     ) -> bool:
         stop_dynamic_change_indicaton = False
@@ -486,9 +486,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         tempo_point: parameters.tempos.TempoPoint,
         tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
         tempo_attachments: typing.Tuple[
-            typing.Tuple[constants.Real, abjad_attachments.Tempo], ...
+            typing.Tuple[constants.Real, attachments.Tempo], ...
         ],
-    ) -> abjad_attachments.Tempo:
+    ) -> attachments.Tempo:
         try:
             next_tempo_point: typing.Optional[
                 parameters.tempos.TempoPoint
@@ -523,7 +523,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         if textual_indication == "a tempo":
             write_metronome_mark = True
 
-        converted_tempo_point = abjad_attachments.Tempo(
+        converted_tempo_point = attachments.Tempo(
             reference_duration=reference_duration,
             units_per_minute=units_per_minute,
             textual_indication=textual_indication,
@@ -540,7 +540,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> typing.Tuple[typing.Tuple[constants.Real, abjad_attachments.Tempo], ...]:
+    ) -> typing.Tuple[typing.Tuple[constants.Real, attachments.Tempo], ...]:
         tempo_points = (
             ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_points(
                 tempo_envelope_to_convert.levels
@@ -548,7 +548,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         )
 
         tempo_attachments: typing.List[
-            typing.Tuple[constants.Real, abjad_attachments.Tempo]
+            typing.Tuple[constants.Real, attachments.Tempo]
         ] = []
         for nth_tempo_point, absolute_time, duration, tempo_point in zip(
             range(len(tempo_points)),

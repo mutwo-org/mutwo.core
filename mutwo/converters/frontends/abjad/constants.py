@@ -3,12 +3,11 @@
 
 import inspect
 
-from mutwo.converters.frontends import abjad_attachments
-
+from mutwo.converters.frontends.abjad import attachments
 
 DEFAULT_ABJAD_ATTACHMENT_CLASSES = tuple(
     cls
-    for _, cls in inspect.getmembers(abjad_attachments, inspect.isclass)
+    for _, cls in inspect.getmembers(attachments, inspect.isclass)
     if not inspect.isabstract(cls)
 )
 """Default value for argument `abjad_attachment_classes` in

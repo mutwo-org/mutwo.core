@@ -129,15 +129,15 @@ class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
         converter = frontends.abjad.MutwoVolumeToAbjadAttachmentDynamicConverter()
         self.assertEqual(
             converter.convert(parameters.volumes.WesternVolume("mf")),
-            frontends.abjad_attachments.Dynamic("mf"),
+            frontends.abjad.attachments.Dynamic("mf"),
         )
         self.assertEqual(
             converter.convert(parameters.volumes.WesternVolume("fff")),
-            frontends.abjad_attachments.Dynamic("fff"),
+            frontends.abjad.attachments.Dynamic("fff"),
         )
         self.assertEqual(
             converter.convert(parameters.volumes.DecibelVolume(-6)),
-            frontends.abjad_attachments.Dynamic(
+            frontends.abjad.attachments.Dynamic(
                 parameters.volumes.WesternVolume.from_decibel(-6).name
             ),
         )
@@ -230,8 +230,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
 
     def test_shall_stop_dynamic_change_indication(self):
         previous_tempo_attachments = (
-            (0, frontends.abjad_attachments.Tempo(dynamic_change_indication="rit.")),
-            (2, frontends.abjad_attachments.Tempo(dynamic_change_indication=None)),
+            (0, frontends.abjad.attachments.Tempo(dynamic_change_indication="rit.")),
+            (2, frontends.abjad.attachments.Tempo(dynamic_change_indication=None)),
         )
         self.assertEqual(
             frontends.abjad.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
@@ -300,7 +300,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
         tempo_attachments = (
             (
                 0,
-                frontends.abjad_attachments.Tempo(
+                frontends.abjad.attachments.Tempo(
                     reference_duration=(1, 4),
                     units_per_minute=120,
                     textual_indication=None,
@@ -311,7 +311,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ),
             (
                 2,
-                frontends.abjad_attachments.Tempo(
+                frontends.abjad.attachments.Tempo(
                     reference_duration=None,
                     units_per_minute=None,
                     textual_indication=None,
@@ -322,7 +322,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ),
             (
                 4,
-                frontends.abjad_attachments.Tempo(
+                frontends.abjad.attachments.Tempo(
                     reference_duration=(1, 4),
                     units_per_minute=110,
                     textual_indication=None,
@@ -333,7 +333,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ),
             (
                 6,
-                frontends.abjad_attachments.Tempo(
+                frontends.abjad.attachments.Tempo(
                     reference_duration=(1, 4),
                     units_per_minute=120,
                     textual_indication=None,
@@ -344,7 +344,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase)
             ),
             (
                 8,
-                frontends.abjad_attachments.Tempo(
+                frontends.abjad.attachments.Tempo(
                     reference_duration=None,
                     units_per_minute=None,
                     textual_indication="a tempo",
@@ -720,7 +720,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                         abjad.StaffGroup,
                         "PianoStaff",
                         post_process_abjad_container_routines=(
-                            frontends.abjad_process_container_routines.AddInstrumentName(
+                            frontends.abjad.process_container_routines.AddInstrumentName(
                                 complex_event_to_instrument_name=lambda complex_event: complex_event.tag
                             ),
                         ),
@@ -732,7 +732,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                         abjad.Staff,
                         "Staff",
                         post_process_abjad_container_routines=(
-                            frontends.abjad_process_container_routines.AddInstrumentName(
+                            frontends.abjad.process_container_routines.AddInstrumentName(
                                 complex_event_to_instrument_name=lambda complex_event: complex_event.tag
                             ),
                         ),

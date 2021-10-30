@@ -15,21 +15,10 @@ for modules, dependencies in (
     (("reaper",), ("rpp",)),
     (
         (
-            "abjad_attachments",
-            "abjad_process_container_routines",
-            "abjad_constants",
             "abjad",
         ),
         ("abjad", "abjadext.nauert", "abjadext.rmakers"),
     ),
-    # for future
-    # (
-    #     (
-    #         "abjad_video_constants",
-    #         "abjad_video",
-    #     ),
-    #     ("abjad", "PIL"),
-    # ),
 ):
     for module in modules:
         tools.import_module_if_dependencies_have_been_installed(

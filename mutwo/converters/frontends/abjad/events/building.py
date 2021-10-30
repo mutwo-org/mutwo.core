@@ -12,9 +12,9 @@ except ImportError:
 import abjad  # type: ignore
 
 from mutwo.converters import abc as converters_abc
-from mutwo.converters.frontends import abjad_attachments
-from mutwo.converters.frontends import abjad_constants
-from mutwo.converters.frontends import abjad_process_container_routines
+from mutwo.converters.frontends.abjad import attachments
+from mutwo.converters.frontends.abjad import constants as abjad_constants
+from mutwo.converters.frontends.abjad import process_container_routines
 
 from mutwo import events
 from mutwo import parameters
@@ -56,10 +56,10 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
             [events.abc.ComplexEvent], str
         ],
         pre_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ],
         post_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ],
     ):
         self._abjad_container_class = abjad_container_class
@@ -203,17 +203,17 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     :type mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter, optional
     :param mutwo_volume_to_abjad_attachment_dynamic_converter: Class which defines how
         to convert :class:`mutwo.parameters.abc.Volume` objects to
-        :class:`mutwo.converters.frontends.abjad_attachments.Dynamic` objects.
+        :class:`mutwo.converters.frontends.attachments.Dynamic` objects.
         See :class:`MutwoVolumeToAbjadAttachmentDynamicConverter` for more information.
     :type mutwo_volume_to_abjad_attachment_dynamic_converter: MutwoVolumeToAbjadAttachmentDynamicConverter, optional
     :param tempo_envelope_to_abjad_attachment_tempo_converter: Class which defines how
         to convert tempo envelopes to
-        :class:`mutwo.converters.frontends.abjad_attachments.Tempo` objects.
+        :class:`mutwo.converters.frontends.attachments.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
     :param abjad_attachment_classes: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
-    :type abjad_attachment_classes: typing.Sequence[abjad_attachments.AbjadAttachment], optional
+    :type abjad_attachment_classes: typing.Sequence[attachments.AbjadAttachment], optional
     :param write_multimeasure_rests: Set to ``True`` if the converter should replace
         rests that last a complete bar with multimeasure rests (rests with uppercase
         "R" in Lilypond). Default to ``True``.
@@ -246,7 +246,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             TempoEnvelopeToAbjadAttachmentTempoConverter
         ] = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
         abjad_attachment_classes: typing.Sequence[
-            typing.Type[abjad_attachments.AbjadAttachment]
+            typing.Type[attachments.AbjadAttachment]
         ] = None,
         write_multimeasure_rests: bool = True,
         lilypond_type_of_abjad_container: str = "Voice",
@@ -254,10 +254,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             [events.abc.ComplexEvent], typing.Optional[str]
         ] = lambda _: None,
         pre_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
         post_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
     ):
         # special treatment for duration line based quantizer
@@ -269,7 +269,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             ),
         ):
             post_process_abjad_container_routines += (
-                abjad_process_container_routines.AddDurationLineEngraver(),
+                process_container_routines.AddDurationLineEngraver(),
             )
 
         super().__init__(
@@ -297,7 +297,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         self._abjad_attachment_classes = abjad_attachment_classes
 
-        self._available_abjad_attachments = tuple(
+        self._available_attachments = tuple(
             abjad_attachment_class.get_class_name()
             for abjad_attachment_class in self._abjad_attachment_classes
         )
@@ -372,10 +372,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     #                          private methods                               #
     # ###################################################################### #
 
-    def _indicator_collection_to_abjad_attachments(
+    def _indicator_collection_to_attachments(
         self,
         indicator_collection: parameters.abc.IndicatorCollection,
-    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+    ) -> typing.Dict[str, attachments.AbjadAttachment]:
         attachments = {}
         for abjad_attachment_class in self._abjad_attachment_classes:
             abjad_attachment = abjad_attachment_class.from_indicator_collection(
@@ -390,7 +390,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
-    ) -> typing.Dict[str, abjad_attachments.AbjadAttachment]:
+    ) -> typing.Dict[str, attachments.AbjadAttachment]:
         if self._mutwo_volume_to_abjad_attachment_dynamic_converter:
             abjad_attachment_dynamic = (
                 self._mutwo_volume_to_abjad_attachment_dynamic_converter.convert(volume)
@@ -406,7 +406,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         typing.Tuple[
             int,
             typing.Union[
-                abjad_attachments.Tempo, abjad_attachments.DynamicChangeIndicationStop
+                attachments.Tempo, attachments.DynamicChangeIndicationStop
             ],
         ],
         ...,
@@ -423,8 +423,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             typing.Tuple[
                 int,
                 typing.Union[
-                    abjad_attachments.Tempo,
-                    abjad_attachments.DynamicChangeIndicationStop,
+                    attachments.Tempo,
+                    attachments.DynamicChangeIndicationStop,
                 ],
             ]
         ] = []
@@ -438,7 +438,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             #  better looking results)
             if tempo_attachment.stop_dynamic_change_indicaton:
                 leaf_index_to_tempo_attachment_pairs.append(
-                    (closest_leaf - 1, abjad_attachments.DynamicChangeIndicationStop())
+                    (closest_leaf - 1, attachments.DynamicChangeIndicationStop())
                 )
             leaf_index_to_tempo_attachment_pairs.append(
                 (closest_leaf, tempo_attachment)
@@ -458,22 +458,22 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             ...,
         ],
     ) -> typing.Tuple[
-        typing.Tuple[typing.Optional[abjad_attachments.AbjadAttachment], ...], ...
+        typing.Tuple[typing.Optional[attachments.AbjadAttachment], ...], ...
     ]:
         attachments_per_type_per_event: typing.Dict[
-            str, typing.List[typing.Optional[abjad_attachments.AbjadAttachment]]
+            str, typing.List[typing.Optional[attachments.AbjadAttachment]]
         ] = {
             attachment_name: [None for _ in extracted_data_per_simple_event]
-            for attachment_name in self._available_abjad_attachments
+            for attachment_name in self._available_attachments
         }
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             _, volume, playing_indicators, notation_indicators = extracted_data
             attachments_for_nth_event = self._volume_to_abjad_attachment(volume)
             attachments_for_nth_event.update(
-                self._indicator_collection_to_abjad_attachments(playing_indicators)
+                self._indicator_collection_to_attachments(playing_indicators)
             )
             attachments_for_nth_event.update(
-                self._indicator_collection_to_abjad_attachments(notation_indicators)
+                self._indicator_collection_to_attachments(notation_indicators)
             )
             for attachment_name, attachment in attachments_for_nth_event.items():
                 attachments_per_type_per_event[attachment_name][nth_event] = attachment
@@ -504,7 +504,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             typing.Tuple[typing.Tuple[int, ...], ...], ...
         ],
         attachments_per_type_per_event: typing.Tuple[
-            typing.Tuple[typing.Optional[abjad_attachments.AbjadAttachment], ...], ...
+            typing.Tuple[typing.Optional[attachments.AbjadAttachment], ...], ...
         ],
     ) -> None:
         for attachments in attachments_per_type_per_event:
@@ -878,10 +878,10 @@ class NestedComplexEventToAbjadContainerConverter(
             [events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.tag,
         pre_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
         post_process_abjad_container_routines: typing.Sequence[
-            abjad_process_container_routines.ProcessAbjadContainerRoutine
+            process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
     ):
         super().__init__(

@@ -9,6 +9,11 @@ If one wants to build complete scores from within mutwo, the module offers the
 :class:`NestedComplexEventToAbjadContainerConverter`.
 """
 
+from . import attachments
+from . import process_container_routines
+
+from . import constants
+
 from .parameters import *
 from .events import *
 
