@@ -1,27 +1,20 @@
 Installation
 ============
 
-As long as **mutwo** isn't released as a pypi package yet, a basic installation can be archived through cloning **mutwo** from github and then moving to **mutwos** path:
+Mutwo is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
 
 .. code-block:: sh
+    pip3 install mutwo
 
-    git clone https://github.com/mutwo-org/mutwo
-    cd mutwo
-
-And then run the simple pip command to install **mutwo** and its main dependencies:
-
-.. code-block:: sh
-
-    pip3 install --user .
-
-For using different backends (midi, Reaper, ...) *mutwo* needs additional extra requirements. They can be installed by adding the respective backend in parenthesis:
+For using different backends or frontends (midi, abjad, ...) mutwo may need additional extra requirements.
+They can be installed by adding the respective backend in parenthesis:
 
 .. code-block:: sh
-
-    pip3 install --user .[reaper]
+    pip3 install mutwo[abjad]
 
 To install all extra requirements simply run:
 
 .. code-block:: sh
+    pip3 install mutwo[all]
 
-    pip3 install --user .[all]
+Depending on the used converter classes, mutwo may need additional software to work properly. For using the Csound converter, you should install Csound first. For using Lilypond via mutwos abjad Converter, install Lilypond first. For using the ISiS converter, install ISiS first.
