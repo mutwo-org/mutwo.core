@@ -5,7 +5,9 @@ import math
 import expenvelope  # type: ignore
 
 import mutwo_third_party
+
 from mutwo import converters
+from mutwo.converters.symmetrical import loudness_constants
 from mutwo.utilities import constants
 
 
@@ -26,10 +28,6 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
 
     The converter works best with pure sine waves.
     """
-
-    # roughly the sound of a mosquito flying 3 m away
-    # (see https://en.wikipedia.org/wiki/Sound_pressure)
-    _auditory_threshold_at_1khz = 0.00002
 
     def __init__(
         self,
@@ -119,6 +117,6 @@ class LoudnessToAmplitudeConverter(converters.abc.Converter):
         )
         amplitude_ratio = self._decibel_to_amplitude_ratio(
             sound_pressure_level_for_pereived_loudness_based_on_speaker,
-            self._auditory_threshold_at_1khz,
+            loudness_constants.AUDITORY_THRESHOLD_AT_1KHZ,
         )
         return amplitude_ratio
