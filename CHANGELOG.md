@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.35.0] - 2021-10-30
+
+### Added
+- `grace_notes` and `after_grace_notes` to ``NoteLike``
+- `grace_notes` and `after_grace_notes` rendering in ``SequentialEventToAbjadVoiceConverter``
+
+### Removed
+- `mutwo.events.general`
+
 ## [0.34.0] - 2021-10-30
 
 ### Changed
