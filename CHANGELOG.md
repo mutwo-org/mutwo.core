@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.34.0] - 2021-10-30
+
+### Changed
+- give up one-argument-policy for convert method of converter classes
+    - ``CsoundScoreConverter`` path argument from ``__init__`` moved to ``convert``
+    - ``CsoundConverter`` path argument from ``__init__`` moved to ``convert``
+    - ``IsisScoreConverter`` path argument from ``__init__`` moved to ``convert``
+    - ``IsisConverter`` path argument from ``__init__`` moved to ``convert``
+    - ``MidiFileConverter`` path argument from ``__init__`` moved to ``convert``
+    - ``Loudness`` perceived_loudness_in_sone argument from ``__init__`` moved to ``convert``
+- `mutwo.converters.frontends.abjad_attachments` to `mutwo.converters.frontends.abjad.attachments`
+- `mutwo.converters.frontends.abjad_container_routines` to `mutwo.converters.frontends.abjad.container_routines`
+- `mutwo.converters.frontends.abjad_constants` to `mutwo.converters.frontends.abjad.constants`
+- return type of `process_leaf` in `mutwo.converters.frontends.abjad.attachments` from `abjad.Leaf` to `typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]`
+
 ## [0.33.0] - 2021-10-25
 
 ### Added
