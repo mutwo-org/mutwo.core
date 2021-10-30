@@ -103,17 +103,20 @@ class Event(abc.ABC):
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
-        :returns: Return tuple containing the assigned values for each contained
-            event. If an event doesn't posses the asked parameter, mutwo will simply
-            add None to the tuple for the respective event.
+        :type parameter_name: str
         :param flat: ``True`` for flat sequence of parameter values, ``False`` if the
             resulting ``tuple`` shall repeat the nested structure of the event.
         :type flat: bool
+        :returns: Return tuple containing the assigned values for each contained
+            event. If an event doesn't posses the asked parameter, mutwo will simply
+            add None to the tuple for the respective event.
 
         **Example:**
 
         >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event = basic.SequentialEvent(
+        >>>     [basic.SimpleEvent(2), basic.SimpleEvent(3)]
+        >>> )
         >>> sequential_event.get_parameter('duration')
         (2, 3)
         """
@@ -135,6 +138,7 @@ class Event(abc.ABC):
         """Sets parameter to new value for all children events.
 
         :param parameter_name: The name of the parameter which values shall be changed.
+        :type parameter_name: str
         :param object_or_function: For setting the parameter either a new value can be
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
@@ -148,7 +152,9 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> sequential_event = basic.SequentialEvent(
+        >>>     [basic.SimpleEvent(2), basic.SimpleEvent(3)]
+        >>> )
         >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
         >>> sequential_event.get_parameter('duration')
         (4, 6)
