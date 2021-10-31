@@ -360,11 +360,14 @@ class Indicator(Parameter):
 
     def get_arguments_dict(self) -> dict[str, typing.Any]:
         return {
-            key: getattr(self, key) for key in self.__dataclass_fields__.keys()  # type: ignore
+            key: getattr(self, key)
+            for key in self.__dataclass_fields__.keys()  # type: ignore
         }
 
 
 class PlayingIndicator(Indicator):
+    """Abstract base class for any playing indicator."""
+
     pass
 
 
@@ -399,6 +402,8 @@ class ImplicitPlayingIndicator(PlayingIndicator):
 
 
 class NotationIndicator(Indicator):
+    """Abstract base class for any notation indicator."""
+
     @property
     def is_active(self) -> bool:
         return all(
