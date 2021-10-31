@@ -21,8 +21,8 @@ The following example generates a short midi file:
             for pitch_name in ("c", "a", "g", "e")
         ]
     )
-    midi_file_converter = frontends.midi.MidiFileConverter('my_simple_melody.mid')
-    midi_file_converter.convert(simple_melody)
+    midi_file_converter = frontends.midi.MidiFileConverter()
+    midi_file_converter.convert(simple_melody, 'my_simple_melody.mid')
 
 
 .. toctree::
