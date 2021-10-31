@@ -13,6 +13,8 @@ from mutwo.parameters import notation_indicators
 from mutwo.parameters import playing_indicators
 from mutwo.utilities import tools
 
+from mutwo.converters.frontends.abjad import attachments_constants
+
 
 class AbjadAttachment(abc.ABC):
     """Abstract base class for all Abjad attachments."""
@@ -763,6 +765,11 @@ class GraceNotes(BangFirstAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
+        for (
+            indicator_to_detach
+        ) in attachments_constants.INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES:
+            detached_indicator = abjad.detach(indicator_to_detach, leaf)
+            abjad.attach(detached_indicator, self._grace_notes[0])
         abjad.attach(self._grace_notes, leaf)
         return leaf
 
