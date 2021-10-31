@@ -35,7 +35,7 @@ class NoteLike(events.basic.SimpleEvent):
         Fraction will also build :class:`mutwo.parameters.pitches.JustIntonationPitch`
         objects. Other numbers (integer and float) will be read as pitch class numbers
         to make :class:`mutwo.parameters.pitches.WesternPitch` objects.
-    :param new_duration: The duration of ``NoteLike``. This can be any number.
+    :param duration: The duration of ``NoteLike``. This can be any number.
         The unit of the duration is up to the interpretation of the user and the
         respective converter routine that will be used.
     :param volume: The volume of the event. Can either be a object of
