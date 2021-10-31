@@ -20,5 +20,4 @@ from . import music_constants
 from . import abc
 from . import basic
 from . import music
-from . import brackets
 from . import time_brackets

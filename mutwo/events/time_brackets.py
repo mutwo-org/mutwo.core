@@ -1,15 +1,19 @@
-"""Module for Cage-like time brackets.
+"""Events which are defined by absolute start and end times.
 
-Time brackets are events which are defined by unspecified start and end times.
+Time brackets are events which are defined by their absolute start-
+and end time. Furthermore start and end times don't have to be fixed
+points but can also be ranges. In this way it is possible to model
+Cage-like time brackets like in his late number pieces.
 """
 
+import bisect
+import statistics
 import typing
 
 import numpy as np  # type: ignore
 
 from mutwo.events import abc as events_abc
 from mutwo.events import basic
-from mutwo.events import brackets
 from mutwo.parameters import tempos
 from mutwo.utilities import constants
 from mutwo.utilities import exceptions
@@ -21,13 +25,22 @@ __all__ = (
 )
 
 
-TimeRange = typing.Tuple[constants.Real, constants.Real]
+TimeRange = tuple[constants.Real, constants.Real]
 TimeOrTimeRange = typing.Union[constants.Real, TimeRange]
 
 T = typing.TypeVar("T", bound=events_abc.Event)
 
 
-class TimeBracket(brackets.Bracket, typing.Generic[T]):
+class TimeBracket(basic.SimultaneousEvent):
+    """:class:`SimultaneousEvent` with a specified start and end point.
+
+    :param tagged_event_or_tagged_events:
+    :param start_or_start_range:
+    :param end_or_end_range:
+    :param seed:
+    :param force_spanning_of_end_or_end_range:
+    """
+
     _class_specific_side_attributes = (
         "start_or_start_range",
         "end_or_end_range",
@@ -49,15 +62,30 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
         seed: typing.Optional[int] = None,
         force_spanning_of_end_or_end_range: bool = True,
     ):
-        super().__init__(
-            tagged_event_or_tagged_events, start_or_start_range, end_or_end_range
-        )
+        super().__init__(tagged_event_or_tagged_events)
+        self.start_or_start_range = start_or_start_range
+        self.end_or_end_range = end_or_end_range
 
         time_bracket_random = np.random.default_rng(seed)
         self.force_spanning_of_end_or_end_range = force_spanning_of_end_or_end_range
 
         self._seed = seed
         self._time_bracket_random = time_bracket_random
+
+    # ###################################################################### #
+    #                           static methods                               #
+    # ###################################################################### #
+
+    @staticmethod
+    def _get_mean_of_value_or_value_range(
+        value_or_value_range: typing.Union[
+            constants.Real, tuple[constants.Real, constants.Real]
+        ],
+    ) -> constants.Real:
+        if isinstance(value_or_value_range, typing.Sequence):
+            return statistics.mean(value_or_value_range)
+        else:
+            return value_or_value_range
 
     @staticmethod
     def _get_extrema_of_value_or_value_range(
@@ -129,13 +157,21 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
     #                         public properties                              #
     # ###################################################################### #
 
-    @brackets.Bracket.start_or_start_range.setter
+    @property
+    def start_or_start_range(self) -> TimeOrTimeRange:
+        return self._start_or_start_range
+
+    @start_or_start_range.setter
     def start_or_start_range(self, start_or_start_range: TimeOrTimeRange):
         self._start_or_start_range = start_or_start_range
         if hasattr(self, "_assigned_start_time"):
             self.assign_concrete_times()
 
-    @brackets.Bracket.end_or_end_range.setter
+    @property
+    def end_or_end_range(self) -> TimeOrTimeRange:
+        return self._end_or_end_range
+
+    @end_or_end_range.setter
     def end_or_end_range(self, end_or_end_range: TimeOrTimeRange):
         self._end_or_end_range = end_or_end_range
         if hasattr(self, "_assigned_end_time"):
@@ -143,9 +179,7 @@ class TimeBracket(brackets.Bracket, typing.Generic[T]):
 
     @property
     def mean_start(self) -> constants.Real:
-        return brackets.Bracket._get_mean_of_value_or_value_range(
-            self.start_or_start_range
-        )
+        return TimeBracket._get_mean_of_value_or_value_range(self.start_or_start_range)
 
     @property
     def mean_end(self) -> constants.Real:
@@ -286,7 +320,94 @@ class TempoBasedTimeBracket(TimeBracket, typing.Generic[T]):
         )
 
 
-class TimeBracketContainer(brackets.BracketContainer[TimeBracket]):
+class TimeBracketContainer(object):
+    def __init__(self, time_brackets: typing.Sequence[TimeBracket]):
+        self._time_brackets = basic.SequentialEvent(time_brackets)
+        self._resort()
+
+    def _resort(self):
+        self._time_brackets.sort(key=lambda bracket: bracket.mean_start)
+
+    def __repr__(self) -> str:
+        return "BracketContainer({})".format(tuple(self._time_brackets))
+
+    def __iter__(self):
+        return iter(self._time_brackets)
+
+    def __getitem__(self, index: int) -> TimeBracket:
+        return self._time_brackets[index]
+
+    def _test_for_overlaying_brackets(
+        self,
+        time_bracket_to_test: TimeBracket,
+        tags_to_analyse: typing.Optional[tuple[str, ...]],
+    ):
+        def get_tags_of_bracket(
+            bracket_from_which_to_extract_tags: TimeBracket,
+        ) -> tuple[str, ...]:
+            return tuple(
+                tagged_event.tag for tagged_event in bracket_from_which_to_extract_tags
+            )
+
+        # check for overlapping brackets before registering the new one
+        if not tags_to_analyse:
+            tags_to_analyse = get_tags_of_bracket(time_bracket_to_test)
+        for registered_bracket in self._time_brackets:
+            registered_bracket_tags = get_tags_of_bracket(registered_bracket)
+            is_tag_in_other_tags = tuple(
+                tag in tags_to_analyse for tag in registered_bracket_tags
+            )
+            if any(is_tag_in_other_tags):
+                if registered_bracket.is_overlapping_with_other(time_bracket_to_test):
+                    raise exceptions.OverlappingTimeBracketsError()
+
+    def register(
+        self,
+        time_bracket_to_register: TimeBracket,
+        test_for_overlapping_brackets: bool = True,
+        tags_to_analyse: typing.Optional[tuple[str, ...]] = None,
+    ):
+        """Add new bracket to :class`TimeBracketContainer`.
+
+        :param time_bracket_to_register: The :class:`TimeBracket`
+            which shall be added.
+        :type time_bracket_to_register: TimeBracket
+        :param test_for_overlapping_brackets: Set to ``True``
+            if mutwo shall check if the new :class:`TimeBracket`
+            overlaps with any :class:`TimeBracket` in the
+            :class:`TimeBracketContainer`.
+        :type test_for_overlapping_brackets: bool
+        :param tags_to_analyse:
+        :type tags_to_analyse:
+        """
+
+        if test_for_overlapping_brackets:
+            self._test_for_overlaying_brackets(
+                time_bracket_to_register, tags_to_analyse
+            )
+
+        start_of_brackets = tuple(bracket.mean_start for bracket in self._time_brackets)
+        index = bisect.bisect_left(
+            start_of_brackets, time_bracket_to_register.mean_start
+        )
+        self._time_brackets.insert(index, time_bracket_to_register)
+
+    def filter(self, tag: str) -> tuple[TimeBracket, ...]:
+        """Filter and return all brackets which contain events with the requested tag
+
+        :param tag: The tag which shall be investigated.
+        :type tag: str
+        """
+
+        filtered_brackets = []
+        for bracket in self._time_brackets:
+            for tagged_event in bracket:
+                if tagged_event.tag == tag:
+                    filtered_brackets.append(bracket)
+                    break
+
+        return tuple(filtered_brackets)
+
     def delay(
         self,
         value: constants.Real,
@@ -298,12 +419,22 @@ class TimeBracketContainer(brackets.BracketContainer[TimeBracket]):
     ):
         """Delay all time brackets in area from start to end by value.
 
-        WARNING: This function is not safe (wrong usage could create overlapping
-        time brackets with the same tags).
+        :param value:
+        :type value:
+        :param start:
+        :type start:
+        :param end:
+        :type end:
+        :param time_bracket_to_time_bracket_time:
+        :type time_bracket_to_time_bracket_time:
+
+        **WARNING**: This function is not safe (wrong usage could create
+            overlapping time brackets with the same tags).
         """
 
         if not start:
             start = 0
+
         if not end:
             end = self[-1].maximum_end
 
@@ -313,41 +444,3 @@ class TimeBracketContainer(brackets.BracketContainer[TimeBracket]):
                 time_bracket.delay(value)
 
         self._resort()
-
-    def register(
-        self,
-        bracket_to_register: T,
-        test_for_overlapping_brackets: bool = True,
-        tags_to_analyse: typing.Optional[typing.Tuple[str, ...]] = None,
-    ):
-        """Add new bracket to :class:`TimeBracketContainer`.
-
-        :param bracket: The bracket which shall be added.
-        :type bracket: TimeBracket
-        """
-
-        if test_for_overlapping_brackets:
-
-            def get_tags_of_bracket(
-                bracket_from_which_to_extract_tags: TimeBracket,
-            ) -> typing.Tuple[str, ...]:
-                return tuple(
-                    tagged_event.tag
-                    for tagged_event in bracket_from_which_to_extract_tags
-                )
-
-            # check for overlapping brackets before registering the new one
-            if not tags_to_analyse:
-                tags_to_analyse = get_tags_of_bracket(bracket_to_register)
-            for registered_bracket in self._brackets:
-                registered_bracket_tags = get_tags_of_bracket(registered_bracket)
-                is_tag_in_other_tags = tuple(
-                    tag in tags_to_analyse for tag in registered_bracket_tags
-                )
-                if any(is_tag_in_other_tags):
-                    if registered_bracket.is_overlapping_with_other(
-                        bracket_to_register
-                    ):
-                        raise exceptions.OverlappingTimeBracketsError()
-
-        super().register(bracket_to_register)
