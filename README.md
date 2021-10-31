@@ -45,7 +45,7 @@ abjad.show(abjad_score)
 
 ### Documentation
 
-For more information how to use **mutwo** read the [documentation](https://mutwo.readthedocs.io/en/latest/).
+For more information how to use mutwo read the [documentation](https://mutwo.readthedocs.io/en/latest/).
 
 
 ### Installation
@@ -56,7 +56,7 @@ For more information how to use **mutwo** read the [documentation](https://mutwo
 pip3 install mutwo
 ```
 
-For using different backends or frontends (midi, abjad, ...) **mutwo** may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
+For using different backends or frontends (midi, abjad, ...) mutwo may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
 
 ```sh
 pip3 install mutwo[abjad]
@@ -70,7 +70,7 @@ pip3 install mutwo[all]
 
 ### Requirements
 
-Depending on the used converter classes, **mutwo** may need additional software to work properly. For using the Csound converter, you should install Csound first. For using Lilypond via **mutwos** abjad Converter, install Lilypond first. For using the ISiS converter, install ISiS first.
+Depending on the used converter classes, mutwo may need additional software to work properly. For using the Csound converter, you should install Csound first. For using Lilypond via mutwos abjad Converter, install Lilypond first. For using the ISiS converter, install ISiS first.
 
 
 ### Similar projects
