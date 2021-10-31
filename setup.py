@@ -9,8 +9,8 @@ extras_require = {
     "midi": ["mido>=1.2.9, <2"],
     "reaper": ["rpp>=0.4, <0.5"],
     "abjad": [
-        "abjad-ext-nauert>=3.3.0, <4",
-        "abjad>=3.2.0, <4",
+        "abjad-ext-nauert>=3.4.0, <4",
+        "abjad>=3.4.0, <4",
         "abjad-ext-rmakers>=3.4.0, <4",
     ],
 }
