@@ -41,7 +41,7 @@ def make_common_product_set_scale(
     n_combinations: int,
     tonality: bool,
     normalize: bool = False,
-) -> typing.Tuple[pitches.JustIntonationPitch, ...]:
+) -> tuple[pitches.JustIntonationPitch, ...]:
     """Make common product set scale as described in Wilsons letter to Fokker.
 
     :param numbers: The numbers which will be combined to single pitches.

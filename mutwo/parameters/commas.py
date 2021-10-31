@@ -37,8 +37,8 @@ class CommaCompound(typing.Iterable[Comma]):
 
     def __init__(
         self,
-        prime_to_exponent: typing.Dict[int, int],
-        prime_to_comma: typing.Optional[typing.Dict[int, Comma]],
+        prime_to_exponent: dict[int, int],
+        prime_to_comma: typing.Optional[dict[int, Comma]],
     ):
         # TODO(make sure all primes in 'prime_to_exponent' are also in
         # 'prime_to_comma')
@@ -59,7 +59,7 @@ class CommaCompound(typing.Iterable[Comma]):
         )
 
     @property
-    def prime_to_exponent(self) -> typing.Dict[int, int]:
+    def prime_to_exponent(self) -> dict[int, int]:
         return dict(self._prime_to_exponent)
 
     @property

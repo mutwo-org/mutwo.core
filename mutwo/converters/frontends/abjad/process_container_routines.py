@@ -157,7 +157,7 @@ class AddTimeBracketMarks(ProcessAbjadContainerRoutine):
     @staticmethod
     def _add_time_bracket_mark_for_time_range(
         leaf_to_attach_to: abjad.Leaf,
-        time_range: typing.Tuple[
+        time_range: tuple[
             parameters.abc.DurationType, parameters.abc.DurationType
         ],
         format_slot: str,

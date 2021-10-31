@@ -103,7 +103,7 @@ class Tendency(object):
         self._assert_curves_are_valid(self.minima_curve, maxima_curve)
         self._maxima_curve = maxima_curve
 
-    def range_at(self, time: float) -> typing.Tuple[float]:
+    def range_at(self, time: float) -> tuple[float]:
         """Get minima / maxima range at requested time."""
         return (self.minima_curve.value_at(time), self.maxima_curve.value_at(time))
 

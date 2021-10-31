@@ -66,7 +66,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         accidental name. See
         :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
         for the default mapping.
-    :type prime_to_heji_accidental_name: typing.Dict[int, str], optional
+    :type prime_to_heji_accidental_name: dict[int, str], optional
     :param otonality_indicator: String which indicates that the
         respective prime alteration is otonal. See
         :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_OTONALITY_INDICATOR`
@@ -130,7 +130,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
     def __init__(
         self,
         reference_pitch: str = "a",
-        prime_to_heji_accidental_name: typing.Optional[typing.Dict[int, str]] = None,
+        prime_to_heji_accidental_name: typing.Optional[dict[int, str]] = None,
         otonality_indicator: str = None,
         utonality_indicator: str = None,
         exponent_to_exponent_indicator: typing.Callable[[int], str] = None,
@@ -329,7 +329,7 @@ class TempoEnvelopeToAbjadAttachmentTempoConverter(converters_abc.Converter):
     @abc.abstractmethod
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> typing.Tuple[typing.Tuple[constants.Real, attachments.Tempo], ...]:
+    ) -> tuple[tuple[constants.Real, attachments.Tempo], ...]:
         # return tuple filled with subtuples (leaf_index, attachments.Tempo)
         raise NotImplementedError()
 
@@ -352,10 +352,10 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _convert_tempo_points(
-        tempo_points: typing.Tuple[
+        tempo_points: tuple[
             typing.Union[constants.Real, parameters.tempos.TempoPoint], ...
         ]
-    ) -> typing.Tuple[parameters.tempos.TempoPoint, ...]:
+    ) -> tuple[parameters.tempos.TempoPoint, ...]:
         return tuple(
             tempo_point
             if isinstance(tempo_point, parameters.tempos.TempoPoint)
@@ -394,7 +394,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         tempo_envelope_to_convert: expenvelope.Envelope,
         nth_tempo_point: int,
         tempo_point: parameters.tempos.TempoPoint,
-        tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
+        tempo_points: tuple[parameters.tempos.TempoPoint, ...],
     ) -> bool:
         write_metronome_mark = True
         for previous_tempo_point, previous_tempo_point_duration in zip(
@@ -422,8 +422,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _shall_stop_dynamic_change_indication(
-        tempo_attachments: typing.Tuple[
-            typing.Tuple[constants.Real, attachments.Tempo], ...
+        tempo_attachments: tuple[
+            tuple[constants.Real, attachments.Tempo], ...
         ]
     ) -> bool:
         stop_dynamic_change_indicaton = False
@@ -441,9 +441,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         write_metronome_mark: bool,
         tempo_point: parameters.tempos.TempoPoint,
         stop_dynamic_change_indicaton: bool,
-    ) -> typing.Tuple[
-        typing.Optional[typing.Tuple[int, int]],
-        typing.Optional[typing.Union[int, typing.Tuple[int, int]]],
+    ) -> tuple[
+        typing.Optional[tuple[int, int]],
+        typing.Optional[typing.Union[int, tuple[int, int]]],
         typing.Optional[str],
     ]:
         if write_metronome_mark:
@@ -451,12 +451,12 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             reference = fractions.Fraction(tempo_point.reference) * fractions.Fraction(
                 1, 4
             )
-            reference_duration: typing.Optional[typing.Tuple[int, int]] = (
+            reference_duration: typing.Optional[tuple[int, int]] = (
                 reference.numerator,
                 reference.denominator,
             )
             units_per_minute: typing.Optional[
-                typing.Union[int, typing.Tuple[int, int]]
+                typing.Union[int, tuple[int, int]]
             ] = (
                 (
                     int(tempo_point.tempo_or_tempo_range_in_beats_per_minute[0]),
@@ -484,9 +484,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         tempo_envelope_to_convert: expenvelope.Envelope,
         nth_tempo_point: int,
         tempo_point: parameters.tempos.TempoPoint,
-        tempo_points: typing.Tuple[parameters.tempos.TempoPoint, ...],
-        tempo_attachments: typing.Tuple[
-            typing.Tuple[constants.Real, attachments.Tempo], ...
+        tempo_points: tuple[parameters.tempos.TempoPoint, ...],
+        tempo_attachments: tuple[
+            tuple[constants.Real, attachments.Tempo], ...
         ],
     ) -> attachments.Tempo:
         try:
@@ -540,15 +540,15 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
-    ) -> typing.Tuple[typing.Tuple[constants.Real, attachments.Tempo], ...]:
+    ) -> tuple[tuple[constants.Real, attachments.Tempo], ...]:
         tempo_points = (
             ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_points(
                 tempo_envelope_to_convert.levels
             )
         )
 
-        tempo_attachments: typing.List[
-            typing.Tuple[constants.Real, attachments.Tempo]
+        tempo_attachments: list[
+            tuple[constants.Real, attachments.Tempo]
         ] = []
         for nth_tempo_point, absolute_time, duration, tempo_point in zip(
             range(len(tempo_points)),

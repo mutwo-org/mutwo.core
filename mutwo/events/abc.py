@@ -99,7 +99,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def get_parameter(
         self, parameter_name: str, flat: bool = False
-    ) -> typing.Union[typing.Tuple[typing.Any, ...], typing.Any]:
+    ) -> typing.Union[tuple[typing.Any, ...], typing.Any]:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -242,7 +242,7 @@ class Event(abc.ABC):
 
     def split_at(
         self, absolute_time: parameters.abc.DurationType
-    ) -> typing.Tuple[Event, Event]:
+    ) -> tuple[Event, Event]:
         """Split event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where event shall be split
@@ -267,10 +267,10 @@ class Event(abc.ABC):
 T = typing.TypeVar("T", bound=Event)
 
 
-class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
+class ComplexEvent(Event, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
-    _class_specific_side_attributes: typing.Tuple[str, ...] = tuple([])
+    _class_specific_side_attributes: tuple[str, ...] = tuple([])
 
     def __init__(self, iterable: typing.Iterable[T]):
         super().__init__(iterable)
@@ -282,7 +282,7 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
 
-    def __add__(self, event: typing.List[T]) -> ComplexEvent[T]:
+    def __add__(self, event: list[T]) -> ComplexEvent[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend(super().__add__(event))
         return empty_copy
@@ -401,7 +401,7 @@ class ComplexEvent(Event, typing.List[T], typing.Generic[T]):
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> tuple[typing.Any, ...]:
         parameter_values = []
         for event in self:
             parameter_values_of_event = event.get_parameter(parameter_name, flat=flat)

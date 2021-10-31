@@ -9,7 +9,7 @@ from mutwo.utilities import constants
 __all__ = ("TempoPoint",)
 
 TempoInBeatsPerMinute = float
-TempoRangeInBeatsPerMinute = typing.Tuple[TempoInBeatsPerMinute, TempoInBeatsPerMinute]
+TempoRangeInBeatsPerMinute = tuple[TempoInBeatsPerMinute, TempoInBeatsPerMinute]
 TempoOrTempoRangeInBeatsPerMinute = typing.Union[
     TempoInBeatsPerMinute, TempoRangeInBeatsPerMinute
 ]

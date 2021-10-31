@@ -116,21 +116,21 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects
         are expected).
-    :type set_pitches_for_simple_event: typing.Callable[[events.basic.SimpleEvent, typing.List[parameters.abc.Pitch]], None]
+    :type set_pitches_for_simple_event: typing.Callable[[events.basic.SimpleEvent, list[parameters.abc.Pitch]], None]
     """
 
     def __init__(
         self,
         duration_for_each_attack: parameters.abc.DurationType = 0.1,
         simple_event_to_pitches: typing.Callable[
-            [events.basic.SimpleEvent], typing.List[parameters.abc.Pitch]
+            [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
         simple_event_to_playing_indicators: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
         ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
         set_pitches_for_simple_event: typing.Callable[
-            [events.basic.SimpleEvent, typing.List[parameters.abc.Pitch]], None
+            [events.basic.SimpleEvent, list[parameters.abc.Pitch]], None
         ] = lambda simple_event, pitch_or_pitches: simple_event.set_parameter(  # type: ignore
             "pitch_or_pitches", pitch_or_pitches, set_unassigned_parameter=True
         ),
@@ -216,11 +216,11 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
-        """Convert instance of :class:`mutwo.events.basic.SimpleEvent`.""" 
+        """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
         converted_event = [event_to_convert]
 
         for playing_indicator_converter in self._playing_indicator_converters:
-            new_converted_event: typing.List[events.basic.SimpleEvent] = []
+            new_converted_event: list[events.basic.SimpleEvent] = []
             for simple_event in converted_event:
                 converted_simple_event = playing_indicator_converter.convert(
                     simple_event

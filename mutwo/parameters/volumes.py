@@ -118,7 +118,7 @@ class WesternVolume(parameters.abc.Volume):
     @staticmethod
     def _make_standard_dynamic_indicator_to_value_mapping(
         minima: float, maxima: float, dtype: typing.Type[float] = float
-    ) -> typing.Dict[str, float]:
+    ) -> dict[str, float]:
         return {
             dynamic_indicator: decibel
             for dynamic_indicator, decibel in zip(
@@ -134,8 +134,8 @@ class WesternVolume(parameters.abc.Volume):
 
     @staticmethod
     def _make_dynamic_indicator_to_value_mapping(
-        standard_dynamic_indicator_to_value_mapping: typing.Dict[str, float]
-    ) -> typing.Dict[str, float]:
+        standard_dynamic_indicator_to_value_mapping: dict[str, float]
+    ) -> dict[str, float]:
         dynamic_indicator_to_value_mapping = {}
         dynamic_indicator_to_value_mapping.update(
             standard_dynamic_indicator_to_value_mapping

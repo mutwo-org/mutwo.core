@@ -358,7 +358,7 @@ class Indicator(Parameter):
     def is_active(self) -> bool:
         raise NotImplementedError()
 
-    def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
+    def get_arguments_dict(self) -> dict[str, typing.Any]:
         return {
             key: getattr(self, key) for key in self.__dataclass_fields__.keys()  # type: ignore
         }
@@ -375,7 +375,7 @@ class ExplicitPlayingIndicator(PlayingIndicator):
     def __repr__(self):
         return "{}({})".format(type(self).__name__, self.is_active)
 
-    def get_arguments_dict(self) -> typing.Dict[str, typing.Any]:
+    def get_arguments_dict(self) -> dict[str, typing.Any]:
         return {"is_active": self.is_active}
 
     @property
@@ -413,11 +413,11 @@ T = typing.TypeVar("T", PlayingIndicator, NotationIndicator)
 
 @dataclasses.dataclass(frozen=True)
 class IndicatorCollection(typing.Generic[T]):
-    def get_all_indicator(self) -> typing.Tuple[T, ...]:
+    def get_all_indicator(self) -> tuple[T, ...]:
         return tuple(
             getattr(self, key)
             for key in self.__dataclass_fields__.keys()  # type: ignore
         )
 
-    def get_indicator_dict(self) -> typing.Dict[str, Indicator]:
+    def get_indicator_dict(self) -> dict[str, Indicator]:
         return {key: getattr(self, key) for key in self.__dataclass_fields__.keys()}  # type: ignore

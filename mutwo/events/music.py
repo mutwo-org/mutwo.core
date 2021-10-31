@@ -156,7 +156,7 @@ class NoteLike(events.basic.SimpleEvent):
     @staticmethod
     def _convert_unknown_object_to_pitch(
         unknown_object: typing.Any,
-    ) -> typing.List[parameters.abc.Pitch]:
+    ) -> list[parameters.abc.Pitch]:
         if unknown_object is None:
             pitches = []
 
@@ -199,7 +199,7 @@ class NoteLike(events.basic.SimpleEvent):
     # ###################################################################### #
 
     @property
-    def _parameters_to_print(self) -> typing.Tuple[str, ...]:
+    def _parameters_to_print(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
         return tuple(
             attribute

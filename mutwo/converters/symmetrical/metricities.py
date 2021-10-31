@@ -46,7 +46,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
 
     @staticmethod
     def _indispensability_of_nth_beat(
-        beat_index: int, rhythmical_strata: typing.Tuple[int, ...]
+        beat_index: int, rhythmical_strata: tuple[int, ...]
     ) -> int:
         """Calculate indispensability for the nth beat of a metre.
 
@@ -79,7 +79,7 @@ class RhythmicalStrataToIndispensabilityConverter(converters.abc.Converter):
 
     def convert(
         self, rhythmical_strata_to_convert: typing.Sequence[int]
-    ) -> typing.Tuple[int, ...]:
+    ) -> tuple[int, ...]:
         """Convert indispensability for each beat of a particular metre.
 
         :param rhythmical_strata_to_convert: The rhythmical strata defines

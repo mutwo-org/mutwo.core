@@ -216,7 +216,7 @@ def find_closest_item(
 
 
 def import_module_if_dependencies_have_been_installed(
-    module: str, dependencies: typing.Tuple[str, ...], import_class: bool = False
+    module: str, dependencies: tuple[str, ...], import_class: bool = False
 ) -> None:
     for dependency in dependencies:
         try:

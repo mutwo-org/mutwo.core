@@ -92,7 +92,7 @@ class EventConverter(Converter):
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
-        data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
+        data_per_simple_event: list[tuple[typing.Any]] = []
 
         for event in simultaneous_event:
             data_per_simple_event.extend(
@@ -107,7 +107,7 @@ class EventConverter(Converter):
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
 
-        data_per_simple_event: typing.List[typing.Tuple[typing.Any]] = []
+        data_per_simple_event: list[tuple[typing.Any]] = []
         for event_start, event in zip(
             sequential_event.absolute_times, sequential_event
         ):

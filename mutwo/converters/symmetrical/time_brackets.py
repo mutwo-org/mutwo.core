@@ -32,7 +32,7 @@ class TimeBracketsToEventConverter(converters_abc.Converter):
     @staticmethod
     def _get_start_and_end_time(
         time_bracket: events.time_brackets.TimeBracket,
-    ) -> typing.Tuple[constants.Real, constants.Real]:
+    ) -> tuple[constants.Real, constants.Real]:
         try:
             return (
                 time_bracket.assigned_start_time,
@@ -65,7 +65,7 @@ class TimeBracketsToEventConverter(converters_abc.Converter):
     def convert(
         self,
         time_brackets_to_convert: typing.Sequence[events.time_brackets.TimeBracket],
-    ) -> typing.Tuple[
+    ) -> tuple[
         typing.Union[
             events.basic.TaggedSimpleEvent,
             events.basic.TaggedSequentialEvent,
@@ -141,7 +141,7 @@ class EventToProbabilityCurveConverter(converters_abc.EventConverter):
     @staticmethod
     def _get_possible_times_range(
         precision: int, time_or_time_range: events.time_brackets.TimeOrTimeRange
-    ) -> typing.Tuple[float, ...]:
+    ) -> tuple[float, ...]:
         try:
             possible_times = tuple(
                 np.linspace(*time_or_time_range, num=precision, dtype=float)
@@ -154,8 +154,8 @@ class EventToProbabilityCurveConverter(converters_abc.EventConverter):
         self,
         event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[
-        typing.Tuple[parameters.abc.DurationType, parameters.abc.DurationType]
+    ) -> tuple[
+        tuple[parameters.abc.DurationType, parameters.abc.DurationType]
     ]:
         start_and_end_times = np.array(
             [

@@ -22,10 +22,10 @@ ConvertableEvents = typing.Union[
     events.basic.SimpleEvent,
     events.basic.SequentialEvent[events.basic.SimpleEvent],
 ]
-ExtractedData = typing.Tuple[
+ExtractedData = tuple[
     # duration, consonants, vowel, pitch, volume
     parameters.abc.DurationType,
-    typing.Tuple[str, ...],
+    tuple[str, ...],
     str,
     parameters.abc.Pitch,
     parameters.abc.Volume,
@@ -61,7 +61,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
             [events.basic.SimpleEvent], str
         ] = lambda simple_event: simple_event.vowel,  # type: ignore
         simple_event_to_consonants: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[str, ...]
+            [events.basic.SimpleEvent], tuple[str, ...]
         ] = lambda simple_event: simple_event.consonants,  # type: ignore
         is_simple_event_rest: typing.Callable[
             [events.basic.SimpleEvent], bool
@@ -93,11 +93,11 @@ class IsisScoreConverter(converters.abc.EventConverter):
     def _make_key_from_extracted_data_per_event(
         self,
         key_name: str,
-        extracted_data_per_event: typing.Tuple[ExtractedData],
-        key: typing.Callable[[ExtractedData], typing.Tuple[str, ...]],
+        extracted_data_per_event: tuple[ExtractedData],
+        key: typing.Callable[[ExtractedData], tuple[str, ...]],
         seperate_with_comma: bool = True,
     ) -> str:
-        objects_per_line: typing.List[typing.List[str]] = [[]]
+        objects_per_line: list[list[str]] = [[]]
         for nth_event, extracted_data in enumerate(extracted_data_per_event):
             objects_per_line[-1].extend(key(extracted_data))
             if nth_event % self._n_events_per_line == 0:
@@ -113,7 +113,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
     def _make_lyrics_section_from_extracted_data_per_event(
         self,
-        extracted_data_per_event: typing.Tuple[ExtractedData],
+        extracted_data_per_event: tuple[ExtractedData],
     ) -> str:
         xsampa = self._make_key_from_extracted_data_per_event(
             "xsampa",
@@ -127,7 +127,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
 
     def _make_score_section_from_extracted_data_per_event(
         self,
-        extracted_data_per_event: typing.Tuple[ExtractedData],
+        extracted_data_per_event: tuple[ExtractedData],
     ) -> str:
         midi_notes = self._make_key_from_extracted_data_per_event(
             "midiNotes",
@@ -159,10 +159,10 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self,
         simple_event_to_convert: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[ExtractedData]:
+    ) -> tuple[ExtractedData]:
         duration = simple_event_to_convert.duration
 
-        extracted_data: typing.List[object] = [duration]
+        extracted_data: list[object] = [duration]
         for extraction_function in self._extraction_functions:
             try:
                 extracted_information = extraction_function(simple_event_to_convert)

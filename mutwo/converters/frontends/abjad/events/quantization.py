@@ -81,10 +81,7 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
     @abc.abstractmethod
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
-    ) -> typing.Tuple[
-        abjad.Container,
-        typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
-    ]:
+    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
         raise NotImplementedError
 
 
@@ -185,15 +182,13 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _process_abjad_leaf(
-        indices: typing.List[int],
+        indices: list[int],
         abjad_leaf: abjad.Leaf,
-        related_abjad_leaves_per_simple_event: typing.List[
-            typing.List[typing.Tuple[int, ...]]
-        ],
+        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
-    ) -> typing.Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         q_event = ComplexSequentialEventToQuantizedAbjadContainerConverter._get_respective_q_event_from_abjad_leaf(
             abjad_leaf
         )
@@ -216,15 +211,13 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _process_tuplet(
-        indices: typing.List[int],
+        indices: list[int],
         tuplet: abjad.Tuplet,
-        related_abjad_leaves_per_simple_event: typing.List[
-            typing.List[typing.Tuple[int, ...]]
-        ],
+        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
-    ) -> typing.Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         for (
             nth_abjad_leaf_or_tuplet,
             abjad_leaf_or_tuplet,
@@ -245,15 +238,13 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _process_abjad_leaf_or_tuplet(
-        indices: typing.List[int],
+        indices: list[int],
         abjad_leaf_or_tuplet: typing.Union[abjad.Tuplet, abjad.Leaf],
-        related_abjad_leaves_per_simple_event: typing.List[
-            typing.List[typing.Tuple[int, ...]]
-        ],
+        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
         has_tie: bool,
         index_of_previous_q_event: int,
-    ) -> typing.Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
             return ComplexSequentialEventToQuantizedAbjadContainerConverter._process_tuplet(
                 indices,
@@ -279,12 +270,12 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
         sequential_event: events.basic.SequentialEvent,
         q_event_sequence: nauert.QEventSequence,
         quanitisized_abjad_leaves: abjad.Voice,
-    ) -> typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...,]:
+    ) -> tuple[tuple[tuple[int, ...], ...], ...,]:
         has_tie = False
         index_of_previous_q_event: int = 0
-        related_abjad_leaves_per_simple_event: typing.List[
-            typing.List[typing.Tuple[int, ...]]
-        ] = [[] for _ in sequential_event]
+        related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]] = [
+            [] for _ in sequential_event
+        ]
         for nth_bar, bar in enumerate(quanitisized_abjad_leaves):
             for nth_abjad_leaf_or_tuplet, abjad_leaf_or_tuplet in enumerate(bar):
                 (
@@ -306,7 +297,7 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _make_q_schema(
-        time_signatures: typing.Tuple[abjad.TimeSignature, ...],
+        time_signatures: tuple[abjad.TimeSignature, ...],
         search_tree: typing.Optional[nauert.SearchTree],
     ) -> nauert.QSchema:
         formated_time_signatures = []
@@ -368,10 +359,7 @@ class ComplexSequentialEventToQuantizedAbjadContainerConverter(
 
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
-    ) -> typing.Tuple[
-        abjad.Container,
-        typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
-    ]:
+    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
         q_event_sequence = self._sequential_event_to_q_event_sequence(
             sequential_event_to_convert
         )
@@ -649,8 +637,8 @@ class FastSequentialEventToQuantizedAbjadContainerConverter(
         return voice
 
     def _get_data_for_leaf(
-        self, indices: typing.Tuple[int, ...], leaf: abjad.Leaf
-    ) -> typing.Tuple[typing.Tuple[int, ...], bool, bool]:
+        self, indices: tuple[int, ...], leaf: abjad.Leaf
+    ) -> tuple[tuple[int, ...], bool, bool]:
         has_tie = abjad.get.indicator(leaf, abjad.Tie())
         is_rest = (
             isinstance(leaf, abjad.Rest)
@@ -661,9 +649,9 @@ class FastSequentialEventToQuantizedAbjadContainerConverter(
 
     def _get_data_for_tuplet_or_leaf(
         self,
-        indices: typing.Tuple[int, ...],
+        indices: tuple[int, ...],
         leaf_or_tuplet: typing.Union[abjad.Leaf, abjad.Tuplet],
-    ) -> typing.Tuple[typing.Tuple[typing.Tuple[int, ...], bool], ...]:
+    ) -> tuple[tuple[tuple[int, ...], bool], ...]:
         if isinstance(leaf_or_tuplet, abjad.Leaf):
             return (self._get_data_for_leaf(indices, leaf_or_tuplet),)
         else:
@@ -680,7 +668,7 @@ class FastSequentialEventToQuantizedAbjadContainerConverter(
 
     def _make_related_abjad_leaves_per_simple_event(
         self, voice: abjad.Voice
-    ) -> typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...]:
+    ) -> tuple[tuple[tuple[int, ...], ...], ...]:
         data_per_tuplet_or_leaf = []
         for nth_bar, bar in enumerate(voice):
             for nth_leaf_or_tuplet, leaf_or_tuplet in enumerate(bar):
@@ -714,10 +702,7 @@ class FastSequentialEventToQuantizedAbjadContainerConverter(
 
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
-    ) -> typing.Tuple[
-        abjad.Container,
-        typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
-    ]:
+    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
         voice = self._make_voice(sequential_event_to_convert)
         related_abjad_leaves_per_simple_event = (
             self._make_related_abjad_leaves_per_simple_event(voice)
@@ -847,9 +832,7 @@ class ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
     def _adjust_quantisized_abjad_leaves(
         self,
         quanitisized_abjad_leaves: abjad.Container,
-        related_abjad_leaves_per_simple_event: typing.Tuple[
-            typing.Tuple[typing.Tuple[int, ...], ...], ...
-        ],
+        related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
     ):
         is_first = True
 
@@ -883,10 +866,7 @@ class ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
 
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
-    ) -> typing.Tuple[
-        abjad.Container,
-        typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
-    ]:
+    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (
             quanitisized_abjad_leaves,
@@ -1009,9 +989,7 @@ class FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
     def _adjust_quantisized_abjad_leaves(
         self,
         quanitisized_abjad_leaves: abjad.Container,
-        related_abjad_leaves_per_simple_event: typing.Tuple[
-            typing.Tuple[typing.Tuple[int, ...], ...], ...
-        ],
+        related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
     ):
         is_first = True
 
@@ -1045,10 +1023,7 @@ class FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
 
     def convert(
         self, sequential_event_to_convert: events.basic.SequentialEvent
-    ) -> typing.Tuple[
-        abjad.Container,
-        typing.Tuple[typing.Tuple[typing.Tuple[int, ...], ...], ...],
-    ]:
+    ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (
             quanitisized_abjad_leaves,

@@ -273,7 +273,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return (1,), (1,)
 
     @staticmethod
-    def _discard_nulls(iterable: typing.Iterable[int]) -> typing.Tuple[int, ...]:
+    def _discard_nulls(iterable: typing.Iterable[int]) -> tuple[int, ...]:
         r"""Discard all zeros after the last not 0 - element of an arbitary iterable.
 
         Return a tuple.
@@ -468,7 +468,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def _translate_ratio_or_fractions_argument_to_exponents(
         self,
         ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
-    ) -> typing.Tuple[int, ...]:
+    ) -> tuple[int, ...]:
         if isinstance(ratio_or_exponents, str):
             numerator, denominator = ratio_or_exponents.split("/")
             exponents = self._ratio_to_exponents(
@@ -678,7 +678,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         exponents_adjusted, primes_adjusted = type(self)._adjust_exponents(
             exponents, primes, 1
         )
-        numerator_denominator: typing.List[typing.List[typing.List[int]]] = [[[]], [[]]]
+        numerator_denominator: list[list[list[int]]] = [[[]], [[]]]
         for prime, exponent in zip(primes_adjusted, exponents_adjusted):
             if exponent > 0:
                 idx = 0
@@ -751,7 +751,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
     @property
     def blueprint(  # type: ignore
         self, ignore: typing.Sequence[int] = (2,)
-    ) -> typing.Tuple[typing.Tuple[int, ...], ...]:
+    ) -> tuple[tuple[int, ...], ...]:
         blueprint = []
         for factorised in self.factorised_numerator_and_denominator:
             factorised = tuple(fac for fac in factorised if fac not in ignore)
@@ -1219,7 +1219,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         def is_negative(number: int):
             return number < 0
 
-        def intersect_exponents(exponents: typing.Tuple[int, int]) -> int:
+        def intersect_exponents(exponents: tuple[int, int]) -> int:
             intersected_exponent = 0
 
             if strict:

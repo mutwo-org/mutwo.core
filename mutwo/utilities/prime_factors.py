@@ -26,7 +26,7 @@ class PrimeGenerator(object):
         return self
 
 
-def factorise(n: int) -> typing.List[int]:
+def factorise(n: int) -> list[int]:
     """factorise(integer) -> [list of factors]
 
     :param n: The number which shall be factorised.

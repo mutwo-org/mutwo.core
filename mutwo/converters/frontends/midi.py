@@ -35,7 +35,7 @@ ConvertableEvents = typing.Union[
 MidiNote = int
 PitchBend = int
 
-MidiPitch = typing.Tuple[MidiNote, PitchBend]
+MidiPitch = tuple[MidiNote, PitchBend]
 
 
 class MutwoPitchToMidiPitchConverter(abc.Converter):
@@ -136,7 +136,7 @@ class MidiFileConverter(abc.Converter):
         raises an :obj:`AttributeError` (e.g. if no pitch can be extracted),
         mutwo will interpret the event as a rest.
     :type simple_event_to_pitches: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch, ...]]
+            [events.basic.SimpleEvent], tuple[parameters.abc.Pitch, ...]]
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating midi notes.
         The function should return an object that inhertis from
@@ -154,7 +154,7 @@ class MidiFileConverter(abc.Converter):
         function call raises an AttributeError (e.g. if an expected control value isn't
         available) mutwo will interpret the event as a rest.
     :type simple_event_to_control_messages: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[mido.Message, ...]]
+            [events.basic.SimpleEvent], tuple[mido.Message, ...]]
     :param midi_file_type: Can either be 0 (for one-track midi files) or 1 (for
          synchronous multi-track midi files). Mutwo doesn't offer support for generating
          type 2 midi files (midi files with asynchronous tracks).
@@ -165,7 +165,7 @@ class MidiFileConverter(abc.Converter):
         rendering microtonal music. It shall be remarked that midi-channel 9 (or midi
         channel 10 when starting to count from 1) is often ignored by several software
         synthesizer, because this channel is reserved for percussion instruments.
-    :type available_midi_channels: typing.Tuple[int, ...]
+    :type available_midi_channels: tuple[int, ...]
     :param distribute_midi_channels: This parameter is only relevant if more than one
         :class:`~mutwo.events.basic.SequentialEvent` is passed to the convert method.
         If set to ``True`` each :class:`~mutwo.events.basic.SequentialEvent`
@@ -216,16 +216,16 @@ class MidiFileConverter(abc.Converter):
     def __init__(
         self,
         simple_event_to_pitches: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[parameters.abc.Pitch, ...]
+            [events.basic.SimpleEvent], tuple[parameters.abc.Pitch, ...]
         ] = lambda event: event.pitch_or_pitches,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda event: event.volume,  # type: ignore
         simple_event_to_control_messages: typing.Callable[
-            [events.basic.SimpleEvent], typing.Tuple[mido.Message, ...]
+            [events.basic.SimpleEvent], tuple[mido.Message, ...]
         ] = lambda event: tuple([]),
         midi_file_type: int = None,
-        available_midi_channels: typing.Tuple[int, ...] = None,
+        available_midi_channels: tuple[int, ...] = None,
         distribute_midi_channels: bool = False,
         n_midi_channels_per_track: typing.Optional[int] = None,
         mutwo_pitch_to_midi_pitch_converter: MutwoPitchToMidiPitchConverter = MutwoPitchToMidiPitchConverter(),
@@ -289,7 +289,7 @@ class MidiFileConverter(abc.Converter):
 
     @staticmethod
     def _assert_available_midi_channels_have_correct_value(
-        available_midi_channels: typing.Tuple[int, ...],
+        available_midi_channels: tuple[int, ...],
     ):
         # check for correct range of each number
         for midi_channel in available_midi_channels:
@@ -365,7 +365,7 @@ class MidiFileConverter(abc.Converter):
         simultaneous_event: events.basic.SimultaneousEvent[
             events.basic.SequentialEvent[events.basic.SimpleEvent]
         ],
-    ) -> typing.Tuple[typing.Tuple[int, ...], ...]:
+    ) -> tuple[tuple[int, ...], ...]:
         """Find midi channels for each SequentialEvent.
 
         Depending on whether distribute_midi_channels has been set
@@ -401,7 +401,7 @@ class MidiFileConverter(abc.Converter):
 
     def _tempo_envelope_to_midi_messages(
         self, tempo_envelope: expenvelope.Envelope
-    ) -> typing.Tuple[mido.MetaMessage, ...]:
+    ) -> tuple[mido.MetaMessage, ...]:
         """Converts a SequentialEvent of ``EnvelopeEvent`` to midi Tempo messages."""
 
         absolute_times = utilities.tools.accumulate_from_zero(tempo_envelope.durations)
@@ -431,7 +431,7 @@ class MidiFileConverter(abc.Converter):
         absolute_tick_start: int,
         pitch_to_tune: parameters.abc.Pitch,
         midi_channel: int,
-    ) -> typing.Tuple[MidiNote, mido.Message]:
+    ) -> tuple[MidiNote, mido.Message]:
         (
             midi_pitch,
             pitch_bending_number,
@@ -456,7 +456,7 @@ class MidiFileConverter(abc.Converter):
         velocity: int,
         pitch: parameters.abc.Pitch,
         available_midi_channels_cycle: typing.Iterator,
-    ) -> typing.Tuple[mido.Message, ...]:
+    ) -> tuple[mido.Message, ...]:
         """Generate 'pitch bending', 'note on' and 'note off' messages for one tone."""
 
         midi_channel = next(available_midi_channels_cycle)
@@ -489,10 +489,10 @@ class MidiFileConverter(abc.Converter):
         absolute_time: utilities.constants.Real,
         duration: parameters.abc.DurationType,
         available_midi_channels_cycle: typing.Iterator,
-        pitch_or_pitches: typing.Tuple[parameters.abc.Pitch, ...],
+        pitch_or_pitches: tuple[parameters.abc.Pitch, ...],
         volume: parameters.abc.Volume,
-        control_messages: typing.Tuple[mido.Message, ...],
-    ) -> typing.Tuple[mido.Message, ...]:
+        control_messages: tuple[mido.Message, ...],
+    ) -> tuple[mido.Message, ...]:
         """Generates pitch-bend / note-on / note-off messages for each tone in a chord.
 
         Concatenates the midi messages for every played tone with the global control
@@ -532,7 +532,7 @@ class MidiFileConverter(abc.Converter):
         simple_event: events.basic.SimpleEvent,
         absolute_time: utilities.constants.Real,
         available_midi_channels_cycle: typing.Iterator,
-    ) -> typing.Tuple[mido.Message, ...]:
+    ) -> tuple[mido.Message, ...]:
         """Converts ``SimpleEvent`` (or any object that inherits from ``SimpleEvent``).
 
         Return tuple filled with midi messages that represent the mutwo data in the
@@ -570,15 +570,15 @@ class MidiFileConverter(abc.Converter):
     def _sequential_event_to_midi_messages(
         self,
         sequential_event: events.basic.SequentialEvent[events.basic.SimpleEvent],
-        available_midi_channels: typing.Tuple[int, ...],
-    ) -> typing.Tuple[mido.Message, ...]:
+        available_midi_channels: tuple[int, ...],
+    ) -> tuple[mido.Message, ...]:
         """Iterates through the ``SequentialEvent`` and converts each ``SimpleEvent``.
 
         Return unsorted tuple of Midi messages where the time attribute of each message
         is the absolute time in ticks.
         """
 
-        midi_data: typing.List[mido.Message] = []
+        midi_data: list[mido.Message] = []
 
         available_midi_channels_cycle = itertools.cycle(available_midi_channels)
 
@@ -595,7 +595,7 @@ class MidiFileConverter(abc.Converter):
 
     def _midi_messages_to_midi_track(
         self,
-        midi_data: typing.Tuple[mido.Message, ...],
+        midi_data: tuple[mido.Message, ...],
         duration: parameters.abc.DurationType,
         is_first_track: bool = False,
     ) -> mido.MidiTrack:

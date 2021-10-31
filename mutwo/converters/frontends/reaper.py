@@ -27,7 +27,7 @@ class ReaperMarkerConverter(converters.abc.EventConverter):
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         try:
             marker_name = self._simple_event_to_marker_name(simple_event)
             marker_color = self._simple_event_to_marker_color(simple_event)

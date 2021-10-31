@@ -21,7 +21,7 @@ __all__ = ("CsoundScoreConverter", "CsoundConverter")
 SupportedPFieldTypes = typing.Union[constants.Real, str]
 SupportedPFieldTypesForTypeChecker = typing.Union[numbers.Real, str]
 PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]
-PFieldDict = typing.Dict[str, typing.Optional[PFieldFunction]]
+PFieldDict = dict[str, typing.Optional[PFieldFunction]]
 
 
 class CsoundScoreConverter(converters.abc.EventConverter):
@@ -89,7 +89,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     @staticmethod
     def _generate_pfield_mapping(
         pfield_key_to_function_mapping: PFieldDict,
-    ) -> typing.Tuple[typing.Optional[PFieldFunction], ...]:
+    ) -> tuple[typing.Optional[PFieldFunction], ...]:
         """Maps p-fields to their respective p_field_function."""
 
         sorted_pfield_keys = natsort.natsorted(pfield_key_to_function_mapping.keys())
@@ -157,7 +157,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         """Extract p-field data from simple event and write one Csound-Score line."""
 
         csound_score_line = "i"
@@ -186,7 +186,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         self,
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         csound_score_lines = [
             converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
         ]
@@ -205,7 +205,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         csound_score_lines = [
             converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
         ]

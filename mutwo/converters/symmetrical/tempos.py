@@ -44,7 +44,7 @@ class TempoPointConverter(converters.abc.Converter):
     @staticmethod
     def _extract_beats_per_minute_and_reference_from_tempo_point(
         tempo_point: TempoPoint,
-    ) -> typing.Tuple[constants.Real, constants.Real]:
+    ) -> tuple[constants.Real, constants.Real]:
         try:
             beats_per_minute = tempo_point.tempo_in_beats_per_minute  # type: ignore
         except AttributeError:
@@ -133,7 +133,7 @@ class TempoConverter(converters.abc.EventConverter):
     ) -> expenvelope.Envelope:
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
 
-        levels: typing.List[float] = []
+        levels: list[float] = []
         for tempo_point in tempo_envelope.levels:
             beat_length_in_seconds = TempoConverter._tempo_point_converter.convert(
                 tempo_point
@@ -152,7 +152,7 @@ class TempoConverter(converters.abc.EventConverter):
         self,
         simple_event: events.basic.SimpleEvent,
         absolute_entry_delay: parameters.abc.DurationType,
-    ) -> typing.Tuple[typing.Any, ...]:
+    ) -> tuple[typing.Any, ...]:
         simple_event.duration = self._envelope.integrate_interval(
             absolute_entry_delay, simple_event.duration + absolute_entry_delay
         )
