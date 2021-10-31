@@ -52,11 +52,11 @@ class NoteLike(events.basic.SimpleEvent):
     :type grace_notes: events.basic.SequentialEvent[NoteLike]
     :param after_grace_notes:
     :type after_grace_notes: events.basic.SequentialEvent[NoteLike]
-    :param playing_indicators: A :class`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection`.
+    :param playing_indicators: A :class:`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection`.
         Playing indicators alter the sound of :class:`NoteLike` (e.g.
         tremolo, fermata, pizzicato).
     :type playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection
-    :param notation_indicators: A :class`~mutwo.parameters.notation_indicators.NotationIndicatorCollection`.
+    :param notation_indicators: A :class:`~mutwo.parameters.notation_indicators.NotationIndicatorCollection`.
         Notation indicators alter the visual representation of :class:`NoteLike`
         (e.g. ottava, clefs) without affecting the resulting sound.
     :type notation_indicators: parameters.notation_indicators.NotationIndicatorCollection
