@@ -57,7 +57,7 @@ class DynamicChoice(object):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._values})"
 
-    def items(self) -> typing.Tuple[typing.Tuple[typing.Any, expenvelope.Envelope]]:
+    def items(self) -> tuple[tuple[typing.Any, expenvelope.Envelope]]:
         return tuple(zip(self._values, self._curves))
 
     def gamble_at(self, time: numbers.Real) -> typing.Any:
