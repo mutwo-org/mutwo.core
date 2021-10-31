@@ -1,4 +1,4 @@
-"""Several subpackages to convert data from and to mutwo.
+"""Convert data from and to mutwo.
 
 The subpackages differentiate in their conversion mapping:
     - backends:     external data                   **->** mutwo or generic Python objects
