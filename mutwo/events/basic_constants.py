@@ -10,6 +10,6 @@ round their actual duration if the duration type is float. This
 behaviour has been added with version 0.28.1 to avoid floating
 point rounding errors which could occur in all duration related
 methods of the different event classes (as it can happen in
-for instance the :method:`mutwo.events.abc.ComplexEvent.squash_in`
-method or the :method:`mutwo.events.abc.ComplexEvent.cut_off`
+for instance the :func:`mutwo.events.abc.ComplexEvent.squash_in`
+method or the :func:`mutwo.events.abc.ComplexEvent.cut_off`
 method)."""
