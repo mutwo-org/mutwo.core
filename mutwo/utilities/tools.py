@@ -399,12 +399,25 @@ def find_numbers_which_sums_up_to(
 ) -> tuple[tuple[float, ...], ...]:
     """Find all combinations of numbers which sum is equal to the given sum.
 
-    :param given_sum:
+    :param given_sum: The target sum for which different combinations shall
+        be searched.
     :type given_sum: float
-    :param numbers_to_choose_from:
+    :param numbers_to_choose_from: A sequence of numbers which shall be
+        tried to combine to result in the :attr:`given_sum`. If the user
+        doesn't specify this argument mutwo will use all natural numbers
+        equal or smaller than the :attr:`given_sum`.
     :type numbers_to_choose_from: typing.Optional[typing.Sequence[float]]
-    :param n_items_to_sum_up:
+    :param n_items_to_sum_up: How many numbers can be combined to result
+        in the :attr:`given_sum`. If the user doesn't specify this argument
+        mutwo will use all natural numbers equal or smaller than the
+        :attr:`given_sum`.
     :type n_items_to_sum_up: typing.Optional[set[int]]
+
+    **Example:**
+
+    >>> from mutwo.utilities import tools
+    >>> tools.find_numbers_which_sums_up_to(4)
+    ((4,), (1, 3), (2, 2), (1, 1, 2), (1, 1, 1, 1))
     """
 
     if not numbers_to_choose_from:
