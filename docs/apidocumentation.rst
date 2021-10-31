@@ -45,7 +45,6 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.symmetrical.tempos
    mutwo.events.abc
    mutwo.events.basic
-   mutwo.events.brackets
    mutwo.events.music
    mutwo.events.time_brackets
    mutwo.events.basic_constants
