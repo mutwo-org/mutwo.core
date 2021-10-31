@@ -1,8 +1,9 @@
 import unittest
 
+import ranges
+
 from mutwo.events import basic
 from mutwo.events import music
-
 
 from mutwo import parameters
 from mutwo.utilities import exceptions
@@ -343,6 +344,12 @@ class SequentialEventTest(unittest.TestCase):
         self.assertRaises(
             exceptions.SplitUnavailableChildError,
             lambda: self.sequence.split_child_at(1000),
+        )
+
+    def test_start_and_end_time_per_event(self):
+        self.assertEqual(
+            self.sequence.start_and_end_time_per_event,
+            (ranges.Range(0, 1), ranges.Range(1, 3), ranges.Range(3, 6)),
         )
 
 
