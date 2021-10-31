@@ -43,6 +43,7 @@ This tree provides a deep overview of all submodules:
    mutwo.converters.symmetrical.loudness
    mutwo.converters.symmetrical.playing_indicators
    mutwo.converters.symmetrical.tempos
+   mutwo.converters.symmetrical.loudness_constants
    mutwo.events.abc
    mutwo.events.basic
    mutwo.events.music
