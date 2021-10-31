@@ -81,7 +81,6 @@ There are a many similar composition frameworks. Maybe one of them fits better t
 
 - [scamp](http://scamp.marcevanstein.com/): "SCAMP is a computer-assisted composition framework in Python designed to act as a hub, flexibly connecting the composer-programmer to a variety of resources for playback and notation."
 - [isobar](https://github.com/ideoforms/isobar): "isobar is a Python library for creating and manipulating musical patterns, designed for use in algorithmic composition, generative music and sonification."
-- [kodou](https://github.com/ertpoi/kodou): "Kodou is a small module for algorithmic music notation which runs on top of the Lilypond (versions 2.18 to 2.21.0) compiler"
 - [JythonMusic](https://jythonmusic.me/): "JythonMusic is an environment for music making and creative programming."
 
 
