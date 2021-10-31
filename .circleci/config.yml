@@ -44,6 +44,3 @@ workflows:
           filters:
             tags:
               only: /.*/
-            branches:
-              only:
-                - main
