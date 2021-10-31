@@ -50,7 +50,7 @@ For more information how to use mutwo read the [documentation](https://mutwo.rea
 
 ### Installation
 
-**Mutwo** is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
+Mutwo is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
 
 ```sh
 pip3 install mutwo
