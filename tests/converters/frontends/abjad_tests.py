@@ -452,7 +452,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         )
         # initialise complex converter and sequential event for complex tests
         cls.complex_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter(
+            frontends.abjad.RMakersSequentialEventToQuantizedAbjadContainerConverter(
                 time_signatures=[
                     abjad.TimeSignature(ts)
                     for ts in (
@@ -560,7 +560,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
             durations=[2],
         )
         converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter(
+            frontends.abjad.RMakersSequentialEventToQuantizedAbjadContainerConverter(
                 tempo_envelope=tempo_envelope
             )
         )
@@ -602,7 +602,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # -> this tests, if duration lines are printed in a correct manner
 
         converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
+            frontends.abjad.NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter()
         )
         sequential_event_to_convert = basic.SequentialEvent(
             [
@@ -652,7 +652,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # after grace notes
 
         converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
-            frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter()
+            frontends.abjad.RMakersSequentialEventToQuantizedAbjadContainerConverter()
         )
         sequential_event_to_convert = basic.SequentialEvent(
             [
@@ -698,7 +698,9 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         header_block = abjad.Block(name="header")
         header_block.tagline = abjad.Markup("---integration-test---")
         score_block = abjad.Block(name="score")
-        score_block.items.append([abjad.Score([abjad.Staff([converted_sequential_event])])])
+        score_block.items.append(
+            [abjad.Score([abjad.Staff([converted_sequential_event])])]
+        )
         lilypond_file.items.extend((header_block, score_block))
         abjad.persist.as_png(
             lilypond_file, png_file_path=new_png_file_path, remove_ly=True
@@ -777,7 +779,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                         frontends.abjad.CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
                             [
                                 frontends.abjad.SequentialEventToAbjadVoiceConverter(
-                                    frontends.abjad.FastSequentialEventToQuantizedAbjadContainerConverter()
+                                    frontends.abjad.RMakersSequentialEventToQuantizedAbjadContainerConverter()
                                 ),
                             ]
                         ),

@@ -28,14 +28,14 @@ from ..parameters import TempoEnvelopeToAbjadAttachmentTempoConverter
 from ..parameters import ComplexTempoEnvelopeToAbjadAttachmentTempoConverter
 
 from .quantization import SequentialEventToQuantizedAbjadContainerConverter
-from .quantization import ComplexSequentialEventToQuantizedAbjadContainerConverter
+from .quantization import NauertSequentialEventToQuantizedAbjadContainerConverter
 
-# from .quantization import FastSequentialEventToQuantizedAbjadContainerConverter
+# from .quantization import RMakersSequentialEventToQuantizedAbjadContainerConverter
 from .quantization import (
-    ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+    NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
 )
 from .quantization import (
-    FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+    RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
 )
 
 
@@ -282,7 +282,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def __init__(
         self,
-        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = ComplexSequentialEventToQuantizedAbjadContainerConverter(),
+        sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
@@ -333,8 +333,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         if isinstance(
             sequential_event_to_quantized_abjad_container_converter,
             (
-                ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
-                FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+                NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
+                RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
             ),
         ):
             post_process_abjad_container_routines += (
