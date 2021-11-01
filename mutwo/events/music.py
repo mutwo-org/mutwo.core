@@ -88,8 +88,6 @@ class NoteLike(events.basic.SimpleEvent):
         after_grace_notes: GraceNotes = events.basic.SequentialEvent([]),
         playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
         notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
-        # before_grace_notes  # TODO(add grace note container!)
-        # after_grace_notes
     ):
         if playing_indicators is None:
             playing_indicators = (
