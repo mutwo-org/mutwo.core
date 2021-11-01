@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- improved mmml module
+    - `MMMLSingleRhythmConverter`
+    - `MMMLRhythmsConverter`
+    - `MMMLSingleVolumeConverter`
+    - `MMMLSingleWesternVolumeConverter`
+    - `MMMLVolumesConverter`
+    - `MMMLSingleAttributeConverter`
+    - `MMMLEventsConverter`
+    - `MMMLConverter`
+
+
+## [0.36.0] - 2021-11-01
+
+### Changed
+- `start_and_end_time_per_event` property of `SequentialEvent` returns `ranges.Range` objects instead of `tuple`
+- renamed `FastSequentialEventToQuantizedAbjadContainerConverter` to `RMakersSequentialEventToQuantizedAbjadContainerConverter`
+- renamed `FastSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter` to `RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter`
+- renamed `ComplexSequentialEventToQuantizedAbjadContainerConverter` to `NauertSequentialEventToQuantizedAbjadContainerConverter`
+- renamed `ComplexSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter` to `NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter`
+
+### Removed
+- `mutwo.events.brackets`
+
+### Fixed
+- order of time signature and grace notes within the abjad converter
+
+
 ## [0.35.0] - 2021-10-30
 
 ### Added
