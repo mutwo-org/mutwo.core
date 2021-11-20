@@ -493,8 +493,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def _math(  # type: ignore
-        self, other: "JustIntonationPitch", operation: typing.Callable
-    ) -> "JustIntonationPitch":
+        self, other: JustIntonationPitch, operation: typing.Callable
+    ) -> JustIntonationPitch:
         exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
             self.exponents, other.exponents
         )
@@ -526,10 +526,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
     def __repr__(self) -> str:
         return "JustIntonationPitch({})".format(self.ratio)
 
-    def __add__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
+    def __add__(self, other: JustIntonationPitch) -> JustIntonationPitch:
         return self._math(other, operator.add, mutate=False)  # type: ignore
 
-    def __sub__(self, other: "JustIntonationPitch") -> "JustIntonationPitch":
+    def __sub__(self, other: JustIntonationPitch) -> JustIntonationPitch:
         return self._math(other, operator.sub, mutate=False)  # type: ignore
 
     def __abs__(self):
@@ -716,7 +716,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         )
 
     @property
-    def closest_pythagorean_interval(self) -> "JustIntonationPitch":
+    def closest_pythagorean_interval(self) -> JustIntonationPitch:
         if len(self.helmholtz_ellis_just_intonation_notation_commas) > 0:
             closest_pythagorean_interval = self - type(self)(
                 functools.reduce(
@@ -1043,7 +1043,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return "".join((new_diatonic_pitch, new_accidentals))
 
     @decorators.add_copy_option
-    def register(self, octave: int) -> "JustIntonationPitch":  # type: ignore
+    def register(self, octave: int) -> JustIntonationPitch:  # type: ignore
         """Move :class:`JustIntonationPitch` to the given octave.
 
         :param octave: 0 for the octave from 1/1 to 2/1, negative values for octaves
@@ -1075,13 +1075,13 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def move_to_closest_register(  # type: ignore
-        self, reference: "JustIntonationPitch"
-    ) -> "JustIntonationPitch":
+        self, reference: JustIntonationPitch
+    ) -> JustIntonationPitch:
         reference_register = reference.octave
 
         best = None
         for adaption in range(-1, 2):
-            candidate: "JustIntonationPitch" = self.register(reference_register + adaption, mutate=False)  # type: ignore
+            candidate: JustIntonationPitch = self.register(reference_register + adaption, mutate=False)  # type: ignore
             difference = abs((candidate - reference).cents)
             set_best = True
             if best and difference > best[1]:
@@ -1098,7 +1098,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
             )
 
     @decorators.add_copy_option
-    def normalize(self, prime: int = 2) -> "JustIntonationPitch":  # type: ignore
+    def normalize(self, prime: int = 2) -> JustIntonationPitch:  # type: ignore
         """Normalize :class:`JustIntonationPitch`.
 
         :param prime: The normalization period (2 for octave,
@@ -1121,8 +1121,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def inverse(  # type: ignore
-        self, axis: typing.Optional["JustIntonationPitch"] = None
-    ) -> "JustIntonationPitch":
+        self, axis: typing.Optional[JustIntonationPitch] = None
+    ) -> JustIntonationPitch:
         """Inverse current pitch on given axis.
 
         :param axis: The :class:`JustIntonationPitch` from which the
@@ -1147,8 +1147,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def add(  # type: ignore
-        self, other: "JustIntonationPitch"
-    ) -> "JustIntonationPitch":
+        self, other: JustIntonationPitch
+    ) -> JustIntonationPitch:
         """Add :class:`JustIntonationPitch` to current pitch.
 
         :param other: The :class:`JustIntonationPitch` to add to
@@ -1166,8 +1166,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def subtract(  # type: ignore
-        self, other: "JustIntonationPitch"
-    ) -> "JustIntonationPitch":
+        self, other: JustIntonationPitch
+    ) -> JustIntonationPitch:
         """Subtract :class:`JustIntonationPitch` from current pitch.
 
         :param other: The :class:`JustIntonationPitch` to subtract from
@@ -1186,8 +1186,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @decorators.add_copy_option
     def intersection(
-        self, other: "JustIntonationPitch", strict: bool = False
-    ) -> "JustIntonationPitch":
+        self, other: JustIntonationPitch, strict: bool = False
+    ) -> JustIntonationPitch:
         """Make intersection with other :class:`JustIntonationPitch`.
 
         :param other: The :class:`JustIntonationPitch` to build the
@@ -1421,7 +1421,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         )
         return float(self.concert_pitch.frequency * distance_to_concert_pitch_as_factor)
 
-    def __sub__(self, other: "EqualDividedOctavePitch") -> constants.Real:
+    def __sub__(self, other: EqualDividedOctavePitch) -> constants.Real:
         """Calculates the interval between two ``EqualDividedOctave`` pitches."""
 
         try:
@@ -1455,7 +1455,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
     @decorators.add_copy_option
     def add(  # type: ignore
         self, n_pitch_classes_difference: constants.Real
-    ) -> "EqualDividedOctavePitch":  # type: ignore
+    ) -> EqualDividedOctavePitch:  # type: ignore
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.add)
@@ -1463,7 +1463,7 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
     @decorators.add_copy_option
     def subtract(  # type: ignore
         self, n_pitch_classes_difference: constants.Real
-    ) -> "EqualDividedOctavePitch":  # type: ignore
+    ) -> EqualDividedOctavePitch:  # type: ignore
         """Transposes the ``EqualDividedOctavePitch`` by n_pitch_classes_difference."""
 
         self._math(n_pitch_classes_difference, operator.sub)
