@@ -161,7 +161,7 @@ class SimpleEvent(events.abc.Event):
         else:
             return parameter_value
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def set_parameter(  # type: ignore
         self,
         parameter_name: str,
@@ -170,7 +170,7 @@ class SimpleEvent(events.abc.Event):
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> typing.Optional[SimpleEvent]:
+    ) -> SimpleEvent:
         """Sets event parameter to new value.
 
         :param parameter_name: The name of the parameter which values shall be changed.
@@ -210,24 +210,24 @@ class SimpleEvent(events.abc.Event):
                 new_parameter = object_or_function
             setattr(self, parameter_name, new_parameter)
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
-    ) -> typing.Optional[SimpleEvent]:
+    ) -> SimpleEvent:
         parameter = self.get_parameter(parameter_name)
         if parameter is not None:
             function(parameter)
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_out(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SimpleEvent]:
+    ) -> SimpleEvent:
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )
@@ -252,12 +252,12 @@ class SimpleEvent(events.abc.Event):
 
         self.duration -= difference_to_duration
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_off(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SimpleEvent]:
+    ) -> SimpleEvent:
         self._assert_correct_start_and_end_values(start, end)
 
         duration = self.duration
@@ -381,12 +381,12 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         else:
             return self[event_index]  # type: ignore
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_out(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SequentialEvent[T]]:
+    ) -> SequentialEvent[T]:
         self._assert_correct_start_and_end_values(start, end)
 
         remove_nth_event = []
@@ -413,12 +413,12 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         for nth_event_to_remove in reversed(remove_nth_event):
             del self[nth_event_to_remove]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_off(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SequentialEvent[T]]:
+    ) -> SequentialEvent[T]:
         cut_off_duration = end - start
 
         # avoid unnecessary iterations
@@ -450,10 +450,10 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             for index in reversed(events_to_delete):
                 del self[index]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def squash_in(  # type: ignore
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
-    ) -> typing.Optional[SequentialEvent[T]]:
+    ) -> SequentialEvent[T]:
         self._assert_start_in_range(start)
 
         cut_off_end = start + event_to_squash_in.duration
@@ -486,10 +486,10 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
             self.insert(active_event_index, event_to_squash_in)
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def split_child_at(
         self, absolute_time: parameters.abc.DurationType
-    ) -> typing.Optional[SequentialEvent[T]]:
+    ) -> SequentialEvent[T]:
         absolute_times = self.absolute_times
         nth_event = SequentialEvent._get_index_at_from_absolute_times(
             absolute_time, absolute_times, self.duration
@@ -531,28 +531,28 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_out(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SimultaneousEvent[T]]:
+    ) -> SimultaneousEvent[T]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_out(start, end) for event in self]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def cut_off(  # type: ignore
         self,
         start: parameters.abc.DurationType,
         end: parameters.abc.DurationType,
-    ) -> typing.Optional[SimultaneousEvent[T]]:
+    ) -> SimultaneousEvent[T]:
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_off(start, end) for event in self]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def squash_in(  # type: ignore
         self, start: parameters.abc.DurationType, event_to_squash_in: events.abc.Event
-    ) -> typing.Optional[SimultaneousEvent[T]]:
+    ) -> SimultaneousEvent[T]:
         self._assert_start_in_range(start)
 
         for event in self:
@@ -570,10 +570,10 @@ class SimultaneousEvent(events.abc.ComplexEvent, typing.Generic[T]):
                 )
                 raise TypeError(message)
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def split_child_at(
         self, absolute_time: parameters.abc.DurationType
-    ) -> typing.Optional[SimultaneousEvent[T]]:
+    ) -> SimultaneousEvent[T]:
         for nth_event, event in enumerate(self):
             try:
                 event.split_child_at(absolute_time)

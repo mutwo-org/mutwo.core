@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLEventsConverter`
     - `MMMLConverter`
 
+## [0.37.0] - 2021-11-20
+### Changed
+- Renamed `add_return_option` to `add_copy_option`. Methods decorated with "add_copy_option" will return the respective object no matter whether `mutate=True` (will return the same object) or `mutate=`False` (will return new object). This allows for a more beautiful syntax.
+
 
 ## [0.36.0] - 2021-11-01
 

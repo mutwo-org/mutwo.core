@@ -198,7 +198,9 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def cut_out(
-        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+        self,
+        start: parameters.abc.DurationType,
+        end: parameters.abc.DurationType,
     ) -> typing.Optional[Event]:
         """Time-based slicing of the respective event.
 
@@ -220,7 +222,9 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def cut_off(
-        self, start: parameters.abc.DurationType, end: parameters.abc.DurationType,
+        self,
+        start: parameters.abc.DurationType,
+        end: parameters.abc.DurationType,
     ) -> typing.Optional[Event]:
         """Time-based deletion / shortening of the respective event.
 
@@ -411,7 +415,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
                 parameter_values.append(parameter_values_of_event)
         return tuple(parameter_values)
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def set_parameter(  # type: ignore
         self,
         parameter_name: str,
@@ -422,7 +426,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             typing.Any,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> ComplexEvent[T]:
         [
             event.set_parameter(
                 parameter_name,
@@ -432,20 +436,20 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             for event in self
         ]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
         function: typing.Union[
             typing.Callable[[parameters.abc.Parameter], None], typing.Any
         ],
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> ComplexEvent[T]:
         [event.mutate_parameter(parameter_name, function) for event in self]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def filter(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> ComplexEvent[T]:
         """Condition-based deletion of child events.
 
         :param condition: Function which takes a :class:`Event` and returns ``True``
@@ -469,7 +473,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             if not shall_survive:
                 del self[nth_item]
 
-    @decorators.add_return_option
+    @decorators.add_copy_option
     def tie_by(  # type: ignore
         self,
         condition: typing.Callable[[Event, Event], bool],
@@ -480,7 +484,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         ),
         event_type_to_examine: typing.Type[Event] = Event,
         event_to_remove: bool = True,
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> ComplexEvent[T]:
         """Condition-based deletion of neighboring child events.
 
         :param condition: Function which compares two neighboring

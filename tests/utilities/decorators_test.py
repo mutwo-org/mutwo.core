@@ -5,11 +5,11 @@ from mutwo.utilities import decorators
 
 
 class DecoratorsTest(unittest.TestCase):
-    def test_add_return_option(self):
+    def test_add_copy_option(self):
         class TestClass(object):
             a = 10
 
-            @decorators.add_return_option
+            @decorators.add_copy_option
             def duplicate(self) -> None:
                 self.a *= 2
 

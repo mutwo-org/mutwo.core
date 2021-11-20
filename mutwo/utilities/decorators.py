@@ -10,29 +10,32 @@ try:
 except ImportError:
     import pickle
 
-__all__ = ("add_return_option", "compute_lazy")
+__all__ = ("add_copy_option", "compute_lazy")
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
 
 
-def add_return_option(function: F) -> F:
+def add_copy_option(function: F) -> F:
     """This decorator adds a return option for object mutating methods.
 
-    The 'add_return_option' decorator adds the 'mutate' keyword argument
+    :arg function: The method which shall be adjusted.
+
+    The 'add_copy_option' decorator adds the 'mutate' keyword argument
     to the decorated method. If 'mutate' is set to False, the decorator deep
     copies the respective object, then applies the called method on the new
     copied object and finally returns the copied object. This can be useful
     for methods that by default mutate its object. When adding this method,
     it is up to the user whether the original object shall be changed
-    (for mutate=True) or if a copied version of the object with the
-    respective mutation shall be returned (for mutate=False).
+    and returned (for mutate=True) or if a copied version of the object with
+    the respective mutation shall be returned (for mutate=False).
     """
 
     @functools.wraps(function)
     def wrapper(self, *args, mutate: bool = True, **kwargs) -> typing.Any:
         if mutate is True:
             function(self, *args, **kwargs)
+            return self
         else:
             deep_copied_object = copy.deepcopy(self)
             function(deep_copied_object, *args, **kwargs)
