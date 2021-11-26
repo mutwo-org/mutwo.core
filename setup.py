@@ -5,7 +5,6 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 extras_require = {
-    "pyo": ["pyo>=1.0.3, <2"],
     "midi": ["mido>=1.2.9, <2"],
     "reaper": ["rpp>=0.4, <0.5"],
     "abjad": [
