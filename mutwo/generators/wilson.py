@@ -1,15 +1,25 @@
-"""Algorithms which are related to US-American theorist Erv Wilson."""
+"""Algorithms which are related to US-American tuning theorist Erv Wilson."""
 
 import functools
 import operator
 import itertools
 import typing
 
+from mutwo.generators import brun
 from mutwo.parameters import pitches
 
 
+__all__ = (
+    "make_product_pitch",
+    "make_common_product_set_scale",
+    "make_wilsons_brun_euclidean_algorithm_generator",
+)
+
+
 def make_product_pitch(
-    numbers: typing.Sequence[int], tonality: bool, normalize: bool = False,
+    numbers: typing.Sequence[int],
+    tonality: bool,
+    normalize: bool = False,
 ) -> pitches.JustIntonationPitch:
     """Make :class:`~mutwo.parameters.pitches.JustIntonationPitch` from the product of one, two or more numbers.
 
@@ -79,3 +89,121 @@ def make_common_product_set_scale(
         )
 
     return tuple(common_product_set_scale)
+
+
+def make_wilsons_brun_euclidean_algorithm_generator(
+    pitch_tuple: tuple[
+        pitches.JustIntonationPitch,
+        pitches.JustIntonationPitch,
+        pitches.JustIntonationPitch,
+    ],
+    subtraction_index: typing.Literal[1, 2] = 1,
+    direction_forward: bool = True,
+    direction_reverse: bool = False,
+) -> typing.Generator:
+    """Make constant structure scale with Wilsons adaption of Bruns euclidean algorithm.
+
+    :param pitch_tuple: The initial seed composed of three individual pitches. The
+        biggest pitch will be the period of the repeating scale, therefore it is
+        recommended to use ``pitches.JustIntonationPitch("2/1")`` here (if one
+        desires an octave repeating scale).
+    :type pitch_tuple: tuple[pitches.JustIntonationPitch, pitches.JustIntonationPitch, pitches.JustIntonationPitch],
+    :param subtraction_index: Set to 1 if the largest interval should be subtracted by
+        the second interval. Set to 2 if the largest interval should be subtracted by
+        the smallest interval.
+    :type subtraction_index: int
+    :param direction_forward: Set to ``True`` if the algorithm should include the
+        normal sorted replacement of an interval. Default to ``True``.
+    :type direction_forward: bool
+    :param direction_reverse: Set to ``True`` if the algorithm should include the
+        reversed replacement of an interval. Default to ``False``.
+    :type direction_reverse: bool
+    :return: Generator which returns a list of intervals. Accumulate the intervals from
+        ``pitches.JustIntonationPitch("1/1")`` to get the scale pitches.
+
+    **Example:**
+
+    >>> from mutwo.generators import wilson
+    >>> from mutwo.parameters import pitches
+    >>> wilsons_brun_euclidean_algorithm_generator = (
+    >>>     wilson.make_wilsons_brun_euclidean_algorithm_generator(
+    >>>         (
+    >>>             pitches.JustIntonationPitch("2/1"),
+    >>>             pitches.JustIntonationPitch("3/2"),
+    >>>             pitches.JustIntonationPitch("5/4"),
+    >>>         )
+    >>>     )
+    >>> )
+    >>> next(wilsons_brun_euclidean_algorithm_generator)
+    ((JustIntonationPitch(2),),)
+    >>> next(wilsons_brun_euclidean_algorithm_generator)
+    ((JustIntonationPitch(3/2), JustIntonationPitch(4/3)),)
+    >>> next(wilsons_brun_euclidean_algorithm_generator)
+    ((JustIntonationPitch(4/3), JustIntonationPitch(9/8), JustIntonationPitch(4/3)),)
+    """
+
+    try:
+        assert direction_forward or direction_reverse
+    except AssertionError:
+        message = "Can't set both directions to False!"
+        raise ValueError(message)
+
+    def fetch_first_and_second_interval(
+        brun_interval_tuple: tuple[
+            pitches.JustIntonationPitch,
+            pitches.JustIntonationPitch,
+            pitches.JustIntonationPitch,
+        ]
+    ) -> tuple[pitches.JustIntonationPitch, pitches.JustIntonationPitch]:
+        return brun_interval_tuple[0], brun_interval_tuple[subtraction_index]
+
+    bruns_euclidean_algorithm_generator = brun.make_bruns_euclidean_algorithm_generator(
+        pitch_tuple,
+        subtraction_index=subtraction_index,
+    )
+    brun_interval_tuple = next(bruns_euclidean_algorithm_generator)[0]
+    previous_interval, previous_second_interval = fetch_first_and_second_interval(
+        brun_interval_tuple
+    )
+    interval_list_list = [[previous_interval]]
+    previous_interval_tuple_tuple = tuple([])
+
+    while True:
+        new_interval_tuple_tuple = tuple(map(tuple, interval_list_list))
+        if new_interval_tuple_tuple != previous_interval_tuple_tuple:
+            yield new_interval_tuple_tuple
+        previous_interval_tuple_tuple = new_interval_tuple_tuple
+        brun_interval_tuple, _, previous_subtraction_result = next(
+            bruns_euclidean_algorithm_generator
+        )
+        interval_replacement_tuple_list = []
+        if direction_forward:
+            interval_replacement_tuple_list.append(
+                (
+                    previous_second_interval,
+                    previous_subtraction_result,
+                )
+            )
+        if direction_reverse:
+            interval_replacement_tuple_list.append(
+                (
+                    previous_subtraction_result,
+                    previous_second_interval,
+                )
+            )
+        new_interval_list_list = []
+        for interval_list in interval_list_list:
+            for interval_replacement_tuple in interval_replacement_tuple_list:
+                new_interval_list = list(interval_list)
+                for index, interval in enumerate(new_interval_list):
+                    if interval == previous_interval:
+                        new_interval_list[
+                            index : index + 1
+                        ] = interval_replacement_tuple
+                new_interval_list_list.append(new_interval_list)
+
+        interval_list_list = new_interval_list_list
+
+        previous_interval, previous_second_interval = fetch_first_and_second_interval(
+            brun_interval_tuple
+        )

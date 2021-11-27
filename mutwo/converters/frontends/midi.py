@@ -129,7 +129,7 @@ class MidiFileConverter(abc.Converter):
     :param simple_event_to_pitches: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
-        By default it asks the Event for its :attr:`pitch_or_pitches` attribute
+        By default it asks the Event for its :attr:`pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than ``NoteLike`` with a different name for
         their pitch property, this argument should be overridden. If the function call
@@ -217,7 +217,7 @@ class MidiFileConverter(abc.Converter):
         self,
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], tuple[parameters.abc.Pitch, ...]
-        ] = lambda event: event.pitch_or_pitches,  # type: ignore
+        ] = lambda event: event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda event: event.volume,  # type: ignore
@@ -489,7 +489,7 @@ class MidiFileConverter(abc.Converter):
         absolute_time: utilities.constants.Real,
         duration: parameters.abc.DurationType,
         available_midi_channels_cycle: typing.Iterator,
-        pitch_or_pitches: tuple[parameters.abc.Pitch, ...],
+        pitch_list: tuple[parameters.abc.Pitch, ...],
         volume: parameters.abc.Volume,
         control_messages: tuple[mido.Message, ...],
     ) -> tuple[mido.Message, ...]:
@@ -514,7 +514,7 @@ class MidiFileConverter(abc.Converter):
             midi_messages.append(control_message)
 
         # add note related messages
-        for pitch in pitch_or_pitches:
+        for pitch in pitch_list:
             midi_messages.extend(
                 self._note_information_to_midi_messages(
                     absolute_tick_start,

@@ -162,7 +162,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
+        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
         with a different name for their pitch property, this argument
@@ -180,46 +180,46 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         with a different name for their volume property, this argument should
         be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
-        extracted), mutwo will set :attr:`pitch_or_pitches` to an empty list and set
+        extracted), mutwo will set :attr:`pitch_list` to an empty list and set
         volume to 0.
     :type simple_event_to_volume: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Volume], optional
-    :param simple_event_to_grace_notes: Function to extract from a
+    :param simple_event_to_grace_note_sequential_event: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`~mutwo.events.basic.SequentialEvent`
         object filled with
         :class:`~mutwo.events.basic.SimpleEvent`.
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.grace_notes`
+        :attr:`~mutwo.events.music.NoteLike.grace_note_sequential_event`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
-        with a different name for their `grace_notes` property, this argument
+        with a different name for their `grace_note_sequential_event` property, this argument
         should be overridden. If the
-        function call raises an :obj:`AttributeError` (e.g. if no grace_notes can be
+        function call raises an :obj:`AttributeError` (e.g. if no grace_note_sequential_event can be
         extracted), mutwo will use an empty
         :class:`~mutwo.events.basic.SequentialEvent`.
-    :type simple_event_to_grace_notes: typing.Callable[[events.basic.SimpleEvent], events.basic.SequentialEvent[events.basic.SimpleEvent]], optional
-    :param simple_event_to_after_grace_notes: Function to extract from a
+    :type simple_event_to_grace_note_sequential_event: typing.Callable[[events.basic.SimpleEvent], events.basic.SequentialEvent[events.basic.SimpleEvent]], optional
+    :param simple_event_to_after_grace_note_sequential_event: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`~mutwo.events.basic.SequentialEvent`
         object filled with
         :class:`~mutwo.events.basic.SimpleEvent`.
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.after_grace_notes`
+        :attr:`~mutwo.events.music.NoteLike.after_grace_note_sequential_event`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
-        with a different name for their `after_grace_notes` property, this
+        with a different name for their `after_grace_note_sequential_event` property, this
         argument should be overridden. If the function call
-        raises an :obj:`AttributeError` (e.g. if no after_grace_notes can be
+        raises an :obj:`AttributeError` (e.g. if no after_grace_note_sequential_event can be
         extracted), mutwo will use an empty
         :class:`~mutwo.events.basic.SequentialEvent`.
-    :type simple_event_to_after_grace_notes: typing.Callable[[events.basic.SimpleEvent], events.basic.SequentialEvent[events.basic.SimpleEvent]], optional
-    :param simple_event_to_playing_indicators: Function to extract from a
+    :type simple_event_to_after_grace_note_sequential_event: typing.Callable[[events.basic.SimpleEvent], events.basic.SequentialEvent[events.basic.SimpleEvent]], optional
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.playing_indicators`
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
@@ -228,8 +228,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
-    :type simple_event_to_playing_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
-    :param simple_event_to_notation_indicators: Function to extract from a
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    :param simple_event_to_notation_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.notation_indicators.NotationIndicatorCollection`
         object. By default it asks the Event for its
@@ -240,10 +240,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         function call raises an :obj:`AttributeError` (e.g. if no notation indicator
         collection can be extracted), mutwo will build a notation indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS`
-    :type simple_event_to_notation_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
+    :type simple_event_to_notation_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
     :param is_simple_event_rest: Function to detect if the
         the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
-        default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
+        default Mutwo simply checks if 'pitch_list' contain any objects. If not,
         the Event will be interpreted as a rest.
     :type is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
@@ -285,26 +285,26 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
-        ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
+        ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
-        simple_event_to_grace_notes: typing.Callable[
+        simple_event_to_grace_note_sequential_event: typing.Callable[
             [events.basic.SimpleEvent],
             events.basic.SequentialEvent[events.basic.SimpleEvent],
-        ] = lambda simple_event: simple_event.grace_notes,  # type: ignore
-        simple_event_to_after_grace_notes: typing.Callable[
+        ] = lambda simple_event: simple_event.grace_note_sequential_event,  # type: ignore
+        simple_event_to_after_grace_note_sequential_event: typing.Callable[
             [events.basic.SimpleEvent],
             events.basic.SequentialEvent[events.basic.SimpleEvent],
-        ] = lambda simple_event: simple_event.after_grace_notes,  # type: ignore
-        simple_event_to_playing_indicators: typing.Callable[
+        ] = lambda simple_event: simple_event.after_grace_note_sequential_event,  # type: ignore
+        simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
-        ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
-        simple_event_to_notation_indicators: typing.Callable[
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
+        simple_event_to_notation_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.notation_indicators.NotationIndicatorCollection,
-        ] = lambda simple_event: simple_event.notation_indicators,  # type: ignore
+        ] = lambda simple_event: simple_event.notation_indicator_collection,  # type: ignore
         is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool] = None,
         mutwo_pitch_to_abjad_pitch_converter: MutwoPitchToAbjadPitchConverter = MutwoPitchToAbjadPitchConverter(),
         mutwo_volume_to_abjad_attachment_dynamic_converter: typing.Optional[
@@ -358,11 +358,11 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
             def is_simple_event_rest(simple_event: events.basic.SimpleEvent) -> bool:
                 try:
-                    pitch_or_pitches = simple_event_to_pitches(simple_event)
+                    pitch_list = simple_event_to_pitches(simple_event)
                 except AttributeError:
-                    pitch_or_pitches = []
+                    pitch_list = []
 
-                return not bool(pitch_or_pitches)
+                return not bool(pitch_list)
 
         self._abjad_attachment_classes = abjad_attachment_classes
 
@@ -376,10 +376,18 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         )
         self._simple_event_to_pitches = simple_event_to_pitches
         self._simple_event_to_volume = simple_event_to_volume
-        self._simple_event_to_grace_notes = simple_event_to_grace_notes
-        self._simple_event_to_after_grace_notes = simple_event_to_after_grace_notes
-        self._simple_event_to_playing_indicators = simple_event_to_playing_indicators
-        self._simple_event_to_notation_indicators = simple_event_to_notation_indicators
+        self._simple_event_to_grace_note_sequential_event = (
+            simple_event_to_grace_note_sequential_event
+        )
+        self._simple_event_to_after_grace_note_sequential_event = (
+            simple_event_to_after_grace_note_sequential_event
+        )
+        self._simple_event_to_playing_indicator_collection = (
+            simple_event_to_playing_indicator_collection
+        )
+        self._simple_event_to_notation_indicator_collection = (
+            simple_event_to_notation_indicator_collection
+        )
         self._is_simple_event_rest = is_simple_event_rest
         self._mutwo_pitch_to_abjad_pitch_converter = (
             mutwo_pitch_to_abjad_pitch_converter
@@ -459,32 +467,34 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         return attachments
 
-    def _grace_notes_to_abjad_attachment(
+    def _grace_note_sequential_event_to_abjad_attachment(
         self,
-        grace_notes_or_after_grace_notes: events.basic.SequentialEvent[
+        grace_note_sequential_event_or_after_grace_note_sequential_event: events.basic.SequentialEvent[
             events.basic.SimpleEvent
         ],
         is_before: bool,
     ) -> dict[str, attachments.AbjadAttachment]:
-        if not grace_notes_or_after_grace_notes:
+        if not grace_note_sequential_event_or_after_grace_note_sequential_event:
             return {}
         converter = _GraceNotesToAbjadVoiceConverter(
             is_before,
             self._simple_event_to_pitches,
             self._simple_event_to_volume,
-            self._simple_event_to_playing_indicators,
-            self._simple_event_to_notation_indicators,
+            self._simple_event_to_playing_indicator_collection,
+            self._simple_event_to_notation_indicator_collection,
             self._is_simple_event_rest,
             self._mutwo_pitch_to_abjad_pitch_converter,
         )
-        grace_notes_container = converter.convert(grace_notes_or_after_grace_notes)
+        grace_note_sequential_event_container = converter.convert(
+            grace_note_sequential_event_or_after_grace_note_sequential_event
+        )
         if is_before:
-            name = "grace_notes"
+            name = "grace_note_sequential_event"
             abjad_attachment_class = attachments.GraceNotes
         else:
-            name = "after_grace_notes"
+            name = "after_grace_note_sequential_event"
             abjad_attachment_class = attachments.AfterGraceNotes
-        return {name: abjad_attachment_class(grace_notes_container)}
+        return {name: abjad_attachment_class(grace_note_sequential_event_container)}
 
     def _volume_to_abjad_attachment(
         self, volume: parameters.abc.Volume
@@ -556,17 +566,21 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             (
                 _,
                 volume,
-                grace_notes,
-                after_grace_notes,
+                grace_note_sequential_event,
+                after_grace_note_sequential_event,
                 playing_indicators,
                 notation_indicators,
             ) = extracted_data
             attachments_for_nth_event = self._volume_to_abjad_attachment(volume)
             attachments_for_nth_event.update(
-                self._grace_notes_to_abjad_attachment(grace_notes, True)
+                self._grace_note_sequential_event_to_abjad_attachment(
+                    grace_note_sequential_event, True
+                )
             )
             attachments_for_nth_event.update(
-                self._grace_notes_to_abjad_attachment(after_grace_notes, False)
+                self._grace_note_sequential_event_to_abjad_attachment(
+                    after_grace_note_sequential_event, False
+                )
             )
             attachments_for_nth_event.update(
                 self._indicator_collection_to_attachments(playing_indicators)
@@ -648,24 +662,30 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             pitches = []
 
         try:
-            grace_notes = self._simple_event_to_grace_notes(simple_event)
+            grace_note_sequential_event = (
+                self._simple_event_to_grace_note_sequential_event(simple_event)
+            )
         except AttributeError:
-            grace_notes = events.basic.SequentialEvent([])
+            grace_note_sequential_event = events.basic.SequentialEvent([])
 
         try:
-            after_grace_notes = self._simple_event_to_after_grace_notes(simple_event)
+            after_grace_note_sequential_event = (
+                self._simple_event_to_after_grace_note_sequential_event(simple_event)
+            )
         except AttributeError:
-            after_grace_notes = events.basic.SequentialEvent([])
+            after_grace_note_sequential_event = events.basic.SequentialEvent([])
 
         try:
-            playing_indicators = self._simple_event_to_playing_indicators(simple_event)
+            playing_indicators = self._simple_event_to_playing_indicator_collection(
+                simple_event
+            )
         except AttributeError:
             playing_indicators = (
                 events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
 
         try:
-            notation_indicators = self._simple_event_to_notation_indicators(
+            notation_indicators = self._simple_event_to_notation_indicator_collection(
                 simple_event
             )
         except AttributeError:
@@ -676,8 +696,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         return (
             pitches,
             volume,
-            grace_notes,
-            after_grace_notes,
+            grace_note_sequential_event,
+            after_grace_note_sequential_event,
             playing_indicators,
             notation_indicators,
         )
@@ -907,11 +927,11 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ],
-        simple_event_to_playing_indicators: typing.Callable[
+        simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
         ],
-        simple_event_to_notation_indicators: typing.Callable[
+        simple_event_to_notation_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.notation_indicators.NotationIndicatorCollection,
         ],
@@ -930,22 +950,22 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
             sequential_event_to_quantized_abjad_container_converter=self.GraceNotesToQuantizedAbjadContainerConverter(),
             simple_event_to_pitches=simple_event_to_pitches,
             simple_event_to_volume=simple_event_to_volume,
-            simple_event_to_playing_indicators=simple_event_to_playing_indicators,
-            simple_event_to_notation_indicators=simple_event_to_notation_indicators,
+            simple_event_to_playing_indicator_collection=simple_event_to_playing_indicator_collection,
+            simple_event_to_notation_indicator_collection=simple_event_to_notation_indicator_collection,
             is_simple_event_rest=is_simple_event_rest,
             mutwo_pitch_to_abjad_pitch_converter=mutwo_pitch_to_abjad_pitch_converter,
             mutwo_volume_to_abjad_attachment_dynamic_converter=None,
             tempo_envelope_to_abjad_attachment_tempo_converter=None,
-            simple_event_to_grace_notes=raise_attribute_error,
-            simple_event_to_after_grace_notes=raise_attribute_error,
+            simple_event_to_grace_note_sequential_event=raise_attribute_error,
+            simple_event_to_after_grace_note_sequential_event=raise_attribute_error,
             write_multimeasure_rests=False,
             abjad_container_class=abjad_container_class,
             lilypond_type_of_abjad_container=None,
         )
 
-    def _grace_notes_to_abjad_attachment(
+    def _grace_note_sequential_event_to_abjad_attachment(
         self,
-        grace_notes_or_after_grace_notes: events.basic.SequentialEvent[
+        grace_note_sequential_event_or_after_grace_note_sequential_event: events.basic.SequentialEvent[
             events.basic.SimpleEvent
         ],
         is_before: bool,

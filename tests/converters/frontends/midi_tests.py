@@ -312,7 +312,7 @@ class MidiFileConverterTest(unittest.TestCase):
             (
                 absolute_time,
                 duration,
-                pitch_or_pitches,
+                pitch_list,
                 volume,
                 control_messages,
             ) = extracted_data
@@ -323,7 +323,7 @@ class MidiFileConverterTest(unittest.TestCase):
             for control_message in expected_midi_messages:
                 control_message.time = start
 
-            for pitch in pitch_or_pitches:
+            for pitch in pitch_list:
                 expected_midi_messages.extend(
                     self.converter._note_information_to_midi_messages(
                         start, end, velocity, pitch, available_midi_channels_cycle
@@ -335,7 +335,7 @@ class MidiFileConverterTest(unittest.TestCase):
                     absolute_time,
                     duration,
                     available_midi_channels_cycle,
-                    pitch_or_pitches,
+                    pitch_list,
                     volume,
                     control_messages,
                 ),

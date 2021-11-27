@@ -12,7 +12,7 @@ class ArpeggioConverterTest(unittest.TestCase):
             duration_for_each_attack=0.1
         )
         note_like = music.NoteLike("c g e b", duration=5)
-        note_like.playing_indicators.arpeggio.direction = "up"
+        note_like.playing_indicator_collection.arpeggio.direction = "up"
         arpeggio = basic.SequentialEvent(
             [
                 music.NoteLike(pitch, duration)
@@ -20,7 +20,7 @@ class ArpeggioConverterTest(unittest.TestCase):
             ]
         )
         for note in arpeggio:
-            note.playing_indicators.arpeggio.direction = "up"
+            note.playing_indicator_collection.arpeggio.direction = "up"
 
         self.assertEqual(converter.convert(note_like), arpeggio)
 
@@ -35,7 +35,7 @@ class PlayingIndicatorsConverterTest(unittest.TestCase):
             ]
         )
         note_like = music.NoteLike("c g e b", duration=5)
-        note_like.playing_indicators.arpeggio.direction = "up"
+        note_like.playing_indicator_collection.arpeggio.direction = "up"
         arpeggio = basic.SequentialEvent(
             [
                 music.NoteLike(pitch, duration)
@@ -43,7 +43,7 @@ class PlayingIndicatorsConverterTest(unittest.TestCase):
             ]
         )
         for note in arpeggio:
-            note.playing_indicators.arpeggio.direction = "up"
+            note.playing_indicator_collection.arpeggio.direction = "up"
 
         self.assertEqual(converter.convert(note_like), arpeggio)
 

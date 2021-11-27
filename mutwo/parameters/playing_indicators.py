@@ -36,7 +36,7 @@ Set playing indicators of :class:`NoteLike`:
 >>> my_note.playing_indicators.articulation.name = "."  # add staccato
 >>> my_chord = music.NoteLike('c e g', 1 / 2, 'f')
 >>> my_chord.playing_indicators.arpeggio.direction= "up"  # add arpeggio
->>> my_chord.playing_indicators.laissez_vibrer.is_active = True  # and laissez_vibrer
+>>> my_chord.playing_indicators.laissez_vibrer = True  # and laissez_vibrer
 
 Attach :class:`PlayingIndicatorCollection` to :class:`SimpleEvent`:
 
@@ -73,30 +73,96 @@ class Tremolo(parameters.abc.ImplicitPlayingIndicator):
 
 @dataclasses.dataclass()
 class Articulation(parameters.abc.ImplicitPlayingIndicator):
-    name: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
+    name: typing.Optional[
+        typing.Literal[
+            # Copy/paste from
+            # https://abjad.github.io/_modules/abjad/indicators/Articulation.html
+            "accent",
+            "marcato",
+            "staccatissimo",
+            "espressivo",
+            "staccato",
+            "tenuto",
+            "portato",
+            "upbow",
+            "downbow",
+            "flageolet",
+            "thumb",
+            "lheel",
+            "rheel",
+            "ltoe",
+            "rtoe",
+            "open",
+            "halfopen",
+            "snappizzicato",
+            "stopped",
+            "turn",
+            "reverseturn",
+            "trill",
+            "prall",
+            "mordent",
+            "prallprall",
+            "prallmordent",
+            "upprall",
+            "downprall",
+            "upmordent",
+            "downmordent",
+            "pralldown",
+            "prallup",
+            "lineprall",
+            "signumcongruentiae",
+            "shortfermata",
+            "fermata",
+            "longfermata",
+            "verylongfermata",
+            "segno",
+            "coda",
+            "varcoda",
+            "^",
+            "+",
+            "-",
+            "|",
+            ">",
+            ".",
+            "_",
+        ]
+    ] = None
 
 
 @dataclasses.dataclass()
 class Arpeggio(parameters.abc.ImplicitPlayingIndicator):
-    direction: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
+    direction: typing.Optional[typing.Literal["up", "down"]] = None
 
 
 @dataclasses.dataclass()
 class Pedal(parameters.abc.ImplicitPlayingIndicator):
-    pedal_type: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
+    # Pedal types copied from
+    # https://abjad.github.io/_modules/abjad/indicators/StartPianoPedal.html
+    pedal_type: typing.Optional[typing.Literal["sustain", "sostenuto", "corda"]] = None
     pedal_activity: typing.Optional[bool] = True
 
 
 @dataclasses.dataclass()
 class StringContactPoint(parameters.abc.ImplicitPlayingIndicator):
     contact_point: typing.Optional[
-        str
-    ] = None  # TODO(for future usage add typing.Literal)
+        typing.Literal[
+            # Copied from
+            # https://abjad.github.io/_modules/abjad/indicators/StringContactPoint.html#StringContactPoint
+            "dietro ponticello",
+            "molto sul ponticello",
+            "molto sul tasto",
+            "ordinario",
+            "pizzicato",
+            "ponticello",
+            "sul ponticello",
+            "sul tasto",
+        ]
+    ] = None
 
 
 @dataclasses.dataclass()
 class Ornamentation(parameters.abc.ImplicitPlayingIndicator):
-    direction: typing.Optional[str] = None  # TODO(for future usage add typing.Literal)
+    direction: typing.Optional[typing.Literal["up", "down"]] = None
     n_times: int = 1
 
 
@@ -116,17 +182,21 @@ class PreciseNaturalHarmonic(parameters.abc.ImplicitPlayingIndicator):
 @dataclasses.dataclass()
 class Fermata(parameters.abc.ImplicitPlayingIndicator):
     fermata_type: typing.Optional[
-        str
-    ] = None  # TODO(for future usage add typing.Literal)
+        typing.Literal[
+            "shortfermata",
+            "fermata",
+            "longfermata",
+            "verylongfermata",
+        ]
+    ] = None
 
 
 @dataclasses.dataclass()
 class Hairpin(parameters.abc.ImplicitPlayingIndicator):
-    # TODO(for future usage add typing.Literal['<', '>', '!')
-    symbol: typing.Optional[str] = None
+    symbol: typing.Optional[typing.Literal["<", ">", "!"]] = None
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class PlayingIndicatorCollection(
     parameters.abc.IndicatorCollection[parameters.abc.PlayingIndicator]
 ):
@@ -169,3 +239,31 @@ class PlayingIndicatorCollection(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
     tremolo: Tremolo = dataclasses.field(default_factory=Tremolo)
+
+    def __setattr__(self, parameter_name: str, value: bool):
+        """Overriding default behaviour to allow syntactic sugar.
+
+        This method allows syntax like:
+
+            playing_indicator_collection.tie = True
+
+        which is the same as
+
+            playing_indicator_collection.tie.is_active = True
+
+        Furthermore the methods makes sure that no property
+        can actually be overridden.
+        """
+
+        try:
+            playing_indicator = getattr(self, parameter_name)
+        except AttributeError:
+            playing_indicator = None
+        if playing_indicator is not None:
+            if isinstance(playing_indicator, parameters.abc.ExplicitPlayingIndicator):
+                playing_indicator.is_active = bool(value)
+            else:
+                message = f"Can't override frozen property (playing indicator) '{playing_indicator}'!"
+                raise dataclasses.FrozenInstanceError(message)
+        else:
+            super().__setattr__(parameter_name, value)

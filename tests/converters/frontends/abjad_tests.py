@@ -417,22 +417,22 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
 
         complex_sequential_event[
             0
-        ].notation_indicators.margin_markup.content = "Magic Instr"
-        complex_sequential_event[2].playing_indicators.bartok_pizzicato.is_active = True
+        ].notation_indicator_collection.margin_markup.content = "Magic Instr"
+        complex_sequential_event[2].playing_indicator_collection.bartok_pizzicato.is_active = True
         complex_sequential_event[3].volume = "fff"
         complex_sequential_event[4].volume = "fff"
-        complex_sequential_event[7].playing_indicators.fermata.fermata_type = "fermata"
-        complex_sequential_event[9].notation_indicators.ottava.n_octaves = -1
+        complex_sequential_event[7].playing_indicator_collection.fermata.fermata_type = "fermata"
+        complex_sequential_event[9].notation_indicator_collection.ottava.n_octaves = -1
         complex_sequential_event[
             9
-        ].playing_indicators.string_contact_point.contact_point = "sul tasto"
+        ].playing_indicator_collection.string_contact_point.contact_point = "sul tasto"
         complex_sequential_event[
             11
-        ].playing_indicators.string_contact_point.contact_point = "sul tasto"
-        complex_sequential_event[11].notation_indicators.ottava.n_octaves = -2
+        ].playing_indicator_collection.string_contact_point.contact_point = "sul tasto"
+        complex_sequential_event[11].notation_indicator_collection.ottava.n_octaves = -2
         complex_sequential_event[
             12
-        ].playing_indicators.string_contact_point.contact_point = "pizzicato"
+        ].playing_indicator_collection.string_contact_point.contact_point = "pizzicato"
         return complex_sequential_event
 
     @classmethod
@@ -645,7 +645,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # remove test file
         os.remove(new_png_file_path)
 
-    def test_grace_notes_and_after_grace_notes(self):
+    def test_grace_note_sequential_event_and_after_grace_note_sequential_event(self):
         # basically an integration test (testing if the rendered png
         # is equal to the previously rendered and manually checked png)
         # -> this tests, if the resulting notation prints grace notes and
@@ -659,14 +659,14 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
                 music.NoteLike(
                     "c",
                     1,
-                    grace_notes=basic.SequentialEvent(
+                    grace_note_sequential_event=basic.SequentialEvent(
                         [music.NoteLike("d", 0.125), music.NoteLike("e", 0.125)]
                     ),
                 ),
                 music.NoteLike(
                     "c",
                     1,
-                    after_grace_notes=basic.SequentialEvent(
+                    after_grace_note_sequential_event=basic.SequentialEvent(
                         [
                             music.NoteLike("d", 0.125),
                             music.NoteLike("e", 0.125),
@@ -678,7 +678,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
                 music.NoteLike(
                     "c",
                     1,
-                    grace_notes=basic.SequentialEvent(
+                    grace_note_sequential_event=basic.SequentialEvent(
                         [music.NoteLike("d", 0.125), music.NoteLike("e", 0.125)]
                     ),
                 ),
@@ -688,9 +688,9 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
 
         tests_path = "tests/converters/frontends"
         png_file_to_compare_path = (
-            "{}/abjad_expected_png_output_for_grace_notes_test.png".format(tests_path)
+            "{}/abjad_expected_png_output_for_grace_note_sequential_event_test.png".format(tests_path)
         )
-        new_png_file_path = "{}/abjad_png_output_for_grace_notes_test.png".format(
+        new_png_file_path = "{}/abjad_png_output_for_grace_note_sequential_event_test.png".format(
             tests_path
         )
 

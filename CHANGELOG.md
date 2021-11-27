@@ -18,7 +18,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLEventsConverter`
     - `MMMLConverter`
 
+## [0.39.0] - 2021-11-27
+
+### Added
+- syntactic sugar for setting playing indicators:
+    - `note_like.playing_indicator_collection.tie = True` is now the same as `note_like.playing_indicator_collection.tie.is_active = True`
+- literal type hints for playing indicators
+
+
+## [0.38.0] - 2021-11-27
+
+### Added
+- `brun` module in `generators` with function `make_bruns_euclidean_algorithm_generator`
+- function `make_wilsons_brun_euclidean_algorithm_generator` in `wilson` module
+
+### Changed
+- rename `pitch_or_pitches` property of `NoteLike` to `pitch_list`
+- rename `playing_indicators` property of `NoteLike` to `playing_indicator_collection`
+- rename `notation_indicators` property of `NoteLike` to `notation_indicator_collection`
+- rename `grace_notes` property of `NoteLike` to `grace_note_sequential_event`
+- rename `after_grace_notes` property of `NoteLike` to `after_grace_note_sequential_event`
+
+
 ## [0.37.0] - 2021-11-20
+
 ### Changed
 - Renamed `add_return_option` to `add_copy_option`. Methods decorated with "add_copy_option" will return the respective object no matter whether `mutate=True` (will return the same object) or `mutate=`False` (will return new object). This allows for a more beautiful syntax.
 

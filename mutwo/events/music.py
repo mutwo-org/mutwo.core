@@ -25,7 +25,7 @@ GraceNotes = events.basic.SequentialEvent[events.basic.SimpleEvent]
 class NoteLike(events.basic.SimpleEvent):
     """NoteLike represents traditional discreet musical objects.
 
-    :param pitch_or_pitches: The pitch or pitches of the event. This can
+    :param pitch_list: The pitch or pitches of the event. This can
         be a pitch object (any class that inherits from ``mutwo.parameters.abc.Pitch``)
         or a list of pitch objects. Furthermore mutwo supports syntactic sugar
         to convert other objects on the fly to pitch objects: Atring can be
@@ -48,18 +48,18 @@ class NoteLike(events.basic.SimpleEvent):
         will be interpreted as decibel). If the argument is a string,
         `mutwo` will try to initialise a :class:`mutwo.parameters.volumes.WesternVolume`
         object.
-    :param grace_notes:
-    :type grace_notes: events.basic.SequentialEvent[NoteLike]
-    :param after_grace_notes:
-    :type after_grace_notes: events.basic.SequentialEvent[NoteLike]
-    :param playing_indicators: A :class:`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection`.
+    :param grace_note_sequential_event:
+    :type grace_note_sequential_event: events.basic.SequentialEvent[NoteLike]
+    :param after_grace_note_sequential_event:
+    :type after_grace_note_sequential_event: events.basic.SequentialEvent[NoteLike]
+    :param playing_indicator_collection: A :class:`~mutwo.parameters.playing_indicator_collection.PlayingIndicatorCollection`.
         Playing indicators alter the sound of :class:`NoteLike` (e.g.
         tremolo, fermata, pizzicato).
-    :type playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection
-    :param notation_indicators: A :class:`~mutwo.parameters.notation_indicators.NotationIndicatorCollection`.
+    :type playing_indicator_collection: parameters.playing_indicator_collection.PlayingIndicatorCollection
+    :param notation_indicator_collection: A :class:`~mutwo.parameters.notation_indicator_collection.NotationIndicatorCollection`.
         Notation indicators alter the visual representation of :class:`NoteLike`
         (e.g. ottava, clefs) without affecting the resulting sound.
-    :type notation_indicators: parameters.notation_indicators.NotationIndicatorCollection
+    :type notation_indicator_collection: parameters.notation_indicator_collection.NotationIndicatorCollection
 
     By default mutwo doesn't differentiate between Tones, Chords and
     Rests, but rather simply implements one general class which can
@@ -81,31 +81,33 @@ class NoteLike(events.basic.SimpleEvent):
 
     def __init__(
         self,
-        pitch_or_pitches: PitchOrPitches = "c",
+        pitch_list: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
         volume: Volume = "mf",
-        grace_notes: GraceNotes = events.basic.SequentialEvent([]),
-        after_grace_notes: GraceNotes = events.basic.SequentialEvent([]),
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
-        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
+        grace_note_sequential_event: GraceNotes = events.basic.SequentialEvent([]),
+        after_grace_note_sequential_event: GraceNotes = events.basic.SequentialEvent(
+            []
+        ),
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection = None,
+        notation_indicator_collection: parameters.notation_indicators.NotationIndicatorCollection = None,
     ):
-        if playing_indicators is None:
-            playing_indicators = (
+        if playing_indicator_collection is None:
+            playing_indicator_collection = (
                 events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
 
-        if notation_indicators is None:
-            notation_indicators = (
+        if notation_indicator_collection is None:
+            notation_indicator_collection = (
                 events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
             )
 
-        self.pitch_or_pitches = pitch_or_pitches
+        self.pitch_list = pitch_list
         self.volume = volume
         super().__init__(duration)
-        self.grace_notes = grace_notes
-        self.after_grace_notes = after_grace_notes
-        self.playing_indicators = playing_indicators
-        self.notation_indicators = notation_indicators
+        self.grace_note_sequential_event = grace_note_sequential_event
+        self.after_grace_note_sequential_event = after_grace_note_sequential_event
+        self.playing_indicator_collection = playing_indicator_collection
+        self.notation_indicator_collection = notation_indicator_collection
 
     # ###################################################################### #
     #                          static methods                                #
@@ -182,7 +184,7 @@ class NoteLike(events.basic.SimpleEvent):
         return pitches
 
     @staticmethod
-    def _convert_unknown_object_to_grace_notes(
+    def _convert_unknown_object_to_grace_note_sequential_event(
         unknown_object: typing.Union[GraceNotes, events.basic.SimpleEvent]
     ) -> GraceNotes:
         if isinstance(unknown_object, events.basic.SimpleEvent):
@@ -202,36 +204,32 @@ class NoteLike(events.basic.SimpleEvent):
         return tuple(
             attribute
             for attribute in self._parameters_to_compare
-            if attribute not in ("playing_indicators", "notation_indicators")
+            if attribute
+            not in ("playing_indicator_collection", "notation_indicator_collection")
         )
 
     @property
-    def pitch_or_pitches(self) -> typing.Any:
+    def pitch_list(self) -> typing.Any:
         """The pitch or pitches of the event."""
 
-        return self._pitch_or_pitches
+        return self._pitch_list
 
-    @pitch_or_pitches.setter
-    def pitch_or_pitches(self, pitch_or_pitches: typing.Any):
-        # make sure pitch_or_pitches always become assigned to a list of pitches,
+    @pitch_list.setter
+    def pitch_list(self, pitch_list: typing.Any):
+        # make sure pitch_list always become assigned to a list of pitches,
         # to be certain of the returned type
-        if not isinstance(pitch_or_pitches, str) and isinstance(
-            pitch_or_pitches, typing.Iterable
-        ):
+        if not isinstance(pitch_list, str) and isinstance(pitch_list, typing.Iterable):
             # several pitches
             pitches_per_element = (
-                NoteLike._convert_unknown_object_to_pitch(pitch)
-                for pitch in pitch_or_pitches
+                NoteLike._convert_unknown_object_to_pitch(pitch) for pitch in pitch_list
             )
-            pitch_or_pitches = []
+            pitch_list = []
             for pitches in pitches_per_element:
-                pitch_or_pitches.extend(pitches)
+                pitch_list.extend(pitches)
         else:
-            pitch_or_pitches = NoteLike._convert_unknown_object_to_pitch(
-                pitch_or_pitches
-            )
+            pitch_list = NoteLike._convert_unknown_object_to_pitch(pitch_list)
 
-        self._pitch_or_pitches = pitch_or_pitches
+        self._pitch_list = pitch_list
 
     @property
     def volume(self) -> typing.Any:
@@ -261,27 +259,37 @@ class NoteLike(events.basic.SimpleEvent):
         self._volume = volume
 
     @property
-    def grace_notes(self) -> GraceNotes:
+    def grace_note_sequential_event(self) -> GraceNotes:
         """Fast NoteLikes before the actual :class:`NoteLike`"""
 
-        return self._grace_notes
+        return self._grace_note_sequential_event
 
-    @grace_notes.setter
-    def grace_notes(
-        self, grace_notes: typing.Union[GraceNotes, events.basic.SimpleEvent]
+    @grace_note_sequential_event.setter
+    def grace_note_sequential_event(
+        self,
+        grace_note_sequential_event: typing.Union[GraceNotes, events.basic.SimpleEvent],
     ):
-        self._grace_notes = NoteLike._convert_unknown_object_to_grace_notes(grace_notes)
+        self._grace_note_sequential_event = (
+            NoteLike._convert_unknown_object_to_grace_note_sequential_event(
+                grace_note_sequential_event
+            )
+        )
 
     @property
-    def after_grace_notes(self) -> GraceNotes:
+    def after_grace_note_sequential_event(self) -> GraceNotes:
         """Fast NoteLikes after the actual :class:`NoteLike`"""
 
-        return self._after_grace_notes
+        return self._after_grace_note_sequential_event
 
-    @after_grace_notes.setter
-    def after_grace_notes(
-        self, after_grace_notes: typing.Union[GraceNotes, events.basic.SimpleEvent]
+    @after_grace_note_sequential_event.setter
+    def after_grace_note_sequential_event(
+        self,
+        after_grace_note_sequential_event: typing.Union[
+            GraceNotes, events.basic.SimpleEvent
+        ],
     ):
-        self._after_grace_notes = NoteLike._convert_unknown_object_to_grace_notes(
-            after_grace_notes
+        self._after_grace_note_sequential_event = (
+            NoteLike._convert_unknown_object_to_grace_note_sequential_event(
+                after_grace_note_sequential_event
+            )
         )

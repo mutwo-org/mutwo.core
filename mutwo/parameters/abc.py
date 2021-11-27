@@ -416,7 +416,7 @@ class NotationIndicator(Indicator):
 T = typing.TypeVar("T", PlayingIndicator, NotationIndicator)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class IndicatorCollection(typing.Generic[T]):
     def get_all_indicator(self) -> tuple[T, ...]:
         return tuple(
