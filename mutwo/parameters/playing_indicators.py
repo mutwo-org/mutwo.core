@@ -126,7 +126,7 @@ class Hairpin(parameters.abc.ImplicitPlayingIndicator):
     symbol: typing.Optional[str] = None
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class PlayingIndicatorCollection(
     parameters.abc.IndicatorCollection[parameters.abc.PlayingIndicator]
 ):
@@ -169,3 +169,31 @@ class PlayingIndicatorCollection(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
     tremolo: Tremolo = dataclasses.field(default_factory=Tremolo)
+
+    def __setattr__(self, parameter_name: str, value: bool):
+        """Overriding default behaviour to allow syntactic sugar.
+
+        This method allows syntax like:
+
+            playing_indicator_collection.tie = True
+
+        which is the same as
+
+            playing_indicator_collection.tie.is_active = True
+
+        Furthermore the methods makes sure that no property
+        can actually be overridden.
+        """
+
+        try:
+            playing_indicator = getattr(self, parameter_name)
+        except AttributeError:
+            playing_indicator = None
+        if playing_indicator is not None:
+            if isinstance(playing_indicator, parameters.abc.ExplicitPlayingIndicator):
+                playing_indicator.is_active = bool(value)
+            else:
+                message = f"Can't override frozen property (playing indicator) '{playing_indicator}'!"
+                raise dataclasses.FrozenInstanceError(message)
+        else:
+            super().__setattr__(parameter_name, value)
