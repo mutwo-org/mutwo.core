@@ -49,6 +49,8 @@ __all__ = (
     "JustIntonationPitch",
     "EqualDividedOctavePitch",
     "WesternPitch",
+    "MidiPitch",
+    "CommonHarmonic",
 )
 
 ConcertPitch = typing.Union[constants.Real, parameters.abc.Pitch]
