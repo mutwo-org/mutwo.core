@@ -1,9 +1,8 @@
 """Algorithms which are related to German-Dutch composer G. M. Koenig."""
 
-import typing
-
 import expenvelope  # type: ignore
 import numpy as np  # type: ignore
+import ranges  # type: ignore
 
 
 class Tendency(object):
@@ -79,9 +78,8 @@ class Tendency(object):
             try:
                 assert minima_curve.value_at(time) < maxima_curve.value_at(time)
             except AssertionError:
-                message = (
-                    "At time '{}' 'minima_curve' isn't smaller than 'maxima_curve'!"
-                    .format(time)
+                message = "At time '{}' 'minima_curve' isn't smaller than 'maxima_curve'!".format(
+                    time
                 )
                 raise ValueError(message)
 
@@ -103,10 +101,13 @@ class Tendency(object):
         self._assert_curves_are_valid(self.minima_curve, maxima_curve)
         self._maxima_curve = maxima_curve
 
-    def range_at(self, time: float) -> tuple[float]:
+    def range_at(self, time: float) -> ranges.Range:
         """Get minima / maxima range at requested time."""
-        return (self.minima_curve.value_at(time), self.maxima_curve.value_at(time))
+        return ranges.Range(
+            self.minima_curve.value_at(time), self.maxima_curve.value_at(time)
+        )
 
     def value_at(self, time: float) -> float:
         """Get value at requested time."""
-        return self._random.uniform(*self.range_at(time))
+        range_at = self.range_at(time)
+        return self._random.uniform(range_at.start, range_at.end)
