@@ -3,7 +3,7 @@
 This submodules provides several classes to express notation
 specifications for :class:`mutwo.events.basic.SimpleEvent` objects.
 They mostly derive from traditional Western notation.
-Unlike indicators of the :mod:`mutwo.parameters.playing_indicators`
+Unlike indicators of the :mod:`mutwo.parameters.notation_indicators`
 module, notation indicators shouldn't have an effect on the played music
 and are merely specifications of representation. The proper way to handle
 notation indicators should be via a :class:`NotationIndicatorCollection`
@@ -77,7 +77,7 @@ class RehearsalMark(parameters.abc.NotationIndicator):
     markup: typing.Optional[str] = None
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class NotationIndicatorCollection(
     parameters.abc.IndicatorCollection[parameters.abc.NotationIndicator]
 ):
@@ -87,3 +87,14 @@ class NotationIndicatorCollection(
     margin_markup: MarginMarkup = dataclasses.field(default_factory=MarginMarkup)
     markup: Markup = dataclasses.field(default_factory=Markup)
     rehearsal_mark: RehearsalMark = dataclasses.field(default_factory=RehearsalMark)
+
+    def __setattr__(self, parameter_name: str, value: bool):
+        try:
+            notation_indicator = getattr(self, parameter_name)
+        except AttributeError:
+            notation_indicator = None
+        if notation_indicator is not None:
+            message = f"Can't override frozen property (notation indicator) '{notation_indicator}'!"
+            raise dataclasses.FrozenInstanceError(message)
+        else:
+            super().__setattr__(parameter_name, value)
