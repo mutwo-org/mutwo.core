@@ -117,9 +117,9 @@ class NoteLikeTest(unittest.TestCase):
             "after_grace_notes",
             "duration",
             "grace_notes",
-            "notation_indicators",
+            "notation_indicator_collection",
             "pitch_list",
-            "playing_indicators",
+            "playing_indicator_collection",
             "volume",
         )
         self.assertEqual(

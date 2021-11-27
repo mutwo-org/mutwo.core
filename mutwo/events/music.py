@@ -52,14 +52,14 @@ class NoteLike(events.basic.SimpleEvent):
     :type grace_notes: events.basic.SequentialEvent[NoteLike]
     :param after_grace_notes:
     :type after_grace_notes: events.basic.SequentialEvent[NoteLike]
-    :param playing_indicators: A :class:`~mutwo.parameters.playing_indicators.PlayingIndicatorCollection`.
+    :param playing_indicator_collection: A :class:`~mutwo.parameters.playing_indicator_collection.PlayingIndicatorCollection`.
         Playing indicators alter the sound of :class:`NoteLike` (e.g.
         tremolo, fermata, pizzicato).
-    :type playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection
-    :param notation_indicators: A :class:`~mutwo.parameters.notation_indicators.NotationIndicatorCollection`.
+    :type playing_indicator_collection: parameters.playing_indicator_collection.PlayingIndicatorCollection
+    :param notation_indicator_collection: A :class:`~mutwo.parameters.notation_indicator_collection.NotationIndicatorCollection`.
         Notation indicators alter the visual representation of :class:`NoteLike`
         (e.g. ottava, clefs) without affecting the resulting sound.
-    :type notation_indicators: parameters.notation_indicators.NotationIndicatorCollection
+    :type notation_indicator_collection: parameters.notation_indicator_collection.NotationIndicatorCollection
 
     By default mutwo doesn't differentiate between Tones, Chords and
     Rests, but rather simply implements one general class which can
@@ -86,16 +86,16 @@ class NoteLike(events.basic.SimpleEvent):
         volume: Volume = "mf",
         grace_notes: GraceNotes = events.basic.SequentialEvent([]),
         after_grace_notes: GraceNotes = events.basic.SequentialEvent([]),
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection = None,
-        notation_indicators: parameters.notation_indicators.NotationIndicatorCollection = None,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection = None,
+        notation_indicator_collection: parameters.notation_indicators.NotationIndicatorCollection = None,
     ):
-        if playing_indicators is None:
-            playing_indicators = (
+        if playing_indicator_collection is None:
+            playing_indicator_collection = (
                 events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
 
-        if notation_indicators is None:
-            notation_indicators = (
+        if notation_indicator_collection is None:
+            notation_indicator_collection = (
                 events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
             )
 
@@ -104,8 +104,8 @@ class NoteLike(events.basic.SimpleEvent):
         super().__init__(duration)
         self.grace_notes = grace_notes
         self.after_grace_notes = after_grace_notes
-        self.playing_indicators = playing_indicators
-        self.notation_indicators = notation_indicators
+        self.playing_indicator_collection = playing_indicator_collection
+        self.notation_indicator_collection = notation_indicator_collection
 
     # ###################################################################### #
     #                          static methods                                #
@@ -202,7 +202,7 @@ class NoteLike(events.basic.SimpleEvent):
         return tuple(
             attribute
             for attribute in self._parameters_to_compare
-            if attribute not in ("playing_indicators", "notation_indicators")
+            if attribute not in ("playing_indicator_collection", "notation_indicator_collection")
         )
 
     @property

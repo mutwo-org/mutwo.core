@@ -21,11 +21,11 @@ __all__ = (
 class PlayingIndicatorConverter(converters.abc.Converter):
     """Abstract base class to apply :class:`~mutwo.parameters.abc.PlayingIndicator` on a :class:`~mutwo.events.basic.SimpleEvent`.
 
-    :param simple_event_to_playing_indicators: Function to extract from a
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.playing_indicators`
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
@@ -34,17 +34,19 @@ class PlayingIndicatorConverter(converters.abc.Converter):
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
-    :type simple_event_to_playing_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection], optional
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection], optional
     """
 
     def __init__(
         self,
-        simple_event_to_playing_indicators: typing.Callable[
+        simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
-        ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
     ):
-        self._simple_event_to_playing_indicators = simple_event_to_playing_indicators
+        self._simple_event_to_playing_indicator_collection = (
+            simple_event_to_playing_indicator_collection
+        )
 
     @abc.abstractmethod
     def _apply_playing_indicator(
@@ -64,7 +66,7 @@ class PlayingIndicatorConverter(converters.abc.Converter):
         """
 
         try:
-            playing_indicators = self._simple_event_to_playing_indicators(
+            playing_indicators = self._simple_event_to_playing_indicator_collection(
                 simple_event_to_convert
             )
         except AttributeError:
@@ -95,7 +97,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
         extracted), mutwo will assume an event without any pitches.
     :type simple_event_to_pitches: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
-    :param simple_event_to_playing_indicators: Function to extract from a
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
@@ -108,7 +110,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
-    :type simple_event_to_playing_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
     :param set_pitches_for_simple_event: Function which assigns
         a list of :class:`~mutwo.parameters.abc.Pitch` objects to a
         :class:`~mutwo.events.basic.SimpleEvent`. By default the
@@ -125,10 +127,10 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
-        simple_event_to_playing_indicators: typing.Callable[
+        simple_event_to_playing_indicator_collection: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
-        ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
         set_pitches_for_simple_event: typing.Callable[
             [events.basic.SimpleEvent, list[parameters.abc.Pitch]], None
         ] = lambda simple_event, pitch_list: simple_event.set_parameter(  # type: ignore
@@ -136,7 +138,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         ),
     ):
         super().__init__(
-            simple_event_to_playing_indicators=simple_event_to_playing_indicators
+            simple_event_to_playing_indicator_collection=simple_event_to_playing_indicator_collection
         )
         self._duration_for_each_attack = duration_for_each_attack
         self._simple_event_to_pitches = simple_event_to_pitches
@@ -148,9 +150,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         arpeggio: parameters.playing_indicators.Arpeggio,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         try:
-            pitch_list = list(
-                self._simple_event_to_pitches(simple_event_to_convert)
-            )
+            pitch_list = list(self._simple_event_to_pitches(simple_event_to_convert))
         except AttributeError:
             pitch_list = []
 
@@ -207,7 +207,8 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
     """
 
     def __init__(
-        self, playing_indicator_converters: typing.Sequence[PlayingIndicatorConverter],
+        self,
+        playing_indicator_converters: typing.Sequence[PlayingIndicatorConverter],
     ):
         self._playing_indicator_converters = playing_indicator_converters
 
