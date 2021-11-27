@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLEventsConverter`
     - `MMMLConverter`
 
+
+## [0.40.0] - 2021-11-27
+
+### Changed
+- `range_at` property of `Tendency` class in `koenig` module returns `Range` object
+
+### Removed
+- abstract base class `Parameter`
+
 ## [0.39.0] - 2021-11-27
 
 ### Added
