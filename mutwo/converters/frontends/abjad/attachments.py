@@ -744,9 +744,9 @@ class DynamicChangeIndicationStop(BangFirstAttachment):
         return leaf
 
 
-class GraceNotes(BangFirstAttachment):
-    def __init__(self, grace_notes: abjad.BeforeGraceContainer):
-        self._grace_notes = grace_notes
+class GraceNoteSequentialEvent(BangFirstAttachment):
+    def __init__(self, grace_note_sequential_event: abjad.BeforeGraceContainer):
+        self._grace_note_sequential_event = grace_note_sequential_event
 
     @classmethod
     def from_indicator_collection(
@@ -754,7 +754,7 @@ class GraceNotes(BangFirstAttachment):
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
-        GraceNotes can't be initialised from IndicatorCollection.
+        GraceNoteSequentialEvent can't be initialised from IndicatorCollection.
         """
         return None
 
@@ -769,14 +769,14 @@ class GraceNotes(BangFirstAttachment):
             indicator_to_detach
         ) in attachments_constants.INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES:
             detached_indicator = abjad.detach(indicator_to_detach, leaf)
-            abjad.attach(detached_indicator, self._grace_notes[0])
-        abjad.attach(self._grace_notes, leaf)
+            abjad.attach(detached_indicator, self._grace_note_sequential_event[0])
+        abjad.attach(self._grace_note_sequential_event, leaf)
         return leaf
 
 
-class AfterGraceNotes(BangLastAttachment):
-    def __init__(self, after_grace_notes: abjad.AfterGraceContainer):
-        self._after_grace_notes = after_grace_notes
+class AfterGraceNoteSequentialEvent(BangLastAttachment):
+    def __init__(self, after_grace_note_sequential_event: abjad.AfterGraceContainer):
+        self._after_grace_note_sequential_event = after_grace_note_sequential_event
 
     @classmethod
     def from_indicator_collection(
@@ -784,7 +784,7 @@ class AfterGraceNotes(BangLastAttachment):
     ) -> typing.Optional["AbjadAttachment"]:
         """Always return None.
 
-        GraceNotes can't be initialised from IndicatorCollection.
+        AfterGraceNoteSequentialEvent can't be initialised from IndicatorCollection.
         """
         return None
 
@@ -795,5 +795,5 @@ class AfterGraceNotes(BangLastAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
-        abjad.attach(self._after_grace_notes, leaf)
+        abjad.attach(self._after_grace_note_sequential_event, leaf)
         return leaf
