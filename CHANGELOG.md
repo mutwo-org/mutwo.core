@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLEventsConverter`
     - `MMMLConverter`
 
+## [0.39.0] - 2021-11-27
+
+### Added
+- syntactic sugar for setting playing indicators:
+    - `note_like.playing_indicator_collection.tie = True` is now the same as `note_like.playing_indicator_collection.tie.is_active = True`
+- literal type hints for playing indicators
+
 
 ## [0.38.0] - 2021-11-27
 
