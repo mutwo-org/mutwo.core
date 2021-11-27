@@ -490,10 +490,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         )
         if is_before:
             name = "grace_note_sequential_event"
-            abjad_attachment_class = attachments.GraceNotes
+            abjad_attachment_class = attachments.GraceNoteSequentialEvent
         else:
             name = "after_grace_note_sequential_event"
-            abjad_attachment_class = attachments.AfterGraceNotes
+            abjad_attachment_class = attachments.AfterGraceNoteSequentialEvent
         return {name: abjad_attachment_class(grace_note_sequential_event_container)}
 
     def _volume_to_abjad_attachment(
