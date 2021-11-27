@@ -3,7 +3,6 @@
 
 import typing
 
-from mutwo import parameters
 from mutwo.utilities import constants
 
 __all__ = ("TempoPoint",)
@@ -15,7 +14,7 @@ TempoOrTempoRangeInBeatsPerMinute = typing.Union[
 ]
 
 
-class TempoPoint(parameters.abc.Parameter):
+class TempoPoint(object):
     def __init__(
         self,
         tempo_or_tempo_range_in_beats_per_minute: TempoOrTempoRangeInBeatsPerMinute,

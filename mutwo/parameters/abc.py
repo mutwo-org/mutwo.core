@@ -19,18 +19,11 @@ from mutwo.utilities import tools
 __all__ = ("Pitch", "Volume", "PlayingIndicator", "NotationIndicator")
 
 
-class Parameter(abc.ABC):
-    """Abstract base class for any parameter class."""
-
-    pass
-
-
-ParameterType = object
 DurationType = constants.Real
 
 
 @functools.total_ordering  # type: ignore
-class Pitch(Parameter):
+class Pitch(abc.ABC):
     """Abstract base class for any pitch class.
 
     If the user wants to define a new pitch class, the abstract
@@ -140,7 +133,7 @@ class Pitch(Parameter):
 
 
 @functools.total_ordering  # type: ignore
-class Volume(Parameter):
+class Volume(abc.ABC):
     """Abstract base class for any volume class.
 
     If the user wants to define a new volume class, the abstract
@@ -352,7 +345,7 @@ class Volume(Parameter):
 
 
 @dataclasses.dataclass()  # type: ignore
-class Indicator(Parameter):
+class Indicator(abc.ABC):
     @property
     @abc.abstractmethod
     def is_active(self) -> bool:
