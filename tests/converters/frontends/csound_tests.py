@@ -228,7 +228,7 @@ class CsoundConverterTest(unittest.TestCase):
                 " p4\nout asig\nendin"
             )
         cls.score_converter = converters.frontends.csound.CsoundScoreConverter(
-            p4=lambda event: event.pitch_or_pitches[0].frequency,
+            p4=lambda event: event.pitch_list[0].frequency,
             p5=lambda event: event.volume.amplitude,
         )
         cls.converter = converters.frontends.csound.CsoundConverter(
