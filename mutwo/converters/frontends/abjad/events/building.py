@@ -162,7 +162,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
+        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
         with a different name for their pitch property, this argument
@@ -180,7 +180,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         with a different name for their volume property, this argument should
         be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no volume can be
-        extracted), mutwo will set :attr:`pitch_or_pitches` to an empty list and set
+        extracted), mutwo will set :attr:`pitch_list` to an empty list and set
         volume to 0.
     :type simple_event_to_volume: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Volume], optional
     :param simple_event_to_grace_notes: Function to extract from a
@@ -243,7 +243,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     :type simple_event_to_notation_indicators: typing.Callable[[events.basic.SimpleEvent], parameters.notation_indicators.NotationIndicatorCollection,], optional
     :param is_simple_event_rest: Function to detect if the
         the inspected :class:`mutwo.events.basic.SimpleEvent` is a Rest. By
-        default Mutwo simply checks if 'pitch_or_pitches' contain any objects. If not,
+        default Mutwo simply checks if 'pitch_list' contain any objects. If not,
         the Event will be interpreted as a rest.
     :type is_simple_event_rest: typing.Callable[[events.basic.SimpleEvent], bool], optional
     :param mutwo_pitch_to_abjad_pitch_converter: Class which defines how to convert
@@ -285,7 +285,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
-        ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
+        ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
@@ -358,11 +358,11 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
             def is_simple_event_rest(simple_event: events.basic.SimpleEvent) -> bool:
                 try:
-                    pitch_or_pitches = simple_event_to_pitches(simple_event)
+                    pitch_list = simple_event_to_pitches(simple_event)
                 except AttributeError:
-                    pitch_or_pitches = []
+                    pitch_list = []
 
-                return not bool(pitch_or_pitches)
+                return not bool(pitch_list)
 
         self._abjad_attachment_classes = abjad_attachment_classes
 

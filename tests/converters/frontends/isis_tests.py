@@ -15,13 +15,13 @@ class NoteLikeWithText(events.music.NoteLike):
 
     def __init__(
         self,
-        pitch_or_pitches,
+        pitch_list,
         duration: parameters.abc.DurationType,
         volume,
         consonants: typing.Tuple[str],
         vowel: str,
     ):
-        super().__init__(pitch_or_pitches, duration, volume)
+        super().__init__(pitch_list, duration, volume)
         self.consonants = consonants
         self.vowel = vowel
 
@@ -49,7 +49,7 @@ class IsisScoreConverterTest(unittest.TestCase):
             " 0\nrhythm: {}\nloud_accents: {}\ntempo: {}".format(
                 simple_event.consonants[0],
                 simple_event.vowel,
-                simple_event.pitch_or_pitches[0].midi_pitch_number,
+                simple_event.pitch_list[0].midi_pitch_number,
                 simple_event.duration,
                 simple_event.volume.amplitude,
                 self.converter._tempo,
@@ -79,7 +79,7 @@ class IsisScoreConverterTest(unittest.TestCase):
             " {3}\nloud_accents: {4},\n              0, {4}\ntempo: {5}".format(
                 sequential_event[0].consonants[0],
                 sequential_event[0].vowel,
-                sequential_event[0].pitch_or_pitches[0].midi_pitch_number,
+                sequential_event[0].pitch_list[0].midi_pitch_number,
                 sequential_event[0].duration,
                 sequential_event[0].volume.amplitude,
                 self.converter._tempo,

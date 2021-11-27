@@ -424,7 +424,7 @@ class SimultaneousEventTest(unittest.TestCase):
         ).destructive_copy()
         interval = parameters.pitches.JustIntonationPitch("2/1")
         simultaneous_event.mutate_parameter(
-            "pitch_or_pitches",
+            "pitch_list",
             lambda just_intonation_pitches: just_intonation_pitches[0].add(interval),
         )
         for event, pitch in zip(simultaneous_event, pitches):
@@ -433,7 +433,7 @@ class SimultaneousEventTest(unittest.TestCase):
             else:
                 expected_pitch = None
 
-            self.assertEqual(event.get_parameter("pitch_or_pitches"), expected_pitch)
+            self.assertEqual(event.get_parameter("pitch_list"), expected_pitch)
 
     def test_cut_up(self):
         result = basic.SimultaneousEvent([basic.SimpleEvent(0.5) for _ in range(3)])

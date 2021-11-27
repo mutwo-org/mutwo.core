@@ -87,7 +87,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
         By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
+        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
         with a different name for their pitch property, this argument
@@ -113,7 +113,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         a list of :class:`~mutwo.parameters.abc.Pitch` objects to a
         :class:`~mutwo.events.basic.SimpleEvent`. By default the
         function assigns the passed pitches to the
-        :attr:`~mutwo.events.music.NoteLike.pitch_or_pitches` attribute
+        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects
         are expected).
     :type set_pitches_for_simple_event: typing.Callable[[events.basic.SimpleEvent, list[parameters.abc.Pitch]], None]
@@ -124,15 +124,15 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         duration_for_each_attack: parameters.abc.DurationType = 0.1,
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
-        ] = lambda simple_event: simple_event.pitch_or_pitches,  # type: ignore
+        ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
         simple_event_to_playing_indicators: typing.Callable[
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
         ] = lambda simple_event: simple_event.playing_indicators,  # type: ignore
         set_pitches_for_simple_event: typing.Callable[
             [events.basic.SimpleEvent, list[parameters.abc.Pitch]], None
-        ] = lambda simple_event, pitch_or_pitches: simple_event.set_parameter(  # type: ignore
-            "pitch_or_pitches", pitch_or_pitches, set_unassigned_parameter=True
+        ] = lambda simple_event, pitch_list: simple_event.set_parameter(  # type: ignore
+            "pitch_list", pitch_list, set_unassigned_parameter=True
         ),
     ):
         super().__init__(
@@ -148,23 +148,23 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         arpeggio: parameters.playing_indicators.Arpeggio,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         try:
-            pitch_or_pitches = list(
+            pitch_list = list(
                 self._simple_event_to_pitches(simple_event_to_convert)
             )
         except AttributeError:
-            pitch_or_pitches = []
+            pitch_list = []
 
         # sort pitches according to Arpeggio direction
-        pitch_or_pitches.sort(reverse=arpeggio.direction != "up")
+        pitch_list.sort(reverse=arpeggio.direction != "up")
 
         converted_event: events.basic.SequentialEvent[
             events.basic.SimpleEvent
         ] = events.basic.SequentialEvent(
-            [copy.copy(simple_event_to_convert) for _ in pitch_or_pitches]
+            [copy.copy(simple_event_to_convert) for _ in pitch_list]
         )
 
         # apply pitches on events
-        for nth_event, pitch in enumerate(pitch_or_pitches):
+        for nth_event, pitch in enumerate(pitch_list):
             self._set_pitches_for_simple_event(converted_event[nth_event], [pitch])
 
         # set correct duration for each event

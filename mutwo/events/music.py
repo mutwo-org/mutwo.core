@@ -25,7 +25,7 @@ GraceNotes = events.basic.SequentialEvent[events.basic.SimpleEvent]
 class NoteLike(events.basic.SimpleEvent):
     """NoteLike represents traditional discreet musical objects.
 
-    :param pitch_or_pitches: The pitch or pitches of the event. This can
+    :param pitch_list: The pitch or pitches of the event. This can
         be a pitch object (any class that inherits from ``mutwo.parameters.abc.Pitch``)
         or a list of pitch objects. Furthermore mutwo supports syntactic sugar
         to convert other objects on the fly to pitch objects: Atring can be
@@ -81,7 +81,7 @@ class NoteLike(events.basic.SimpleEvent):
 
     def __init__(
         self,
-        pitch_or_pitches: PitchOrPitches = "c",
+        pitch_list: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
         volume: Volume = "mf",
         grace_notes: GraceNotes = events.basic.SequentialEvent([]),
@@ -99,7 +99,7 @@ class NoteLike(events.basic.SimpleEvent):
                 events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
             )
 
-        self.pitch_or_pitches = pitch_or_pitches
+        self.pitch_list = pitch_list
         self.volume = volume
         super().__init__(duration)
         self.grace_notes = grace_notes
@@ -206,32 +206,32 @@ class NoteLike(events.basic.SimpleEvent):
         )
 
     @property
-    def pitch_or_pitches(self) -> typing.Any:
+    def pitch_list(self) -> typing.Any:
         """The pitch or pitches of the event."""
 
-        return self._pitch_or_pitches
+        return self._pitch_list
 
-    @pitch_or_pitches.setter
-    def pitch_or_pitches(self, pitch_or_pitches: typing.Any):
-        # make sure pitch_or_pitches always become assigned to a list of pitches,
+    @pitch_list.setter
+    def pitch_list(self, pitch_list: typing.Any):
+        # make sure pitch_list always become assigned to a list of pitches,
         # to be certain of the returned type
-        if not isinstance(pitch_or_pitches, str) and isinstance(
-            pitch_or_pitches, typing.Iterable
+        if not isinstance(pitch_list, str) and isinstance(
+            pitch_list, typing.Iterable
         ):
             # several pitches
             pitches_per_element = (
                 NoteLike._convert_unknown_object_to_pitch(pitch)
-                for pitch in pitch_or_pitches
+                for pitch in pitch_list
             )
-            pitch_or_pitches = []
+            pitch_list = []
             for pitches in pitches_per_element:
-                pitch_or_pitches.extend(pitches)
+                pitch_list.extend(pitches)
         else:
-            pitch_or_pitches = NoteLike._convert_unknown_object_to_pitch(
-                pitch_or_pitches
+            pitch_list = NoteLike._convert_unknown_object_to_pitch(
+                pitch_list
             )
 
-        self._pitch_or_pitches = pitch_or_pitches
+        self._pitch_list = pitch_list
 
     @property
     def volume(self) -> typing.Any:

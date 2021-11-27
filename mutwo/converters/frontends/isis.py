@@ -51,7 +51,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self,
         simple_event_to_pitch: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Pitch
-        ] = lambda simple_event: simple_event.pitch_or_pitches[
+        ] = lambda simple_event: simple_event.pitch_list[
             0
         ],  # type: ignore
         simple_event_to_volume: typing.Callable[
@@ -66,7 +66,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         is_simple_event_rest: typing.Callable[
             [events.basic.SimpleEvent], bool
         ] = lambda simple_event: not (
-            hasattr(simple_event, "pitch_or_pitches") and simple_event.pitch_or_pitches
+            hasattr(simple_event, "pitch_list") and simple_event.pitch_list
         ),
         tempo: constants.Real = 60,
         global_transposition: int = 0,
