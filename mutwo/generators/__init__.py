@@ -12,6 +12,7 @@ from . import edwards_constants
 from . import sabat_constants
 
 from . import brown
+from . import brun
 from . import edwards
 from . import generic
 from . import gray
