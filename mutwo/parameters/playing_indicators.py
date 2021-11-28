@@ -213,6 +213,12 @@ class PlayingIndicatorCollection(
     breath_mark: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
+    duration_line_dashed: parameters.abc.PlayingIndicator = dataclasses.field(
+        default_factory=parameters.abc.ExplicitPlayingIndicator
+    )
+    duration_line_triller: parameters.abc.PlayingIndicator = dataclasses.field(
+        default_factory=parameters.abc.ExplicitPlayingIndicator
+    )
     fermata: Fermata = dataclasses.field(default_factory=Fermata)
     glissando: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator

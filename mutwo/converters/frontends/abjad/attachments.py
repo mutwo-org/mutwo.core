@@ -482,6 +482,32 @@ class Tie(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
         return leaf
 
 
+class DurationLineTriller(parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
+        if isinstance(leaf, (abjad.Chord, abjad.Note)):
+            abjad.attach(
+                abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'trill"),
+                leaf,
+            )
+        return leaf
+
+
+class DurationLineDashed(parameters_abc.ExplicitPlayingIndicator, BangEachAttachment):
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Iterable[abjad.Leaf]]:
+        if isinstance(leaf, (abjad.Chord, abjad.Note)):
+            abjad.attach(
+                abjad.LilyPondLiteral(
+                    "\\once \\override DurationLine.style = #'dashed-line"
+                ),
+                leaf,
+            )
+        return leaf
+
+
 class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
     thickness = 3
     minimum_length = 5
@@ -510,7 +536,9 @@ class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
             leaf,
         )
         # Prevent duration line from getting printed when we print a glissando
-        abjad.attach(abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'none"), leaf)
+        abjad.attach(
+            abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'none"), leaf
+        )
         command = "\\override "
         command += "Glissando.springs-and-rods = #ly:spanner::set-spacing-rods"
         abjad.attach(abjad.LilyPondLiteral(command), leaf)
