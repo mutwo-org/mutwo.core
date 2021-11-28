@@ -219,9 +219,7 @@ def import_module_if_dependencies_have_been_installed(
     module: str, dependencies: tuple[str, ...], import_class: bool = False
 ) -> None:
     for dependency in dependencies:
-        try:
-            importlib.import_module(dependency)
-        except ImportError:
+        if not importlib.util.find_spec(dependency):
             message = (
                 "Can't load module '{0}'. Install dependency '{1}' if you want to use"
                 " '{0}'.".format(module, dependency)
