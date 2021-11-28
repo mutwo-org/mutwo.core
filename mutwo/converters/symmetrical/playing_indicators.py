@@ -29,7 +29,7 @@ class PlayingIndicatorConverter(converters.abc.Converter):
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
-        with a different name for their playing_indicators property, this argument
+        with a different name for their playing_indicator_collection property, this argument
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
@@ -52,7 +52,7 @@ class PlayingIndicatorConverter(converters.abc.Converter):
     def _apply_playing_indicator(
         self,
         simple_event_to_convert: events.basic.SimpleEvent,
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         raise NotImplementedError()
 
@@ -66,16 +66,16 @@ class PlayingIndicatorConverter(converters.abc.Converter):
         """
 
         try:
-            playing_indicators = self._simple_event_to_playing_indicator_collection(
+            playing_indicator_collection = self._simple_event_to_playing_indicator_collection(
                 simple_event_to_convert
             )
         except AttributeError:
-            playing_indicators = (
+            playing_indicator_collection = (
                 events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
 
         return self._apply_playing_indicator(
-            simple_event_to_convert, playing_indicators
+            simple_event_to_convert, playing_indicator_collection
         )
 
 
@@ -101,11 +101,11 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         :class:`mutwo.events.basic.SimpleEvent` a
         :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
         object. By default it asks the Event for its
-        :attr:`~mutwo.events.music.NoteLike.playing_indicators`
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
         attribute (because by default :class:`mutwo.events.music.NoteLike`
         objects are expected).
         When using different Event classes than :class:`~mutwo.events.music.NoteLike`
-        with a different name for their playing_indicators property, this argument
+        with a different name for their playing_indicator_collection property, this argument
         should be overridden. If the
         function call raises an :obj:`AttributeError` (e.g. if no playing indicator
         collection can be extracted), mutwo will build a playing indicator collection
@@ -185,10 +185,10 @@ class ArpeggioConverter(PlayingIndicatorConverter):
     def _apply_playing_indicator(
         self,
         simple_event_to_convert: events.basic.SimpleEvent,
-        playing_indicators: parameters.playing_indicators.PlayingIndicatorCollection,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         try:
-            arpeggio = playing_indicators.arpeggio
+            arpeggio = playing_indicator_collection.arpeggio
         except AttributeError:
             arpeggio = parameters.playing_indicators.Arpeggio()
 
