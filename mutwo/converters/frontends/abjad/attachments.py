@@ -509,9 +509,11 @@ class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
             abjad.LilyPondLiteral("\\override Glissando.after-line-breaking = ##t"),
             leaf,
         )
-        cmd = "\\override "
-        cmd += "Glissando.springs-and-rods = #ly:spanner::set-spacing-rods"
-        abjad.attach(abjad.LilyPondLiteral(cmd), leaf)
+        # Prevent duration line from getting printed when we print a glissando
+        abjad.attach(abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'none"), leaf)
+        command = "\\override "
+        command += "Glissando.springs-and-rods = #ly:spanner::set-spacing-rods"
+        abjad.attach(abjad.LilyPondLiteral(command), leaf)
         abjad.attach(
             abjad.Glissando(allow_ties=True),
             leaf,
