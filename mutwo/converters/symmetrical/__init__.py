@@ -3,6 +3,7 @@
 from . import loudness_constants
 from . import time_brackets_constants
 
+from . import grace_notes
 from . import loudness
 from . import metricities
 from . import playing_indicators

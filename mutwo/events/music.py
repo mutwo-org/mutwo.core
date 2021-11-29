@@ -84,10 +84,8 @@ class NoteLike(events.basic.SimpleEvent):
         pitch_list: PitchOrPitches = "c",
         duration: parameters.abc.DurationType = 1,
         volume: Volume = "mf",
-        grace_note_sequential_event: GraceNotes = events.basic.SequentialEvent([]),
-        after_grace_note_sequential_event: GraceNotes = events.basic.SequentialEvent(
-            []
-        ),
+        grace_note_sequential_event: typing.Optional[GraceNotes] = None,
+        after_grace_note_sequential_event: typing.Optional[GraceNotes] = None,
         playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection = None,
         notation_indicator_collection: parameters.notation_indicators.NotationIndicatorCollection = None,
     ):
@@ -95,11 +93,14 @@ class NoteLike(events.basic.SimpleEvent):
             playing_indicator_collection = (
                 events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
             )
-
         if notation_indicator_collection is None:
             notation_indicator_collection = (
                 events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
             )
+        if grace_note_sequential_event is None:
+            grace_note_sequential_event = events.basic.SequentialEvent([])
+        if after_grace_note_sequential_event is None:
+            after_grace_note_sequential_event = events.basic.SequentialEvent([])
 
         self.pitch_list = pitch_list
         self.volume = volume
@@ -205,7 +206,13 @@ class NoteLike(events.basic.SimpleEvent):
             attribute
             for attribute in self._parameters_to_compare
             if attribute
-            not in ("playing_indicator_collection", "notation_indicator_collection")
+            # Avoid too verbose and long attributes
+            not in (
+                "playing_indicator_collection",
+                "notation_indicator_collection",
+                "grace_note_sequential_event",
+                "after_grace_note_sequential_event",
+            )
         )
 
     @property
