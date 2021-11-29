@@ -167,6 +167,11 @@ class Ornamentation(parameters.abc.ImplicitPlayingIndicator):
 
 
 @dataclasses.dataclass()
+class BendAfter(parameters.abc.ImplicitPlayingIndicator):
+    bend_amount: typing.Optional[float] = None
+
+
+@dataclasses.dataclass()
 class ArtificalHarmonic(parameters.abc.ImplicitPlayingIndicator):
     n_semitones: typing.Optional[int] = None
 
@@ -210,6 +215,7 @@ class PlayingIndicatorCollection(
     bartok_pizzicato: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
+    bend_after: BendAfter = dataclasses.field(default_factory=BendAfter)
     breath_mark: parameters.abc.PlayingIndicator = dataclasses.field(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
