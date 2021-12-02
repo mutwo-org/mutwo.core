@@ -168,7 +168,11 @@ class Ornamentation(parameters.abc.ImplicitPlayingIndicator):
 
 @dataclasses.dataclass()
 class BendAfter(parameters.abc.ImplicitPlayingIndicator):
+    # Content parameters
     bend_amount: typing.Optional[float] = None
+    # Presentation parameters
+    minimum_length: typing.Optional[float] = 3
+    thickness: typing.Optional[float] = 3
 
 
 @dataclasses.dataclass()

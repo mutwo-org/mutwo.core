@@ -550,9 +550,6 @@ class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
 
 
 class BendAfter(playing_indicators.BendAfter, BangLastAttachment):
-    thickness = 3
-    minimum_length = 5
-
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
