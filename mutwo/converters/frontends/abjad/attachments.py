@@ -343,7 +343,7 @@ class PreciseNaturalHarmonic(
 class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment):
     _abbreviation_to_string_contact_point = {
         abbreviation: full_name
-        for full_name, abbreviation in abjad.StringContactPoint._contact_point_abbreviationskitems()
+        for full_name, abbreviation in abjad.StringContactPoint._contact_point_abbreviations.items()
     }
 
     def _attach_string_contact_point(
