@@ -205,10 +205,21 @@ class BangLastAttachment(BangAttachment):
 
 
 class Arpeggio(playing_indicators.Arpeggio, BangFirstAttachment):
+    _string_to_direction = {
+        "up": abjad.enums.Up,
+        "down": abjad.enums.Down,
+        "center": abjad.enums.Center,
+        "^": abjad.enums.Up,
+        "_": abjad.enums.Down,
+    }
+
     def process_leaf(
         self, leaf: abjad.Leaf
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        abjad.attach(abjad.Arpeggio(direction=self.direction), leaf)
+        direction = self.direction
+        if direction in self._string_to_direction:
+            direction = self._string_to_direction[direction]
+        abjad.attach(abjad.Arpeggio(direction=direction), leaf)
         return leaf
 
 
