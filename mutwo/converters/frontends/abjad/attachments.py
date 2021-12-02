@@ -330,12 +330,17 @@ class PreciseNaturalHarmonic(
 
 
 class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment):
-    def process_leaf(
-        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
-        string_contact_point_markup = abjad.StringContactPoint(
-            self.contact_point
-        ).markup
+    _abbreviation_to_string_contact_point = {
+        abbreviation: full_name
+        for full_name, abbreviation in abjad.StringContactPoint._contact_point_abbreviationskitems()
+    }
+
+    def _attach_string_contact_point(
+        self,
+        leaf: abjad.Leaf,
+        previous_attachment: typing.Optional["AbjadAttachment"],
+        string_contact_point_markup: abjad.Markup,
+    ):
         if previous_attachment:
             if previous_attachment.contact_point == "pizzicato":  # type: ignore
                 string_contact_point_markup = abjad.Markup(
@@ -359,6 +364,22 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
             ),
             leaf,
         )
+
+    def process_leaf(
+        self, leaf: abjad.Leaf, previous_attachment: typing.Optional["AbjadAttachment"]
+    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+        contact_point = self.contact_point
+        if contact_point in self._abbreviation_to_string_contact_point:
+            contact_point = self._abbreviation_to_string_contact_point[contact_point]
+        try:
+            string_contact_point_markup = abjad.StringContactPoint(contact_point).markup
+        except AssertionError:
+            message = f"Can't find contact point '{self.contact_point}' in '{abjad.StringContactPoint._contact_point_abbreviations}'!"
+            warnings.warn(message)
+        else:
+            self._attach_string_contact_point(
+                leaf, previous_attachment, string_contact_point_markup
+            )
         return leaf
 
     def process_leaves(

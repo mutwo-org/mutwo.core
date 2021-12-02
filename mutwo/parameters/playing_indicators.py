@@ -156,6 +156,15 @@ class StringContactPoint(parameters.abc.ImplicitPlayingIndicator):
             "ponticello",
             "sul ponticello",
             "sul tasto",
+            # abbreviations also work
+            "d.p.",
+            "m.s.p",
+            "m.s.t.",
+            "ord.",
+            "pizz.",
+            "p.",
+            "s.p.",
+            "s.t.",
         ]
     ] = None
 
