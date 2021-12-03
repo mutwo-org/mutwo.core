@@ -587,13 +587,13 @@ class BendAfter(playing_indicators.BendAfter, BangLastAttachment):
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
         abjad.attach(
             abjad.LilyPondLiteral(
-                "\\override BendAfter.thickness = #'{}".format(self.thickness)
+                "\\once \\override BendAfter.thickness = #'{}".format(self.thickness)
             ),
             leaf,
         )
         abjad.attach(
             abjad.LilyPondLiteral(
-                f"\\once \\override Score.SpacingSpanner.shortest-duration-space = #{self.minimum_length}"
+                f"\\once \\override BendAfter.minimum_length = #{self.minimum_length}"
             ),
             leaf,
         )
