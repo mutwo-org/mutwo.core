@@ -593,7 +593,7 @@ class BendAfter(playing_indicators.BendAfter, BangLastAttachment):
         )
         abjad.attach(
             abjad.LilyPondLiteral(
-                f"\\once \\override BendAfter.minimum_length = #{self.minimum_length}"
+                f"\\once \\override BendAfter.minimum-length = #{self.minimum_length}"
             ),
             leaf,
         )
