@@ -7,6 +7,17 @@ routines. The most important class and best starting point for organising a conv
 setting is :class:`SequentialEventToAbjadVoiceConverter`.
 If one wants to build complete scores from within mutwo, the module offers the
 :class:`NestedComplexEventToAbjadContainerConverter`.
+
+**Known bugs and limitations:**
+
+1. Indicators attached to rests which follow another rest won't be translated to
+   `abjad`. This behaviour happens because the
+   :class:`~mutwo.converters.frontends.SequentialEventToAbjadVoiceConverter`
+   ties rests before converting the data to `abjad` objects.
+
+2. Quantization can be slow and not precise. Try both quantization classes.
+   Change the parameters. Use different settings and classes for different
+   parts of your music.
 """
 
 from . import attachments_constants
