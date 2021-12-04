@@ -526,7 +526,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return self._exponents_to_float(self.exponents, self.primes)
 
     def __repr__(self) -> str:
-        return "JustIntonationPitch({})".format(self.ratio)
+        return f"JustIntonationPitch('{self.ratio}')"
 
     def __add__(self, other: JustIntonationPitch) -> JustIntonationPitch:
         return self._math(other, operator.add, mutate=False)  # type: ignore
