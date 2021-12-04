@@ -5,6 +5,7 @@
 import abc
 import copy
 import typing
+import warnings
 
 from mutwo import converters
 from mutwo import events
@@ -14,6 +15,7 @@ from mutwo import parameters
 __all__ = (
     "PlayingIndicatorConverter",
     "ArpeggioConverter",
+    "ArticulationConverter",
     "PlayingIndicatorsConverter",
 )
 
@@ -65,8 +67,12 @@ class PlayingIndicatorConverter(converters.abc.Converter):
         :type simple_event_to_convert: events.basic.SimpleEvent
         """
 
+        simple_event_to_playing_indicator_collection = (
+            self._simple_event_to_playing_indicator_collection
+        )
+
         try:
-            playing_indicator_collection = self._simple_event_to_playing_indicator_collection(
+            playing_indicator_collection = simple_event_to_playing_indicator_collection(
                 simple_event_to_convert
             )
         except AttributeError:
@@ -194,6 +200,153 @@ class ArpeggioConverter(PlayingIndicatorConverter):
 
         if arpeggio.is_active:
             return self._apply_arpeggio(simple_event_to_convert, arpeggio)
+        else:
+            return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
+
+
+class StacattoConverter(PlayingIndicatorConverter):
+    """Apply staccato on :class:`~mutwo.events.basic.SimpleEvent`.
+
+    :param factor:
+    :param allowed_articulation_name_sequence:
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a
+        :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
+        object. By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
+        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their playing_indicator_collection property, this argument
+        should be overridden. If the
+        function call raises an :obj:`AttributeError` (e.g. if no playing indicator
+        collection can be extracted), mutwo will build a playing indicator collection
+        from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    """
+
+    def __init__(
+        self,
+        factor: float = 0.5,
+        allowed_articulation_name_sequence: typing.Sequence[str] = ("staccato", "."),
+        simple_event_to_playing_indicator_collection: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.playing_indicators.PlayingIndicatorCollection,
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
+    ):
+        self._allowed_articulation_name_sequence = allowed_articulation_name_sequence
+        self._factor = factor
+        super().__init__(simple_event_to_playing_indicator_collection)
+
+    def _apply_stacatto(
+        self,
+        simple_event_to_convert: events.basic.SimpleEvent,
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        duration = simple_event_to_convert.duration * self._factor
+        sequential_event = events.basic.SequentialEvent(
+            [
+                simple_event_to_convert.set_parameter(
+                    "duration", duration, mutate=False
+                ),
+                events.basic.SimpleEvent(duration),
+            ]
+        )
+        return sequential_event
+
+    def _apply_playing_indicator(
+        self,
+        simple_event_to_convert: events.basic.SimpleEvent,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection,
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        try:
+            articulation = playing_indicator_collection.articulation
+        except AttributeError:
+            articulation = parameters.playing_indicators.Articulation()
+
+        if (
+            articulation.is_active
+            and articulation.name in self._allowed_articulation_name_sequence
+        ):
+            return self._apply_stacatto(simple_event_to_convert)
+        else:
+            return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
+
+
+class ArticulationConverter(PlayingIndicatorConverter):
+    """Apply articulation on :class:`~mutwo.events.basic.SimpleEvent`.
+
+    :param articulation_name_tuple_to_playing_indicator_converter:
+    :type articulation_name_tuple_to_playing_indicator_converter: dict[tuple[str, ...], PlayingIndicatorConverter]
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a
+        :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
+        object. By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
+        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their playing_indicator_collection property, this argument
+        should be overridden. If the
+        function call raises an :obj:`AttributeError` (e.g. if no playing indicator
+        collection can be extracted), mutwo will build a playing indicator collection
+        from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    """
+
+    def __init__(
+        self,
+        articulation_name_tuple_to_playing_indicator_converter: dict[
+            tuple[str, ...], PlayingIndicatorConverter
+        ] = {("staccato", "."): StacattoConverter()},
+        simple_event_to_playing_indicator_collection: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.playing_indicators.PlayingIndicatorCollection,
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
+    ):
+        articulation_name_to_playing_indicator_converter = {}
+        for (
+            articulation_name_tuple,
+            playing_indicator_converter,
+        ) in articulation_name_tuple_to_playing_indicator_converter.items():
+            for articulation_name in articulation_name_tuple:
+                try:
+                    assert (
+                        articulation_name
+                        not in articulation_name_to_playing_indicator_converter
+                    )
+                except AssertionError:
+                    message = "Found two playing indicator converter mappings for "
+                    message += f"articulation name '{articulation_name}'! "
+                    message += "Mutwo will use the playing indicator converter "
+                    message += f"'{playing_indicator_converter}'."
+                    warnings.warn(message)
+                articulation_name_to_playing_indicator_converter.update(
+                    {articulation_name: playing_indicator_converter}
+                )
+
+        self._articulation_name_to_playing_indicator_converter = (
+            articulation_name_to_playing_indicator_converter
+        )
+        super().__init__(simple_event_to_playing_indicator_collection)
+
+    def _apply_playing_indicator(
+        self,
+        simple_event_to_convert: events.basic.SimpleEvent,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection,
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        try:
+            articulation = playing_indicator_collection.articulation
+        except AttributeError:
+            articulation = parameters.playing_indicators.Articulation()
+
+        if (
+            articulation.is_active
+            and articulation.name
+            in self._articulation_name_to_playing_indicator_converter
+        ):
+            return self._articulation_name_to_playing_indicator_converter[
+                articulation.name
+            ].convert(simple_event_to_convert)
         else:
             return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
 
