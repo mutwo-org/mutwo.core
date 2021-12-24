@@ -297,7 +297,7 @@ def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generat
     )
 
 
-def class_name_to_object_name(class_name: str) -> str:
+def camel_case_to_snake_case(class_name: str) -> str:
     """
 
     MyClassName -> my_class_name

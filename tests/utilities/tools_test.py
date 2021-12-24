@@ -109,12 +109,12 @@ class ToolsTest(unittest.TestCase):
         for expected_permutation in expected_permutations:
             self.assertEqual(next(permutation_generator), expected_permutation)
 
-    def test_class_name_to_object_name(self):
+    def test_camel_case_to_snake_case(self):
         self.assertEqual(
-            tools.class_name_to_object_name("MyClassName"), "my_class_name"
+            tools.camel_case_to_snake_case("MyClassName"), "my_class_name"
         )
         self.assertEqual(
-            tools.class_name_to_object_name("MySecondClassName"), "my_second_class_name"
+            tools.camel_case_to_snake_case("MySecondClassName"), "my_second_class_name"
         )
 
     def test_get_nested_item_from_indices(self):

@@ -21,7 +21,7 @@ class AbjadAttachment(abc.ABC):
 
     @classmethod
     def get_class_name(cls):
-        return tools.class_name_to_object_name(cls.__name__)
+        return tools.camel_case_to_snake_case(cls.__name__)
 
     @classmethod
     def from_indicator_collection(
