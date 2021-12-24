@@ -214,6 +214,11 @@ class Hairpin(parameters.abc.ImplicitPlayingIndicator):
     symbol: typing.Optional[typing.Literal["<", ">", "!"]] = None
 
 
+@dataclasses.dataclass()
+class Trill(parameters.abc.ImplicitPlayingIndicator):
+    pitch: typing.Optional[parameters.abc.Pitch] = None
+
+
 @dataclasses.dataclass
 class PlayingIndicatorCollection(
     parameters.abc.IndicatorCollection[parameters.abc.PlayingIndicator]
@@ -264,6 +269,7 @@ class PlayingIndicatorCollection(
         default_factory=parameters.abc.ExplicitPlayingIndicator
     )
     tremolo: Tremolo = dataclasses.field(default_factory=Tremolo)
+    trill: Trill = dataclasses.field(default_factory=Trill)
 
     def __setattr__(self, parameter_name: str, value: bool):
         """Overriding default behaviour to allow syntactic sugar.

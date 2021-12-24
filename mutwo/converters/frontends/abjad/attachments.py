@@ -231,6 +231,14 @@ class Articulation(playing_indicators.Articulation, BangEachAttachment):
         return leaf
 
 
+class Trill(playing_indicators.Trill, BangFirstAttachment):
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+        abjad.attach(abjad.Articulation("trill"), leaf)
+        return leaf
+
+
 class Tremolo(playing_indicators.Tremolo, BangEachAttachment):
     def process_leaf(
         self, leaf: abjad.Leaf
