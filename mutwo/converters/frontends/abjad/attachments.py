@@ -582,25 +582,44 @@ class Glissando(parameters_abc.ExplicitPlayingIndicator, BangLastAttachment):
 
 
 class BendAfter(playing_indicators.BendAfter, BangLastAttachment):
-    def process_leaf(
-        self, leaf: abjad.Leaf
-    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+    def _attach_bend_after_to_note(self, note: abjad.Note):
         abjad.attach(
             abjad.LilyPondLiteral(
                 "\\once \\override BendAfter.thickness = #'{}".format(self.thickness)
             ),
-            leaf,
+            note,
         )
         abjad.attach(
             abjad.LilyPondLiteral(
                 f"\\once \\override BendAfter.minimum-length = #{self.minimum_length}"
             ),
-            leaf,
+            note,
         )
         abjad.attach(
-            abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'none"), leaf
+            abjad.LilyPondLiteral("\\once \\override DurationLine.style = #'none"), note
         )
-        abjad.attach(abjad.BendAfter(bend_amount=self.bend_amount), leaf)
+        abjad.attach(abjad.BendAfter(bend_amount=self.bend_amount), note)
+
+    def process_leaf(
+        self, leaf: abjad.Leaf
+    ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
+        if isinstance(leaf, abjad.Chord):
+            indicator_list = abjad.get.indicators(leaf)
+            container = abjad.Container([], simultaneous=True)
+            for note_head in leaf.note_heads:
+                note = abjad.Note("c", leaf.written_duration)
+                note.note_head._written_pitch = note_head.written_pitch
+                self._attach_bend_after_to_note(note)
+                for indicator in indicator_list:
+                    abjad.attach(indicator, note)
+                voice = abjad.Voice([note])
+                container.append(voice)
+
+            return container
+
+        elif isinstance(leaf, abjad.Note):
+            self._attach_bend_after_to_note(leaf)
+
         return leaf
 
 
