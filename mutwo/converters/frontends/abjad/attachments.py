@@ -349,10 +349,24 @@ class PreciseNaturalHarmonic(
 
 
 class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment):
-    _abbreviation_to_string_contact_point = {
-        abbreviation: full_name
-        for full_name, abbreviation in abjad.StringContactPoint._contact_point_abbreviations.items()
-    }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Extend abjad with custom string contact points
+        class StringContactPoint(abjad.StringContactPoint):
+            _contact_point = abjad.StringContactPoint._contact_points + tuple(
+                attachments_constants.CUSTOM_STRING_CONTACT_POINT_DICT.keys()
+            )
+            _contact_point_abbreviations = dict(
+                abjad.StringContactPoint._contact_point_abbreviations,
+                **attachments_constants.CUSTOM_STRING_CONTACT_POINT_DICT,
+            )
+
+        self._string_contact_point_class = StringContactPoint
+        self._abbreviation_to_string_contact_point = {
+            abbreviation: full_name
+            for full_name, abbreviation in StringContactPoint._contact_point_abbreviations.items()
+        }
 
     def _attach_string_contact_point(
         self,
@@ -391,10 +405,14 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
         if contact_point in self._abbreviation_to_string_contact_point:
             contact_point = self._abbreviation_to_string_contact_point[contact_point]
         try:
-            string_contact_point_markup = abjad.StringContactPoint(contact_point).markup
+            string_contact_point_markup = self._string_contact_point_class(
+                contact_point
+            ).markup
         except AssertionError:
-            message = f"Can't find contact point '{self.contact_point}' in '{abjad.StringContactPoint._contact_point_abbreviations}'!"
-            warnings.warn(message)
+            warnings.warn(
+                f"Can't find contact point '{self.contact_point}' "
+                f"in '{self._string_contact_point_class._contact_point_abbreviations}'!"
+            )
         else:
             self._attach_string_contact_point(
                 leaf, previous_attachment, string_contact_point_markup
