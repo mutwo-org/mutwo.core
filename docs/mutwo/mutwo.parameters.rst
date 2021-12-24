@@ -24,6 +24,7 @@ Submodules that contain constants are:
 .. autosummary::
    :toctree: parameters
 
+   mutwo.parameters.playing_indicators_constants
    mutwo.parameters.pitches_constants
    mutwo.parameters.volumes_constants  
    

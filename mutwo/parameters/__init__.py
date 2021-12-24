@@ -5,6 +5,7 @@
 from . import commas
 
 from . import pitches_constants
+from . import playing_indicators_constants
 from . import volumes_constants
 
 from . import abc

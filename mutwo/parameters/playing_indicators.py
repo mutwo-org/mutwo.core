@@ -74,106 +74,37 @@ class Tremolo(parameters.abc.ImplicitPlayingIndicator):
 @dataclasses.dataclass()
 class Articulation(parameters.abc.ImplicitPlayingIndicator):
     name: typing.Optional[
-        typing.Literal[
-            # Copy/paste from
-            # https://abjad.github.io/_modules/abjad/indicators/Articulation.html
-            "accent",
-            "marcato",
-            "staccatissimo",
-            "espressivo",
-            "staccato",
-            "tenuto",
-            "portato",
-            "upbow",
-            "downbow",
-            "flageolet",
-            "thumb",
-            "lheel",
-            "rheel",
-            "ltoe",
-            "rtoe",
-            "open",
-            "halfopen",
-            "snappizzicato",
-            "stopped",
-            "turn",
-            "reverseturn",
-            "trill",
-            "prall",
-            "mordent",
-            "prallprall",
-            "prallmordent",
-            "upprall",
-            "downprall",
-            "upmordent",
-            "downmordent",
-            "pralldown",
-            "prallup",
-            "lineprall",
-            "signumcongruentiae",
-            "shortfermata",
-            "fermata",
-            "longfermata",
-            "verylongfermata",
-            "segno",
-            "coda",
-            "varcoda",
-            "^",
-            "+",
-            "-",
-            "|",
-            ">",
-            ".",
-            "_",
-        ]
+        parameters.playing_indicators_constants.ARTICULATION_LITERAL
     ] = None
 
 
 @dataclasses.dataclass()
 class Arpeggio(parameters.abc.ImplicitPlayingIndicator):
-    direction: typing.Optional[typing.Literal["up", "down"]] = None
+    direction: typing.Optional[
+        parameters.playing_indicators_constants.DIRECTION_LITERAL
+    ] = None
 
 
 @dataclasses.dataclass()
 class Pedal(parameters.abc.ImplicitPlayingIndicator):
-    # Pedal types copied from
-    # https://abjad.github.io/_modules/abjad/indicators/StartPianoPedal.html
-    pedal_type: typing.Optional[typing.Literal["sustain", "sostenuto", "corda"]] = None
+    pedal_type: typing.Optional[
+        parameters.playing_indicators_constants.PEDAL_TYPE_LITERAL
+    ] = None
     pedal_activity: typing.Optional[bool] = True
 
 
 @dataclasses.dataclass()
 class StringContactPoint(parameters.abc.ImplicitPlayingIndicator):
     contact_point: typing.Optional[
-        typing.Literal[
-            # Copied from
-            # https://abjad.github.io/_modules/abjad/indicators/StringContactPoint.html#StringContactPoint
-            "dietro ponticello",
-            "molto sul ponticello",
-            "molto sul tasto",
-            "ordinario",
-            "pizzicato",
-            "ponticello",
-            "sul ponticello",
-            "sul tasto",
-            "col legno tratto",
-            # abbreviations also work
-            "d.p.",
-            "m.s.p",
-            "m.s.t.",
-            "ord.",
-            "pizz.",
-            "p.",
-            "s.p.",
-            "s.t.",
-            "c.l.t.",
-        ]
+        parameters.playing_indicators_constants.CONTACT_POINT_LITERAL
     ] = None
 
 
 @dataclasses.dataclass()
 class Ornamentation(parameters.abc.ImplicitPlayingIndicator):
-    direction: typing.Optional[typing.Literal["up", "down"]] = None
+    direction: typing.Optional[
+        parameters.playing_indicators_constants.DIRECTION_LITERAL
+    ] = None
     n_times: int = 1
 
 
@@ -202,18 +133,15 @@ class PreciseNaturalHarmonic(parameters.abc.ImplicitPlayingIndicator):
 @dataclasses.dataclass()
 class Fermata(parameters.abc.ImplicitPlayingIndicator):
     fermata_type: typing.Optional[
-        typing.Literal[
-            "shortfermata",
-            "fermata",
-            "longfermata",
-            "verylongfermata",
-        ]
+        parameters.playing_indicators_constants.FERMATA_TYPE_LITERAL
     ] = None
 
 
 @dataclasses.dataclass()
 class Hairpin(parameters.abc.ImplicitPlayingIndicator):
-    symbol: typing.Optional[typing.Literal["<", ">", "!"]] = None
+    symbol: typing.Optional[
+        parameters.playing_indicators_constants.HAIRPIN_SYMBOL_LITERAL
+    ] = None
 
 
 @dataclasses.dataclass()
@@ -296,7 +224,9 @@ class PlayingIndicatorCollection(
             if isinstance(playing_indicator, parameters.abc.ExplicitPlayingIndicator):
                 playing_indicator.is_active = bool(value)
             else:
-                message = f"Can't override frozen property (playing indicator) '{playing_indicator}'!"
-                raise dataclasses.FrozenInstanceError(message)
+                raise dataclasses.FrozenInstanceError(
+                    "Can't override frozen property (playing indicator)"
+                    f" '{playing_indicator}'!"
+                )
         else:
             super().__setattr__(parameter_name, value)

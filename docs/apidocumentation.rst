@@ -66,6 +66,7 @@ This tree provides a deep overview of all submodules:
    mutwo.parameters.playing_indicators
    mutwo.parameters.tempos
    mutwo.parameters.volumes
+   mutwo.parameters.playing_indicators_constants
    mutwo.parameters.pitches_constants
    mutwo.parameters.volumes_constants
    mutwo.utilities.constants
