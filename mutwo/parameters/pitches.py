@@ -526,7 +526,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return self._exponents_to_float(self.exponents, self.primes)
 
     def __repr__(self) -> str:
-        return f"JustIntonationPitch('{self.ratio}')"
+        ratio = str(self.ratio)
+        if len(ratio) == 1:
+            ratio += "/1"
+        return f"JustIntonationPitch('{ratio}')"
 
     def __add__(self, other: JustIntonationPitch) -> JustIntonationPitch:
         return self._math(other, operator.add, mutate=False)  # type: ignore
@@ -1148,9 +1151,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         self.exponents = exponents
 
     @decorators.add_copy_option
-    def add(  # type: ignore
-        self, other: JustIntonationPitch
-    ) -> JustIntonationPitch:
+    def add(self, other: JustIntonationPitch) -> JustIntonationPitch:  # type: ignore
         """Add :class:`JustIntonationPitch` to current pitch.
 
         :param other: The :class:`JustIntonationPitch` to add to
