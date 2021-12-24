@@ -4,8 +4,14 @@
 
 import abc
 import copy
+import itertools
 import typing
 import warnings
+
+try:
+    import quicktions as fractions  # type: ignore
+except ImportError:
+    import fractions  # type: ignore
 
 from mutwo import converters
 from mutwo import events
@@ -347,6 +353,100 @@ class ArticulationConverter(PlayingIndicatorConverter):
             return self._articulation_name_to_playing_indicator_converter[
                 articulation.name
             ].convert(simple_event_to_convert)
+        else:
+            return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
+
+
+class TrillConverter(PlayingIndicatorConverter):
+    """Apply trill on :class:`~mutwo.events.basic.SimpleEvent`.
+
+    :param trill_size:
+    :type trill_size: parameters.abc.DurationType
+    :param simple_event_to_pitch_list: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
+        (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
+        By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
+        (because by default :class:`mutwo.events.music.NoteLike` objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their pitch property, this argument
+        should be overridden.
+        If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
+        extracted), mutwo will assume an event without any pitches.
+    :type simple_event_to_pitch_list: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
+    :param simple_event_to_playing_indicator_collection: Function to extract from a
+        :class:`mutwo.events.basic.SimpleEvent` a
+        :class:`mutwo.parameters.playing_indicators.PlayingIndicatorCollection`
+        object. By default it asks the Event for its
+        :attr:`~mutwo.events.music.NoteLike.playing_indicator_collection`
+        attribute (because by default :class:`mutwo.events.music.NoteLike`
+        objects are expected).
+        When using different Event classes than :class:`~mutwo.events.music.NoteLike`
+        with a different name for their playing_indicator_collection property, this argument
+        should be overridden. If the
+        function call raises an :obj:`AttributeError` (e.g. if no playing indicator
+        collection can be extracted), mutwo will build a playing indicator collection
+        from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
+    :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
+    """
+
+    def __init__(
+        self,
+        trill_size: parameters.abc.DurationType = fractions.Fraction(1, 16),
+        simple_event_to_pitch_list: typing.Callable[
+            [events.basic.SimpleEvent], list[parameters.abc.Pitch]
+        ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
+        simple_event_to_playing_indicator_collection: typing.Callable[
+            [events.basic.SimpleEvent],
+            parameters.playing_indicators.PlayingIndicatorCollection,
+        ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
+    ):
+        self._trill_size = trill_size
+        self._simple_event_to_pitch_list = simple_event_to_pitch_list
+        super().__init__(simple_event_to_playing_indicator_collection)
+
+    def _apply_trill(
+        self,
+        simple_event_to_convert: events.basic.SimpleEvent,
+        trill: parameters.playing_indicators.Trill,
+        pitch_list: list[parameters.abc.Pitch],
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        n_trill_items = simple_event_to_convert.duration // self._trill_size
+        remaining = simple_event_to_convert.duration - (
+            n_trill_items * self._trill_size
+        )
+        sequential_event = events.basic.SequentialEvent([])
+        pitch_cycle = itertools.cycle((pitch_list, trill.pitch))
+        for _ in range(int(n_trill_items)):
+            simple_event = simple_event_to_convert.set_parameter(
+                "duration", self._trill_size, mutate=False
+            ).set_parameter("pitch_list", next(pitch_cycle))
+            sequential_event.append(simple_event)
+        sequential_event[-1].duration += remaining
+        return sequential_event
+
+    def _apply_playing_indicator(
+        self,
+        simple_event_to_convert: events.basic.SimpleEvent,
+        playing_indicator_collection: parameters.playing_indicators.PlayingIndicatorCollection,
+    ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
+        try:
+            trill = playing_indicator_collection.trill
+        except AttributeError:
+            trill = parameters.playing_indicators.Trill()
+
+        simple_event_to_pitch_list = self._simple_event_to_pitch_list
+        try:
+            pitch_list = simple_event_to_pitch_list(simple_event_to_convert)
+        except AttributeError:
+            pitch_list = []
+
+        if (
+            trill.is_active
+            and simple_event_to_convert.duration > self._trill_size * 2
+            and pitch_list
+        ):
+            return self._apply_trill(simple_event_to_convert, trill, pitch_list)
         else:
             return events.basic.SequentialEvent([copy.copy(simple_event_to_convert)])
 
