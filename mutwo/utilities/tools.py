@@ -297,15 +297,20 @@ def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generat
     )
 
 
-def camel_case_to_snake_case(class_name: str) -> str:
-    """
+def camel_case_to_snake_case(camel_case_string: str) -> str:
+    """Transform camel case formatted string to snake case.
 
-    MyClassName -> my_class_name
+    :arg camel_case_string: String which is formatted using
+        camel case (no whitespace, but upper letters at
+        new word start).
+    :return: string formatted using snake case
+
+    **Example:** MyClassName -> my_class_name
     """
     characters = []
 
     is_first = True
-    for character in class_name:
+    for character in camel_case_string:
         if character.isupper():
             character = character.lower()
             if not is_first:
