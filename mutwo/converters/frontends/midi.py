@@ -552,6 +552,7 @@ class MidiFileConverter(abc.Converter):
                 extracted_data.append(extraction_function(simple_event))
             except AttributeError:
                 is_rest = True
+                break
 
         # if not all relevant data could be extracted, simply ignore the
         # event
