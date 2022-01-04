@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLConverter`
 
 
+## [0.41.0] - 2022-01-04
+
+### Added
+- `GraceNotesConverter` in `converters.symmetrical.grace_notes`
+- `bend_after` playing_indicator and abjad attachment
+- `duration_line_dashed` and `duration_line_triller` playing indicators and abjad attachments
+- `ArticulationConverter` in `converters.symmetrical.playing_indicators`
+- `StacattoConverter` in `converters.symmetrical.playing_indicators`
+- `Trill` in `playing_indicators` and in `abjad.attachments`
+- `TrillConverter` in `converters.symmetrical.playing_indicators`
+- 'col legno tratto' (c.l.t.) to playing indicator and abjad attachment `StringContactPoint`
+- `call_function_except_attribute_error` in `tools` module
+
+### Changed
+- move typing literals from `parameters.playing_indicators` to `parameters.playing_indicators_constants`
+- renamed function in `utility.tools` module `class_name_to_object_name` to `camel_case_to_snake_case`
+
 ## [0.40.0] - 2021-11-27
 
 ### Changed
