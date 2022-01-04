@@ -504,7 +504,9 @@ class MidiFileConverterTest(unittest.TestCase):
         converter = midi.MidiFileConverter(
             simple_event_to_pitch_list=lambda event: (constant_pitch,),
             simple_event_to_volume=lambda event: constant_volume,
-            simple_event_to_control_message_tuple=lambda event: (constant_control_message,),
+            simple_event_to_control_message_tuple=lambda event: (
+                constant_control_message,
+            ),
         )
 
         converter.convert(self.sequential_event, self.midi_file_path)
