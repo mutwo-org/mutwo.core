@@ -126,7 +126,7 @@ class MidiFileConverter(abc.Converter):
     midi files. In this way the user can tweak the conversion routine to her
     or his individual needs.
 
-    :param simple_event_to_pitches: Function to extract from a
+    :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
         By default it asks the Event for its :attr:`pitch_list` attribute
@@ -135,7 +135,7 @@ class MidiFileConverter(abc.Converter):
         their pitch property, this argument should be overridden. If the function call
         raises an :obj:`AttributeError` (e.g. if no pitch can be extracted),
         mutwo will interpret the event as a rest.
-    :type simple_event_to_pitches: typing.Callable[
+    :type simple_event_to_pitch_list: typing.Callable[
             [events.basic.SimpleEvent], tuple[parameters.abc.Pitch, ...]]
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating midi notes.
@@ -149,11 +149,11 @@ class MidiFileConverter(abc.Converter):
         extracted), mutwo will interpret the event as a rest.
     :type simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume]
-    :param simple_event_to_control_messages: Function to generate midi control messages
+    :param simple_event_to_control_message_tuple: Function to generate midi control messages
         from a simple event. By default no control messages are generated. If the
         function call raises an AttributeError (e.g. if an expected control value isn't
         available) mutwo will interpret the event as a rest.
-    :type simple_event_to_control_messages: typing.Callable[
+    :type simple_event_to_control_message_tuple: typing.Callable[
             [events.basic.SimpleEvent], tuple[mido.Message, ...]]
     :param midi_file_type: Can either be 0 (for one-track midi files) or 1 (for
          synchronous multi-track midi files). Mutwo doesn't offer support for generating
@@ -202,7 +202,7 @@ class MidiFileConverter(abc.Converter):
     >>> from mutwo.parameters import pitches
     >>> # midi file converter that assign a middle c to all events
     >>> midi_converter = midi.MidiFileConverter(
-    >>>     simple_event_to_pitches=lambda event: (pitches.WesternPitch('c'),)
+    >>>     simple_event_to_pitch_list=lambda event: (pitches.WesternPitch('c'),)
     >>> )
 
     **Disclaimer**:
@@ -215,13 +215,13 @@ class MidiFileConverter(abc.Converter):
 
     def __init__(
         self,
-        simple_event_to_pitches: typing.Callable[
+        simple_event_to_pitch_list: typing.Callable[
             [events.basic.SimpleEvent], tuple[parameters.abc.Pitch, ...]
         ] = lambda event: event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda event: event.volume,  # type: ignore
-        simple_event_to_control_messages: typing.Callable[
+        simple_event_to_control_message_tuple: typing.Callable[
             [events.basic.SimpleEvent], tuple[mido.Message, ...]
         ] = lambda event: tuple([]),
         midi_file_type: int = None,
@@ -259,9 +259,11 @@ class MidiFileConverter(abc.Converter):
         self._assert_available_midi_channels_have_correct_value(available_midi_channels)
 
         # initialise the attributes of the class
-        self._simple_event_to_pitches = simple_event_to_pitches
+        self._simple_event_to_pitch_list = simple_event_to_pitch_list
         self._simple_event_to_volume = simple_event_to_volume
-        self._simple_event_to_control_messages = simple_event_to_control_messages
+        self._simple_event_to_control_message_tuple = (
+            simple_event_to_control_message_tuple
+        )
 
         self._distribute_midi_channels = distribute_midi_channels
         self._n_midi_channels_per_track = n_midi_channels_per_track
@@ -544,9 +546,9 @@ class MidiFileConverter(abc.Converter):
         # try to extract the relevant data
         is_rest = False
         for extraction_function in (
-            self._simple_event_to_pitches,
+            self._simple_event_to_pitch_list,
             self._simple_event_to_volume,
-            self._simple_event_to_control_messages,
+            self._simple_event_to_control_message_tuple,
         ):
             try:
                 extracted_data.append(extraction_function(simple_event))
