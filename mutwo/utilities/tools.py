@@ -26,6 +26,7 @@ __all__ = (
     "get_nested_item_from_indices",
     "set_nested_item_from_indices",
     "find_numbers_which_sums_up_to",
+    # call_function_except_attribute_error  # not for public use
 )
 
 
