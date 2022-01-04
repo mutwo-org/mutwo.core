@@ -79,12 +79,11 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
     def _make_empty_abjad_container(
         self, complex_event_to_converter: events.abc.ComplexEvent
     ) -> abjad.Container:
-        try:
-            abjad_container_name = self._complex_event_to_abjad_container_name(
-                complex_event_to_converter
-            )
-        except AttributeError:
-            abjad_container_name = None
+        abjad_container_name = tools.call_function_except_attribute_error(
+            self._complex_event_to_abjad_container_name,
+            complex_event_to_converter,
+            None,
+        )
 
         kwargs = {}
 
@@ -158,7 +157,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         defines how the Mutwo data will be quantized. See
         :class:`SequentialEventToQuantizedAbjadContainerConverter` for more information.
     :type sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter, optional
-    :param simple_event_to_pitches: Function to extract from a
+    :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
         By default it asks the Event for its
@@ -169,7 +168,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         should be overridden.
         If the function call raises an :obj:`AttributeError` (e.g. if no pitch can be
         extracted), mutwo will assume an event without any pitches.
-    :type simple_event_to_pitches: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
+    :type simple_event_to_pitch_list: typing.Callable[[events.basic.SimpleEvent], parameters.abc.Pitch], optional
     :param simple_event_to_volume: Function to extract the volume from a
         :class:`mutwo.events.basic.SimpleEvent` in the purpose of generating dynamic
         indicators. The function should return an object that inherits from
@@ -280,10 +279,13 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     ExtractedDataPerSimpleEvent = tuple[ExtractedData, ...]
 
+    _empty_volume = parameters.volumes.DirectVolume(0)
+    _empty_grace_note_sequential_event = events.basic.SequentialEvent([])
+
     def __init__(
         self,
         sequential_event_to_quantized_abjad_container_converter: SequentialEventToQuantizedAbjadContainerConverter = NauertSequentialEventToQuantizedAbjadContainerConverter(),
-        simple_event_to_pitches: typing.Callable[
+        simple_event_to_pitch_list: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
         simple_event_to_volume: typing.Callable[
@@ -357,11 +359,9 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         if is_simple_event_rest is None:
 
             def is_simple_event_rest(simple_event: events.basic.SimpleEvent) -> bool:
-                try:
-                    pitch_list = simple_event_to_pitches(simple_event)
-                except AttributeError:
-                    pitch_list = []
-
+                pitch_list = tools.call_function_except_attribute_error(
+                    simple_event_to_pitch_list, simple_event, []
+                )
                 return not bool(pitch_list)
 
         self._abjad_attachment_classes = abjad_attachment_classes
@@ -374,7 +374,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         self._sequential_event_to_quantized_abjad_container_converter = (
             sequential_event_to_quantized_abjad_container_converter
         )
-        self._simple_event_to_pitches = simple_event_to_pitches
+
+        self._simple_event_to_pitch_list = simple_event_to_pitch_list
         self._simple_event_to_volume = simple_event_to_volume
         self._simple_event_to_grace_note_sequential_event = (
             simple_event_to_grace_note_sequential_event
@@ -388,10 +389,38 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         self._simple_event_to_notation_indicator_collection = (
             simple_event_to_notation_indicator_collection
         )
+        self._simple_event_to_function_and_exception_value_tuple = (
+            (
+                self._simple_event_to_pitch_list,
+                [],
+            ),
+            (
+                self._simple_event_to_volume,
+                self._empty_volume,
+            ),
+            (
+                self._simple_event_to_grace_note_sequential_event,
+                self._empty_grace_note_sequential_event,
+            ),
+            (
+                self._simple_event_to_after_grace_note_sequential_event,
+                self._empty_grace_note_sequential_event,
+            ),
+            (
+                self._simple_event_to_playing_indicator_collection,
+                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS,
+            ),
+            (
+                self._simple_event_to_notation_indicator_collection,
+                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS,
+            ),
+        )
+
         self._is_simple_event_rest = is_simple_event_rest
         self._mutwo_pitch_to_abjad_pitch_converter = (
             mutwo_pitch_to_abjad_pitch_converter
         )
+
         self._mutwo_volume_to_abjad_attachment_dynamic_converter = (
             mutwo_volume_to_abjad_attachment_dynamic_converter
         )
@@ -478,7 +507,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             return {}
         converter = _GraceNotesToAbjadVoiceConverter(
             is_before,
-            self._simple_event_to_pitches,
+            self._simple_event_to_pitch_list,
             self._simple_event_to_volume,
             self._simple_event_to_playing_indicator_collection,
             self._simple_event_to_notation_indicator_collection,
@@ -643,64 +672,57 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
                     previous_attachment = attachment
 
+    def _extract_pitch_list_and_volume_from_simple_event(
+        self, simple_event: events.basic.SimpleEvent
+    ) -> tuple[list[parameters.abc.Pitch], parameters.abc.Volume]:
+        extracted_data = [
+            # pitch list
+            tools.call_function_except_attribute_error(
+                self._simple_event_to_function_and_exception_value_tuple[0][0],
+                simple_event,
+                self._simple_event_to_function_and_exception_value_tuple[0][1],
+            )
+        ]
+
+        # TODO(Add option: no dynamic indicator if there aren't any pitches)
+        if extracted_data[0]:
+            volume = tools.call_function_except_attribute_error(
+                self._simple_event_to_function_and_exception_value_tuple[1][0],
+                simple_event,
+                self._simple_event_to_function_and_exception_value_tuple[1][1],
+            )
+            if volume == self._empty_volume:
+                extracted_data[0] = []
+        else:
+            volume = self._empty_volume
+
+        extracted_data.append(volume)
+
+        return tuple(extracted_data)
+
     def _extract_data_from_simple_event(
         self, simple_event: events.basic.SimpleEvent
     ) -> ExtractedData:
-        try:
-            pitches = self._simple_event_to_pitches(simple_event)
-        except AttributeError:
-            pitches = []
-
-        # TODO(Add option: no dynamic indicator if there aren't any pitches)
-        try:
-            if pitches:
-                volume = self._simple_event_to_volume(simple_event)
-            else:
-                volume = parameters.volumes.DirectVolume(0)
-        except AttributeError:
-            volume = parameters.volumes.DirectVolume(0)
-            pitches = []
-
-        try:
-            grace_note_sequential_event = (
-                self._simple_event_to_grace_note_sequential_event(simple_event)
-            )
-        except AttributeError:
-            grace_note_sequential_event = events.basic.SequentialEvent([])
-
-        try:
-            after_grace_note_sequential_event = (
-                self._simple_event_to_after_grace_note_sequential_event(simple_event)
-            )
-        except AttributeError:
-            after_grace_note_sequential_event = events.basic.SequentialEvent([])
-
-        try:
-            playing_indicators = self._simple_event_to_playing_indicator_collection(
-                simple_event
-            )
-        except AttributeError:
-            playing_indicators = (
-                events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS()
-            )
-
-        try:
-            notation_indicators = self._simple_event_to_notation_indicator_collection(
-                simple_event
-            )
-        except AttributeError:
-            notation_indicators = (
-                events.music_constants.DEFAULT_NOTATION_INDICATORS_COLLECTION_CLASS()
-            )
-
-        return (
-            pitches,
-            volume,
-            grace_note_sequential_event,
-            after_grace_note_sequential_event,
-            playing_indicators,
-            notation_indicators,
+        # Special case for pitch_list and volume:
+        # if pitch_list is empty, there is also no volume. If volume is empty
+        # there is also no pitch_list.
+        extracted_data = list(
+            self._extract_pitch_list_and_volume_from_simple_event(simple_event)
         )
+
+        for (
+            function,
+            exception_value,
+        ) in self._simple_event_to_function_and_exception_value_tuple[2:]:
+            extracted_data.append(
+                tools.call_function_except_attribute_error(
+                    function,
+                    simple_event,
+                    exception_value,
+                )
+            )
+
+        return tuple(extracted_data)
 
     def _apply_pitches_on_quantized_abjad_leaf(
         self,
@@ -921,7 +943,7 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
     def __init__(
         self,
         is_before: bool,
-        simple_event_to_pitches: typing.Callable[
+        simple_event_to_pitch_list: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ],
         simple_event_to_volume: typing.Callable[
@@ -948,7 +970,7 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
 
         super().__init__(
             sequential_event_to_quantized_abjad_container_converter=self.GraceNotesToQuantizedAbjadContainerConverter(),
-            simple_event_to_pitches=simple_event_to_pitches,
+            simple_event_to_pitch_list=simple_event_to_pitch_list,
             simple_event_to_volume=simple_event_to_volume,
             simple_event_to_playing_indicator_collection=simple_event_to_playing_indicator_collection,
             simple_event_to_notation_indicator_collection=simple_event_to_notation_indicator_collection,

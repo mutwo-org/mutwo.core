@@ -300,13 +300,14 @@ def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generat
 def camel_case_to_snake_case(camel_case_string: str) -> str:
     """Transform camel case formatted string to snake case.
 
-    :arg camel_case_string: String which is formatted using
+    :param camel_case_string: String which is formatted using
         camel case (no whitespace, but upper letters at
         new word start).
     :return: string formatted using snake case
 
     **Example:** MyClassName -> my_class_name
     """
+
     characters = []
 
     is_first = True
@@ -441,3 +442,27 @@ def find_numbers_which_sums_up_to(
             ]
         )
     return tuple(numbers)
+
+
+def call_function_except_attribute_error(
+    function: typing.Callable[[typing.Any], typing.Any],
+    argument: typing.Any,
+    exception_value: typing.Any,
+) -> typing.Any:
+    """Run a function with argument as input
+
+    :param function: The function to be called.
+    :param argument: The argument with which the function shall be called.
+    :param exception_value: The alternative value if the function call raises an
+        `AttributeError`.
+    :return: Return :obj:`exception_value` in case an attribute error occurs.
+        In case the function call is successful the function return value will
+        be returned.
+    """
+
+    try:
+        value = function(argument)
+    except AttributeError:
+        value = exception_value
+
+    return value

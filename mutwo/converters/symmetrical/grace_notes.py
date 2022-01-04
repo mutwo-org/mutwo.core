@@ -8,6 +8,7 @@ import expenvelope
 from mutwo import converters
 from mutwo import events
 from mutwo import parameters
+from mutwo import utilities
 
 __all__ = ("GraceNotesConverter",)
 
@@ -134,17 +135,11 @@ class GraceNotesConverter(converters.abc.EventConverter):
             events.basic.SequentialEvent[events.basic.SimpleEvent],
         ],
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
-        try:
-            before_or_after_grace_note_sequential_event = (
-                simple_event_to_before_or_after_grace_note_sequential_event(
-                    simple_event_to_convert
-                )
-            )
-        except AttributeError:
-            before_or_after_grace_note_sequential_event = events.basic.SequentialEvent(
-                []
-            )
-        return before_or_after_grace_note_sequential_event
+        return utilities.tools.call_function_except_attribute_error(
+            simple_event_to_before_or_after_grace_note_sequential_event,
+            simple_event_to_convert,
+            events.basic.SequentialEvent([]),
+        )
 
     def _get_grace_note_sequential_event(
         self, simple_event_to_convert: events.basic.SimpleEvent
