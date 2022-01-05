@@ -1,4 +1,4 @@
-"""Render signing signals from mutwo data via `ISiS <https://forum.ircam.fr/projects/detail/isis/>`_.
+"""Render singing signals from mutwo data via `ISiS <https://forum.ircam.fr/projects/detail/isis/>`_.
 
 ISiS (IRCAM Singing Synthesis) is a `"command line application for singing
 synthesis that can be used to generate singing signals by means of synthesizing
