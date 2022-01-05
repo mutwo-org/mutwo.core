@@ -100,7 +100,7 @@ class TempoConverter(converters.abc.EventConverter):
 
     :param tempo_envelope: The tempo curve that shall be applied on the
         mutwo events. This is expected to be a :class:`expenvelope.Envelope`
-        which levels arefilled with numbers that will be interpreted as BPM
+        which levels are filled with numbers that will be interpreted as BPM
         [beats per minute]) or with :class:`mutwo.parameters.tempos.TempoPoint`
         objects.
 
