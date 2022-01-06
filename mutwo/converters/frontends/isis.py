@@ -284,10 +284,12 @@ class IsisConverter(converters.abc.Converter):
         correctly installed on your system.
         """
 
-        self.isis_score_converter.convert(event_to_convert)
+        score_path = f"{path}.isis_score"
+
+        self.isis_score_converter.convert(event_to_convert, score_path)
         command = "{} -m {} -o {}".format(
             isis_constants.ISIS_PATH,
-            path + ".sco",
+            score_path,
             path,
         )
         for flag in self.flags:
@@ -296,4 +298,4 @@ class IsisConverter(converters.abc.Converter):
         os.system(command)
 
         if self.remove_score_file:
-            os.remove(self.isis_score_converter.path)
+            os.remove(score_path)
