@@ -111,9 +111,9 @@ class NoteLikeTest(unittest.TestCase):
     #                          other                                         #
     # ###################################################################### #
 
-    def test_parameters_to_compare(self):
+    def test_parameter_to_compare_tuple(self):
         note_like = music.NoteLike([pitches.WesternPitch()], 1, 1)
-        expected_parameters_to_compare = (
+        expected_parameter_to_compare_tuple = (
             "after_grace_note_sequential_event",
             "duration",
             "grace_note_sequential_event",
@@ -123,7 +123,7 @@ class NoteLikeTest(unittest.TestCase):
             "volume",
         )
         self.assertEqual(
-            note_like._parameters_to_compare, expected_parameters_to_compare
+            note_like._parameter_to_compare_tuple, expected_parameter_to_compare_tuple
         )
 
     def test_equality_check(self):

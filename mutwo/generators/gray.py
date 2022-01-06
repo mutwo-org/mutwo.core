@@ -1,7 +1,5 @@
 """Algorithms which are related to US-American researcher Frank Gray."""
 
-import typing
-
 __all__ = ("reflected_binary_code",)
 
 

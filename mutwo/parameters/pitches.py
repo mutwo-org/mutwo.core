@@ -120,12 +120,12 @@ class MidiPitch(parameters.abc.Pitch):
 class JustIntonationPitch(parameters.abc.Pitch):
     """Pitch that is defined by a frequency ratio and a reference pitch.
 
-    :param ratio_or_exponents: The frequency ratio of the ``JustIntonationPitch``.
+    :param ratio_or_exponent_tuple: The frequency ratio of the ``JustIntonationPitch``.
         This can either be a string that indicates the frequency ratio (for
         instance: "1/1", "3/2", "9/2", etc.), or a ``fractions.Fraction``
         object that indicates the frequency ratio (for instance:
         ``fractions.Fraction(3, 2)``, ``fractions.Fraction(7, 4)``) or
-        an Iterable that is filled with integer that represents the exponents
+        an Iterable that is filled with integer that represents the exponent_tuple
         of the respective prime numbers of the decomposed frequency ratio. The prime
         numbers are rising and start with 2. Therefore the tuple ``(2, 0, -1)``
         would return the frequency ratio ``4/5`` because
@@ -151,7 +151,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     def __init__(
         self,
-        ratio_or_exponents: typing.Union[
+        ratio_or_exponent_tuple: typing.Union[
             str, fractions.Fraction, typing.Iterable[int]
         ] = "1/1",
         concert_pitch: ConcertPitch = None,
@@ -159,8 +159,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
         if concert_pitch is None:
             concert_pitch = parameters.pitches_constants.DEFAULT_CONCERT_PITCH
 
-        self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
-            ratio_or_exponents
+        self.exponent_tuple = self._translate_ratio_or_fractions_argument_to_exponent_tuple(
+            ratio_or_exponent_tuple
         )
         self.concert_pitch = concert_pitch  # type: ignore
 
@@ -168,14 +168,14 @@ class JustIntonationPitch(parameters.abc.Pitch):
     #                      static private methods                            #
     # ###################################################################### #
     @staticmethod
-    def _adjust_exponent_lengths(exponents0: tuple, exponents1: tuple) -> tuple:
-        r"""Adjust two exponents, e.g. make their length equal.
+    def _adjust_exponent_lengths(exponent_tuple0: tuple, exponent_tuple1: tuple) -> tuple:
+        r"""Adjust two exponent_tuple, e.g. make their length equal.
 
         The length of the longer JustIntonationPitch is the reference.
 
         Arguments:
-            * exponents0: first exponents to adjust
-            * exponents1: second exponents to adjust
+            * exponent_tuple0: first exponent_tuple to adjust
+            * exponent_tuple1: second exponent_tuple to adjust
         >>> v0 = (1, 0, -1)
         >>> v1 = (1,)
         >>> v0_adjusted, v1_adjusted = JustIntonationPitch._adjust_exponent_lengths(v0, v1)
@@ -185,12 +185,12 @@ class JustIntonationPitch(parameters.abc.Pitch):
         (1, 0, 0)
         """
 
-        length0 = len(exponents0)
-        length1 = len(exponents1)
+        length0 = len(exponent_tuple0)
+        length1 = len(exponent_tuple1)
         if length0 > length1:
-            return exponents0, exponents1 + (0,) * (length0 - length1)
+            return exponent_tuple0, exponent_tuple1 + (0,) * (length0 - length1)
         else:
-            return exponents0 + (0,) * (length1 - length0), exponents1
+            return exponent_tuple0 + (0,) * (length1 - length0), exponent_tuple1
 
     @staticmethod
     def _adjust_ratio(ratio: fractions.Fraction, border: int) -> fractions.Fraction:
@@ -245,33 +245,33 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return float_
 
     @staticmethod
-    def _adjust_exponents(exponents: tuple, primes: tuple, border: int) -> tuple:
-        r"""Adjust a exponents and its primes depending on the border.
+    def _adjust_exponent_tuple(exponent_tuple: tuple, primes: tuple, border: int) -> tuple:
+        r"""Adjust a exponent_tuple and its primes depending on the border.
 
         Arguments:
-            * exponents: The exponents, which shall be adjusted
+            * exponent_tuple: The exponent_tuple, which shall be adjusted
             * primes: Its corresponding primes
             * border
-        >>> exponents0 = (1,)
+        >>> exponent_tuple0 = (1,)
         >>> primes0 = (3,)
         >>> border = 2
-        >>> JustIntonationPitch._adjust_exponents(exponents0, primes0, border)
+        >>> JustIntonationPitch._adjust_exponent_tuple(exponent_tuple0, primes0, border)
         ((-1, 1), (2, 3))
 
         """  # TODO(DOCSTRING) Make proper description what actually happens
 
-        if exponents:
+        if exponent_tuple:
             if border > 1:
                 multiplied = functools.reduce(
-                    operator.mul, (p ** e for p, e in zip(primes, exponents))
+                    operator.mul, (p ** e for p, e in zip(primes, exponent_tuple))
                 )
                 res = math.log(border / multiplied, border)
                 if res < 0:
                     res -= 1
                 res = int(res)
                 primes = (border,) + primes
-                exponents = (res,) + exponents
-            return exponents, primes
+                exponent_tuple = (res,) + exponent_tuple
+            return exponent_tuple, primes
         return (1,), (1,)
 
     @staticmethod
@@ -302,27 +302,27 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return iterable
 
     @staticmethod
-    def _exponents_to_pair(exponents: tuple, primes: tuple) -> tuple:
+    def _exponent_tuple_to_pair(exponent_tuple: tuple, primes: tuple) -> tuple:
         r"""Transform a JustIntonationPitch to a (numerator, denominator) - pair.
 
         Arguments are:
-            * JustIntonationPitch -> The exponents of prime numbers
+            * JustIntonationPitch -> The exponent_tuple of prime numbers
             * primes -> the referring prime numbers
         >>> myJustIntonationPitch0 = (1, 0, -1)
         >>> myJustIntonationPitch1 = (0, 2, 0)
         >>> myVal0 = (2, 3, 5)
         >>> myVal1 = (3, 5, 7)
-        >>> JustIntonationPitch._exponents_to_pair(myJustIntonationPitch0, myVal0)
+        >>> JustIntonationPitch._exponent_tuple_to_pair(myJustIntonationPitch0, myVal0)
         (2, 5)
-        >>> JustIntonationPitch._exponents_to_pair(myJustIntonationPitch0, myVal1)
+        >>> JustIntonationPitch._exponent_tuple_to_pair(myJustIntonationPitch0, myVal1)
         (3, 7)
-        >>> JustIntonationPitch._exponents_to_pair(myJustIntonationPitch1, myVal1)
+        >>> JustIntonationPitch._exponent_tuple_to_pair(myJustIntonationPitch1, myVal1)
         (25, 1)
         """
 
         numerator = 1
         denominator = 1
-        for number, exponent in zip(primes, exponents):
+        for number, exponent in zip(primes, exponent_tuple):
             if exponent > 0:
                 numerator *= pow(number, exponent)
             elif exponent < 0:
@@ -330,49 +330,49 @@ class JustIntonationPitch(parameters.abc.Pitch):
         return numerator, denominator
 
     @staticmethod
-    def _exponents_to_ratio(exponents: tuple, primes: tuple) -> fractions.Fraction:
+    def _exponent_tuple_to_ratio(exponent_tuple: tuple, primes: tuple) -> fractions.Fraction:
         r"""Transform a JustIntonationPitch to a fractions.Fraction - Object
 
         (if installed to a quicktions.fractions.Fraction - Object,
         otherwise to a fractions.fractions.Fraction - Object).
 
         Arguments are:
-            * JustIntonationPitch -> The exponents of prime numbers
+            * JustIntonationPitch -> The exponent_tuple of prime numbers
             * primes -> the referring prime numbers for the underlying
-                      ._exponents - Argument (see JustIntonationPitch._exponents).
+                      ._exponent_tuple - Argument (see JustIntonationPitch._exponent_tuple).
         >>> myJustIntonationPitch0 = (1, 0, -1)
         >>> myPrimes= (2, 3, 5)
-        >>> JustIntonationPitch._exponents_to_ratio(myJustIntonationPitch0, myPrimes)
+        >>> JustIntonationPitch._exponent_tuple_to_ratio(myJustIntonationPitch0, myPrimes)
         2/5
         """
 
-        numerator, denominator = JustIntonationPitch._exponents_to_pair(
-            exponents, primes
+        numerator, denominator = JustIntonationPitch._exponent_tuple_to_pair(
+            exponent_tuple, primes
         )
         return JustIntonationPitch._adjust_ratio(
             fractions.Fraction(numerator, denominator), 1
         )
 
     @staticmethod
-    def _exponents_to_float(exponents: tuple, primes: tuple) -> float:
+    def _exponent_tuple_to_float(exponent_tuple: tuple, primes: tuple) -> float:
         r"""Transform a JustIntonationPitch to a float.
 
         Arguments are:
-            * JustIntonationPitch -> The exponents of prime numbers
+            * JustIntonationPitch -> The exponent_tuple of prime numbers
             * primes -> the referring prime numbers for the underlying
-                      ._exponents - Argument (see JustIntonationPitch._exponents).
+                      ._exponent_tuple - Argument (see JustIntonationPitch._exponent_tuple).
             * primes-shift -> how many prime numbers shall be skipped
                             (see JustIntonationPitch.primes_shift)
 
         >>> myJustIntonationPitch0 = (1, 0, -1)
         >>> myJustIntonationPitch1 = (0, 2, 0)
         >>> myPrimes = (2, 3, 5)
-        >>> JustIntonationPitch._exponents_to_float(myJustIntonationPitch0, myPrimes)
+        >>> JustIntonationPitch._exponent_tuple_to_float(myJustIntonationPitch0, myPrimes)
         0.4
         """
 
-        numerator, denominator = JustIntonationPitch._exponents_to_pair(
-            exponents, primes
+        numerator, denominator = JustIntonationPitch._exponent_tuple_to_pair(
+            exponent_tuple, primes
         )
         try:
             return numerator / denominator
@@ -380,8 +380,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
             return numerator // denominator
 
     @staticmethod
-    def _ratio_to_exponents(ratio: fractions.Fraction) -> tuple:
-        r"""Transform a fractions.Fraction - Object to a vector of exponents.
+    def _ratio_to_exponent_tuple(ratio: fractions.Fraction) -> tuple:
+        r"""Transform a fractions.Fraction - Object to a vector of exponent_tuple.
 
         :param ratio: The fractions.Fraction, which shall be transformed
 
@@ -392,7 +392,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         >>> except ImportError:
         >>>     from fractions import fractions.Fraction
         >>> myRatio0 = fractions.Fraction(3, 2)
-        >>> JustIntonationPitch._ratio_to_exponents(myRatio0)
+        >>> JustIntonationPitch._ratio_to_exponent_tuple(myRatio0)
         (-1, 1)
         """
 
@@ -403,17 +403,17 @@ class JustIntonationPitch(parameters.abc.Pitch):
         factorised_den = prime_factors.factorise(ratio.denominator)
 
         biggest_prime = max(factorised_num + factorised_den)
-        exponents = [0] * primesieve.count_primes(biggest_prime)
+        exponent_tuple = [0] * primesieve.count_primes(biggest_prime)
 
         for prime, fac in factorised_numerator:
             if prime > 1:
-                exponents[primesieve.count_primes(prime) - 1] += fac
+                exponent_tuple[primesieve.count_primes(prime) - 1] += fac
 
         for prime, fac in factorised_denominator:
             if prime > 1:
-                exponents[primesieve.count_primes(prime) - 1] -= fac
+                exponent_tuple[primesieve.count_primes(prime) - 1] -= fac
 
-        return tuple(exponents)
+        return tuple(exponent_tuple)
 
     @staticmethod
     def _indigestibility(num: int) -> float:
@@ -467,40 +467,40 @@ class JustIntonationPitch(parameters.abc.Pitch):
     #                            private methods                             #
     # ###################################################################### #
 
-    def _translate_ratio_or_fractions_argument_to_exponents(
+    def _translate_ratio_or_fractions_argument_to_exponent_tuple(
         self,
-        ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
+        ratio_or_exponent_tuple: typing.Union[str, fractions.Fraction, typing.Iterable[int]],
     ) -> tuple[int, ...]:
-        if isinstance(ratio_or_exponents, str):
-            numerator, denominator = ratio_or_exponents.split("/")
-            exponents = self._ratio_to_exponents(
+        if isinstance(ratio_or_exponent_tuple, str):
+            numerator, denominator = ratio_or_exponent_tuple.split("/")
+            exponent_tuple = self._ratio_to_exponent_tuple(
                 fractions.Fraction(int(numerator), int(denominator))
             )
-        elif isinstance(ratio_or_exponents, typing.Iterable):
-            exponents = tuple(ratio_or_exponents)
-        elif hasattr(ratio_or_exponents, "numerator") and hasattr(
-            ratio_or_exponents, "denominator"
+        elif isinstance(ratio_or_exponent_tuple, typing.Iterable):
+            exponent_tuple = tuple(ratio_or_exponent_tuple)
+        elif hasattr(ratio_or_exponent_tuple, "numerator") and hasattr(
+            ratio_or_exponent_tuple, "denominator"
         ):
-            exponents = self._ratio_to_exponents(
+            exponent_tuple = self._ratio_to_exponent_tuple(
                 fractions.Fraction(
-                    ratio_or_exponents.numerator, ratio_or_exponents.denominator
+                    ratio_or_exponent_tuple.numerator, ratio_or_exponent_tuple.denominator
                 )
             )
         else:
-            message = "Unknown type '{}' of object '{}' for 'ratio_or_exponents' argument.".format(
-                type(ratio_or_exponents), ratio_or_exponents
+            message = "Unknown type '{}' of object '{}' for 'ratio_or_exponent_tuple' argument.".format(
+                type(ratio_or_exponent_tuple), ratio_or_exponent_tuple
             )
             raise NotImplementedError(message)
-        return exponents
+        return exponent_tuple
 
     @decorators.add_copy_option
     def _math(  # type: ignore
         self, other: JustIntonationPitch, operation: typing.Callable
     ) -> JustIntonationPitch:
-        exponents0, exponents1 = JustIntonationPitch._adjust_exponent_lengths(
-            self.exponents, other.exponents
+        exponent_tuple0, exponent_tuple1 = JustIntonationPitch._adjust_exponent_lengths(
+            self.exponent_tuple, other.exponent_tuple
         )
-        self.exponents = tuple(operation(x, y) for x, y in zip(exponents0, exponents1))
+        self.exponent_tuple = tuple(operation(x, y) for x, y in zip(exponent_tuple0, exponent_tuple1))
 
     # ###################################################################### #
     #                            magic methods                               #
@@ -523,7 +523,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         1.5
         """
 
-        return self._exponents_to_float(self.exponents, self.primes)
+        return self._exponent_tuple_to_float(self.exponent_tuple, self.prime_tuple)
 
     def __repr__(self) -> str:
         ratio = str(self.ratio)
@@ -541,39 +541,39 @@ class JustIntonationPitch(parameters.abc.Pitch):
         if self.numerator > self.denominator:
             return copy.deepcopy(self)
         else:
-            exponents = tuple(-v for v in iter(self.exponents))
-            return type(self)(exponents, self.concert_pitch)
+            exponent_tuple = tuple(-v for v in iter(self.exponent_tuple))
+            return type(self)(exponent_tuple, self.concert_pitch)
 
     # ###################################################################### #
     #                            properties                                  #
     # ###################################################################### #
 
     @property
-    def exponents(self) -> tuple:
-        return self._exponents
+    def exponent_tuple(self) -> tuple:
+        return self._exponent_tuple
 
-    @exponents.setter
-    def exponents(
+    @exponent_tuple.setter
+    def exponent_tuple(
         self,
-        exponents: typing.Iterable[int],
+        exponent_tuple: typing.Iterable[int],
     ) -> None:
-        self._exponents = self._discard_nulls(exponents)
+        self._exponent_tuple = self._discard_nulls(exponent_tuple)
 
     @property
-    def primes(self) -> tuple:
+    def prime_tuple(self) -> tuple:
         r"""Return ascending list of primes, until the highest contained Prime.
 
         **Example:**
 
         >>> jip0 = JustIntonationPitch((0, 1, 2))
-        >>> jip0.exponents
+        >>> jip0.exponent_tuple
         (2, 3, 5)
         >>> jip1 = JustIntonationPitch((0, -1, 0, 0, 1), 1)
-        >>> jip1.exponents
+        >>> jip1.exponent_tuple
         (2, 3, 5, 7, 11)
         """
 
-        return tuple(primesieve_numpy.n_primes(len(self.exponents)))
+        return tuple(primesieve_numpy.n_primes(len(self.exponent_tuple)))
 
     @property
     def occupied_primes(self) -> tuple:
@@ -581,7 +581,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
         return tuple(
             prime
-            for prime, exponent in zip(self.primes, self.exponents)
+            for prime, exponent in zip(self.prime_tuple, self.exponent_tuple)
             if exponent != 0
         )
 
@@ -614,7 +614,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         fractions.Fraction(3, 2)
         """
 
-        return JustIntonationPitch._exponents_to_ratio(self.exponents, self.primes)
+        return JustIntonationPitch._exponent_tuple_to_ratio(self.exponent_tuple, self.prime_tuple)
 
     @property
     def numerator(self) -> int:
@@ -628,7 +628,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         """
 
         numerator = 1
-        for number, exponent in zip(self.primes, self.exponents):
+        for number, exponent in zip(self.prime_tuple, self.exponent_tuple):
             if exponent > 0:
                 numerator *= pow(number, exponent)
         return numerator
@@ -645,7 +645,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         """
 
         denominator = 1
-        for number, exponent in zip(self.primes, self.exponents):
+        for number, exponent in zip(self.prime_tuple, self.exponent_tuple):
             if exponent < 0:
                 denominator *= pow(number, -exponent)
         return denominator
@@ -668,23 +668,23 @@ class JustIntonationPitch(parameters.abc.Pitch):
         (2, 3, 7)
         """
 
-        exponents = self.exponents
-        primes = self.primes
-        exponents_adjusted, primes_adjusted = type(self)._adjust_exponents(
-            exponents, primes, 1
+        exponent_tuple = self.exponent_tuple
+        prime_tuple = self.prime_tuple
+        exponent_tuple_adjusted, primes_adjusted = type(self)._adjust_exponent_tuple(
+            exponent_tuple, prime_tuple, 1
         )
-        decomposed = ([p] * abs(e) for p, e in zip(primes_adjusted, exponents_adjusted))
+        decomposed = ([p] * abs(e) for p, e in zip(primes_adjusted, exponent_tuple_adjusted))
         return tuple(functools.reduce(operator.add, decomposed))
 
     @property
     def factorised_numerator_and_denominator(self) -> tuple:
-        exponents = self.exponents
-        primes = self.primes
-        exponents_adjusted, primes_adjusted = type(self)._adjust_exponents(
-            exponents, primes, 1
+        exponent_tuple = self.exponent_tuple
+        prime_tuple = self.prime_tuple
+        exponent_tuple_adjusted, prime_tuple_adjusted = type(self)._adjust_exponent_tuple(
+            exponent_tuple, prime_tuple, 1
         )
         numerator_denominator: list[list[list[int]]] = [[[]], [[]]]
-        for prime, exponent in zip(primes_adjusted, exponents_adjusted):
+        for prime, exponent in zip(prime_tuple_adjusted, exponent_tuple_adjusted):
             if exponent > 0:
                 idx = 0
             else:
@@ -711,13 +711,13 @@ class JustIntonationPitch(parameters.abc.Pitch):
     ) -> parameters.commas.CommaCompound:
         """Commas of JustIntonationPitch."""
 
-        prime_to_exponent = {
+        prime_to_exponent_dict = {
             prime: exponent
-            for prime, exponent in zip(self.primes, self.exponents)
+            for prime, exponent in zip(self.prime_tuple, self.exponent_tuple)
             if exponent != 0 and prime not in (2, 3)
         }
         return parameters.commas.CommaCompound(
-            prime_to_exponent, parameters.pitches_constants.DEFAULT_PRIME_TO_COMMA
+            prime_to_exponent_dict, parameters.pitches_constants.DEFAULT_PRIME_TO_COMMA_DICT
         )
 
     @property
@@ -742,8 +742,8 @@ class JustIntonationPitch(parameters.abc.Pitch):
             ).cents
         )
         closest_pythagorean_interval = self.closest_pythagorean_interval
-        if len(closest_pythagorean_interval.exponents) >= 2:
-            pythagorean_deviation = self.closest_pythagorean_interval.exponents[1] * (
+        if len(closest_pythagorean_interval.exponent_tuple) >= 2:
+            pythagorean_deviation = self.closest_pythagorean_interval.exponent_tuple[1] * (
                 JustIntonationPitch("3/2").cents - 700
             )
         else:
@@ -790,13 +790,13 @@ class JustIntonationPitch(parameters.abc.Pitch):
         True
         """
 
-        if self.exponents:
-            maxima = max(self.exponents)
-            minima = min(self.exponents)
+        if self.exponent_tuple:
+            maxima = max(self.exponent_tuple)
+            minima = min(self.exponent_tuple)
             test = (
                 maxima <= 0 and minima < 0,
                 minima < 0
-                and self.exponents.index(minima) > self.exponents.index(maxima),
+                and self.exponent_tuple.index(minima) > self.exponent_tuple.index(maxima),
             )
             if any(test):
                 return False
@@ -988,10 +988,10 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
     @property
     def level(self) -> int:
-        if self.primes:
+        if self.prime_tuple:
             return abs(
                 functools.reduce(
-                    math.gcd, tuple(filter(lambda x: x != 0, self.exponents))  # type: ignore
+                    math.gcd, tuple(filter(lambda x: x != 0, self.exponent_tuple))  # type: ignore
                 )
             )
         else:
@@ -1013,14 +1013,14 @@ class JustIntonationPitch(parameters.abc.Pitch):
         diatonic_pitch_name, accidentals = reference[0], reference[1:]
         n_accidentals_in_reference = JustIntonationPitch._count_accidentals(accidentals)
         position_of_diatonic_pitch_in_cycle_of_fifths = (
-            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS.index(
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTH_TUPLE.index(
                 diatonic_pitch_name
             )
         )
 
         closest_pythagorean_interval = self.closest_pythagorean_interval
         try:
-            n_fifths = closest_pythagorean_interval.exponents[1]
+            n_fifths = closest_pythagorean_interval.exponent_tuple[1]
         # for 1/1
         except IndexError:
             n_fifths = 0
@@ -1032,7 +1032,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
             + n_steps_in_diatonic_pitch_name
         ) % 7
         new_diatonic_pitch = (
-            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS[
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_CYCLE_OF_FIFTH_TUPLE[
                 nth_diatonic_pitch
             ]
         )
@@ -1076,7 +1076,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
             added = type(self)(fractions.Fraction(1, factor))
         else:
             added = type(self)(fractions.Fraction(factor, 1))
-        self.exponents = (normalized_just_intonation_pitch + added).exponents  # type: ignore
+        self.exponent_tuple = (normalized_just_intonation_pitch + added).exponent_tuple  # type: ignore
 
     @decorators.add_copy_option
     def move_to_closest_register(  # type: ignore
@@ -1096,7 +1096,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
                 best = (candidate, difference)
 
         if best:
-            self.exponents = best[0].exponents
+            self.exponent_tuple = best[0].exponent_tuple
         else:
             raise NotImplementedError(
                 f"Couldn't find closest register of '{self}' to '{reference}'."
@@ -1120,7 +1120,7 @@ class JustIntonationPitch(parameters.abc.Pitch):
         """
         ratio = self.ratio
         adjusted = type(self)._adjust_ratio(ratio, prime)
-        self.exponents = self._translate_ratio_or_fractions_argument_to_exponents(
+        self.exponent_tuple = self._translate_ratio_or_fractions_argument_to_exponent_tuple(
             adjusted
         )
 
@@ -1144,11 +1144,11 @@ class JustIntonationPitch(parameters.abc.Pitch):
         """
 
         if axis is None:
-            exponents = tuple(map(lambda x: -x, self.exponents))
+            exponent_tuple = tuple(map(lambda x: -x, self.exponent_tuple))
         else:
             distance = self - axis
-            exponents = (axis - distance).exponents
-        self.exponents = exponents
+            exponent_tuple = (axis - distance).exponent_tuple
+        self.exponent_tuple = exponent_tuple
 
     @decorators.add_copy_option
     def add(self, other: JustIntonationPitch) -> JustIntonationPitch:  # type: ignore
@@ -1195,9 +1195,9 @@ class JustIntonationPitch(parameters.abc.Pitch):
 
         :param other: The :class:`JustIntonationPitch` to build the
             intersection with.
-        :param strict: If set to ``True`` only exponents are included
+        :param strict: If set to ``True`` only exponent_tuple are included
             into the intersection if their value is equal. If set to
-            ``False`` the method will also include exponents if both
+            ``False`` the method will also include exponent_tuple if both
             pitches own them on the same axis but with different values
             (the method will take the smaller exponent).
         :type strict: bool
@@ -1222,30 +1222,30 @@ class JustIntonationPitch(parameters.abc.Pitch):
         def is_negative(number: int):
             return number < 0
 
-        def intersect_exponents(exponents: tuple[int, int]) -> int:
+        def intersect_exponent_tuple(exponent_tuple: tuple[int, int]) -> int:
             intersected_exponent = 0
 
             if strict:
-                test_for_valid_strict_mode = exponents[0] == exponents[1]
+                test_for_valid_strict_mode = exponent_tuple[0] == exponent_tuple[1]
             else:
                 test_for_valid_strict_mode = True
 
-            if 0 not in exponents and test_for_valid_strict_mode:
-                are_negative = (is_negative(exponent) for exponent in exponents)
+            if 0 not in exponent_tuple and test_for_valid_strict_mode:
+                are_negative = (is_negative(exponent) for exponent in exponent_tuple)
                 all_are_negative = all(are_negative)
                 all_are_positive = all(not boolean for boolean in are_negative)
 
                 if all_are_negative:
-                    intersected_exponent = max(exponents)
+                    intersected_exponent = max(exponent_tuple)
                 elif all_are_positive:
-                    intersected_exponent = min(exponents)
+                    intersected_exponent = min(exponent_tuple)
 
             return intersected_exponent
 
-        intersected_exponents = tuple(
-            map(intersect_exponents, zip(self.exponents, other.exponents))
+        intersected_exponent_tuple = tuple(
+            map(intersect_exponent_tuple, zip(self.exponent_tuple, other.exponent_tuple))
         )
-        self.exponents = intersected_exponents
+        self.exponent_tuple = intersected_exponent_tuple
 
 
 class Partial(object):
@@ -1290,25 +1290,25 @@ class CommonHarmonic(JustIntonationPitch):
 
     :param partials: Tuple which contains partial numbers.
     :type partials: tuple[Partial, ...]
-    :param ratio_or_exponents: see the documentation of :class:`JustIntonationPitch`
-    :type ratio_or_exponents: typing.Union[str, fractions.Fraction, typing.Iterable[int]]
+    :param ratio_or_exponent_tuple: see the documentation of :class:`JustIntonationPitch`
+    :type ratio_or_exponent_tuple: typing.Union[str, fractions.Fraction, typing.Iterable[int]]
     :param concert_pitch: see the documentation of :class:`JustIntonationPitch`
     :type concert_pitch: typing.Union[constants.Real, parameters.abc.Pitch]
     """
 
     def __init__(
         self,
-        partials: tuple[Partial, ...],
-        ratio_or_exponents: typing.Union[
+        partial_tuple: tuple[Partial, ...],
+        ratio_or_exponent_tuple: typing.Union[
             str, fractions.Fraction, typing.Iterable[int]
         ] = "1/1",
         concert_pitch: ConcertPitch = None,
     ):
-        super().__init__(ratio_or_exponents, concert_pitch)
-        self.partials = partials
+        super().__init__(ratio_or_exponent_tuple, concert_pitch)
+        self.partial_tuple = partial_tuple
 
     def __repr__(self) -> str:
-        return f"CommonHarmonic({self.ratio}, {self.partials})"
+        return f"CommonHarmonic({self.ratio}, {self.partial_tuple})"
 
 
 class EqualDividedOctavePitch(parameters.abc.Pitch):
@@ -1485,7 +1485,7 @@ class WesternPitch(EqualDividedOctavePitch):
         It uses an equal divided octave system in 12 chromatic steps. Accidentals are
         indicated by (s = sharp) and (f = flat). Further microtonal accidentals are
         supported (see
-        :const:`mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION`
+        :const:`mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT`
         for all supported accidentals).
     :param octave: The octave of the new :class:`WesternPitch` object. Indications for the
         specific octave follow the MIDI Standard where 4 is defined as one line.
@@ -1566,10 +1566,10 @@ class WesternPitch(EqualDividedOctavePitch):
         """Helper function to translate an accidental to its pitch class modification.
 
         Raises an error if the accidental hasn't been defined yet in
-        mutwo.parameters.parameters.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.
+        mutwo.parameters.parameters.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT.
         """
         try:
-            return parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION[
+            return parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT[
                 accidental
             ]
         except KeyError:
@@ -1594,7 +1594,7 @@ class WesternPitch(EqualDividedOctavePitch):
             pitch_class_name[1:],
         )
         diatonic_pitch_class = (
-            parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+            parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT[
                 diatonic_pitch_class_name
             ]
         )
@@ -1612,11 +1612,11 @@ class WesternPitch(EqualDividedOctavePitch):
         closest_pitch_class_modification: fractions.Fraction = tools.find_closest_item(
             difference_to_closest_diatonic_pitch,
             tuple(
-                parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME.keys()
+                parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT.keys()
             ),
         )
         closest_accidental = (
-            parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+            parameters.pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
                 closest_pitch_class_modification
             ]
         )
@@ -1632,7 +1632,7 @@ class WesternPitch(EqualDividedOctavePitch):
 
         The returned pitch class name uses a Western nomenclature of English
         diatonic note names. Accidental names are defined in
-        mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.
+        mutwo.parameters.pitches_constants.ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT.
         For floating point numbers the closest accidental will be chosen.
         """
 
@@ -1643,19 +1643,19 @@ class WesternPitch(EqualDividedOctavePitch):
         if previous_pitch_class_name and previous_pitch_class and pitch_class != 0:
             previous_diatonic_pitch_class_name = previous_pitch_class_name[0]
             previous_diatonic_pitch_class_index = (
-                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                     previous_diatonic_pitch_class_name
                 )
             )
             previous_diatonic_pitch_class = (
-                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT[
                     previous_diatonic_pitch_class_name
                 ]
             )
             n_pitch_classes_difference = pitch_class - previous_pitch_class
             n_diatonic_pitches_to_move = bisect.bisect_left(
                 tuple(
-                    parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
+                    parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT.values()
                 ),
                 n_pitch_classes_difference % 12,
             )
@@ -1664,15 +1664,15 @@ class WesternPitch(EqualDividedOctavePitch):
             )
             new_diatonic_pitch_class_index = (
                 absolute_new_diatonic_pitch_class_index
-                % len(parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES)
+                % len(parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE)
             )
             diatonic_pitch = (
-                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES[
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE[
                     new_diatonic_pitch_class_index
                 ]
             )
             diatonic_pitch_class = (
-                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT[
                     diatonic_pitch
                 ]
             )
@@ -1691,12 +1691,12 @@ class WesternPitch(EqualDividedOctavePitch):
             accidental_adjustments += previous_accidental_adjustments
 
             n_octaves_difference = absolute_new_diatonic_pitch_class_index // len(
-                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES
+                parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE
             )
 
         else:
             diatonic_pitch_classes = tuple(
-                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.values()
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT.values()
             )
             closest_diatonic_pitch_class_index = tools.find_closest_index(
                 pitch_class, diatonic_pitch_classes
@@ -1705,7 +1705,7 @@ class WesternPitch(EqualDividedOctavePitch):
                 closest_diatonic_pitch_class_index
             ]
             diatonic_pitch = tuple(
-                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys()
+                parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT.keys()
             )[closest_diatonic_pitch_class_index]
 
             accidental_adjustments = pitch_class - diatonic_pitch_class

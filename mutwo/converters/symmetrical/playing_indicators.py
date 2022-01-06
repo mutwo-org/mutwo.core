@@ -123,14 +123,14 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         collection can be extracted), mutwo will build a playing indicator collection
         from :const:`~mutwo.events.music_constants.DEFAULT_PLAYING_INDICATORS_COLLECTION_CLASS`.
     :type simple_event_to_playing_indicator_collection: typing.Callable[[events.basic.SimpleEvent], parameters.playing_indicators.PlayingIndicatorCollection,], optional
-    :param set_pitches_for_simple_event: Function which assigns
+    :param set_pitch_list_for_simple_event: Function which assigns
         a list of :class:`~mutwo.parameters.abc.Pitch` objects to a
         :class:`~mutwo.events.basic.SimpleEvent`. By default the
         function assigns the passed pitches to the
         :attr:`~mutwo.events.music.NoteLike.pitch_list` attribute
         (because by default :class:`mutwo.events.music.NoteLike` objects
         are expected).
-    :type set_pitches_for_simple_event: typing.Callable[[events.basic.SimpleEvent, list[parameters.abc.Pitch]], None]
+    :type set_pitch_list_for_simple_event: typing.Callable[[events.basic.SimpleEvent, list[parameters.abc.Pitch]], None]
     """
 
     def __init__(
@@ -143,7 +143,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
             [events.basic.SimpleEvent],
             parameters.playing_indicators.PlayingIndicatorCollection,
         ] = lambda simple_event: simple_event.playing_indicator_collection,  # type: ignore
-        set_pitches_for_simple_event: typing.Callable[
+        set_pitch_list_for_simple_event: typing.Callable[
             [events.basic.SimpleEvent, list[parameters.abc.Pitch]], None
         ] = lambda simple_event, pitch_list: simple_event.set_parameter(  # type: ignore
             "pitch_list", pitch_list, set_unassigned_parameter=True
@@ -154,7 +154,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
         )
         self._duration_for_each_attack = duration_for_each_attack
         self._simple_event_to_pitches = simple_event_to_pitches
-        self._set_pitches_for_simple_event = set_pitches_for_simple_event
+        self._set_pitch_list_for_simple_event = set_pitch_list_for_simple_event
 
     def _apply_arpeggio(
         self,
@@ -177,7 +177,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
 
         # apply pitches on events
         for nth_event, pitch in enumerate(pitch_list):
-            self._set_pitches_for_simple_event(converted_event[nth_event], [pitch])
+            self._set_pitch_list_for_simple_event(converted_event[nth_event], [pitch])
 
         # set correct duration for each event
         n_events = len(converted_event)
@@ -468,7 +468,7 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        _: parameters.abc.DurationType,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
         converted_event = [event_to_convert]

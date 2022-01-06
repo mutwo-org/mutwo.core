@@ -37,34 +37,34 @@ class CommaCompound(typing.Iterable[Comma]):
 
     def __init__(
         self,
-        prime_to_exponent: dict[int, int],
-        prime_to_comma: typing.Optional[dict[int, Comma]],
+        prime_to_exponent_dict: dict[int, int],
+        prime_to_comma_dict: typing.Optional[dict[int, Comma]],
     ):
-        # TODO(make sure all primes in 'prime_to_exponent' are also in
-        # 'prime_to_comma')
+        # TODO(make sure all primes in 'prime_to_exponent_dict' are also in
+        # 'prime_to_comma_dict')
 
-        self._prime_to_exponent = prime_to_exponent
-        self._prime_to_comma = prime_to_comma
+        self._prime_to_exponent_dict = prime_to_exponent_dict
+        self._prime_to_comma_dict = prime_to_comma_dict
 
     def __repr__(self) -> str:
-        return "{}({})".format(type(self).__name__, self._prime_to_exponent)
+        return "{}({})".format(type(self).__name__, self._prime_to_exponent_dict)
 
     def __len__(self) -> int:
-        return sum((abs(exponent) for exponent in self._prime_to_exponent.values()))
+        return sum((abs(exponent) for exponent in self._prime_to_exponent_dict.values()))
 
     def __iter__(self):
         return (
-            self._prime_to_comma[prime].ratio ** exponent
-            for prime, exponent in self._prime_to_exponent.items()
+            self._prime_to_comma_dict[prime].ratio ** exponent
+            for prime, exponent in self._prime_to_exponent_dict.items()
         )
 
     @property
-    def prime_to_exponent(self) -> dict[int, int]:
-        return dict(self._prime_to_exponent)
+    def prime_to_exponent_dict(self) -> dict[int, int]:
+        return dict(self._prime_to_exponent_dict)
 
     @property
     def ratio(self) -> fractions.Fraction:
-        if self.prime_to_exponent:
+        if self.prime_to_exponent_dict:
             return functools.reduce(operator.mul, iter(self))
         else:
             return fractions.Fraction(1, 1)

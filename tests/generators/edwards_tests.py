@@ -15,7 +15,7 @@ class EdwardsTest(unittest.TestCase):
         ):
             for level in range(9):
                 level += 1
-                states = edwards_constants.ACTIVITY_LEVELS[level][start_at]
+                states = edwards_constants.ACTIVITY_LEVEL_TUPLE[level][start_at]
                 for nth_iteration in range(10):
                     self.assertEqual(bool(states[nth_iteration]), activity_level(level))
 

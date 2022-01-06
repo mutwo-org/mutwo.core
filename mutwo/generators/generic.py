@@ -14,10 +14,10 @@ __all__ = ("DynamicChoice",)
 class DynamicChoice(object):
     """Weighted random choices with dynamically changing weights.
 
-    :param values: The items to choose from.
-    :type values: typing.Sequence[typing.Any]
-    :param curves: The dynamically changing weight for each value.
-    :type curves: typing.Sequence[expenvelope.Envelope]
+    :param value_sequence: The items to choose from.
+    :type value_sequence: typing.Sequence[typing.Any]
+    :param curve_sequence: The dynamically changing weight for each value.
+    :type curve_sequence: typing.Sequence[expenvelope.Envelope]
     :param random_seed: The seed which shall be set at class initialisation.
     :type random_seed: int
 
@@ -43,22 +43,22 @@ class DynamicChoice(object):
 
     def __init__(
         self,
-        values: typing.Sequence[typing.Any],
-        curves: typing.Sequence[expenvelope.Envelope],
+        value_sequence: typing.Sequence[typing.Any],
+        curve_sequence: typing.Sequence[expenvelope.Envelope],
         random_seed: int = 100,
     ):
 
-        assert len(values) == len(curves)
+        assert len(value_sequence) == len(curve_sequence)
 
-        self._values = values
-        self._curves = curves
+        self._value_sequence = value_sequence
+        self._curve_sequence = curve_sequence
         self._random = np.random.default_rng(random_seed)
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._values})"
+        return f"{type(self).__name__}({self._value_sequence})"
 
     def items(self) -> tuple[tuple[typing.Any, expenvelope.Envelope]]:
-        return tuple(zip(self._values, self._curves))
+        return tuple(zip(self._value_sequence, self._curve_sequence))
 
     def gamble_at(self, time: numbers.Real) -> typing.Any:
         """Return value at requested time.
@@ -67,7 +67,7 @@ class DynamicChoice(object):
         :type time: numbers.Real
         :return: The chosen value.
         """
-        weights = [curve.value_at(time) for curve in self._curves]
+        weight_list = [curve.value_at(time) for curve in self._curve_sequence]
         return self._random.choice(
-            self._values, p=utilities.tools.scale_sequence_to_sum(weights, 1)
+            self._value_sequence, p=utilities.tools.scale_sequence_to_sum(weight_list, 1)
         )

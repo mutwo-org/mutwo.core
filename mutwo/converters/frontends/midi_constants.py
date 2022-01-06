@@ -10,8 +10,8 @@ import expenvelope  # type: ignore
 
 from mutwo import parameters
 
-DEFAULT_AVAILABLE_MIDI_CHANNELS = tuple(range(16))
-"""default value for ``available_midi_channels`` in `MidiFileConverter`"""
+DEFAULT_AVAILABLE_MIDI_CHANNEL_TUPLE = tuple(range(16))
+"""default value for ``available_midi_channel_tuple`` in `MidiFileConverter`"""
 
 DEFAULT_MAXIMUM_PITCH_BEND_DEVIATION_IN_CENTS = 200
 """default value for ``maximum_pitch_bend_deviation_in_cents`` in `MidiFileConverter`"""
@@ -34,7 +34,7 @@ DEFAULT_TEMPO_ENVELOPE: expenvelope.Envelope = expenvelope.Envelope.from_levels_
 DEFAULT_TICKS_PER_BEAT = 480
 """default value for ``ticks_per_beat`` in `MidiFileConverter`"""
 
-ALLOWED_MIDI_CHANNELS = tuple(range(16))
+ALLOWED_MIDI_CHANNEL_TUPLE = tuple(range(16))
 """midi channels that are allowed (following the standard
 midi file definition)."""
 

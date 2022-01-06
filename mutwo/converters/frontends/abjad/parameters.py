@@ -55,7 +55,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
 
     :param reference_pitch: The reference pitch (1/1). Should be a diatonic
         pitch name (see
-        :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES`)
+        :const:`~mutwo.parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE`)
         in English nomenclature. For any other reference pitch than 'c', Lilyponds
         midi rendering for pitches with the diatonic pitch 'c' will be slightly
         out of tune (because the first value of :arg:`global_scale`
@@ -64,7 +64,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
     :param prime_to_heji_accidental_name: Mapping of a prime number
         to a string which indicates the respective prime number in the resulting
         accidental name. See
-        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME`
+        :const:`~mutwo.converters.frontends.ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT`
         for the default mapping.
     :type prime_to_heji_accidental_name: dict[int, str], optional
     :param otonality_indicator: String which indicates that the
@@ -139,7 +139,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         # set default values
         if prime_to_heji_accidental_name is None:
             prime_to_heji_accidental_name = (
-                ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME
+                ekmelily_constants.DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT
             )
 
         if otonality_indicator is None:
@@ -164,7 +164,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         self._exponent_to_exponent_indicator = exponent_to_exponent_indicator
         self._tempered_pitch_indicator = tempered_pitch_indicator
         self._reference_index = (
-            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                 reference_pitch
             )
         )
@@ -177,7 +177,7 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
     ) -> int:
         octave = pitch_to_convert.octave + 4
         closest_pythagorean_pitch_index = (
-            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAMES.index(
+            parameters.pitches_constants.ASCENDING_DIATONIC_PITCH_NAME_TUPLE.index(
                 closest_pythagorean_pitch_name[0]
             )
         )
@@ -237,9 +237,9 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
         abjad_pitch_class: abjad.NamedPitchClass,
     ):
         # find additional commas
-        accidental_parts = [str(abjad_pitch_class.accidental)]
+        accidental_part_list = [str(abjad_pitch_class.accidental)]
         prime_to_exponent = (
-            pitch_to_convert.helmholtz_ellis_just_intonation_notation_commas.prime_to_exponent
+            pitch_to_convert.helmholtz_ellis_just_intonation_notation_commas.prime_to_exponent_dict
         )
         for prime in sorted(prime_to_exponent.keys()):
             exponent = prime_to_exponent[prime]
@@ -253,11 +253,11 @@ class MutwoPitchToHEJIAbjadPitchConverter(MutwoPitchToAbjadPitchConverter):
                 exponent_indicator = self._exponent_to_exponent_indicator(
                     abs(exponent) - 1
                 )
-                accidental_parts.append(
+                accidental_part_list.append(
                     f"{tonality}{heji_accidental_name}{exponent_indicator}"
                 )
 
-        accidental = self._HEJIAccidental("".join(accidental_parts))
+        accidental = self._HEJIAccidental("".join(accidental_part_list))
         return accidental
 
     def _convert_just_intonation_pitch(
@@ -351,8 +351,8 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     # ###################################################################### #
 
     @staticmethod
-    def _convert_tempo_points(
-        tempo_points: tuple[
+    def _convert_tempo_point_tuple(
+        tempo_point_tuple: tuple[
             typing.Union[constants.Real, parameters.tempos.TempoPoint], ...
         ]
     ) -> tuple[parameters.tempos.TempoPoint, ...]:
@@ -360,7 +360,7 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             tempo_point
             if isinstance(tempo_point, parameters.tempos.TempoPoint)
             else parameters.tempos.TempoPoint(float(tempo_point))
-            for tempo_point in tempo_points
+            for tempo_point in tempo_point_tuple
         )
 
     @staticmethod
@@ -422,12 +422,12 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
 
     @staticmethod
     def _shall_stop_dynamic_change_indication(
-        tempo_attachments: tuple[
+        tempo_attachment_tuple: tuple[
             tuple[constants.Real, attachments.Tempo], ...
         ]
     ) -> bool:
         stop_dynamic_change_indicaton = False
-        for _, previous_tempo_attachment in reversed(tempo_attachments):
+        for _, previous_tempo_attachment in reversed(tempo_attachment_tuple):
             # make sure the previous tempo point could have been written
             # down (longer duration than minimal duration)
             if previous_tempo_attachment.dynamic_change_indication is not None:
@@ -484,15 +484,15 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
         tempo_envelope_to_convert: expenvelope.Envelope,
         nth_tempo_point: int,
         tempo_point: parameters.tempos.TempoPoint,
-        tempo_points: tuple[parameters.tempos.TempoPoint, ...],
-        tempo_attachments: tuple[
+        tempo_point_tuple: tuple[parameters.tempos.TempoPoint, ...],
+        tempo_attachment_tuple: tuple[
             tuple[constants.Real, attachments.Tempo], ...
         ],
     ) -> attachments.Tempo:
         try:
             next_tempo_point: typing.Optional[
                 parameters.tempos.TempoPoint
-            ] = tempo_points[nth_tempo_point + 1]
+            ] = tempo_point_tuple[nth_tempo_point + 1]
         except IndexError:
             next_tempo_point = None
 
@@ -504,11 +504,11 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
             tempo_envelope_to_convert,
             nth_tempo_point,
             tempo_point,
-            tempo_points,
+            tempo_point_tuple,
         )
 
         stop_dynamic_change_indicaton = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._shall_stop_dynamic_change_indication(
-            tempo_attachments
+            tempo_attachment_tuple
         )
 
         (
@@ -541,20 +541,20 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
     def convert(
         self, tempo_envelope_to_convert: expenvelope.Envelope
     ) -> tuple[tuple[constants.Real, attachments.Tempo], ...]:
-        tempo_points = (
-            ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_points(
+        tempo_point_tuple = (
+            ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_point_tuple(
                 tempo_envelope_to_convert.levels
             )
         )
 
-        tempo_attachments: list[
+        tempo_attachment_list: list[
             tuple[constants.Real, attachments.Tempo]
         ] = []
         for nth_tempo_point, absolute_time, duration, tempo_point in zip(
-            range(len(tempo_points)),
+            range(len(tempo_point_tuple)),
             tools.accumulate_from_zero(tempo_envelope_to_convert.durations),
             tempo_envelope_to_convert.durations + (1,),
-            tempo_points,
+            tempo_point_tuple,
         ):
 
             if duration > 0:
@@ -562,9 +562,9 @@ class ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(
                     tempo_envelope_to_convert,
                     nth_tempo_point,
                     tempo_point,
-                    tempo_points,
-                    tuple(tempo_attachments),
+                    tempo_point_tuple,
+                    tuple(tempo_attachment_list),
                 )
-                tempo_attachments.append((absolute_time, tempo_attachment))
+                tempo_attachment_list.append((absolute_time, tempo_attachment))
 
-        return tuple(tempo_attachments)
+        return tuple(tempo_attachment_list)

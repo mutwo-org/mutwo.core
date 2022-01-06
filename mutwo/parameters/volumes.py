@@ -64,7 +64,7 @@ class WesternVolume(parameters.abc.Volume):
 
     :param name: Dynamic indicator in traditional Western nomenclature
         ('f', 'pp', 'mf', 'sfz', etc.). For a list of all supported
-        indicators, see :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR`.
+        indicators, see :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR_TUPLE`.
     :type name: str
     :param minimum_decibel: The decibel value which is equal to the lowest dynamic indicator
         (ppppp).
@@ -97,10 +97,10 @@ class WesternVolume(parameters.abc.Volume):
             )
 
         self.name = name
-        self._standard_dynamic_indicator_to_decibel_mapping = WesternVolume._make_standard_dynamic_indicator_to_value_mapping(
+        self._standard_dynamic_indicator_to_decibel_mapping = WesternVolume._make_standard_dynamic_indicator_to_value_dict(
             minimum_decibel, maximum_decibel, float,
         )
-        self._dynamic_indicator_to_decibel_mapping = WesternVolume._make_dynamic_indicator_to_value_mapping(
+        self._dynamic_indicator_to_decibel_mapping = WesternVolume._make_dynamic_indicator_to_value_dict(
             self._standard_dynamic_indicator_to_decibel_mapping
         )
         self._decibel_to_standard_dynamic_indicator_mapping = {
@@ -116,7 +116,7 @@ class WesternVolume(parameters.abc.Volume):
     # ###################################################################### #
 
     @staticmethod
-    def _make_standard_dynamic_indicator_to_value_mapping(
+    def _make_standard_dynamic_indicator_to_value_dict(
         minima: float, maxima: float, dtype: typing.Type[float] = float
     ) -> dict[str, float]:
         return {
@@ -133,27 +133,27 @@ class WesternVolume(parameters.abc.Volume):
         }
 
     @staticmethod
-    def _make_dynamic_indicator_to_value_mapping(
-        standard_dynamic_indicator_to_value_mapping: dict[str, float]
+    def _make_dynamic_indicator_to_value_dict(
+        standard_dynamic_indicator_to_value_dict: dict[str, float]
     ) -> dict[str, float]:
-        dynamic_indicator_to_value_mapping = {}
-        dynamic_indicator_to_value_mapping.update(
-            standard_dynamic_indicator_to_value_mapping
+        dynamic_indicator_to_value_dict = {}
+        dynamic_indicator_to_value_dict.update(
+            standard_dynamic_indicator_to_value_dict
         )
         for (
             special_dynamic_indicator,
             standard_dynamic_indicator,
         ) in (
-            parameters.volumes_constants.SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_MAPPING.items()
+            parameters.volumes_constants.SPECIAL_DYNAMIC_INDICATOR_TO_STANDARD_DYNAMIC_INDICATOR_DICT.items()
         ):
-            dynamic_indicator_to_value_mapping.update(
+            dynamic_indicator_to_value_dict.update(
                 {
-                    special_dynamic_indicator: dynamic_indicator_to_value_mapping[
+                    special_dynamic_indicator: dynamic_indicator_to_value_dict[
                         standard_dynamic_indicator
                     ]
                 }
             )
-        return dynamic_indicator_to_value_mapping
+        return dynamic_indicator_to_value_dict
 
     # ###################################################################### #
     #                class methods (alternative constructors)                #
@@ -204,18 +204,18 @@ class WesternVolume(parameters.abc.Volume):
         """The western nomenclature name for dynamic.
 
         For a list of all supported indicators, see
-        :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR`.
+        :const:`mutwo.parameters.volumes_constants.DYNAMIC_INDICATOR_TUPLE`.
         """
         return self._name
 
     @name.setter
     def name(self, name: str) -> None:
         try:
-            assert name in parameters.volumes_constants.DYNAMIC_INDICATOR
+            assert name in parameters.volumes_constants.DYNAMIC_INDICATOR_TUPLE
         except AssertionError:
             message = (
                 "unknown dynamic name '{}'. Supported dynamic names are '{}'.".format(
-                    name, parameters.volumes_constants.DYNAMIC_INDICATOR,
+                    name, parameters.volumes_constants.DYNAMIC_INDICATOR_TUPLE,
                 )
             )
             raise ValueError(message)

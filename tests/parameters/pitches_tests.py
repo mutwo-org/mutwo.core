@@ -197,23 +197,23 @@ class JustIntonationPitchTest(unittest.TestCase):
             concert_pitch1,
         )
 
-    def test_property_exponents(self):
+    def test_property_exponent_tuple(self):
         ratio0 = fractions.Fraction(3, 2)
         ratio1 = fractions.Fraction(25, 1)
         ratio2 = fractions.Fraction(11, 9)
-        self.assertEqual(pitches.JustIntonationPitch(ratio0).exponents, (-1, 1))
-        self.assertEqual(pitches.JustIntonationPitch(ratio1).exponents, (0, 0, 2))
+        self.assertEqual(pitches.JustIntonationPitch(ratio0).exponent_tuple, (-1, 1))
+        self.assertEqual(pitches.JustIntonationPitch(ratio1).exponent_tuple, (0, 0, 2))
         self.assertEqual(
-            pitches.JustIntonationPitch(ratio2).exponents, (0, -2, 0, 0, 1)
+            pitches.JustIntonationPitch(ratio2).exponent_tuple, (0, -2, 0, 0, 1)
         )
 
-    def test_property_primes(self):
+    def test_property_prime_tuple(self):
         ratio0 = fractions.Fraction(3, 2)
         ratio1 = fractions.Fraction(25, 1)
         ratio2 = fractions.Fraction(11, 9)
-        self.assertEqual(pitches.JustIntonationPitch(ratio0).primes, (2, 3))
-        self.assertEqual(pitches.JustIntonationPitch(ratio1).primes, (2, 3, 5))
-        self.assertEqual(pitches.JustIntonationPitch(ratio2).primes, (2, 3, 5, 7, 11))
+        self.assertEqual(pitches.JustIntonationPitch(ratio0).prime_tuple, (2, 3))
+        self.assertEqual(pitches.JustIntonationPitch(ratio1).prime_tuple, (2, 3, 5))
+        self.assertEqual(pitches.JustIntonationPitch(ratio2).prime_tuple, (2, 3, 5, 7, 11))
 
     def test_property_occupied_primes(self):
         ratio0 = fractions.Fraction(3, 2)

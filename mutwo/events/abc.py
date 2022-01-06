@@ -274,7 +274,7 @@ T = typing.TypeVar("T", bound=Event)
 class ComplexEvent(Event, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
-    _class_specific_side_attributes: tuple[str, ...] = tuple([])
+    _class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
 
     def __init__(self, iterable: typing.Iterable[T]):
         super().__init__(iterable)
@@ -380,40 +380,40 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             [],
             **{
                 attribute_name: getattr(self, attribute_name)
-                for attribute_name in self._class_specific_side_attributes
+                for attribute_name in self._class_specific_side_attribute_tuple
             }
         )
 
-    def get_event_from_indices(self, indices: typing.Sequence[int]) -> Event:
+    def get_event_from_index_sequence(self, index_sequence: typing.Sequence[int]) -> Event:
         """Get nested :class:`Event` from a sequence of indices.
 
-        :param indices: The indices of the nested :class:`Event`.
-        :type indices: typing.Sequence[int]
+        :param index_sequence: The indices of the nested :class:`Event`.
+        :type index_sequence: typing.Sequence[int]
 
         **Example:**
 
         >>> from mutwo.events import basic
         >>> nested_sequential_event = basic.SequentialEvent([basic.SequentialEvent([basic.SimpleEvent(2)])])
-        >>> nested_sequential_event.get_event_from_indices((0, 0))
+        >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
         SimpleEvent(duration = 2)
         >>> # this is equal to:
         >>> nested_sequential_event[0][0]
         SimpleEvent(duration = 2)
         """
 
-        return tools.get_nested_item_from_indices(indices, self)
+        return tools.get_nested_item_from_index_sequence(index_sequence, self)
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False
     ) -> tuple[typing.Any, ...]:
-        parameter_values = []
+        parameter_value_list: list[typing.Any] = []
         for event in self:
             parameter_values_of_event = event.get_parameter(parameter_name, flat=flat)
             if flat:
-                parameter_values.extend(parameter_values_of_event)
+                parameter_value_list.extend(parameter_values_of_event)
             else:
-                parameter_values.append(parameter_values_of_event)
-        return tuple(parameter_values)
+                parameter_value_list.append(parameter_values_of_event)
+        return tuple(parameter_value_list)
 
     @decorators.add_copy_option
     def set_parameter(  # type: ignore
@@ -515,15 +515,15 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         pointer = 0
         while pointer + 1 < len(self):
-            events = self[pointer], self[pointer + 1]
-            if all(isinstance(event, event_type_to_examine) for event in events):
-                shall_delete = condition(*events)
+            event_tuple = self[pointer], self[pointer + 1]
+            if all(isinstance(event, event_type_to_examine) for event in event_tuple):
+                shall_delete = condition(*event_tuple)
                 if shall_delete:
                     if event_to_remove:
-                        process_surviving_event(*events)
+                        process_surviving_event(*event_tuple)
                         del self[pointer + 1]
                     else:
-                        process_surviving_event(*reversed(events))
+                        process_surviving_event(*reversed(event_tuple))
                         del self[pointer]
                 else:
                     pointer += 1
@@ -531,7 +531,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             # it may still contain nested events which contains events with
             # the searched type
             else:
-                tie_by_if_available(events[0])
+                tie_by_if_available(event_tuple[0])
                 pointer += 1
 
         # Previously only the first event of the examined pairs has been tied,

@@ -98,12 +98,12 @@ class Pitch(abc.ABC):
         75.98044999134612
         """
         closest_frequency_index = tools.find_closest_index(
-            frequency, pitches_constants.MIDI_PITCH_FREQUENCIES
+            frequency, pitches_constants.MIDI_PITCH_FREQUENCY_TUPLE
         )
-        closest_frequency = pitches_constants.MIDI_PITCH_FREQUENCIES[
+        closest_frequency = pitches_constants.MIDI_PITCH_FREQUENCY_TUPLE[
             closest_frequency_index
         ]
-        closest_midi_pitch_number = pitches_constants.MIDI_PITCH_NUMBERS[
+        closest_midi_pitch_number = pitches_constants.MIDI_PITCH_NUMBER_TUPLE[
             closest_frequency_index
         ]
         difference_in_cents = Pitch.hertz_to_cents(frequency, closest_frequency)

@@ -18,7 +18,7 @@ from mutwo.utilities import constants
 
 __all__ = ("IsisScoreConverter", "IsisConverter")
 
-ConvertableEvents = typing.Union[
+ConvertableEventUnion = typing.Union[
     events.basic.SimpleEvent,
     events.basic.SequentialEvent[events.basic.SimpleEvent],
 ]
@@ -39,7 +39,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         :class:`mutwo.parameters.abc.Pitch` from a simple event.
     :param simple_event_to_volume:
     :param simple_event_to_vowel:
-    :param simple_event_to_consonants:
+    :param simple_event_to_consonant_tuple:
     :param is_simple_event_rest:
     :param tempo: Tempo in beats per minute (BPM). Defaults to 60.
     :param global_transposition: global transposition in midi numbers. Defaults to 0.
@@ -51,22 +51,23 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self,
         simple_event_to_pitch: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Pitch
-        ] = lambda simple_event: simple_event.pitch_list[
+        ] = lambda simple_event: simple_event.pitch_list[  # type: ignore
             0
-        ],  # type: ignore
+        ],
         simple_event_to_volume: typing.Callable[
             [events.basic.SimpleEvent], parameters.abc.Volume
         ] = lambda simple_event: simple_event.volume,  # type: ignore
         simple_event_to_vowel: typing.Callable[
             [events.basic.SimpleEvent], str
         ] = lambda simple_event: simple_event.vowel,  # type: ignore
-        simple_event_to_consonants: typing.Callable[
+        simple_event_to_consonant_tuple: typing.Callable[
             [events.basic.SimpleEvent], tuple[str, ...]
         ] = lambda simple_event: simple_event.consonants,  # type: ignore
         is_simple_event_rest: typing.Callable[
             [events.basic.SimpleEvent], bool
         ] = lambda simple_event: not (
-            hasattr(simple_event, "pitch_list") and simple_event.pitch_list
+            hasattr(simple_event, "pitch_list")
+            and simple_event.pitch_list  # type: ignore
         ),
         tempo: constants.Real = 60,
         global_transposition: int = 0,
@@ -79,8 +80,8 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self._n_events_per_line = n_events_per_line
         self._is_simple_event_rest = is_simple_event_rest
 
-        self._extraction_functions = (
-            simple_event_to_consonants,
+        self._extraction_function_tuple = (
+            simple_event_to_consonant_tuple,
             simple_event_to_vowel,
             simple_event_to_pitch,
             simple_event_to_volume,
@@ -97,19 +98,19 @@ class IsisScoreConverter(converters.abc.EventConverter):
         key: typing.Callable[[ExtractedData], tuple[str, ...]],
         seperate_with_comma: bool = True,
     ) -> str:
-        objects_per_line: list[list[str]] = [[]]
+        object_list_per_line_list: list[list[str]] = [[]]
         for nth_event, extracted_data in enumerate(extracted_data_per_event):
-            objects_per_line[-1].extend(key(extracted_data))
+            object_list_per_line_list[-1].extend(key(extracted_data))
             if nth_event % self._n_events_per_line == 0:
-                objects_per_line.append([])
+                object_list_per_line_list.append([])
 
         object_join_string = ", " if seperate_with_comma else " "
-        lines = [object_join_string.join(line) for line in objects_per_line if line]
+        line_list = [object_join_string.join(line) for line in object_list_per_line_list if line]
 
         line_join_string = ",\n" if seperate_with_comma else "\n"
         line_join_string = "{}{}".format(line_join_string, " " * (len(key_name) + 2))
 
-        return "{}: {}".format(key_name, line_join_string.join(lines))
+        return "{}: {}".format(key_name, line_join_string.join(line_list))
 
     def _make_lyrics_section_from_extracted_data_per_event(
         self,
@@ -129,7 +130,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
         self,
         extracted_data_per_event: tuple[ExtractedData],
     ) -> str:
-        midi_notes = self._make_key_from_extracted_data_per_event(
+        midi_notes_str = self._make_key_from_extracted_data_per_event(
             "midiNotes",
             extracted_data_per_event,
             lambda extracted_data: (str(extracted_data[3].midi_pitch_number),),
@@ -139,17 +140,17 @@ class IsisScoreConverter(converters.abc.EventConverter):
             extracted_data_per_event,
             lambda extracted_data: (str(extracted_data[0]),),
         )
-        loud_accents = self._make_key_from_extracted_data_per_event(
+        loud_accents_str = self._make_key_from_extracted_data_per_event(
             "loud_accents",
             extracted_data_per_event,
             lambda extracted_data: (str(extracted_data[4].amplitude),),
         )
         score_section = (
             "[score]\n{}\nglobalTransposition: {}\n{}\n{}\ntempo: {}".format(
-                midi_notes,
+                midi_notes_str,
                 self._global_transposition,
                 rhythm,
-                loud_accents,
+                loud_accents_str,
                 self._tempo,
             )
         )
@@ -158,12 +159,12 @@ class IsisScoreConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event_to_convert: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        _: parameters.abc.DurationType,
     ) -> tuple[ExtractedData]:
         duration = simple_event_to_convert.duration
 
         extracted_data: list[object] = [duration]
-        for extraction_function in self._extraction_functions:
+        for extraction_function in self._extraction_function_tuple:
             try:
                 extracted_information = extraction_function(simple_event_to_convert)
             except AttributeError:
@@ -190,7 +191,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event_to_convert: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        _: parameters.abc.DurationType,
     ):
         message = (
             "Can't convert instance of SimultaneousEvent to ISiS Score. ISiS is only a"
@@ -202,7 +203,7 @@ class IsisScoreConverter(converters.abc.EventConverter):
     #                             public api                                 #
     # ###################################################################### #
 
-    def convert(self, event_to_convert: ConvertableEvents, path: str) -> None:
+    def convert(self, event_to_convert: ConvertableEventUnion, path: str) -> None:
         """Render ISiS score file from the passed event.
 
         :param event_to_convert: The event that shall be rendered to a ISiS score
@@ -272,7 +273,7 @@ class IsisConverter(converters.abc.Converter):
         self.isis_score_converter = isis_score_converter
         self.remove_score_file = remove_score_file
 
-    def convert(self, event_to_convert: ConvertableEvents, path: str) -> None:
+    def convert(self, event_to_convert: ConvertableEventUnion, path: str) -> None:
         """Render sound file via ISiS from mutwo event.
 
         :param event_to_convert: The event that shall be rendered.

@@ -50,11 +50,11 @@ class SimpleEventTest(unittest.TestCase):
             new_unknown_parameter,
         )
 
-    def test_parameters_to_compare(self):
+    def test_parameter_to_compare_tuple(self):
         simple_event = basic.SimpleEvent(1)
-        expected_parameters_to_compare = ("duration",)
+        expected_parameter_to_compare_tuple = ("duration",)
         self.assertEqual(
-            simple_event._parameters_to_compare, expected_parameters_to_compare
+            simple_event._parameter_to_compare_tuple, expected_parameter_to_compare_tuple
         )
 
     def test_equality_check(self):
@@ -371,9 +371,9 @@ class SimultaneousEventTest(unittest.TestCase):
             ]
         )
 
-    def test_get_event_from_indices(self):
-        self.assertEqual(self.sequence.get_event_from_indices((0,)), self.sequence[0])
-        self.assertEqual(self.sequence.get_event_from_indices([]), self.sequence)
+    def test_get_event_from_index_sequence(self):
+        self.assertEqual(self.sequence.get_event_from_index_sequence((0,)), self.sequence[0])
+        self.assertEqual(self.sequence.get_event_from_index_sequence([]), self.sequence)
 
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, 3)

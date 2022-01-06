@@ -47,12 +47,12 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
 
     def __init__(
         self,
-        time_signatures: typing.Sequence[abjad.TimeSignature] = (
+        time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
             abjad.TimeSignature((4, 4)),
         ),
         tempo_envelope: expenvelope.Envelope = None,
     ):
-        n_time_signatures = len(time_signatures)
+        n_time_signatures = len(time_signature_sequence)
         if n_time_signatures == 0:
             message = (
                 "Found empty sequence for argument 'time_signatures'. Specify at least"
@@ -60,14 +60,14 @@ class SequentialEventToQuantizedAbjadContainerConverter(converters_abc.Converter
             )
             raise ValueError(message)
 
-        time_signatures = tuple(time_signatures)
+        time_signature_tuple = tuple(time_signature_sequence)
         if tempo_envelope is None:
             tempo_envelope = expenvelope.Envelope.from_points(
                 (0, parameters.tempos.TempoPoint(120)),
                 (0, parameters.tempos.TempoPoint(120)),
             )
 
-        self._time_signatures = time_signatures
+        self._time_signature_tuple = time_signature_tuple
         self._tempo_envelope = tempo_envelope
 
     @property
@@ -126,7 +126,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 
     def __init__(
         self,
-        time_signatures: typing.Sequence[abjad.TimeSignature] = (
+        time_signature_sequence: typing.Sequence[abjad.TimeSignature] = (
             abjad.TimeSignature((4, 4)),
         ),
         duration_unit: str = "beats",  # for future: typing.Literal["beats", "miliseconds"]
@@ -147,18 +147,18 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
             )
             warnings.warn(message)
 
-        time_signatures = tuple(time_signatures)
+        time_signature_tuple = tuple(time_signature_sequence)
         # nauert will raise an error if there is only one time signature
-        if len(time_signatures) == 1:
-            time_signatures += time_signatures
+        if len(time_signature_tuple) == 1:
+            time_signature_tuple += time_signature_tuple
 
-        super().__init__(time_signatures, tempo_envelope)
+        super().__init__(time_signature_tuple, tempo_envelope)
 
         self._duration_unit = duration_unit
         self._attack_point_optimizer = attack_point_optimizer
         self._q_schema = (
             NauertSequentialEventToQuantizedAbjadContainerConverter._make_q_schema(
-                self._time_signatures, search_tree
+                self._time_signature_tuple, search_tree
             )
         )
 
@@ -238,7 +238,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _process_abjad_leaf_or_tuplet(
-        indices: list[int],
+        index_list: list[int],
         abjad_leaf_or_tuplet: typing.Union[abjad.Tuplet, abjad.Leaf],
         related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]],
         q_event_sequence: nauert.QEventSequence,
@@ -248,7 +248,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         if isinstance(abjad_leaf_or_tuplet, abjad.Tuplet):
             return (
                 NauertSequentialEventToQuantizedAbjadContainerConverter._process_tuplet(
-                    indices,
+                    index_list,
                     abjad_leaf_or_tuplet,
                     related_abjad_leaves_per_simple_event,
                     q_event_sequence,
@@ -259,7 +259,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 
         else:
             return NauertSequentialEventToQuantizedAbjadContainerConverter._process_abjad_leaf(
-                indices,
+                index_list,
                 abjad_leaf_or_tuplet,
                 related_abjad_leaves_per_simple_event,
                 q_event_sequence,
@@ -271,14 +271,14 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
     def _make_related_abjad_leaves_per_simple_event(
         sequential_event: events.basic.SequentialEvent,
         q_event_sequence: nauert.QEventSequence,
-        quanitisized_abjad_leaves: abjad.Voice,
+        quanitisized_abjad_leaf_voice: abjad.Voice,
     ) -> tuple[tuple[tuple[int, ...], ...], ...,]:
         has_tie = False
         index_of_previous_q_event: int = 0
         related_abjad_leaves_per_simple_event: list[list[tuple[int, ...]]] = [
             [] for _ in sequential_event
         ]
-        for nth_bar, bar in enumerate(quanitisized_abjad_leaves):
+        for nth_bar, bar in enumerate(quanitisized_abjad_leaf_voice):
             for nth_abjad_leaf_or_tuplet, abjad_leaf_or_tuplet in enumerate(bar):
                 (
                     has_tie,
@@ -299,12 +299,12 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
 
     @staticmethod
     def _make_q_schema(
-        time_signatures: tuple[abjad.TimeSignature, ...],
+        time_signature_tuple: tuple[abjad.TimeSignature, ...],
         search_tree: typing.Optional[nauert.SearchTree],
     ) -> nauert.QSchema:
-        formated_time_signatures = []
-        for time_signature in time_signatures:
-            formated_time_signatures.append({"time_signature": time_signature})
+        formated_time_signature_list = []
+        for time_signature in time_signature_tuple:
+            formated_time_signature_list.append({"time_signature": time_signature})
 
         keyword_arguments = {
             "use_full_measure": True,
@@ -314,7 +314,9 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         if search_tree:
             keyword_arguments.update({"search_tree": search_tree})
 
-        return nauert.MeasurewiseQSchema(*formated_time_signatures, **keyword_arguments)
+        return nauert.MeasurewiseQSchema(
+            *formated_time_signature_list, **keyword_arguments
+        )
 
     # ###################################################################### #
     #                         private methods                                #
@@ -323,19 +325,19 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
     def _sequential_event_to_q_event_sequence(
         self, sequential_event: events.basic.SequentialEvent
     ) -> nauert.QEventSequence:
-        durations = list(sequential_event.get_parameter("duration"))
+        duration_list = list(sequential_event.get_parameter("duration"))
 
         for nth_simple_event, simple_event in enumerate(sequential_event):
             if simple_event.is_rest:
-                durations[nth_simple_event] = -durations[nth_simple_event]
+                duration_list[nth_simple_event] = -duration_list[nth_simple_event]
 
         if self._duration_unit == "beats":
             return nauert.QEventSequence.from_tempo_scaled_durations(
-                durations, tempo=abjad.MetronomeMark((1, 4), 60)
+                duration_list, tempo=abjad.MetronomeMark((1, 4), 60)
             )
 
         elif self._duration_unit == "miliseconds":
-            return nauert.QEventSequence.from_millisecond_durations(durations)
+            return nauert.QEventSequence.from_millisecond_durations(duration_list)
 
         else:
             message = (
@@ -344,7 +346,7 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
             )
             raise NotImplementedError(message)
 
-    def _q_event_sequence_to_quanitisized_abjad_leaves(
+    def _q_event_sequence_to_quanitisized_abjad_leaf_voice(
         self, q_event_sequence: nauert.QEventSequence
     ) -> abjad.Voice:
         quantizer = nauert.Quantizer()
@@ -365,15 +367,15 @@ class NauertSequentialEventToQuantizedAbjadContainerConverter(
         q_event_sequence = self._sequential_event_to_q_event_sequence(
             sequential_event_to_convert
         )
-        quanitisized_abjad_leaves = self._q_event_sequence_to_quanitisized_abjad_leaves(
-            q_event_sequence
+        quanitisized_abjad_leaf_voice = (
+            self._q_event_sequence_to_quanitisized_abjad_leaf_voice(q_event_sequence)
         )
 
         related_abjad_leaves_per_simple_event = NauertSequentialEventToQuantizedAbjadContainerConverter._make_related_abjad_leaves_per_simple_event(
-            sequential_event_to_convert, q_event_sequence, quanitisized_abjad_leaves
+            sequential_event_to_convert, q_event_sequence, quanitisized_abjad_leaf_voice
         )
         return (
-            quanitisized_abjad_leaves,
+            quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
         )
 
@@ -439,89 +441,91 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         offset_inventory = RMakersSequentialEventToQuantizedAbjadContainerConverter._find_offset_inventory(
             meter
         )
-        leaf_offsets = []
+        leaf_offset_list = []
         # don't attach beams on tuplets
         relevant_bar_items = filter(
             lambda leaf_or_tuplet: isinstance(leaf_or_tuplet, abjad.Leaf)
             and leaf_or_tuplet.written_duration < fractions.Fraction(1, 4),
             bar,
         )
-        leaves = abjad.select(relevant_bar_items).leaves()
-        for leaf in leaves:
+        leaf_selection = abjad.select(relevant_bar_items).leaves()
+        for leaf in leaf_selection:
             offset = abjad.get.timespan(leaf).start_offset - global_offset
-            leaf_offsets.append(offset)
+            leaf_offset_list.append(offset)
 
-        beam_ranges = []
+        beam_range_list = []
         for start, end in zip(offset_inventory, offset_inventory[1:]):
             area = ranges.Range(start, end)
-            offsets = tuple(filter(lambda offset: offset in area, leaf_offsets))
-            n_elements = len(offsets)
-            is_start_in_leaves = start in offsets
+            offset_tuple = tuple(
+                filter(lambda offset: offset in area, leaf_offset_list)
+            )
+            n_elements = len(offset_tuple)
+            is_start_in_leaves = start in offset_tuple
 
             # make new beam range
             if is_start_in_leaves and n_elements > 1:
                 new_beam_range = [
-                    leaf_offsets.index(offsets[0]),
-                    leaf_offsets.index(offsets[-1]),
+                    leaf_offset_list.index(offset_tuple[0]),
+                    leaf_offset_list.index(offset_tuple[-1]),
                 ]
-                beam_ranges.append(new_beam_range)
+                beam_range_list.append(new_beam_range)
 
-        for beam_range in beam_ranges:
+        for beam_range in beam_range_list:
             start, stop = beam_range
-            abjad.attach(abjad.StartBeam(), leaves[start])
-            abjad.attach(abjad.StopBeam(), leaves[stop])
+            abjad.attach(abjad.StartBeam(), leaf_selection[start])
+            abjad.attach(abjad.StopBeam(), leaf_selection[stop])
 
         global_offset += offset_inventory[-1]
         return global_offset
 
     @staticmethod
     def _find_tuplet_indices(bar: abjad.Container) -> tuple[int, ...]:
-        tuplet_indices = []
+        tuplet_index_list = []
         for index, leaf_or_tuplet in enumerate(bar):
             if isinstance(leaf_or_tuplet, abjad.Tuplet):
-                tuplet_indices.append(index)
+                tuplet_index_list.append(index)
 
-        return tuple(tuplet_indices)
+        return tuple(tuplet_index_list)
 
     @staticmethod
-    def _group_tuplet_indices(tuplet_indices: tuple[int, ...]) -> list[list[int]]:
+    def _group_tuplet_indices(tuplet_index_tuple: tuple[int, ...]) -> list[list[int]]:
         """Put adjacent tuplet indices into groups."""
 
-        grouped_tuplet_indices = [[]]
+        grouped_tuplet_index_list = [[]]
         last_tuplet_index = None
-        for tuplet_index in tuplet_indices:
+        for tuplet_index in tuplet_index_tuple:
             if last_tuplet_index:
                 difference = tuplet_index - last_tuplet_index
                 if difference == 1:
-                    grouped_tuplet_indices[-1].append(tuplet_index)
+                    grouped_tuplet_index_list[-1].append(tuplet_index)
                 else:
-                    grouped_tuplet_indices.append([tuplet_index])
+                    grouped_tuplet_index_list.append([tuplet_index])
             else:
-                grouped_tuplet_indices[-1].append(tuplet_index)
+                grouped_tuplet_index_list[-1].append(tuplet_index)
             last_tuplet_index = tuplet_index
-        return grouped_tuplet_indices
+        return grouped_tuplet_index_list
 
     @staticmethod
     def _concatenate_adjacent_tuplets_for_one_group(
         bar: abjad.Container, group: list[int]
     ):
-        implied_prolations = [bar[index].implied_prolation for index in group]
-        common_prolation_groups = [[implied_prolations[0], [group[0]]]]
-        for index, prolation in zip(group[1:], implied_prolations[1:]):
-            if prolation == common_prolation_groups[-1][0]:
-                common_prolation_groups[-1][1].append(index)
+        implied_prolation_list = [bar[index].implied_prolation for index in group]
+        common_prolation_group_list = [[implied_prolation_list[0], [group[0]]]]
+        for index, prolation in zip(group[1:], implied_prolation_list[1:]):
+            if prolation == common_prolation_group_list[-1][0]:
+                common_prolation_group_list[-1][1].append(index)
             else:
-                common_prolation_groups.append([prolation, [index]])
+                common_prolation_group_list.append([prolation, [index]])
 
-        tuplets = []
-        for prolation, tuplet_indices in common_prolation_groups:
+        tuplet_list = []
+        for prolation, tuplet_index_list in common_prolation_group_list:
             tuplet = abjad.Tuplet(prolation)
-            for tuplet_index in tuplet_indices:
+            for tuplet_index in tuplet_index_list:
                 for component in bar[tuplet_index]:
                     tuplet.append(abjad.mutate.copy(component))
-            tuplets.append(tuplet)
+            tuplet_list.append(tuplet)
 
-        bar[group[0] : group[-1] + 1] = tuplets
+        bar[group[0] : group[-1] + 1] = tuplet_list
 
     # ###################################################################### #
     #                       private methods                                  #
@@ -558,17 +562,17 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         return notes
 
     def _concatenate_adjacent_tuplets_for_one_bar(self, bar: abjad.Container):
-        tuplet_indices = RMakersSequentialEventToQuantizedAbjadContainerConverter._find_tuplet_indices(
+        tuplet_index_tuple = RMakersSequentialEventToQuantizedAbjadContainerConverter._find_tuplet_indices(
             bar
         )
-        if tuplet_indices:
-            grouped_tuplet_indices = RMakersSequentialEventToQuantizedAbjadContainerConverter._group_tuplet_indices(
-                tuplet_indices
+        if tuplet_index_tuple:
+            grouped_tuplet_index_list_list = RMakersSequentialEventToQuantizedAbjadContainerConverter._group_tuplet_indices(
+                tuplet_index_tuple
             )
-            for group in reversed(grouped_tuplet_indices):
-                if len(group) > 1:
+            for tuplet_index_list in reversed(grouped_tuplet_index_list_list):
+                if len(tuplet_index_list) > 1:
                     RMakersSequentialEventToQuantizedAbjadContainerConverter._concatenate_adjacent_tuplets_for_one_group(
-                        bar, group
+                        bar, tuplet_index_list
                     )
 
     def _concatenate_adjacent_tuplets(self, voice: abjad.Voice) -> abjad.Voice:
@@ -576,14 +580,14 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
             self._concatenate_adjacent_tuplets_for_one_bar(bar)
 
     def _rewrite_meter(self, voice: abjad.Voice):
-        time_signatures = iter(self._time_signatures)
-        last_time_signature = self._time_signatures[-1]
+        time_signature_iter = iter(self._time_signature_tuple)
+        last_time_signature = self._time_signature_tuple[-1]
         # rewrite by meter
         global_offset = abjad.Offset((0, 1))
         previous_time_signature = None
         for bar in voice:
             try:
-                time_signature = next(time_signatures)
+                time_signature = next(time_signature_iter)
             except StopIteration:
                 time_signature = last_time_signature
             if time_signature != previous_time_signature:
@@ -598,8 +602,8 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
 
         last_bar = bar
         difference = time_signature.duration - abjad.get.duration(last_bar)
-        if difference:
 
+        if difference:
             stack = rmakers.stack(
                 rmakers.note(),
                 rmakers.force_rest(lambda _: abjad.select(_).logical_ties()[:]),
@@ -618,10 +622,10 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         # split notes by time signatures
         notes_split_by_time_signatures = abjad.mutate.split(
             notes,
-            [time_signature.duration for time_signature in self._time_signatures],
+            [time_signature.duration for time_signature in self._time_signature_tuple],
             cyclic=True,
         )
-        bars = []
+        bar_list = []
         for selection in notes_split_by_time_signatures:
             try:
                 bar = abjad.Container(selection.items, simultaneous=False)
@@ -629,15 +633,15 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
                 bar = abjad.Container(
                     abjad.mutate.copy(selection).items, simultaneous=False
                 )
-            bars.append(bar)
-        voice = abjad.Voice(bars)
+            bar_list.append(bar)
+        voice = abjad.Voice(bar_list)
         if self._do_rewrite_meter:
             self._rewrite_meter(voice)
         self._concatenate_adjacent_tuplets(voice)
         return voice
 
     def _get_data_for_leaf(
-        self, indices: tuple[int, ...], leaf: abjad.Leaf
+        self, index_tuple: tuple[int, ...], leaf: abjad.Leaf
     ) -> tuple[tuple[int, ...], bool, bool]:
         has_tie = abjad.get.indicator(leaf, abjad.Tie())
         is_rest = (
@@ -645,34 +649,35 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
             or isinstance(leaf, abjad.MultimeasureRest)
             or isinstance(leaf, abjad.Skip)
         )
-        return indices, has_tie, is_rest
+        return index_tuple, has_tie, is_rest
 
     def _get_data_for_tuplet_or_leaf(
         self,
-        indices: tuple[int, ...],
+        index_tuple: tuple[int, ...],
         leaf_or_tuplet: typing.Union[abjad.Leaf, abjad.Tuplet],
     ) -> tuple[tuple[tuple[int, ...], bool], ...]:
         if isinstance(leaf_or_tuplet, abjad.Leaf):
-            return (self._get_data_for_leaf(indices, leaf_or_tuplet),)
+            return (self._get_data_for_leaf(index_tuple, leaf_or_tuplet),)
         else:
-            data_per_leaf_or_tuplet = []
+            data_per_leaf_or_tuplet_list = []
             for nth_leaf_or_tuplet_of_tuplet, sub_leaf_or_tuplet in enumerate(
                 leaf_or_tuplet
             ):
-                data_per_leaf_or_tuplet.extend(
+                data_per_leaf_or_tuplet_list.extend(
                     self._get_data_for_tuplet_or_leaf(
-                        indices + (nth_leaf_or_tuplet_of_tuplet,), sub_leaf_or_tuplet
+                        index_tuple + (nth_leaf_or_tuplet_of_tuplet,),
+                        sub_leaf_or_tuplet,
                     )
                 )
-            return tuple(data_per_leaf_or_tuplet)
+            return tuple(data_per_leaf_or_tuplet_list)
 
     def _make_related_abjad_leaves_per_simple_event(
         self, voice: abjad.Voice
     ) -> tuple[tuple[tuple[int, ...], ...], ...]:
-        data_per_tuplet_or_leaf = []
+        data_per_tuplet_or_leaf_list = []
         for nth_bar, bar in enumerate(voice):
             for nth_leaf_or_tuplet, leaf_or_tuplet in enumerate(bar):
-                data_per_tuplet_or_leaf.extend(
+                data_per_tuplet_or_leaf_list.extend(
                     self._get_data_for_tuplet_or_leaf(
                         (nth_bar, nth_leaf_or_tuplet), leaf_or_tuplet
                     )
@@ -682,15 +687,15 @@ class RMakersSequentialEventToQuantizedAbjadContainerConverter(
         related_abjad_leaves = []
         was_previous_note_rest = None
         has_previous_tie = None
-        for indices, has_tie, is_rest in data_per_tuplet_or_leaf:
+        for index_tuple, has_tie, is_rest in data_per_tuplet_or_leaf_list:
             if has_previous_tie or all((was_previous_note_rest, is_rest)):
-                related_abjad_leaves.append(indices)
+                related_abjad_leaves.append(index_tuple)
             else:
                 if related_abjad_leaves:
                     related_abjad_leaves_per_simple_event.append(
                         tuple(related_abjad_leaves)
                     )
-                related_abjad_leaves = [indices]
+                related_abjad_leaves = [index_tuple]
 
             has_previous_tie = has_tie
             was_previous_note_rest = is_rest
@@ -803,15 +808,15 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
 
     def _adjust_quantisized_abjad_leaves(
         self,
-        quanitisized_abjad_leaves: abjad.Container,
+        quanitisized_abjad_leaf_voice: abjad.Container,
         related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
     ):
         is_first = True
 
         for abjad_leaves_indices in related_abjad_leaves_per_simple_event:
             if abjad_leaves_indices:
-                first_element = tools.get_nested_item_from_indices(
-                    abjad_leaves_indices[0], quanitisized_abjad_leaves
+                first_element = tools.get_nested_item_from_index_sequence(
+                    abjad_leaves_indices[0], quanitisized_abjad_leaf_voice
                 )
                 if is_first:
                     self._prepare_first_element(first_element)
@@ -827,12 +832,12 @@ class _DurationLineBasedQuantizedAbjadContainerMixin(object):
                     )
 
                     for indices in abjad_leaves_indices[1:]:
-                        element = tools.get_nested_item_from_indices(
-                            indices, quanitisized_abjad_leaves
+                        element = tools.get_nested_item_from_index_sequence(
+                            indices, quanitisized_abjad_leaf_voice
                         )
-                        tools.set_nested_item_from_indices(
+                        tools.set_nested_item_from_index_sequence(
                             indices,
-                            quanitisized_abjad_leaves,
+                            quanitisized_abjad_leaf_voice,
                             abjad.Skip(element.written_duration),
                         )
 
@@ -860,15 +865,15 @@ class NauertSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (
-            quanitisized_abjad_leaves,
+            quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
         ) = super().convert(sequential_event_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
-            quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
         )
 
-        return quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+        return quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
 
 
 class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
@@ -894,12 +899,12 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
     ) -> tuple[abjad.Container, tuple[tuple[tuple[int, ...], ...], ...],]:
 
         (
-            quanitisized_abjad_leaves,
+            quanitisized_abjad_leaf_voice,
             related_abjad_leaves_per_simple_event,
         ) = super().convert(sequential_event_to_convert)
 
         self._adjust_quantisized_abjad_leaves(
-            quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+            quanitisized_abjad_leaf_voice, related_abjad_leaves_per_simple_event
         )
 
         # only assign first item to abjad leaves
@@ -910,7 +915,7 @@ class RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter(
             )
 
         return (
-            quanitisized_abjad_leaves,
+            quanitisized_abjad_leaf_voice,
             post_processed_releated_abjad_leaves_per_simple_event,
         )
 

@@ -14,8 +14,8 @@ from mutwo.utilities import constants
 
 __all__ = ("NoteLike",)
 
-PitchOrPitches = typing.Union[
-    parameters.abc.Pitch, typing.Iterable, constants.Real, None
+PitchOrPitchSequence = typing.Union[
+    parameters.abc.Pitch, typing.Sequence, constants.Real, None
 ]
 
 Volume = typing.Union[parameters.abc.Volume, constants.Real, str]
@@ -81,7 +81,7 @@ class NoteLike(events.basic.SimpleEvent):
 
     def __init__(
         self,
-        pitch_list: PitchOrPitches = "c",
+        pitch_list: PitchOrPitchSequence = "c",
         duration: parameters.abc.DurationType = 1,
         volume: Volume = "mf",
         grace_note_sequential_event: typing.Optional[GraceNotes] = None,
@@ -123,7 +123,7 @@ class NoteLike(events.basic.SimpleEvent):
         # assumes it is a WesternPitch name
         elif (
             pitch_indication[0]
-            in parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys()
+            in parameters.pitches_constants.DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT.keys()
         ):
             if pitch_indication[-1].isdigit():
                 pitch_name, octave = pitch_indication[:-1], int(pitch_indication[-1])
@@ -159,22 +159,22 @@ class NoteLike(events.basic.SimpleEvent):
         unknown_object: typing.Any,
     ) -> list[parameters.abc.Pitch]:
         if unknown_object is None:
-            pitches = []
+            pitch_list = []
 
         elif isinstance(unknown_object, parameters.abc.Pitch):
-            pitches = [unknown_object]
+            pitch_list = [unknown_object]
 
         elif isinstance(unknown_object, str):
-            pitches = [
+            pitch_list = [
                 NoteLike._convert_string_to_pitch(pitch_indication)
                 for pitch_indication in unknown_object.split(" ")
             ]
 
         elif isinstance(unknown_object, fractions.Fraction):
-            pitches = [NoteLike._convert_fraction_to_pitch(unknown_object)]
+            pitch_list = [NoteLike._convert_fraction_to_pitch(unknown_object)]
 
         elif isinstance(unknown_object, float) or isinstance(unknown_object, int):
-            pitches = [NoteLike._convert_float_or_integer_to_pitch(unknown_object)]
+            pitch_list = [NoteLike._convert_float_or_integer_to_pitch(unknown_object)]
 
         else:
             message = "Can't build pitch object from object '{}' of type '{}'.".format(
@@ -182,7 +182,7 @@ class NoteLike(events.basic.SimpleEvent):
             )
             raise NotImplementedError(message)
 
-        return pitches
+        return pitch_list
 
     @staticmethod
     def _convert_unknown_object_to_grace_note_sequential_event(
@@ -200,11 +200,11 @@ class NoteLike(events.basic.SimpleEvent):
     # ###################################################################### #
 
     @property
-    def _parameters_to_print(self) -> tuple[str, ...]:
+    def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
         return tuple(
             attribute
-            for attribute in self._parameters_to_compare
+            for attribute in self._parameter_to_compare_tuple
             if attribute
             # Avoid too verbose and long attributes
             not in (

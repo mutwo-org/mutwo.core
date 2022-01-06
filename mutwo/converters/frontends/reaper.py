@@ -83,10 +83,10 @@ class ReaperMarkerConverter(converters.abc.EventConverter):
         :return type: str
         """
 
-        reaper_marker = tuple(
+        reaper_marker_tuple = tuple(
             "MARKER {} {}".format(nth_marker, marker_data)
             for nth_marker, marker_data in enumerate(
                 self._convert_event(event_to_convert, 0)
             )
         )
-        return "\n".join(reaper_marker)
+        return "\n".join(reaper_marker_tuple)

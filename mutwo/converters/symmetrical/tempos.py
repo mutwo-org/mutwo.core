@@ -133,15 +133,15 @@ class TempoConverter(converters.abc.EventConverter):
     ) -> expenvelope.Envelope:
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
 
-        levels: list[float] = []
+        level_list: list[float] = []
         for tempo_point in tempo_envelope.levels:
             beat_length_in_seconds = TempoConverter._tempo_point_converter.convert(
                 tempo_point
             )
-            levels.append(beat_length_in_seconds)
+            level_list.append(beat_length_in_seconds)
 
         return expenvelope.Envelope.from_levels_and_durations(
-            levels, tempo_envelope.durations, tempo_envelope.curve_shapes
+            level_list, tempo_envelope.durations, tempo_envelope.curve_shapes
         )
 
     # ###################################################################### #

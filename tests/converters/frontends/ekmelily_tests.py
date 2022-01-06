@@ -161,13 +161,13 @@ class HEJIEkmelilyTuningFileConverterTest(unittest.TestCase):
         ) -> ekmelily.EkmelilyAccidental:
             return ekmelily.EkmelilyAccidental(
                 ekmelily_accidental.accidental_name,
-                ekmelily_accidental.accidental_glyphs,
+                ekmelily_accidental.accidental_glyph_tuple,
                 round(ekmelily_accidental.deviation_in_cents, 3),
-                ekmelily_accidental.available_diatonic_pitch_indices,
+                ekmelily_accidental.available_diatonic_pitch_index_tuple,
             )
 
         default_args = (
-            ekmelily_constants.DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT,
+            ekmelily_constants.DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT_DICT,
             {5: "five", 7: "seven", 11: "eleven"},
             "o",
             "u",

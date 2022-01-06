@@ -17,14 +17,14 @@ __all__ = (
 
 
 def make_product_pitch(
-    numbers: typing.Sequence[int],
+    number_sequence: typing.Sequence[int],
     tonality: bool,
     normalize: bool = False,
 ) -> pitches.JustIntonationPitch:
-    """Make :class:`~mutwo.parameters.pitches.JustIntonationPitch` from the product of one, two or more numbers.
+    """Make :class:`~mutwo.parameters.pitches.JustIntonationPitch` from the product of one, two or more number_sequence.
 
-    :param numbers: The number which shall be multiplied to make a new pitch.
-    :type numbers: typing.Sequence[int]
+    :param number_sequence: The number which shall be multiplied to make a new pitch.
+    :type number_sequence: typing.Sequence[int]
     :param tonality: ``True`` for putting the resulting product to the numerator of the
         frequency ratio and ``False`` for putting the resulting product to the
         denominator.
@@ -34,7 +34,7 @@ def make_product_pitch(
     :type normalize: bool, optional
     """
 
-    product = functools.reduce(operator.mul, numbers)
+    product = functools.reduce(operator.mul, number_sequence)
     if tonality:
         ratio = f"{product}/1"
     else:
@@ -47,16 +47,16 @@ def make_product_pitch(
 
 
 def make_common_product_set_scale(
-    numbers: typing.Sequence[int],
+    number_sequence: typing.Sequence[int],
     n_combinations: int,
     tonality: bool,
     normalize: bool = False,
 ) -> tuple[pitches.JustIntonationPitch, ...]:
     """Make common product set scale as described in Wilsons letter to Fokker.
 
-    :param numbers: The numbers which will be combined to single pitches.
-    :type numbers: typing.Sequence[int]
-    :param n_combinations: How many numbers will be combined for each pitch.
+    :param number_sequence: The number_sequence which will be combined to single pitches.
+    :type number_sequence: typing.Sequence[int]
+    :param n_combinations: How many number_sequence will be combined for each pitch.
     :type n_combinations: int
     :param tonality: ``True`` for otonality and ``False`` for utonality.
     :type tonality: bool
@@ -83,9 +83,9 @@ def make_common_product_set_scale(
     """
 
     common_product_set_scale = []
-    for combined_numbers in itertools.combinations(numbers, n_combinations):
+    for combined_number_sequence in itertools.combinations(number_sequence, n_combinations):
         common_product_set_scale.append(
-            make_product_pitch(combined_numbers, tonality, normalize)
+            make_product_pitch(combined_number_sequence, tonality, normalize)
         )
 
     return tuple(common_product_set_scale)

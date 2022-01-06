@@ -30,11 +30,11 @@ argument `global_scale`."""
 
 # TODO(find glyph names in 'EkmelosGlyphNames.nam' file, provided
 #      by Ekmelos 3.5 (instead of hard coding hexacodes))
-PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
+PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH_DICT = {
     (
         None,
         None,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -43,7 +43,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         None,
         None,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -52,7 +52,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         None,
         None,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -61,7 +61,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         None,
         None,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -70,7 +70,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         None,
         None,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -79,7 +79,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -88,7 +88,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -97,7 +97,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -106,7 +106,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -115,7 +115,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -124,7 +124,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(0, 1)
         ],
     ): (
@@ -133,7 +133,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -142,7 +142,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -151,7 +151,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -160,7 +160,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -169,7 +169,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -178,7 +178,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(1, 1)
         ],
     ): (
@@ -187,7 +187,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -196,7 +196,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -205,7 +205,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -214,7 +214,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -223,7 +223,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -232,7 +232,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             fractions.Fraction(2, 1)
         ],
     ): (
@@ -241,7 +241,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -250,7 +250,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -259,7 +259,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -268,7 +268,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -277,7 +277,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -286,7 +286,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(1, 1)
         ],
     ): (
@@ -295,7 +295,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -304,7 +304,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -313,7 +313,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -322,7 +322,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -1,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -331,7 +331,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -2,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -340,7 +340,7 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
     (
         5,
         -3,
-        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+        pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
             -fractions.Fraction(2, 1)
         ],
     ): (
@@ -365,38 +365,38 @@ PRIME_AND_EXPONENT_AND_TRADITIONAL_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
 glyph name in Ekmelos."""
 
 
-TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH_DICT = {
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(0, 1)
     ]: (
         "#xE2F2"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(1, 1)
     ]: (
         "#xE2F3"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(2, 1)
     ]: (
         "#xE2F4"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(1, 1)
     ]: (
         "#xE2F1"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(2, 1)
     ]: (
         "#xE2F0"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(1, 2)
     ]: (
         "#xE2F6"
     ),
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(1, 2)
     ]: (
         "#xE2F5"
@@ -404,32 +404,32 @@ TEMPERED_ACCIDENTAL_TO_ACCIDENTAL_GLYPH = {
 }
 """Mapping of tempered accidental name to glyph name in Ekmelos."""
 
-TEMPERED_ACCIDENTAL_TO_CENT_DEVIATION = {
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+TEMPERED_ACCIDENTAL_TO_CENT_DEVIATION_DICT = {
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(0, 1)
     ]: 0,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(1, 1)
     ]: 100,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(2, 1)
     ]: 200,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(1, 1)
     ]: -100,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(2, 1)
     ]: -200,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(1, 2)
     ]: 50,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(1, 2)
     ]: -50,
 }
 """Mapping of tempered accidental name to cent deviation."""
 
-DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME = {
+DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME_DICT = {
     prime: accidental_name
     for prime, accidental_name in zip(
         (5, 7, 11, 13, 17, 19, 23), "a b c d e f g".split(" ")
@@ -439,7 +439,7 @@ DEFAULT_PRIME_TO_HEJI_ACCIDENTAL_NAME = {
 :class:`~mutwo.converters.frontends.ekmelily.HEJIEkmelilyTuningFileConverter`
 argument `prime_to_heji_accidental_name`."""
 
-DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT = {
+DEFAULT_PRIME_TO_HIGHEST_ALLOWED_EXPONENT_DICT = {
     prime: highest_allowed_comma
     # all potentially supported prime / max_exponent pairs:
     # (not used by default, because Lilypond would take too
@@ -479,21 +479,21 @@ PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE = round(
 )
 """Step in cents for one pythagorean accidental (# or b)."""
 
-PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATIONS = {
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+PYTHAGOREAN_ACCIDENTAL_TO_CENT_DEVIATION_DICT = {
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(0, 1)
     ]: 0,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(1, 1)
     ]: PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         fractions.Fraction(2, 1)
     ]: PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE
     * 2,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(1, 1)
     ]: -PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE,
-    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME[
+    pitches_constants.PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT[
         -fractions.Fraction(2, 1)
     ]: -2
     * PYTHAGOREAN_ACCIDENTAL_CENT_DEVIATION_SIZE,

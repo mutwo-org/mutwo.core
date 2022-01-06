@@ -41,23 +41,23 @@ class ActivityLevel(object):
     (True, False, True, True, False, True, True, False, True, True)
     """
 
-    _allowed_range = tuple(range(len(edwards_constants.ACTIVITY_LEVELS)))
+    _allowed_range_tuple = tuple(range(len(edwards_constants.ACTIVITY_LEVEL_TUPLE)))
 
     def __init__(self, start_at: int = 0) -> None:
         try:
             assert start_at in (0, 1, 2)
         except AssertionError:
-            msg = "start_at has to be either 0, 1 or 2 and not {}, ".format(start_at)
-            msg += "because there are only three different tuples defined per level."
-            raise ValueError(msg)
+            message = "start_at has to be either 0, 1 or 2 and not {}, ".format(start_at)
+            message += "because there are only three different tuples defined per level."
+            raise ValueError(message)
 
-        self._activity_level_cycles = tuple(
+        self._activity_level_cycle_tuple = tuple(
             itertools.cycle(
                 functools.reduce(
-                    operator.add, tuple(tools.cyclic_permutations(levels))[start_at]
+                    operator.add, tuple(tools.cyclic_permutations(level_tuple))[start_at]
                 )
             )
-            for levels in edwards_constants.ACTIVITY_LEVELS
+            for level_tuple in edwards_constants.ACTIVITY_LEVEL_TUPLE
         )
 
     def __repr__(self) -> str:
@@ -72,11 +72,11 @@ class ActivityLevel(object):
         """
 
         try:
-            assert level in self._allowed_range
+            assert level in self._allowed_range_tuple
         except AssertionError:
-            msg = "level is '{}' but has to be in range '{}'!".format(
-                level, self._allowed_range
+            message = "level is '{}' but has to be in range '{}'!".format(
+                level, self._allowed_range_tuple
             )
-            raise ValueError(msg)
+            raise ValueError(message)
 
-        return bool(next(self._activity_level_cycles[level]))
+        return bool(next(self._activity_level_cycle_tuple[level]))

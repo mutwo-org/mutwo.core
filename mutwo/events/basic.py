@@ -61,23 +61,23 @@ class SimpleEvent(events.abc.Event):
             return False
 
     def __repr__(self) -> str:
-        attributes = (
+        attribute_iterator = (
             "{} = {}".format(attribute, getattr(self, attribute))
-            for attribute in self._parameters_to_print
+            for attribute in self._parameter_to_print_tuple
         )
-        return "{}({})".format(type(self).__name__, ", ".join(attributes))
+        return "{}({})".format(type(self).__name__, ", ".join(attribute_iterator))
 
     # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
     @property
-    def _parameters_to_print(self) -> tuple[str, ...]:
+    def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
-        return self._parameters_to_compare
+        return self._parameter_to_compare_tuple
 
     @property
-    def _parameters_to_compare(self) -> tuple[str, ...]:
+    def _parameter_to_compare_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which values define the SimpleEvent.
 
         The returned attribute names are used for equality check between two
@@ -109,7 +109,7 @@ class SimpleEvent(events.abc.Event):
     def _is_equal(self, other: typing.Any) -> bool:
         """Helper function to inspect if two SimpleEvent objects are equal."""
 
-        for parameter_to_compare in self._parameters_to_compare:
+        for parameter_to_compare in self._parameter_to_compare_tuple:
             try:
                 # if the assigned values of the specific parameter aren't
                 # equal, both objects can't be equal
@@ -304,8 +304,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def absolute_times(self) -> tuple[constants.Real, ...]:
         """Return absolute point in time for each event."""
 
-        durations = (event.duration for event in self)
-        return tuple(tools.accumulate_from_zero(durations))[:-1]
+        duration_iterator = (event.duration for event in self)
+        return tuple(tools.accumulate_from_zero(duration_iterator))[:-1]
 
     @property
     def start_and_end_time_per_event(
@@ -313,8 +313,8 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> tuple[ranges.Range, ...]:
         """Return start and end time for each event."""
 
-        durations = (event.duration for event in self)
-        absolute_times = tuple(tools.accumulate_from_zero(durations))
+        duration_iterator = (event.duration for event in self)
+        absolute_times = tuple(tools.accumulate_from_zero(duration_iterator))
         return tuple(
             ranges.Range(*start_and_end_time)
             for start_and_end_time in zip(absolute_times, absolute_times[1:])
@@ -389,7 +389,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     ) -> SequentialEvent[T]:
         self._assert_correct_start_and_end_values(start, end)
 
-        remove_nth_event = []
+        remove_nth_event_list = []
         for nth_event, event_start, event in zip(
             range(len(self)), self.absolute_times, self
         ):
@@ -408,9 +408,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             if cut_out_start < cut_out_end:
                 event.cut_out(cut_out_start, cut_out_end)
             else:
-                remove_nth_event.append(nth_event)
+                remove_nth_event_list.append(nth_event)
 
-        for nth_event_to_remove in reversed(remove_nth_event):
+        for nth_event_to_remove in reversed(remove_nth_event_list):
             del self[nth_event_to_remove]
 
     @decorators.add_copy_option
@@ -426,13 +426,13 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
             # collect events which are only active within the
             # cut_off - range
-            events_to_delete = []
+            event_to_delete_list = []
             for event_index, event_start, event in zip(
                 range(len(self)), self.absolute_times, self
             ):
                 event_end = event_start + event.duration
                 if event_start >= start and event_end <= end:
-                    events_to_delete.append(event_index)
+                    event_to_delete_list.append(event_index)
 
                 # shorten event which are partly active within the
                 # cut_off - range
@@ -447,7 +447,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
                     difference_to_event_start = event_start - start
                     event.cut_off(0, cut_off_duration - difference_to_event_start)
 
-            for index in reversed(events_to_delete):
+            for index in reversed(event_to_delete_list):
                 del self[index]
 
     @decorators.add_copy_option
@@ -594,11 +594,11 @@ class TaggedSimpleEvent(SimpleEvent):
 class TaggedSequentialEvent(SequentialEvent, typing.Generic[T]):
     """:class:`SequentialEvent` with tag."""
 
-    _class_specific_side_attributes = ("tag",)
+    _class_specific_side_attribute_tuple = ("tag",)
 
 
 @decorators.add_tag_to_class
 class TaggedSimultaneousEvent(SimultaneousEvent, typing.Generic[T]):
     """:class:`SimultaneousEvent` with tag."""
 
-    _class_specific_side_attributes = ("tag",)
+    _class_specific_side_attribute_tuple = ("tag",)

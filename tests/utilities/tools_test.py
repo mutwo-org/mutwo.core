@@ -110,26 +110,24 @@ class ToolsTest(unittest.TestCase):
             self.assertEqual(next(permutation_generator), expected_permutation)
 
     def test_camel_case_to_snake_case(self):
-        self.assertEqual(
-            tools.camel_case_to_snake_case("MyClassName"), "my_class_name"
-        )
+        self.assertEqual(tools.camel_case_to_snake_case("MyClassName"), "my_class_name")
         self.assertEqual(
             tools.camel_case_to_snake_case("MySecondClassName"), "my_second_class_name"
         )
 
-    def test_get_nested_item_from_indices(self):
+    def test_get_nested_item_from_index_sequence(self):
         nested_sequence = (1, 2, (4, (5, 1), (9, (3,))))
         self.assertEqual(
-            tools.get_nested_item_from_indices((2, 2, 0), nested_sequence), 9
+            tools.get_nested_item_from_index_sequence((2, 2, 0), nested_sequence), 9
         )
         self.assertEqual(
-            tools.get_nested_item_from_indices((2, 2, 0), nested_sequence),
+            tools.get_nested_item_from_index_sequence((2, 2, 0), nested_sequence),
             nested_sequence[2][2][0],
         )
 
-    def test_set_nested_item_from_indices(self):
+    def test_set_nested_item_from_index_sequence(self):
         nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]
-        tools.set_nested_item_from_indices((2, 2, 0), nested_sequence, 100)
+        tools.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
         self.assertEqual(nested_sequence[2][2][0], 100)
 
     def test_find_numbers_which_sums_up_to(self):

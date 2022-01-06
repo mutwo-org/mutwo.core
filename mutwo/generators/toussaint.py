@@ -1,7 +1,6 @@
 """Algorithms which are related to Canadian computer scientist G. T. Toussaint."""
 
 import itertools
-import typing
 
 from mutwo.utilities import tools
 

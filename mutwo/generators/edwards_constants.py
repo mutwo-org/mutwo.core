@@ -1,6 +1,6 @@
 """Constants which are used in :mod:`mutwo.generators.edwards`."""
 
-ACTIVITY_LEVELS = (
+ACTIVITY_LEVEL_TUPLE = (
     # 0
     ((0,), (0,), (0,)),
     # 1

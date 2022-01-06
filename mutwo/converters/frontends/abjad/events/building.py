@@ -57,10 +57,10 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
         complex_event_to_abjad_container_name: typing.Callable[
             [events.abc.ComplexEvent], str
         ],
-        pre_process_abjad_container_routines: typing.Sequence[
+        pre_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ],
-        post_process_abjad_container_routines: typing.Sequence[
+        post_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ],
     ):
@@ -69,11 +69,11 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
         self._complex_event_to_abjad_container_name = (
             complex_event_to_abjad_container_name
         )
-        self._pre_process_abjad_container_routines = (
-            pre_process_abjad_container_routines
+        self._pre_process_abjad_container_routine_sequence = (
+            pre_process_abjad_container_routine_sequence
         )
-        self._post_process_abjad_container_routines = (
-            post_process_abjad_container_routines
+        self._post_process_abjad_container_routine_sequence = (
+            post_process_abjad_container_routine_sequence
         )
 
     def _make_empty_abjad_container(
@@ -87,11 +87,11 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
 
         kwargs = {}
 
-        arguments = tuple(
+        argument_tuple = tuple(
             inspect.signature(self._abjad_container_class).parameters.keys()
         )
 
-        if "simultaneous" in arguments:
+        if "simultaneous" in argument_tuple:
             kwargs.update(
                 {
                     "simultaneous": isinstance(
@@ -100,10 +100,10 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
                 }
             )
 
-        if abjad_container_name and "name" in arguments:
+        if abjad_container_name and "name" in argument_tuple:
             kwargs.update({"name": abjad_container_name})
 
-        if self._lilypond_type_of_abjad_container and "lilypond_type" in arguments:
+        if self._lilypond_type_of_abjad_container and "lilypond_type" in argument_tuple:
             kwargs.update({"lilypond_type": self._lilypond_type_of_abjad_container})
 
         return self._abjad_container_class([], **kwargs)
@@ -115,7 +115,7 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
     ):
         for (
             pre_process_abjad_container_routine
-        ) in self._pre_process_abjad_container_routines:
+        ) in self._pre_process_abjad_container_routine_sequence:
             pre_process_abjad_container_routine(
                 complex_event_to_convert, abjad_container_to_pre_process
             )
@@ -127,7 +127,7 @@ class ComplexEventToAbjadContainerConverter(converters_abc.Converter):
     ):
         for (
             post_process_abjad_container_routine
-        ) in self._post_process_abjad_container_routines:
+        ) in self._post_process_abjad_container_routine_sequence:
             post_process_abjad_container_routine(
                 complex_event_to_convert, abjad_container_to_post_process
             )
@@ -259,9 +259,9 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         :class:`mutwo.converters.frontends.attachments.Tempo` objects.
         See :class:`TempoEnvelopeToAbjadAttachmentTempoConverter` for more information.
     :type tempo_envelope_to_abjad_attachment_tempo_converter: TempoEnvelopeToAbjadAttachmentTempoConverter, optional
-    :param abjad_attachment_classes: A tuple which contains all available abjad attachment classes
+    :param abjad_attachment_class_sequence: A tuple which contains all available abjad attachment classes
         which shall be used by the converter.
-    :type abjad_attachment_classes: typing.Sequence[attachments.AbjadAttachment], optional
+    :type abjad_attachment_class_sequence: typing.Sequence[attachments.AbjadAttachment], optional
     :param write_multimeasure_rests: Set to ``True`` if the converter should replace
         rests that last a complete bar with multimeasure rests (rests with uppercase
         "R" in Lilypond). Default to ``True``.
@@ -315,7 +315,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         tempo_envelope_to_abjad_attachment_tempo_converter: typing.Optional[
             TempoEnvelopeToAbjadAttachmentTempoConverter
         ] = ComplexTempoEnvelopeToAbjadAttachmentTempoConverter(),
-        abjad_attachment_classes: typing.Sequence[
+        abjad_attachment_class_sequence: typing.Sequence[
             typing.Type[attachments.AbjadAttachment]
         ] = None,
         write_multimeasure_rests: bool = True,
@@ -324,10 +324,10 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         complex_event_to_abjad_container_name: typing.Callable[
             [events.abc.ComplexEvent], typing.Optional[str]
         ] = lambda _: None,
-        pre_process_abjad_container_routines: typing.Sequence[
+        pre_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
-        post_process_abjad_container_routines: typing.Sequence[
+        post_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
     ):
@@ -339,7 +339,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 RMakersSequentialEventToDurationLineBasedQuantizedAbjadContainerConverter,
             ),
         ):
-            post_process_abjad_container_routines += (
+            post_process_abjad_container_routine_sequence += (
                 process_container_routines.AddDurationLineEngraver(),
             )
 
@@ -347,14 +347,16 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             abjad_container_class,
             lilypond_type_of_abjad_container,
             complex_event_to_abjad_container_name,
-            pre_process_abjad_container_routines,
-            post_process_abjad_container_routines,
+            pre_process_abjad_container_routine_sequence,
+            post_process_abjad_container_routine_sequence,
         )
 
-        if abjad_attachment_classes is None:
-            abjad_attachment_classes = abjad_constants.DEFAULT_ABJAD_ATTACHMENT_CLASSES
+        if abjad_attachment_class_sequence is None:
+            abjad_attachment_class_sequence = (
+                abjad_constants.DEFAULT_ABJAD_ATTACHMENT_CLASS_TUPLE
+            )
         else:
-            abjad_attachment_classes = tuple(abjad_attachment_classes)
+            abjad_attachment_class_sequence = tuple(abjad_attachment_class_sequence)
 
         if is_simple_event_rest is None:
 
@@ -364,11 +366,11 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 )
                 return not bool(pitch_list)
 
-        self._abjad_attachment_classes = abjad_attachment_classes
+        self._abjad_attachment_class_sequence = abjad_attachment_class_sequence
 
-        self._available_attachments = tuple(
+        self._available_attachment_tuple = tuple(
             abjad_attachment_class.get_class_name()
-            for abjad_attachment_class in self._abjad_attachment_classes
+            for abjad_attachment_class in self._abjad_attachment_class_sequence
         )
 
         self._sequential_event_to_quantized_abjad_container_converter = (
@@ -425,12 +427,12 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             mutwo_volume_to_abjad_attachment_dynamic_converter
         )
         if tempo_envelope_to_abjad_attachment_tempo_converter:
-            tempo_attachments = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
+            tempo_attachment_tuple = tempo_envelope_to_abjad_attachment_tempo_converter.convert(
                 self._sequential_event_to_quantized_abjad_container_converter.tempo_envelope
             )
         else:
-            tempo_attachments = None
-        self._tempo_attachments = tempo_attachments
+            tempo_attachment_tuple = None
+        self._tempo_attachment_tuple = tempo_attachment_tuple
 
         self._write_multimeasure_rests = write_multimeasure_rests
 
@@ -439,8 +441,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     # ###################################################################### #
 
     @staticmethod
-    def _detect_abjad_event_type(pitches: list[parameters.abc.Pitch]) -> type:
-        n_pitches = len(pitches)
+    def _detect_abjad_event_type(pitch_list: list[parameters.abc.Pitch]) -> type:
+        n_pitches = len(pitch_list)
         if n_pitches == 0:
             abjad_event_type = abjad.Rest
         elif n_pitches == 1:
@@ -453,13 +455,13 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
     def _find_absolute_times_of_abjad_leaves(
         abjad_voice: abjad.Voice,
     ) -> tuple[fractions.Fraction, ...]:
-        absolute_time_per_leaf: list[fractions.Fraction] = []
+        absolute_time_per_leaf_list: list[fractions.Fraction] = []
         for leaf in abjad.select(abjad_voice).leaves():
             start, _ = abjad.get.timespan(leaf).offsets
-            absolute_time_per_leaf.append(
+            absolute_time_per_leaf_list.append(
                 fractions.Fraction(start.numerator, start.denominator)
             )
-        return tuple(absolute_time_per_leaf)
+        return tuple(absolute_time_per_leaf_list)
 
     @staticmethod
     def _replace_rests_with_full_measure_rests(abjad_voice: abjad.Voice) -> None:
@@ -484,17 +486,17 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
         self,
         indicator_collection: parameters.abc.IndicatorCollection,
     ) -> dict[str, attachments.AbjadAttachment]:
-        attachments = {}
-        for abjad_attachment_class in self._abjad_attachment_classes:
+        attachment_dict = {}
+        for abjad_attachment_class in self._abjad_attachment_class_sequence:
             abjad_attachment = abjad_attachment_class.from_indicator_collection(
                 indicator_collection
             )
             if abjad_attachment:
-                attachments.update(
+                attachment_dict.update(
                     {abjad_attachment_class.get_class_name(): abjad_attachment}
                 )
 
-        return attachments
+        return attachment_dict
 
     def _grace_note_sequential_event_to_abjad_attachment(
         self,
@@ -536,7 +538,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 return {"dynamic": abjad_attachment_dynamic}
         return {}
 
-    def _get_tempo_attachments_for_quantized_abjad_leaves(
+    def _get_tempo_attachment_tuple_for_quantized_abjad_leaves(
         self,
         abjad_voice: abjad.Voice,
     ) -> tuple[
@@ -554,7 +556,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         assert absolute_time_per_leaf == tuple(sorted(absolute_time_per_leaf))
 
-        leaf_index_to_tempo_attachment_pairs: list[
+        leaf_index_to_tempo_attachment_pairs_list: list[
             tuple[
                 int,
                 typing.Union[
@@ -563,7 +565,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 ],
             ]
         ] = []
-        for absolute_time, tempo_attachment in self._tempo_attachments:
+        for absolute_time, tempo_attachment in self._tempo_attachment_tuple:
             closest_leaf = tools.find_closest_index(
                 absolute_time, absolute_time_per_leaf
             )
@@ -572,14 +574,14 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             # (has to applied to the previous leaf for
             #  better looking results)
             if tempo_attachment.stop_dynamic_change_indicaton:
-                leaf_index_to_tempo_attachment_pairs.append(
+                leaf_index_to_tempo_attachment_pairs_list.append(
                     (closest_leaf - 1, attachments.DynamicChangeIndicationStop())
                 )
-            leaf_index_to_tempo_attachment_pairs.append(
+            leaf_index_to_tempo_attachment_pairs_list.append(
                 (closest_leaf, tempo_attachment)
             )
 
-        return tuple(leaf_index_to_tempo_attachment_pairs)
+        return tuple(leaf_index_to_tempo_attachment_pairs_list)
 
     def _get_attachments_for_quantized_abjad_leaves(
         self,
@@ -589,7 +591,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             str, list[typing.Optional[attachments.AbjadAttachment]]
         ] = {
             attachment_name: [None for _ in extracted_data_per_simple_event]
-            for attachment_name in self._available_attachments
+            for attachment_name in self._available_attachment_tuple
         }
         for nth_event, extracted_data in enumerate(extracted_data_per_simple_event):
             (
@@ -627,47 +629,47 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
     def _apply_tempos_on_quantized_abjad_leaves(
         self,
-        quanitisized_abjad_leaves: abjad.Voice,
+        quanitisized_abjad_leaf_voice: abjad.Voice,
     ):
-        if self._tempo_attachments:
-            leaves = abjad.select(quanitisized_abjad_leaves).leaves()
+        if self._tempo_attachment_tuple:
+            leaves = abjad.select(quanitisized_abjad_leaf_voice).leaves()
             tempo_attachment_data = (
-                self._get_tempo_attachments_for_quantized_abjad_leaves(
-                    quanitisized_abjad_leaves
+                self._get_tempo_attachment_tuple_for_quantized_abjad_leaves(
+                    quanitisized_abjad_leaf_voice
                 )
             )
             for nth_event, tempo_attachment in tempo_attachment_data:
-                tempo_attachment.process_leaves((leaves[nth_event],), None)
+                tempo_attachment.process_leaf_tuple((leaves[nth_event],), None)
 
     def _apply_attachments_on_quantized_abjad_leaves(
         self,
-        quanitisized_abjad_leaves: abjad.Voice,
-        related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
-        attachments_per_type_per_event: tuple[
+        quanitisized_abjad_leaf_voice: abjad.Voice,
+        related_abjad_leaf_index_tuple_tuple_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
+        attachments_per_type_per_event_tuple: tuple[
             tuple[typing.Optional[attachments.AbjadAttachment], ...], ...
         ],
     ) -> None:
-        for attachments_per_type in attachments_per_type_per_event:
+        for attachments_per_type in attachments_per_type_per_event_tuple:
             previous_attachment = None
-            for related_abjad_leaves_indices, attachment in zip(
-                related_abjad_leaves_per_simple_event, attachments_per_type
+            for related_abjad_leaf_index_tuple_tuple, attachment in zip(
+                related_abjad_leaf_index_tuple_tuple_per_simple_event, attachments_per_type
             ):
                 if attachment and attachment.is_active:
                     abjad_leaves = tuple(
-                        tools.get_nested_item_from_indices(
-                            indices,
-                            quanitisized_abjad_leaves,
+                        tools.get_nested_item_from_index_sequence(
+                            index_tuple,
+                            quanitisized_abjad_leaf_voice,
                         )
-                        for indices in related_abjad_leaves_indices
+                        for index_tuple in related_abjad_leaf_index_tuple_tuple
                     )
-                    processed_abjad_leaves = attachment.process_leaves(
+                    processed_abjad_leaves = attachment.process_leaf_tuple(
                         abjad_leaves, previous_attachment
                     )
-                    for processed_abjad_leaf, indices in zip(
-                        processed_abjad_leaves, related_abjad_leaves_indices
+                    for processed_abjad_leaf, index_tuple in zip(
+                        processed_abjad_leaves, related_abjad_leaf_index_tuple_tuple
                     ):
-                        tools.set_nested_item_from_indices(
-                            indices, quanitisized_abjad_leaves, processed_abjad_leaf
+                        tools.set_nested_item_from_index_sequence(
+                            index_tuple, quanitisized_abjad_leaf_voice, processed_abjad_leaf
                         )
 
                     previous_attachment = attachment
@@ -724,29 +726,29 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         return tuple(extracted_data)
 
-    def _apply_pitches_on_quantized_abjad_leaf(
+    def _apply_pitch_list_on_quantized_abjad_leaf(
         self,
-        quanitisized_abjad_leaves: abjad.Voice,
-        abjad_pitches: list[abjad.Pitch],
-        related_abjad_leaves_indices: tuple[tuple[int, ...], ...],
+        quanitisized_abjad_leaf_voice: abjad.Voice,
+        abjad_pitch_list: list[abjad.Pitch],
+        related_abjad_leaf_index_tuple_tuple: tuple[tuple[int, ...], ...],
     ):
-        if len(abjad_pitches) == 1:
+        if len(abjad_pitch_list) == 1:
             leaf_class = abjad.Note
         else:
             leaf_class = abjad.Chord
 
-        for related_abjad_leaf_indices in related_abjad_leaves_indices:
-            abjad_leaf = tools.get_nested_item_from_indices(
-                related_abjad_leaf_indices, quanitisized_abjad_leaves
+        for related_abjad_leaf_index_tuple in related_abjad_leaf_index_tuple_tuple:
+            abjad_leaf = tools.get_nested_item_from_index_sequence(
+                related_abjad_leaf_index_tuple, quanitisized_abjad_leaf_voice
             )
             if leaf_class == abjad.Note:
                 # skip don't have note heads
                 if hasattr(abjad_leaf, "note_head"):
-                    abjad_leaf.note_head._written_pitch = abjad_pitches[0]
+                    abjad_leaf.note_head._written_pitch = abjad_pitch_list[0]
 
             else:
                 new_abjad_leaf = leaf_class(
-                    [abjad.NamedPitch() for _ in abjad_pitches],
+                    [abjad.NamedPitch() for _ in abjad_pitch_list],
                     abjad_leaf.written_duration,
                 )
                 for indicator in abjad.get.indicators(abjad_leaf):
@@ -754,38 +756,38 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                         abjad.attach(indicator, new_abjad_leaf)
 
                 for abjad_pitch, note_head in zip(
-                    abjad_pitches, new_abjad_leaf.note_heads
+                    abjad_pitch_list, new_abjad_leaf.note_heads
                 ):
                     note_head._written_pitch = abjad_pitch
 
-                tools.set_nested_item_from_indices(
-                    related_abjad_leaf_indices,
-                    quanitisized_abjad_leaves,
+                tools.set_nested_item_from_index_sequence(
+                    related_abjad_leaf_index_tuple,
+                    quanitisized_abjad_leaf_voice,
                     new_abjad_leaf,
                 )
 
     def _apply_pitches_on_quantized_abjad_leaves(
         self,
-        quanitisized_abjad_leaves: abjad.Voice,
-        related_abjad_leaves_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
+        quanitisized_abjad_leaf_voice: abjad.Voice,
+        related_abjad_leaf_index_tuple_tuple_per_simple_event: tuple[tuple[tuple[int, ...], ...], ...],
         extracted_data_per_simple_event: ExtractedDataPerSimpleEvent,
         is_simple_event_rest_per_simple_event: tuple[bool, ...],
     ):
-        for is_simple_event_rest, extracted_data, related_abjad_leaves_indices in zip(
+        for is_simple_event_rest, extracted_data, related_abjad_leaf_index_tuple_tuple in zip(
             is_simple_event_rest_per_simple_event,
             extracted_data_per_simple_event,
-            related_abjad_leaves_per_simple_event,
+            related_abjad_leaf_index_tuple_tuple_per_simple_event,
         ):
             if not is_simple_event_rest:
-                pitches = extracted_data[0]
-                abjad_pitches = [
+                pitch_list = extracted_data[0]
+                abjad_pitch_list = [
                     self._mutwo_pitch_to_abjad_pitch_converter.convert(pitch)
-                    for pitch in pitches
+                    for pitch in pitch_list
                 ]
-                self._apply_pitches_on_quantized_abjad_leaf(
-                    quanitisized_abjad_leaves,
-                    abjad_pitches,
-                    related_abjad_leaves_indices,
+                self._apply_pitch_list_on_quantized_abjad_leaf(
+                    quanitisized_abjad_leaf_voice,
+                    abjad_pitch_list,
+                    related_abjad_leaf_index_tuple_tuple,
                 )
 
     def _quantize_sequential_event(
@@ -799,8 +801,8 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
             is_simple_event_rest_per_simple_event
         )
         (
-            quanitisized_abjad_leaves,
-            related_abjad_leaves_per_simple_event,
+            quanitisized_abjad_leaf_voice,
+            related_abjad_leaf_index_tuple_tuple_per_simple_event,
         ) = self._sequential_event_to_quantized_abjad_container_converter.convert(
             sequential_event_to_convert.set_parameter(  # type: ignore
                 "is_rest",
@@ -809,7 +811,7 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 mutate=False,
             )
         )
-        return quanitisized_abjad_leaves, related_abjad_leaves_per_simple_event
+        return quanitisized_abjad_leaf_voice, related_abjad_leaf_index_tuple_tuple_per_simple_event
 
     def _fill_abjad_container(
         self,
@@ -838,16 +840,16 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
 
         # second, quantize the sequential event
         (
-            quanitisized_abjad_leaves,
-            related_abjad_leaves_per_simple_event,
+            quanitisized_abjad_leaf_voice,
+            related_abjad_leaf_index_tuple_tuple_per_simple_event,
         ) = self._quantize_sequential_event(
             sequential_event_to_convert, is_simple_event_rest_per_simple_event
         )
 
         # third, apply pitches on Abjad voice
         self._apply_pitches_on_quantized_abjad_leaves(
-            quanitisized_abjad_leaves,
-            related_abjad_leaves_per_simple_event,
+            quanitisized_abjad_leaf_voice,
+            related_abjad_leaf_index_tuple_tuple_per_simple_event,
             extracted_data_per_simple_event,
             is_simple_event_rest_per_simple_event,
         )
@@ -858,21 +860,21 @@ class SequentialEventToAbjadVoiceConverter(ComplexEventToAbjadContainerConverter
                 extracted_data_per_simple_event
             )
         )
-        self._apply_tempos_on_quantized_abjad_leaves(quanitisized_abjad_leaves)
+        self._apply_tempos_on_quantized_abjad_leaves(quanitisized_abjad_leaf_voice)
         self._apply_attachments_on_quantized_abjad_leaves(
-            quanitisized_abjad_leaves,
-            related_abjad_leaves_per_simple_event,
+            quanitisized_abjad_leaf_voice,
+            related_abjad_leaf_index_tuple_tuple_per_simple_event,
             attachments_per_type_per_event,
         )
 
         # fifth, replace rests lasting one bar with full measure rests
         if self._write_multimeasure_rests:
             SequentialEventToAbjadVoiceConverter._replace_rests_with_full_measure_rests(
-                quanitisized_abjad_leaves
+                quanitisized_abjad_leaf_voice
             )
 
-        # move leaves from 'quanitisized_abjad_leaves' object to target container
-        abjad.mutate.swap(quanitisized_abjad_leaves, abjad_container_to_fill)
+        # move leaves from 'quanitisized_abjad_leaf_voice' object to target container
+        abjad.mutate.swap(quanitisized_abjad_leaf_voice, abjad_container_to_fill)
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
@@ -994,7 +996,7 @@ class _GraceNotesToAbjadVoiceConverter(SequentialEventToAbjadVoiceConverter):
     ) -> dict[str, attachments.AbjadAttachment]:
         return {}
 
-    def _get_tempo_attachments_for_quantized_abjad_leaves(
+    def _get_tempo_attachment_tuple_for_quantized_abjad_leaves(
         self,
         abjad_voice: abjad.Voice,
     ) -> tuple[
@@ -1022,12 +1024,12 @@ class CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConver
 ):
     def __init__(
         self,
-        complex_event_to_abjad_container_converters: typing.Sequence[
+        complex_event_to_abjad_container_converter_sequence: typing.Sequence[
             ComplexEventToAbjadContainerConverter
         ],
     ):
         self._complex_event_to_abjad_container_converters = (
-            complex_event_to_abjad_container_converters
+            complex_event_to_abjad_container_converter_sequence
         )
 
     def convert(
@@ -1036,12 +1038,12 @@ class CycleBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConver
         complex_event_to_abjad_container_converters_cycle = itertools.cycle(
             self._complex_event_to_abjad_container_converters
         )
-        complex_event_to_abjad_container_converters = []
+        complex_event_to_abjad_container_converter_list = []
         for _ in nested_complex_event_to_convert:
-            complex_event_to_abjad_container_converters.append(
+            complex_event_to_abjad_container_converter_list.append(
                 next(complex_event_to_abjad_container_converters_cycle)
             )
-        return tuple(complex_event_to_abjad_container_converters)
+        return tuple(complex_event_to_abjad_container_converter_list)
 
 
 class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverter(
@@ -1064,7 +1066,7 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverte
     def convert(
         self, nested_complex_event_to_convert: events.abc.ComplexEvent
     ) -> tuple[ComplexEventToAbjadContainerConverter, ...]:
-        complex_event_to_abjad_container_converters = []
+        complex_event_to_abjad_container_converter_list = []
         for complex_event in nested_complex_event_to_convert:
             tag = self._complex_event_to_tag(complex_event)
             try:
@@ -1078,10 +1080,10 @@ class TagBasedNestedComplexEventToComplexEventToAbjadContainerConvertersConverte
                     f" '{self._tag_to_complex_event_to_abjad_container_converter.keys()}'"
                 )
 
-            complex_event_to_abjad_container_converters.append(
+            complex_event_to_abjad_container_converter_list.append(
                 complex_event_to_abjad_container_converter
             )
-        return tuple(complex_event_to_abjad_container_converters)
+        return tuple(complex_event_to_abjad_container_converter_list)
 
 
 class NestedComplexEventToAbjadContainerConverter(
@@ -1095,10 +1097,10 @@ class NestedComplexEventToAbjadContainerConverter(
         complex_event_to_abjad_container_name: typing.Callable[
             [events.abc.ComplexEvent], str
         ] = lambda complex_event: complex_event.tag,
-        pre_process_abjad_container_routines: typing.Sequence[
+        pre_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
-        post_process_abjad_container_routines: typing.Sequence[
+        post_process_abjad_container_routine_sequence: typing.Sequence[
             process_container_routines.ProcessAbjadContainerRoutine
         ] = tuple([]),
     ):
@@ -1106,8 +1108,8 @@ class NestedComplexEventToAbjadContainerConverter(
             abjad_container_class,
             lilypond_type_of_abjad_container,
             complex_event_to_abjad_container_name,
-            pre_process_abjad_container_routines,
-            post_process_abjad_container_routines,
+            pre_process_abjad_container_routine_sequence,
+            post_process_abjad_container_routine_sequence,
         )
         self._nested_complex_event_to_complex_event_to_abjad_container_converters_converter = nested_complex_event_to_complex_event_to_abjad_container_converters_converter
 
@@ -1116,11 +1118,11 @@ class NestedComplexEventToAbjadContainerConverter(
         abjad_container_to_fill: abjad.Container,
         nested_complex_event_to_convert: events.abc.ComplexEvent,
     ):
-        complex_event_to_abjad_container_converters = self._nested_complex_event_to_complex_event_to_abjad_container_converters_converter.convert(
+        complex_event_to_abjad_container_converter_tuple = self._nested_complex_event_to_complex_event_to_abjad_container_converters_converter.convert(
             nested_complex_event_to_convert
         )
         for complex_event, complex_event_to_abjad_container_converter in zip(
-            nested_complex_event_to_convert, complex_event_to_abjad_container_converters
+            nested_complex_event_to_convert, complex_event_to_abjad_container_converter_tuple
         ):
             converted_complex_event = (
                 complex_event_to_abjad_container_converter.convert(complex_event)

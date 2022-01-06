@@ -23,8 +23,8 @@ __all__ = (
     "find_closest_index",
     "find_closest_item",
     # "class_name_to_object_name",  # not for public use
-    "get_nested_item_from_indices",
-    "set_nested_item_from_indices",
+    "get_nested_item_from_index_sequence",
+    "set_nested_item_from_index_sequence",
     "find_numbers_which_sums_up_to",
     # call_function_except_attribute_error  # not for public use
 )
@@ -134,19 +134,19 @@ def accumulate_from_zero(iterable: typing.Iterable[constants.Real]) -> typing.It
 
 
 def insert_next_to(
-    iterable: typing.MutableSequence,
+    mutable_sequence: typing.MutableSequence,
     item_to_find: typing.Any,
     distance: int,
     item_to_insert: typing.Any,
 ):
     """Insert an item into a list relative to the first item equal to a certain value."""
 
-    index = list(iterable).index(item_to_find)
+    index = list(mutable_sequence).index(item_to_find)
     if distance == 0:
-        iterable[index] = item_to_insert
+        mutable_sequence[index] = item_to_insert
     else:
         real_distance = distance + 1 if distance < 0 else distance
-        iterable.insert(index + real_distance, item_to_insert)
+        mutable_sequence.insert(index + real_distance, item_to_insert)
 
 
 T = typing.TypeVar("T", bound=constants.Real)
@@ -154,13 +154,13 @@ T = typing.TypeVar("T", bound=constants.Real)
 
 def find_closest_index(
     item: constants.Real,
-    data: typing.Iterable,
+    sequence: typing.Sequence,
     key: typing.Callable[[typing.Any], T] = lambda item: item,
 ) -> int:
     """Return index of element in ``data`` with smallest difference to ``item``.
 
     :param item: The item from which the closest item shall be found.
-    :param data: The data to which the closest item shall be found.
+    :param sequence: The data to which the closest item shall be found.
 
     **Example:**
 
@@ -173,12 +173,12 @@ def find_closest_index(
     0
     """
 
-    research_data = tuple(map(key, data))
+    research_data = tuple(map(key, sequence))
     sorted_research_data = sorted(research_data)
 
     solution = bisect.bisect_left(sorted_research_data, item)
     # make type ignore because data has been converted to tuple (which is sizeable)
-    if solution == len(data):  # type: ignore
+    if solution == len(sequence):
         index = solution - 1
 
     elif solution == 0:
@@ -194,13 +194,13 @@ def find_closest_index(
 
 def find_closest_item(
     item: constants.Real,
-    data: typing.Sequence,
+    sequence: typing.Sequence,
     key: typing.Callable[[typing.Any], T] = lambda item: item,
 ) -> T:
     """Return element in ``data`` with smallest difference to ``item``.
 
     :param item: The item from which the closest item shall be found.
-    :param data: The data to which the closest item shall be found.
+    :param sequence: The data to which the closest item shall be found.
     :return: The closest number to ``item`` in ``data``.
 
     **Example:**
@@ -213,7 +213,7 @@ def find_closest_item(
     >>> tools.find_closest_item(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
     ('hi', 100)
     """
-    return data[find_closest_index(item, data, key=key)]
+    return sequence[find_closest_index(item, sequence, key=key)]
 
 
 def import_module_if_dependencies_have_been_installed(
@@ -237,13 +237,13 @@ def import_module_if_dependencies_have_been_installed(
 
 
 def uniqify_iterable(
-    iterable: typing.Sequence,
+    sequence: typing.Sequence,
     sort_key: typing.Callable[[typing.Any], constants.Real] = None,
     group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
 ) -> typing.Iterable:
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.
 
-    :param iterable: The iterable which items shall be uniqified.
+    :param sequence: The iterable which items shall be uniqified.
     :return: Return uniqified version of the entered iterable.
         The function will try to return the same type of the passed
         iterable. If Python raises an error during initialisation of
@@ -262,11 +262,11 @@ def uniqify_iterable(
     WesternPitch(a4)]
     """
 
-    sorted_iterable = sorted(iterable, key=sort_key)
+    sorted_iterable = sorted(sequence, key=sort_key)
     result = (key for key, _ in itertools.groupby(sorted_iterable, key=group_by_key))
 
     try:
-        return type(iterable)(result)  # type: ignore
+        return type(sequence)(result)  # type: ignore
 
     except Exception:
         return tuple(result)
@@ -309,7 +309,7 @@ def camel_case_to_snake_case(camel_case_string: str) -> str:
     **Example:** MyClassName -> my_class_name
     """
 
-    characters = []
+    character_list = []
 
     is_first = True
     for character in camel_case_string:
@@ -321,18 +321,18 @@ def camel_case_to_snake_case(camel_case_string: str) -> str:
         if is_first:
             is_first = False
 
-        characters.append(character)
+        character_list.append(character)
 
-    return "".join(characters)
+    return "".join(character_list)
 
 
-def get_nested_item_from_indices(
-    indices: typing.Sequence[int], sequence: typing.Sequence
+def get_nested_item_from_index_sequence(
+    index_sequence: typing.Sequence[int], sequence: typing.Sequence
 ) -> typing.Any:
     """Get item in nested Sequence.
 
-    :param indices: The indices of the nested item.
-    :type indices: typing.Sequence[int]
+    :param index_sequence: The indices of the nested item.
+    :type index_sequence: typing.Sequence[int]
     :param sequence: A nested sequence.
     :type sequence: typing.Sequence[typing.Any]
 
@@ -341,26 +341,26 @@ def get_nested_item_from_indices(
 
     >>> from mutwo.utilities import tools
     >>> nested_sequence = (1, 2, (4, (5, 1), (9, (3,))))
-    >>> tools.get_nested_item_from_indices((2, 2, 0), nested_sequence)
+    >>> tools.get_nested_item_from_index_sequence((2, 2, 0), nested_sequence)
     9
     >>> nested_sequence[2][2][0]  # is equal
     9
     """
 
-    for index in indices:
+    for index in index_sequence:
         sequence = sequence[index]
     return sequence
 
 
-def set_nested_item_from_indices(
-    indices: typing.Sequence[int],
+def set_nested_item_from_index_sequence(
+    index_sequence: typing.Sequence[int],
     sequence: typing.MutableSequence,
     item: typing.Any,
 ) -> None:
     """Set item in nested Sequence.
 
-    :param indices: The indices of the nested item which shall be set.
-    :type indices: typing.Sequence[int]
+    :param index_sequence: The indices of the nested item which shall be set.
+    :type index_sequence: typing.Sequence[int]
     :param sequence: A nested sequence.
     :type sequence: typing.MutableSequence[typing.Any]
     :param item: The new item value.
@@ -370,12 +370,12 @@ def set_nested_item_from_indices(
 
     >>> from mutwo.utilities import tools
     >>> nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]]
-    >>> tools.set_nested_item_from_indices((2, 2, 0), nested_sequence, 100)
+    >>> tools.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
     >>> nested_sequence[2][2][0] = 100  # is equal
     """
 
-    n_indices = len(indices)
-    for nth_index, index in enumerate(indices):
+    n_indices = len(index_sequence)
+    for nth_index, index in enumerate(index_sequence):
         if n_indices == nth_index + 1:
             sequence.__setitem__(index, item)
         else:
@@ -399,7 +399,7 @@ def round_floats(number_to_round: constants.Real, n_digits: int) -> constants.Re
 
 def find_numbers_which_sums_up_to(
     given_sum: float,
-    numbers_to_choose_from: typing.Optional[typing.Sequence[float]] = None,
+    number_to_choose_from_sequence: typing.Optional[typing.Sequence[float]] = None,
     n_items_to_sum_up: typing.Optional[set[int]] = None,
 ) -> tuple[tuple[float, ...], ...]:
     """Find all combinations of numbers which sum is equal to the given sum.
@@ -407,11 +407,11 @@ def find_numbers_which_sums_up_to(
     :param given_sum: The target sum for which different combinations shall
         be searched.
     :type given_sum: float
-    :param numbers_to_choose_from: A sequence of numbers which shall be
+    :param number_to_choose_from_sequence: A sequence of numbers which shall be
         tried to combine to result in the :attr:`given_sum`. If the user
         doesn't specify this argument mutwo will use all natural numbers
         equal or smaller than the :attr:`given_sum`.
-    :type numbers_to_choose_from: typing.Optional[typing.Sequence[float]]
+    :type number_to_choose_from_sequence: typing.Optional[typing.Sequence[float]]
     :param n_items_to_sum_up: How many numbers can be combined to result
         in the :attr:`given_sum`. If the user doesn't specify this argument
         mutwo will use all natural numbers equal or smaller than the
@@ -425,8 +425,8 @@ def find_numbers_which_sums_up_to(
     ((4,), (1, 3), (2, 2), (1, 1, 2), (1, 1, 1, 1))
     """
 
-    if not numbers_to_choose_from:
-        numbers_to_choose_from = tuple(range(1, int(given_sum) + 1))
+    if not number_to_choose_from_sequence:
+        number_to_choose_from_sequence = tuple(range(1, int(given_sum) + 1))
 
     if not n_items_to_sum_up:
         n_items_to_sum_up = set(range(1, given_sum + 1))
@@ -437,7 +437,7 @@ def find_numbers_which_sums_up_to(
             [
                 pair
                 for pair in itertools.combinations_with_replacement(
-                    numbers_to_choose_from, n_items
+                    number_to_choose_from_sequence, n_items
                 )
                 if sum(pair) == given_sum
             ]

@@ -22,10 +22,10 @@ class TwoPitchesToCommonHarmonicsConverter(converters.abc.Converter):
     def __init__(
         self, tonality: typing.Optional[bool], lowest_partial: int, highest_partial: int
     ):
-        self._tonality_per_pitch = (
+        self._tonality_per_pitch_tuple = (
             (tonality, tonality) if tonality is not None else (True, False)
         )
-        self._tonality_to_partials = {
+        self._tonality_to_partial_tuple_dict = {
             tonality: TwoPitchesToCommonHarmonicsConverter._make_partials(
                 lowest_partial, highest_partial, tonality
             )
@@ -35,14 +35,14 @@ class TwoPitchesToCommonHarmonicsConverter(converters.abc.Converter):
     @staticmethod
     def _make_partials(
         lowest_partial: int, highest_partial: int, tonality: bool
-    ) -> tuple[parameters.pitches.JustIntonationPitch, ...]:
-        partials = tuple(
+    ) -> tuple[tuple[int, parameters.pitches.JustIntonationPitch], ...]:
+        partial_tuple = tuple(
             (nth_partial, parameters.pitches.JustIntonationPitch(nth_partial, 1))
             for nth_partial in range(lowest_partial, highest_partial)
         )
         if not tonality:
-            [partial.inverse() for _, partial in partials]
-        return partials
+            [partial.inverse() for _, partial in partial_tuple]
+        return partial_tuple
 
     def convert(
         self,
@@ -54,14 +54,14 @@ class TwoPitchesToCommonHarmonicsConverter(converters.abc.Converter):
         partials0, partials1 = tuple(
             tuple(
                 (nth_partial, partial + pitch)
-                for nth_partial, partial in self._tonality_to_partials[tonality]
+                for nth_partial, partial in self._tonality_to_partial_tuple_dict[tonality]
             )
-            for pitch, tonality in zip(pitch_pair_to_examine, self._tonality_per_pitch)
+            for pitch, tonality in zip(pitch_pair_to_examine, self._tonality_per_pitch_tuple)
         )
 
         nth_partial_for_partials1, partials1 = zip(*partials1)
 
-        common_harmonics = []
+        common_harmonic_list = []
         for nth_partial_for_first_pitch, partial in partials0:
             if partial in partials1:
                 nth_partial_for_second_pitch = nth_partial_for_partials1[
@@ -72,11 +72,11 @@ class TwoPitchesToCommonHarmonicsConverter(converters.abc.Converter):
                         parameters.pitches.Partial(nth_partial, tonality)
                         for nth_partial, tonality in zip(
                             (nth_partial_for_first_pitch, nth_partial_for_second_pitch),
-                            self._tonality_per_pitch,
+                            self._tonality_per_pitch_tuple,
                         )
                     ),
                     partial,
                 )
-                common_harmonics.append(common_harmonic)
+                common_harmonic_list.append(common_harmonic)
 
-        return tuple(common_harmonics)
+        return tuple(common_harmonic_list)

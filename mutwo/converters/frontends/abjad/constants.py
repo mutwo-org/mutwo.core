@@ -5,7 +5,7 @@ import inspect
 
 from mutwo.converters.frontends.abjad import attachments
 
-DEFAULT_ABJAD_ATTACHMENT_CLASSES = tuple(
+DEFAULT_ABJAD_ATTACHMENT_CLASS_TUPLE = tuple(
     cls
     for _, cls in inspect.getmembers(attachments, inspect.isclass)
     if not inspect.isabstract(cls)

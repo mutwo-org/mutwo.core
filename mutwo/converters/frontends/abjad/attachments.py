@@ -46,11 +46,11 @@ class AbjadAttachment(abc.ABC):
         return cls(**indicator.get_arguments_dict())  # type: ignore
 
     @abc.abstractmethod
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
+    ) -> tuple[abjad.Leaf, ...]:
         raise NotImplementedError()
 
     @property
@@ -75,15 +75,15 @@ class ToggleAttachment(AbjadAttachment):
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
         raise NotImplementedError()
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
+    ) -> tuple[abjad.Leaf, ...]:
         if previous_attachment != self:
-            return (self.process_leaf(leaves[0], previous_attachment),) + leaves[1:]
+            return (self.process_leaf(leaf_tuple[0], previous_attachment),) + leaf_tuple[1:]
         else:
-            return leaves
+            return leaf_tuple
 
 
 class BangAttachment(AbjadAttachment):
@@ -108,26 +108,26 @@ class BangAttachment(AbjadAttachment):
     def process_central_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         raise NotImplementedError()
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
-        n_leaves = len(leaves)
+    ) -> tuple[abjad.Leaf, ...]:
+        n_leaf_tuple = len(leaf_tuple)
 
-        new_leaves = []
+        new_leaf_list = []
 
-        if n_leaves > 0:
-            new_leaves.append(self.process_first_leaf(leaves[0]))
+        if n_leaf_tuple > 0:
+            new_leaf_list.append(self.process_first_leaf(leaf_tuple[0]))
 
-        if n_leaves > 2:
-            for leaf in leaves[1:-1]:
-                new_leaves.append(self.process_central_leaf(leaf))
+        if n_leaf_tuple > 2:
+            for leaf in leaf_tuple[1:-1]:
+                new_leaf_list.append(self.process_central_leaf(leaf))
 
-        if n_leaves > 1:
-            new_leaves.append(self.process_last_leaf(leaves[-1]))
+        if n_leaf_tuple > 1:
+            new_leaf_list.append(self.process_last_leaf(leaf_tuple[-1]))
 
-        return tuple(new_leaves)
+        return tuple(new_leaf_list)
 
 
 class BangEachAttachment(BangAttachment):
@@ -192,16 +192,16 @@ class BangLastAttachment(BangAttachment):
     def process_central_leaf(self, leaf: abjad.Leaf) -> abjad.Leaf:
         return leaf
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
-        n_leaves = len(leaves)
-        if n_leaves > 0:
-            return leaves[:-1] + (self.process_last_leaf(leaves[-1]),)
+    ) -> tuple[abjad.Leaf, ...]:
+        n_leaf_tuple = len(leaf_tuple)
+        if n_leaf_tuple > 0:
+            return leaf_tuple[:-1] + (self.process_last_leaf(leaf_tuple[-1]),)
         else:
-            return leaves
+            return leaf_tuple
 
 
 class Arpeggio(playing_indicators.Arpeggio, BangFirstAttachment):
@@ -256,7 +256,7 @@ class ArtificalHarmonic(playing_indicators.ArtificalHarmonic, BangEachAttachment
         abjad.tweak(leaf.note_heads[1]).NoteHead.style = "#'harmonic"
 
     @staticmethod
-    def _convert_and_test_leaf(leaf: abjad.Leaf) -> typing.Tuple[abjad.Leaf, bool]:
+    def _convert_and_test_leaf(leaf: abjad.Leaf) -> tuple[abjad.Leaf, bool]:
         # return True if artifical_harmonic can be attached and False if
         # artifical harmonic can't be attached
 
@@ -310,7 +310,7 @@ class PreciseNaturalHarmonic(
     playing_indicators.PreciseNaturalHarmonic, BangEachAttachment
 ):
     @staticmethod
-    def _convert_leaf(leaf: abjad.Leaf) -> typing.Tuple[abjad.Leaf, bool]:
+    def _convert_leaf(leaf: abjad.Leaf) -> tuple[abjad.Leaf, bool]:
         if isinstance(leaf, abjad.Chord):
             return leaf
 
@@ -419,16 +419,16 @@ class StringContactPoint(playing_indicators.StringContactPoint, ToggleAttachment
             )
         return leaf
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
+    ) -> tuple[abjad.Leaf, ...]:
         # don't attach ordinario at start (this is the default playing technique)
         if previous_attachment is not None or self.contact_point != "ordinario":
-            return super().process_leaves(leaves, previous_attachment)
+            return super().process_leaf_tuple(leaf_tuple, previous_attachment)
         else:
-            return leaves
+            return leaf_tuple
 
 
 class Pedal(playing_indicators.Pedal, ToggleAttachment):
@@ -443,16 +443,16 @@ class Pedal(playing_indicators.Pedal, ToggleAttachment):
         abjad.attach(pedal_class(self.pedal_type), leaf)
         return leaf
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
+    ) -> tuple[abjad.Leaf, ...]:
         # don't attach pedal down at start
         if previous_attachment is not None or self.is_active:
-            return super().process_leaves(leaves, previous_attachment)
+            return super().process_leaf_tuple(leaf_tuple, previous_attachment)
         else:
-            return leaves
+            return leaf_tuple
 
 
 class Hairpin(playing_indicators.Hairpin, ToggleAttachment):
@@ -692,16 +692,16 @@ class Ottava(notation_indicators.Ottava, ToggleAttachment):
         )
         return leaf
 
-    def process_leaves(
+    def process_leaf_tuple(
         self,
-        leaves: typing.Tuple[abjad.Leaf, ...],
+        leaf_tuple: tuple[abjad.Leaf, ...],
         previous_attachment: typing.Optional["AbjadAttachment"],
-    ) -> typing.Tuple[abjad.Leaf, ...]:
+    ) -> tuple[abjad.Leaf, ...]:
         # don't attach ottava = 0 at start (this is the default notation)
         if previous_attachment is not None or self.n_octaves != 0:
-            return super().process_leaves(leaves, previous_attachment)
+            return super().process_leaf_tuple(leaf_tuple, previous_attachment)
         else:
-            return leaves
+            return leaf_tuple
 
 
 class Markup(notation_indicators.Markup, BangFirstAttachment):
@@ -805,8 +805,8 @@ class Dynamic(ToggleAttachment):
 
 @dataclasses.dataclass()
 class Tempo(BangFirstAttachment):
-    reference_duration: typing.Optional[typing.Tuple[int, int]] = (1, 4)
-    units_per_minute: typing.Union[int, typing.Tuple[int, int], None] = 60
+    reference_duration: typing.Optional[tuple[int, int]] = (1, 4)
+    units_per_minute: typing.Union[int, tuple[int, int], None] = 60
     textual_indication: typing.Optional[str] = None
     # TODO(for future usage add typing.Literal['rit.', 'acc.'])
     dynamic_change_indication: typing.Optional[str] = None
@@ -897,7 +897,7 @@ class GraceNoteSequentialEvent(BangFirstAttachment):
     ) -> typing.Union[abjad.Leaf, typing.Sequence[abjad.Leaf]]:
         for (
             indicator_to_detach
-        ) in attachments_constants.INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES:
+        ) in attachments_constants.INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES_TUPLE:
             detached_indicator = abjad.detach(indicator_to_detach, leaf)
             abjad.attach(detached_indicator, self._grace_note_sequential_event[0])
         abjad.attach(self._grace_note_sequential_event, leaf)

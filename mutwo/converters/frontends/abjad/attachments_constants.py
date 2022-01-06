@@ -2,7 +2,7 @@
 
 import abjad
 
-INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES = (abjad.TimeSignature,)
+INDICATORS_TO_DETACH_FROM_MAIN_LEAF_AT_GRACE_NOTES_TUPLE = (abjad.TimeSignature,)
 """This is used in :class:`~mutwo.converters.frontends.abjad.attachments.GraceNotes`.
 
 Some indicators have to be detached from the main note and added to the first

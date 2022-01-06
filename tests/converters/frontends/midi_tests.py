@@ -130,11 +130,11 @@ class MidiFileConverterTest(unittest.TestCase):
             )
 
     def test_assert_available_midi_channels_have_correct_value(self):
-        for problematic_available_midi_channels in ((0, 14, 19), (100,), ("hi", 12)):
+        for problematic_available_midi_channel_tuple in ((0, 14, 19), (100,), ("hi", 12)):
             self.assertRaises(
                 ValueError,
-                lambda: self.converter._assert_available_midi_channels_have_correct_value(
-                    problematic_available_midi_channels
+                lambda: self.converter._assert_available_midi_channel_tuple_has_correct_value(
+                    problematic_available_midi_channel_tuple
                 ),
             )
 
@@ -172,7 +172,7 @@ class MidiFileConverterTest(unittest.TestCase):
             midi_constants.MAXIMUM_MICROSECONDS_PER_BEAT,
         )
 
-    def test_find_available_midi_channels(self):
+    def test_find_available_midi_channel_tuple(self):
         converter0 = midi.MidiFileConverter()
         converter1 = midi.MidiFileConverter(
             distribute_midi_channels=True, n_midi_channels_per_track=1
@@ -187,21 +187,21 @@ class MidiFileConverterTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            converter0._find_available_midi_channels_per_sequential_event(
+            converter0._find_available_midi_channel_tuple_per_sequential_event(
                 simultaneous_event
             ),
             tuple(
-                midi_constants.DEFAULT_AVAILABLE_MIDI_CHANNELS
+                midi_constants.DEFAULT_AVAILABLE_MIDI_CHANNEL_TUPLE
                 for _ in range(n_sequential_events)
             ),
         )
 
         self.assertEqual(
-            converter1._find_available_midi_channels_per_sequential_event(
+            converter1._find_available_midi_channel_tuple_per_sequential_event(
                 simultaneous_event
             ),
             tuple(
-                (nth_channel % len(midi_constants.ALLOWED_MIDI_CHANNELS),)
+                (nth_channel % len(midi_constants.ALLOWED_MIDI_CHANNEL_TUPLE),)
                 for nth_channel in range(n_sequential_events)
             ),
         )
@@ -530,12 +530,12 @@ class MidiFileConverterTest(unittest.TestCase):
 
         os.remove(self.midi_file_path)
 
-    def test_available_midi_channels_argument(self):
+    def test_available_midi_channel_tuple_argument(self):
         # make sure mutwo only writes notes to midi channel that are
         # available and furthermore cycles through all available midi
         # channels!
 
-        for available_midi_channels in (
+        for available_midi_channel_tuple in (
             (0,),
             (0, 1, 2, 3),
             (0, 3, 4),
@@ -545,15 +545,15 @@ class MidiFileConverterTest(unittest.TestCase):
             ),
         ):
             converter = midi.MidiFileConverter(
-                available_midi_channels=available_midi_channels
+                available_midi_channel_tuple=available_midi_channel_tuple
             )
             converter.convert(self.sequential_event, self.midi_file_path)
             midi_file = mido.MidiFile(self.midi_file_path)
-            available_midi_channels_cycle = itertools.cycle(available_midi_channels)
+            available_midi_channel_cycle = itertools.cycle(available_midi_channel_tuple)
             for message in midi_file:
                 if message.type == "note_on":
                     self.assertEqual(
-                        message.channel, next(available_midi_channels_cycle)
+                        message.channel, next(available_midi_channel_cycle)
                     )
             os.remove(self.midi_file_path)
 

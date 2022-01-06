@@ -18,7 +18,7 @@ from mutwo.parameters import commas
 CENT_CALCULATION_CONSTANT = 1200 / (math.log10(2))
 """constant used for cent calculation in mutwo.parameters.abc.Pitch"""
 
-DIATONIC_PITCH_NAME_TO_PITCH_CLASS = {
+DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT = {
     diatonic_pitch_name: pitch_class
     for diatonic_pitch_name, pitch_class in zip(
         "c d e f g a b".split(" "), (0, 2, 4, 5, 7, 9, 11)
@@ -27,17 +27,17 @@ DIATONIC_PITCH_NAME_TO_PITCH_CLASS = {
 """Mapping of diatonic pitch name to pitch class for the `WesternPitch` class.
 Mutwo uses a chromatic scale where a change of the number 1 is one half tone."""
 
-ASCENDING_DIATONIC_PITCH_NAMES = tuple(
+ASCENDING_DIATONIC_PITCH_NAME_TUPLE = tuple(
     sorted(
-        DIATONIC_PITCH_NAME_TO_PITCH_CLASS.keys(),
-        key=lambda diatonic_pitch_name: DIATONIC_PITCH_NAME_TO_PITCH_CLASS[
+        DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT.keys(),
+        key=lambda diatonic_pitch_name: DIATONIC_PITCH_NAME_TO_PITCH_CLASS_DICT[
             diatonic_pitch_name
         ],
     )
 )
 """Tuple with diatonic pitch names in ascending order."""
 
-ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
+ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT = {
     # multiply with 2 because the difference of "1" in pitch
     # class is defined as one chromatic step (see class
     # definition of WesternPitch)
@@ -99,9 +99,9 @@ ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION = {
 `WesternPitch` class. When adding new accidentals or changing
 accidental names only this constant has to be changed."""
 
-PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME = {
+PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME_DICT = {
     accidental_value: accidental_name
-    for accidental_name, accidental_value in ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION.items()
+    for accidental_name, accidental_value in ACCIDENTAL_NAME_TO_PITCH_CLASS_MODIFICATION_DICT.items()
 }
 """Mapping of pitch class modifications name accidental name for the
 `WesternPitch` class. This global variable is defined in reference to
@@ -109,7 +109,7 @@ PITCH_CLASS_MODIFICATION_TO_ACCIDENTAL_NAME = {
 
 
 # is used in mutwo.parameters.pitches.JustIntonationPitch
-DIATONIC_PITCH_NAME_CYCLE_OF_FIFTHS = tuple("f c g d a e b".split(" "))
+DIATONIC_PITCH_NAME_CYCLE_OF_FIFTH_TUPLE = tuple("f c g d a e b".split(" "))
 """Diatonic pitch names sorted by cycle of fifths."""
 
 DEFAULT_CONCERT_PITCH = 440
@@ -126,7 +126,7 @@ DEFAULT_CONCERT_PITCH_PITCH_CLASS_FOR_WESTERN_PITCH = 9
 for the `WesternPitch` class. It sets pitch class 'a' as the default pitch class
 for the concert pitch of the WesternPitch class."""
 
-MIDI_PITCH_FREQUENCIES = (
+MIDI_PITCH_FREQUENCY_TUPLE = (
     8.175798915643705,
     8.66195721802725,
     9.177023997418985,
@@ -257,12 +257,12 @@ MIDI_PITCH_FREQUENCIES = (
 )
 """A tuple that contains the frequency of each midi pitch (from 1 to 127)."""
 
-MIDI_PITCH_NUMBERS = tuple(range(127))
+MIDI_PITCH_NUMBER_TUPLE = tuple(range(127))
 """A tuple that contains all available midi pitch numbers."""
 
 # tuning commas are organised, so that the relevant prime number
 # is always in the numerator of the ratio!
-DEFAULT_PRIME_TO_COMMA = {
+DEFAULT_PRIME_TO_COMMA_DICT = {
     # syntonic comma
     5: commas.Comma(fractions.Fraction(80, 81)),
     # septimal comma

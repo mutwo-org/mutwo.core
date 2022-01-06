@@ -69,12 +69,12 @@ class Tendency(object):
 
         # compare all local extrema to make sure that at any time
         # point minima_curve < maxima_curve
-        points_to_compare = (
+        point_to_compare_tuple = (
             minima_curve.local_extrema(include_saddle_points=True)
             + maxima_curve.local_extrema(include_saddle_points=True)
             + [0, minima_curve.end_time()]
         )
-        for time in points_to_compare:
+        for time in point_to_compare_tuple:
             try:
                 assert minima_curve.value_at(time) < maxima_curve.value_at(time)
             except AssertionError:

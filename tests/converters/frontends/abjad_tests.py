@@ -146,7 +146,7 @@ class MutwoVolumeToAbjadAttachmentDynamicConverterTest(unittest.TestCase):
 class ComplexTempoEnvelopeToAbjadAttachmentTempoConverterTest(unittest.TestCase):
     def test_convert_tempo_points(self):
         self.assertEqual(
-            frontends.abjad.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_points(
+            frontends.abjad.ComplexTempoEnvelopeToAbjadAttachmentTempoConverter._convert_tempo_point_tuple(
                 (60, 120, parameters.tempos.TempoPoint(120, reference=4))
             ),
             (
@@ -453,7 +453,7 @@ class SequentialEventToAbjadVoiceConverterTest(unittest.TestCase):
         # initialise complex converter and sequential event for complex tests
         cls.complex_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter(
             frontends.abjad.RMakersSequentialEventToQuantizedAbjadContainerConverter(
-                time_signatures=[
+                time_signature_sequence=[
                     abjad.TimeSignature(ts)
                     for ts in (
                         (4, 4),
@@ -785,7 +785,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                         ),
                         abjad.StaffGroup,
                         "PianoStaff",
-                        post_process_abjad_container_routines=(
+                        post_process_abjad_container_routine_sequence=(
                             frontends.abjad.process_container_routines.AddInstrumentName(
                                 complex_event_to_instrument_name=lambda complex_event: complex_event.tag
                             ),
@@ -799,7 +799,7 @@ class NestedComplexEventToAbjadContainerConverterTest(unittest.TestCase):
                         ),
                         abjad.Staff,
                         "Staff",
-                        post_process_abjad_container_routines=(
+                        post_process_abjad_container_routine_sequence=(
                             frontends.abjad.process_container_routines.AddInstrumentName(
                                 complex_event_to_instrument_name=lambda complex_event: complex_event.tag
                             ),

@@ -63,7 +63,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     starts.
     """
 
-    _default_p_fields: PFieldDict = {
+    _default_p_field_dict: PFieldDict = {
         "p1": lambda event: 1,  # default instrument name "1"
         "p2": None,  # default to absolute start time
         "p3": lambda event: event.duration  # type: ignore
@@ -72,15 +72,18 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     }
 
     def __init__(self, **pfield: PFieldFunction):
-        concatenated_p_fields: PFieldDict = dict([])
-        for default_p_field, default_p_field_function in self._default_p_fields.items():
+        concatenated_p_field_dict: PFieldDict = dict([])
+        for (
+            default_p_field,
+            default_p_field_function,
+        ) in self._default_p_field_dict.items():
             if default_p_field not in pfield:
-                concatenated_p_fields.update(
+                concatenated_p_field_dict.update(
                     {default_p_field: default_p_field_function}
                 )
 
-        concatenated_p_fields.update(pfield)
-        self.pfields = self._generate_pfield_mapping(concatenated_p_fields)
+        concatenated_p_field_dict.update(pfield)
+        self.pfield_tuple = self._generate_pfield_mapping(concatenated_p_field_dict)
 
     # ###################################################################### #
     #                          static methods                                #
@@ -93,7 +96,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         """Maps p-fields to their respective p_field_function."""
 
         sorted_pfield_keys = natsort.natsorted(pfield_key_to_function_mapping.keys())
-        pfields = []
+        pfield_list = []
         for key0, key1 in zip(sorted_pfield_keys, sorted_pfield_keys[1:]):
             number0, number1 = (int(pfield_name[1:]) for pfield_name in (key0, key1))
             try:
@@ -104,20 +107,20 @@ class CsoundScoreConverter(converters.abc.EventConverter):
                 )
                 raise ValueError(message)
 
-            pfields.append(pfield_key_to_function_mapping[key0])
+            pfield_list.append(pfield_key_to_function_mapping[key0])
 
             difference = number1 - number0
             if difference > 1:
                 for _ in range(difference - 1):
-                    pfields.append(lambda event: 0)
+                    pfield_list.append(lambda event: 0)
                 message = "Couldn't find any mapping for p-fields between '{}' and '{}'. ".format(
                     key0, key1
                 )
                 message += "Assigned these p-fields to 0."
                 warnings.warn(message)
 
-        pfields.append(pfield_key_to_function_mapping[key1])
-        return tuple(pfields)
+        pfield_list.append(pfield_key_to_function_mapping[key1])
+        return tuple(pfield_list)
 
     @staticmethod
     def _process_p_field_value(
@@ -161,7 +164,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         """Extract p-field data from simple event and write one Csound-Score line."""
 
         csound_score_line = "i"
-        for nth_p_field, p_field_function in enumerate(self.pfields):
+        for nth_p_field, p_field_function in enumerate(self.pfield_tuple):
             # special case of absolute start time initialization
             if nth_p_field == 1 and p_field_function is None:
                 csound_score_line += " {}".format(absolute_entry_delay)
@@ -187,29 +190,29 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         sequential_event: events.basic.SequentialEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> tuple[str, ...]:
-        csound_score_lines = [
+        csound_score_line_list = [
             converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
         ]
-        csound_score_lines.extend(
+        csound_score_line_list.extend(
             super()._convert_sequential_event(sequential_event, absolute_entry_delay)
         )
 
         for _ in range(
             converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
         ):
-            csound_score_lines.append("")
+            csound_score_line_list.append("")
 
-        return tuple(csound_score_lines)
+        return tuple(csound_score_line_list)
 
     def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
         absolute_entry_delay: parameters.abc.DurationType,
     ) -> tuple[str, ...]:
-        csound_score_lines = [
+        csound_score_line_list = [
             converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
         ]
-        csound_score_lines.extend(
+        csound_score_line_list.extend(
             super()._convert_simultaneous_event(
                 simultaneous_event, absolute_entry_delay
             )
@@ -217,8 +220,8 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         for _ in range(
             converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
         ):
-            csound_score_lines.append("")
-        return tuple(csound_score_lines)
+            csound_score_line_list.append("")
+        return tuple(csound_score_line_list)
 
     # ###################################################################### #
     #                             public api                                 #
@@ -250,11 +253,11 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         >>> converter.convert(events, 'score.sco')
         """
 
-        csound_score_lines = self._convert_event(event_to_convert, 0)
+        csound_score_line_tuple = self._convert_event(event_to_convert, 0)
         # convert events to strings (where each string represents one csound score line)
         # write csound score lines to file
         with open(path, "w") as f:
-            f.write("\n".join(csound_score_lines))
+            f.write("\n".join(csound_score_line_tuple))
 
 
 class CsoundConverter(converters.abc.Converter):
