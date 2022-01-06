@@ -279,13 +279,13 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @staticmethod
-    def _get_index_at_from_absolute_times(
+    def _get_index_at_from_absolute_time_tuple(
         absolute_time: parameters.abc.DurationType,
-        absolute_times: tuple[parameters.abc.DurationType, ...],
+        absolute_time_tuple: tuple[parameters.abc.DurationType, ...],
         duration: parameters.abc.DurationType,
     ) -> typing.Optional[int]:
         if absolute_time < duration and absolute_time >= 0:
-            return bisect.bisect_right(absolute_times, absolute_time) - 1
+            return bisect.bisect_right(absolute_time_tuple, absolute_time) - 1
         else:
             return None
 
@@ -301,7 +301,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         )
 
     @property
-    def absolute_times(self) -> tuple[constants.Real, ...]:
+    def absolute_time_tuple(self) -> tuple[constants.Real, ...]:
         """Return absolute point in time for each event."""
 
         duration_iterator = (event.duration for event in self)
@@ -314,10 +314,10 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         """Return start and end time for each event."""
 
         duration_iterator = (event.duration for event in self)
-        absolute_times = tuple(tools.accumulate_from_zero(duration_iterator))
+        absolute_time_tuple = tuple(tools.accumulate_from_zero(duration_iterator))
         return tuple(
             ranges.Range(*start_and_end_time)
-            for start_and_end_time in zip(absolute_times, absolute_times[1:])
+            for start_and_end_time in zip(absolute_time_tuple, absolute_time_tuple[1:])
         )
 
     # ###################################################################### #
@@ -347,9 +347,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
         None
         """
 
-        absolute_times = self.absolute_times
-        return SequentialEvent._get_index_at_from_absolute_times(
-            absolute_time, absolute_times, self.duration
+        absolute_time_tuple = self.absolute_time_tuple
+        return SequentialEvent._get_index_at_from_absolute_time_tuple(
+            absolute_time, absolute_time_tuple, self.duration
         )
 
     def get_event_at(
@@ -391,7 +391,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
         remove_nth_event_list = []
         for nth_event, event_start, event in zip(
-            range(len(self)), self.absolute_times, self
+            range(len(self)), self.absolute_time_tuple, self
         ):
             event_duration = event.duration
             event_end = event_start + event_duration
@@ -428,7 +428,7 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             # cut_off - range
             event_to_delete_list = []
             for event_index, event_start, event in zip(
-                range(len(self)), self.absolute_times, self
+                range(len(self)), self.absolute_time_tuple, self
             ):
                 event_end = event_start + event.duration
                 if event_start >= start and event_end <= end:
@@ -464,9 +464,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
             self.append(event_to_squash_in)
 
         else:
-            absolute_times = self.absolute_times
+            absolute_time_tuple = self.absolute_time_tuple
             active_event_index = self.get_event_index_at(start)
-            split_position = start - absolute_times[active_event_index]
+            split_position = start - absolute_time_tuple[active_event_index]
             # avoid floating point error
             rounded_split_position = tools.round_floats(
                 split_position,
@@ -490,9 +490,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
     def split_child_at(
         self, absolute_time: parameters.abc.DurationType
     ) -> SequentialEvent[T]:
-        absolute_times = self.absolute_times
-        nth_event = SequentialEvent._get_index_at_from_absolute_times(
-            absolute_time, absolute_times, self.duration
+        absolute_time_tuple = self.absolute_time_tuple
+        nth_event = SequentialEvent._get_index_at_from_absolute_time_tuple(
+            absolute_time, absolute_time_tuple, self.duration
         )
 
         # if there is no event at the requested time, raise error
@@ -501,9 +501,9 @@ class SequentialEvent(events.abc.ComplexEvent, typing.Generic[T]):
 
         # only try to split child event at the requested time if there isn't
         # a segregation already anyway
-        elif absolute_time != absolute_times[nth_event]:
+        elif absolute_time != absolute_time_tuple[nth_event]:
             try:
-                end = absolute_times[nth_event + 1]
+                end = absolute_time_tuple[nth_event + 1]
             except IndexError:
                 end = self.duration
 

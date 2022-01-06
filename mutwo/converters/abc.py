@@ -111,7 +111,7 @@ class EventConverter(Converter):
 
         data_per_simple_event_list: list[tuple[typing.Any]] = []
         for event_start, event in zip(
-            sequential_event.absolute_times, sequential_event
+            sequential_event.absolute_time_tuple, sequential_event
         ):
             data_per_simple_event_list.extend(
                 self._convert_event(event, event_start + absolute_entry_delay)
@@ -209,7 +209,7 @@ class SymmetricalEventConverter(EventConverter):
             sequential_event.empty_copy()
         )
         for event_start, event in zip(
-            sequential_event.absolute_times, sequential_event
+            sequential_event.absolute_time_tuple, sequential_event
         ):
             converted_sequential_event.append(
                 self._convert_event(event, event_start + absolute_entry_delay)

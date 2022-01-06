@@ -149,8 +149,8 @@ class SequentialEventTest(unittest.TestCase):
         self.assertEqual(self.sequence[1].duration, 1)
         self.assertEqual(self.sequence[2].duration, 1.5)
 
-    def test_get_absolute_times(self):
-        result = tuple(self.sequence.absolute_times)
+    def test_get_absolute_time_tuple(self):
+        result = tuple(self.sequence.absolute_time_tuple)
         self.assertEqual(result, (0, 1, 3))
 
     def test_get_event_at(self):

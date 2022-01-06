@@ -82,7 +82,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
                     absolute_entry_delay, duration, pitch.frequency, path
                 )
                 for absolute_entry_delay, duration, pitch, path in zip(
-                    event_to_convert.absolute_times, durations, pitches, paths
+                    event_to_convert.absolute_time_tuple, durations, pitches, paths
                 )
             ]
         )
@@ -127,7 +127,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
                     absolute_entry_delay, event.duration, event.pitch.frequency, path
                 )
                 for absolute_entry_delay, event in zip(
-                    event_to_convert.absolute_times, event_to_convert
+                    event_to_convert.absolute_time_tuple, event_to_convert
                 )
                 if hasattr(event, "pitch")
             ]

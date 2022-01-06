@@ -595,7 +595,7 @@ class MidiFileConverter(abc.Converter):
 
         # fill midi track with the content of the sequential event
         for absolute_time, simple_event in zip(
-            sequential_event.absolute_times, sequential_event
+            sequential_event.absolute_time_tuple, sequential_event
         ):
             midi_message_tuple = self._simple_event_to_midi_messages(
                 simple_event, absolute_time, available_midi_channel_tuple_cycle
