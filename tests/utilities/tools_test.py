@@ -67,16 +67,16 @@ class ToolsTest(unittest.TestCase):
     def test_uniqify(self):
         data0 = (100, 200, 300, 300, 100)
         expected_result0 = (100, 200, 300)
-        unique0 = tools.uniqify_iterable(data0)
+        unique0 = tools.uniqify_sequence(data0)
 
         data1 = (9, 9, 4, 2, 9, 5, 2)
         expected_result1 = (2, 4, 5, 9)
-        unique1 = tools.uniqify_iterable(data1)
+        unique1 = tools.uniqify_sequence(data1)
 
         # test for non hashable items
         data2 = [[1, 2], [100], [3, 2], [100], [3, 2], [3, 3]]
         expected_result2 = [[1, 2], [3, 2], [3, 3], [100]]
-        unique2 = tools.uniqify_iterable(data2, sort_key=lambda iterable: sum(iterable))
+        unique2 = tools.uniqify_sequence(data2, sort_key=lambda iterable: sum(iterable))
 
         # test for mutwo objects
         data3 = [
@@ -87,7 +87,7 @@ class ToolsTest(unittest.TestCase):
             pitches.JustIntonationPitch(frequency_ratio)
             for frequency_ratio in "1/1 6/5 5/4 3/2".split(" ")
         ]
-        unique3 = tools.uniqify_iterable(
+        unique3 = tools.uniqify_sequence(
             data3,
             sort_key=lambda just_intonation_pitch: just_intonation_pitch.frequency,
         )

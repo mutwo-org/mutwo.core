@@ -17,7 +17,7 @@ __all__ = (
     "accumulate_from_n",
     "accumulate_from_zero",
     "insert_next_to",
-    "uniqify_iterable",
+    "uniqify_sequence",
     "cyclic_permutations",
     # "import_module_if_dependencies_have_been_installed",  # not for public use
     "find_closest_index",
@@ -236,7 +236,7 @@ def import_module_if_dependencies_have_been_installed(
         importlib.import_module(module)
 
 
-def uniqify_iterable(
+def uniqify_sequence(
     sequence: typing.Sequence,
     sort_key: typing.Callable[[typing.Any], constants.Real] = None,
     group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
@@ -254,7 +254,7 @@ def uniqify_iterable(
 
     >>> from mutwo.parameters import pitches
     >>> from mutwo.utilities import tools
-    >>> tools.uniqify_iterable([pitches.WesternPitch(pitch_name) for pitch_name in 'c d e c d e e f a c a'.split(' ')])
+    >>> tools.uniqify_sequence([pitches.WesternPitch(pitch_name) for pitch_name in 'c d e c d e e f a c a'.split(' ')])
     [WesternPitch(c4),
     WesternPitch(d4),
     WesternPitch(e4),
