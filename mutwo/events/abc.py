@@ -129,7 +129,7 @@ class Event(abc.ABC):
         parameter_name: str,
         object_or_function: typing.Union[
             typing.Callable[
-                [parameters.abc.ParameterType], parameters.abc.ParameterType
+                [typing.Any], typing.Any
             ],
             typing.Any,
         ],
@@ -421,7 +421,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         parameter_name: str,
         object_or_function: typing.Union[
             typing.Callable[
-                [parameters.abc.ParameterType], parameters.abc.ParameterType
+                [typing.Any], typing.Any
             ],
             typing.Any,
         ],
