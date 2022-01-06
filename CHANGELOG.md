@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `MMMLConverter`
 
 
+## [0.42.0] - 2022-01-06
+
+### Changed
+- refactor complete code base: rename all plural variables from `objects` to `object_containertype` (for instance `pitches` to `pitch_list`) for clearer code
+
+### Deprecated
+- `time_brackets` module (in events and in converters): neither well tested nor documented, therefore removed or exported soon (and should only be added again if it is more stable)
+- `absolute_times` property (replaced by `offset_tuple` property)
+
+### Fixed
+- `IsisConverter`: fix missing argument for `convert` method
+
+
 ## [0.41.0] - 2022-01-04
 
 ### Added
@@ -36,6 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - move typing literals from `parameters.playing_indicators` to `parameters.playing_indicators_constants`
 - renamed function in `utility.tools` module `class_name_to_object_name` to `camel_case_to_snake_case`
 
+
 ## [0.40.0] - 2021-11-27
 
 ### Changed
@@ -43,6 +57,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - abstract base class `Parameter`
+
 
 ## [0.39.0] - 2021-11-27
 
