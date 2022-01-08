@@ -9,11 +9,20 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
-      - run: sudo apt-get update && sudo apt-get upgrade && sudo apt-get install csound && wget https://lilypond.org/download/binaries/linux-64/lilypond-2.22.0-1.linux-64.sh && sh lilypond-2.22.0-1.linux-64.sh --batch
-      - run: pip3 install .[testing]
+      - run: sudo apt-get update && sudo apt-get upgrade
       - run:
           name: Run tests
-          command: nosetests --cover-package=mutwo
+          command: |
+            pip3 install virtualenv
+            TEST_VIRTUALENV_DIR=mutwo_test
+            mkdir $TEST_VIRTUALENV_DIR
+            virtualenv $TEST_VIRTUALENV_DIR/mutwo_test
+            source mutwo_test/mutwo_test/bin/activate
+            pip3 install .[testing]
+            cp -r tests mutwo_test/
+            cd mutwo_test
+            nosetests --with-coverage --cover-package=mutwo
+            deactivate
   pypi_publish:
     docker:
       - image: circleci/python:3.9
