@@ -9,8 +9,5 @@ mutwo data to third-party software data (or upside down). The :mod:`mutwo.genera
 package supports algorithmic generation of artistic data.
 """
 
-from . import utilities
-from . import parameters
-from . import converters
-from . import events
-from . import generators
+from . import core
+from . import ext

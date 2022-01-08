@@ -4,24 +4,11 @@ import setuptools  # type: ignore
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-extras_require = {
-    "midi": ["mido>=1.2.9, <2"],
-    "reaper": ["rpp>=0.4, <0.5"],
-    "abjad": [
-        "abjad-ext-nauert>=3.4.0, <4",
-        "abjad>=3.4.0, <4",
-        "abjad-ext-rmakers>=3.4.0, <4",
-    ],
-}
-
-extras_require.update({"all": list(extras_require.values())})  # type: ignore
-extras_require.update(
-    {"testing": ["nose", "pillow>=8.2.0, <9.0.0"] + extras_require["all"]}
-)
+extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0"]}
 
 setuptools.setup(
     name="mutwo",
-    version="0.42.0",
+    version="0.43.0",
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,

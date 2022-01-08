@@ -7,16 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- improved mmml module
-    - `MMMLSingleRhythmConverter`
-    - `MMMLRhythmsConverter`
-    - `MMMLSingleVolumeConverter`
-    - `MMMLSingleWesternVolumeConverter`
-    - `MMMLVolumesConverter`
-    - `MMMLSingleAttributeConverter`
-    - `MMMLEventsConverter`
-    - `MMMLConverter`
+## [0.43.0] - 2022-01-08
+
+### Changed
+- refactor mutwo code: split mutwo into `core` and `ext` packages. `core` only contains the main / shared / most important code
 
 
 ## [0.42.0] - 2022-01-06
