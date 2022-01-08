@@ -74,10 +74,13 @@ def import_all_submodules(module: typing.Optional[types.ModuleType] = None):
 
     if not module:
         module = fetch_called_module()
-    return {
-        name: importlib.import_module(module.__name__ + "." + name)
-        for _, name, __ in pkgutil.walk_packages(module.__path__)
-    }
+
+    for _, name, is_package in pkgutil.walk_packages(module.__path__):
+        if is_package:
+            try:
+                importlib.import_module(module.__name__ + "." + name)
+            except ModuleNotFoundError:
+                pass
 
 
 def initialise_mutwo_ext_init():
