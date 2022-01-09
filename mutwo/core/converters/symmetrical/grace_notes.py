@@ -7,7 +7,6 @@ import expenvelope
 
 from mutwo.core import converters
 from mutwo.core import events
-from mutwo.core import parameters
 from mutwo.core import utilities
 
 __all__ = ("GraceNotesConverter",)
@@ -159,7 +158,7 @@ class GraceNotesConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: utilities.constants.DurationType,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
@@ -207,7 +206,7 @@ class GraceNotesConverter(converters.abc.EventConverter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: utilities.constants.DurationType,
     ) -> tuple[events.basic.SimultaneousEvent[events.abc.Event]]:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
@@ -230,7 +229,7 @@ class GraceNotesConverter(converters.abc.EventConverter):
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: utilities.constants.DurationType,
     ) -> tuple[events.basic.SequentialEvent[events.abc.Event]]:
         sequential_event_copied = sequential_event.empty_copy()
         sequential_event_copied.extend(

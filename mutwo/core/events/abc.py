@@ -6,7 +6,7 @@ import abc
 import copy
 import typing
 
-from mutwo.core import parameters
+from mutwo.core.utilities import constants
 from mutwo.core.utilities import decorators
 from mutwo.core.utilities import tools
 
@@ -22,7 +22,7 @@ class Event(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def duration(self) -> parameters.abc.DurationType:
+    def duration(self) -> constants.DurationType:
         """The duration of an event (which can be any number).
 
         The unit of the duration is up to the interpretation of the user
@@ -39,10 +39,10 @@ class Event(abc.ABC):
 
     @staticmethod
     def _assert_correct_start_and_end_values(
-        start: parameters.abc.DurationType,
-        end: parameters.abc.DurationType,
+        start: constants.DurationType,
+        end: constants.DurationType,
         condition: typing.Callable[
-            [parameters.abc.DurationType, parameters.abc.DurationType], bool
+            [constants.DurationType, constants.DurationType], bool
         ] = lambda start, end: end
         >= start,
     ):
@@ -99,7 +99,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def get_parameter(
         self, parameter_name: str, flat: bool = False
-    ) -> typing.Union[tuple[typing.Any, ...], typing.Any]:
+    ) -> typing.Union[tuple[constants.ParameterType, ...], constants.ParameterType]:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -129,9 +129,9 @@ class Event(abc.ABC):
         parameter_name: str,
         object_or_function: typing.Union[
             typing.Callable[
-                [typing.Any], typing.Any
+                [constants.ParameterType], constants.ParameterType
             ],
-            typing.Any,
+            constants.ParameterType,
         ],
         set_unassigned_parameter: bool = True,
     ) -> None:
@@ -167,7 +167,7 @@ class Event(abc.ABC):
         self,
         parameter_name: str,
         function: typing.Union[
-            typing.Callable[[parameters.abc.Parameter], None], typing.Any
+            typing.Callable[[constants.ParameterType], None], typing.Any
         ],
     ) -> None:
         """Mutate parameter with a function.
@@ -185,8 +185,9 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic, music
-        >>> from mutwo.parameters import pitches
+        >>> from mutwo.core.events import basic
+        >>> from mutwo.ext import music
+        >>> from mutwo.core.parameters import pitches
         >>> sequential_event = basic.SequentialEvent([music.NoteLike([pitches.WesternPitch('c', 4), pitches.WesternPitch('e', 4)], 2, 1)])
         >>> sequential_event.mutate_parameter('pitch_or_pitches', lambda pitch_or_pitches: [pitch.add(12) for pitch in pitch_or_pitches])
         >>> # now all pitches should be one octave higher (from 4 to 5)
@@ -199,8 +200,8 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_out(
         self,
-        start: parameters.abc.DurationType,
-        end: parameters.abc.DurationType,
+        start: constants.DurationType,
+        end: constants.DurationType,
     ) -> typing.Optional[Event]:
         """Time-based slicing of the respective event.
 
@@ -223,8 +224,8 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def cut_off(
         self,
-        start: parameters.abc.DurationType,
-        end: parameters.abc.DurationType,
+        start: constants.DurationType,
+        end: constants.DurationType,
     ) -> typing.Optional[Event]:
         """Time-based deletion / shortening of the respective event.
 
@@ -245,7 +246,7 @@ class Event(abc.ABC):
         raise NotImplementedError
 
     def split_at(
-        self, absolute_time: parameters.abc.DurationType
+        self, absolute_time: constants.DurationType
     ) -> tuple[Event, Event]:
         """Split event in two events at :attr:`absolute_time`.
 
@@ -320,7 +321,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     # ###################################################################### #
 
     @Event.duration.setter  # type: ignore
-    def duration(self, new_duration: parameters.abc.DurationType):
+    def duration(self, new_duration: constants.DurationType):
         old_duration = self.duration
         self.set_parameter(
             "duration",
@@ -331,7 +332,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     #                           private methods                              #
     # ###################################################################### #
 
-    def _assert_start_in_range(self, start: parameters.abc.DurationType):
+    def _assert_start_in_range(self, start: constants.DurationType):
         """Helper method to make sure that start < event.duration.
 
         Can be used within the different squash_in methods.
@@ -405,8 +406,8 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False
-    ) -> tuple[typing.Any, ...]:
-        parameter_value_list: list[typing.Any] = []
+    ) -> tuple[constants.ParameterType, ...]:
+        parameter_value_list: list[constants.ParameterType] = []
         for event in self:
             parameter_values_of_event = event.get_parameter(parameter_name, flat=flat)
             if flat:
@@ -421,9 +422,9 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         parameter_name: str,
         object_or_function: typing.Union[
             typing.Callable[
-                [typing.Any], typing.Any
+                [constants.ParameterType], constants.ParameterType
             ],
-            typing.Any,
+            constants.ParameterType,
         ],
         set_unassigned_parameter: bool = True,
     ) -> ComplexEvent[T]:
@@ -441,7 +442,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         self,
         parameter_name: str,
         function: typing.Union[
-            typing.Callable[[parameters.abc.Parameter], None], typing.Any
+            typing.Callable[[constants.ParameterType], None], typing.Any
         ],
     ) -> ComplexEvent[T]:
         [event.mutate_parameter(parameter_name, function) for event in self]
@@ -545,7 +546,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def squash_in(
-        self, start: parameters.abc.DurationType, event_to_squash_in: Event
+        self, start: constants.DurationType, event_to_squash_in: Event
     ) -> typing.Optional[ComplexEvent[T]]:
         """Time-based insert of a new event into the present event.
 
@@ -568,7 +569,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def split_child_at(
-        self, absolute_time: parameters.abc.DurationType
+        self, absolute_time: constants.DurationType
     ) -> typing.Optional[ComplexEvent[T]]:
         """Split child event in two events at :attr:`absolute_time`.
 

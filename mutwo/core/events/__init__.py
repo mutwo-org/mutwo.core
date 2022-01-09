@@ -9,12 +9,14 @@ support for several more complex representations (for instance
 :class:`mutwo.events.music.NoteLike`).
 
 The most often used classes may be:
-    - :class:`mutwo.events.basic.SimpleEvent`
-    - :class:`mutwo.events.basic.SequentialEvent`
-    - :class:`mutwo.events.basic.SimultaneousEvent`
+    - :class:`mutwo.core.events.basic.SimpleEvent`
+    - :class:`mutwo.core.events.basic.SequentialEvent`
+    - :class:`mutwo.core.events.basic.SimultaneousEvent`
 """
 
 from . import basic_constants
+from . import envelopes_constants
 
 from . import abc
 from . import basic
+from . import envelopes

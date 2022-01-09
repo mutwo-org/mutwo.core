@@ -16,6 +16,22 @@ class ToolsTest(unittest.TestCase):
         result = tools.scale(0, -1, 1, 1, 2)
         self.assertEqual(result, 1.5)
 
+    def test_scale_late(self):
+        result = tools.scale(0.2, 0, 1, 0, 100, 1)
+        self.assertEqual(result, 12.885124808584155)
+        result = tools.scale(0, 0, 1, 0, 100, 1)
+        self.assertEqual(result, 0)
+        result = tools.scale(1, 0, 1, 0, 100, 1)
+        self.assertEqual(result, 100)
+
+    def test_scale_early(self):
+        result = tools.scale(0.2, 0, 1, 0, 100, -1)
+        self.assertEqual(result, 28.67637263023771)
+        result = tools.scale(0, 0, 1, 0, 100, -1)
+        self.assertEqual(result, 0)
+        result = tools.scale(1, 0, 1, 0, 100, -1)
+        self.assertEqual(result, 100)
+
     def test_scale_sequence_to_sum(self):
         result = tools.scale_sequence_to_sum([1, 3, 2], 3)
         self.assertEqual(result, [0.5, 1.5, 1])

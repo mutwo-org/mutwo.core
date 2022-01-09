@@ -16,6 +16,7 @@ except ImportError:
 from mutwo.core import converters
 from mutwo.core import events
 from mutwo.core import parameters
+from mutwo.core.utilities import constants
 
 
 __all__ = (
@@ -96,7 +97,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
 
     :param duration_for_each_attack: Set how long each attack of the
         Arpeggio lasts. Default to 0.1.
-    :type duration_for_each_attack: parameters.abc.DurationType
+    :type duration_for_each_attack: constants.DurationType
     :param simple_event_to_pitches: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
@@ -135,7 +136,7 @@ class ArpeggioConverter(PlayingIndicatorConverter):
 
     def __init__(
         self,
-        duration_for_each_attack: parameters.abc.DurationType = 0.1,
+        duration_for_each_attack: constants.DurationType = 0.1,
         simple_event_to_pitches: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
@@ -361,7 +362,7 @@ class TrillConverter(PlayingIndicatorConverter):
     """Apply trill on :class:`~mutwo.events.basic.SimpleEvent`.
 
     :param trill_size:
-    :type trill_size: parameters.abc.DurationType
+    :type trill_size: constants.DurationType
     :param simple_event_to_pitch_list: Function to extract from a
         :class:`mutwo.events.basic.SimpleEvent` a tuple that contains pitch objects
         (objects that inherit from :class:`mutwo.parameters.abc.Pitch`).
@@ -392,7 +393,7 @@ class TrillConverter(PlayingIndicatorConverter):
 
     def __init__(
         self,
-        trill_size: parameters.abc.DurationType = fractions.Fraction(1, 16),
+        trill_size: constants.DurationType = fractions.Fraction(1, 16),
         simple_event_to_pitch_list: typing.Callable[
             [events.basic.SimpleEvent], list[parameters.abc.Pitch]
         ] = lambda simple_event: simple_event.pitch_list,  # type: ignore
@@ -468,7 +469,7 @@ class PlayingIndicatorsConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
-        _: parameters.abc.DurationType,
+        _: constants.DurationType,
     ) -> events.basic.SequentialEvent[events.basic.SimpleEvent]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
         converted_event = [event_to_convert]

@@ -2,7 +2,7 @@
 
 import typing
 
-from mutwo.core import parameters
+from mutwo.core.utilities import constants
 
 __all__ = (
     "ValueNotAssignedError",
@@ -38,7 +38,7 @@ class OverlappingTimeBracketsError(Exception):
 
 
 class SplitUnavailableChildError(Exception):
-    def __init__(self, absolute_time: parameters.abc.DurationType):
+    def __init__(self, absolute_time: constants.DurationType):
         super().__init__(
             f"Can't split child at absolute time '{absolute_time}'. There is no child"
             " event available at the requested time."

@@ -13,6 +13,7 @@ except ImportError:
 
 import expenvelope
 
+from mutwo.core.events import envelopes
 from mutwo.core.parameters import pitches_constants
 from mutwo.core.parameters import volumes_constants
 from mutwo.core.utilities import constants
@@ -20,11 +21,10 @@ from mutwo.core.utilities import tools
 
 __all__ = ("Pitch", "Volume", "PlayingIndicator", "NotationIndicator")
 
-
 DurationType = constants.Real
 
 
-class AbsoluteEnvelope(expenvelope.Envelope):
+class AbsoluteEnvelope(envelopes.Envelope):
     def __init__(
         self,
         absolute_value_to_numerical_value: typing.Callable[[typing.Any], typing.Any],
@@ -46,7 +46,7 @@ class RelativeEnvelope(expenvelope.Envelope):
         )
 
     def resolve(
-        self, base_object: typing.Any, duration: DurationType
+        self, base_object: typing.Any, duration: constants.DurationType
     ) -> AbsoluteEnvelope:
         absolute_point_list = []
         start_time, end_time = self.start_time(), self.end_time()
@@ -82,7 +82,7 @@ class ParameterWithEnvelope(abc.ABC):
             )
         self._envelope = new_envelope
 
-    def resolve_envelope(self, duration: DurationType) -> AbsoluteEnvelope:
+    def resolve_envelope(self, duration: constants.DurationType) -> AbsoluteEnvelope:
         return self.envelope.resolve(self, duration)
 
 

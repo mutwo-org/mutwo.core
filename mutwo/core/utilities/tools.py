@@ -6,6 +6,7 @@ import functools
 import importlib
 import inspect
 import itertools
+import math
 import pkgutil
 import types
 import typing
@@ -96,6 +97,7 @@ def scale(
     old_max: constants.Real,
     new_min: constants.Real,
     new_max: constants.Real,
+    translation_shape: float = 0,
 ) -> constants.Real:
     """Scale a value from one range to another range.
 
@@ -104,27 +106,47 @@ def scale(
     :param old_max: The maxima of the old range.
     :param new_min: The minima of the new range.
     :param new_max: The maxima of the new range.
+    :param translation_shape: 0 for a linear translation,
+        values > 0 for a slower change at the beginning,
+        values < 0 for a faster change at the beginning.
+
+    The algorithmic to change the translation with the
+    `translation_shape` has been copied from
+    `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope/tree/master/item/expenvelope/envelope_segment.py#L206>`_
+    by M. Evanstein.
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
+    >>> from mutwo.core.utilities import tools
     >>> tools.scale(1, 0, 1, 0, 100)
     100
     >>> tools.scale(0.5, 0, 1, 0, 100)
     50
     >>> tools.scale(0.2, 0, 1, 0, 100)
     20
+    >>> tools.scale(0.2, 0, 1, 0, 100, 1)
+    12.885124808584155
+    >>> tools.scale(0.2, 0, 1, 0, 100, -1)
+    28.67637263023771
     """
 
     try:
         assert old_min <= value <= old_max
     except AssertionError:
-        message = (
-            f"Input value '{value}' has to be in the range of (old_min = {old_min},"
-            f" old_max = {old_max})."
+        raise ValueError(
+            f"Input value '{value}' has to be in the range of "
+            f"(old_min = {old_min}, old_max = {old_max})."
         )
-        raise ValueError(message)
-    return (((value - old_min) / (old_max - old_min)) * (new_max - new_min)) + new_min
+
+    percentage = (value - old_min) / (old_max - old_min)
+    new_range = new_max - new_min
+    if translation_shape:
+        value = (new_range / ((math.exp(translation_shape)) - 1)) * (
+            math.exp(translation_shape * percentage) - 1
+        )
+    else:
+        value = new_range * percentage
+    return value + new_min
 
 
 def scale_sequence_to_sum(

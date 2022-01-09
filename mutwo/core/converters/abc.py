@@ -4,7 +4,7 @@ import abc
 import typing
 
 from mutwo.core import events
-from mutwo.core import parameters
+from mutwo.core.utilities import constants
 
 __all__ = ("Converter", "EventConverter", "SymmetricalEventConverter")
 
@@ -81,7 +81,7 @@ class EventConverter(Converter):
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
@@ -90,7 +90,7 @@ class EventConverter(Converter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
@@ -105,7 +105,7 @@ class EventConverter(Converter):
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
 
@@ -121,7 +121,7 @@ class EventConverter(Converter):
     def _convert_event(
         self,
         event_to_convert: events.abc.Event,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> typing.Any:
         """Convert :class:`mutwo.events.abc.Event` of unknown type.
 
@@ -175,7 +175,7 @@ class SymmetricalEventConverter(EventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> events.basic.SimpleEvent:
         """Convert instance of :class:`mutwo.events.basic.SimpleEvent`."""
 
@@ -184,7 +184,7 @@ class SymmetricalEventConverter(EventConverter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> events.basic.SimultaneousEvent:
         """Convert instance of :class:`mutwo.events.basic.SimultaneousEvent`."""
 
@@ -201,7 +201,7 @@ class SymmetricalEventConverter(EventConverter):
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> events.basic.SequentialEvent:
         """Convert instance of :class:`mutwo.events.basic.SequentialEvent`."""
 
@@ -219,6 +219,6 @@ class SymmetricalEventConverter(EventConverter):
     def _convert_event(
         self,
         event_to_convert: events.abc.Event,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> events.abc.ComplexEvent[events.abc.Event]:
         return super()._convert_event(event_to_convert, absolute_entry_delay)

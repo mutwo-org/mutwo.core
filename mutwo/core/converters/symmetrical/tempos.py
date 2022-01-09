@@ -151,7 +151,7 @@ class TempoConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> tuple[typing.Any, ...]:
         simple_event.duration = self._envelope.integrate_interval(
             absolute_entry_delay, simple_event.duration + absolute_entry_delay
