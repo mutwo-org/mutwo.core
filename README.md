@@ -8,13 +8,16 @@
 
 ### disclaimer: This framework is still in an early stage of development and the API may still change until version 1.0.0.
 
-**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python. It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, [csound](https://csound.com/) scores, musical notation with [Lilypond](https://lilypond.org/) via [abjad](https://github.com/Abjad/abjad)). The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures and an easily extensible and tweakable software design.
+**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python.
+It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, [csound](https://csound.com/) scores, musical notation with [Lilypond](https://lilypond.org/) via [abjad](https://github.com/Abjad/abjad)).
+The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures and an easily extensible and tweakable software design.
 
 The following example generates a short midi file:
 
 ```python3
-from mutwo.events import basic, music
-from mutwo.converters import frontends
+from mutwo.core.events import basic
+from mutwo.ext.events import music
+from mutwo.ext.converters import frontends
 simple_melody = basic.SequentialEvent(
     [
         music.NoteLike(pitch_name, duration=duration, volume="mf")
@@ -43,6 +46,25 @@ abjad.show(abjad_score)
 ![Lilypond engraving](docs/pictures/readme_abjad_example.png)
 
 
+### Plugins
+
+Starting from version 0.43.0 mutwo uses a plugin based design.
+Only basic and internal functionality is provided by the main mutwo core package.
+For adding various third party converter support and additional functionality the mutwo ecosystem supports plugin-like extension packages.
+The following list gives an overview of currently supported extensions:
+
+- [mutwo.ext-music](https://github.com/mutwo-org/mutwo.ext-music): Improve workflow in writing traditional note based music by adding the `mutwo.ext.events.music` module
+- [mutwo.ext-common-generators](https://github.com/mutwo-org/mutwo.ext-common-generators): Algorithmic generation of data to be used for artistic works
+- [mutwo.ext-midi](https://github.com/mutwo-org/mutwo.ext-midi): Render mutwo events to midi files
+- [mutwo.ext-abjad](https://github.com/mutwo-org/mutwo.ext-abjad): Build [Lilypond based](lilypond.org/) Western score notation via [Abjad](abjad.github.io/)
+- [mutwo.ext-csound](https://github.com/mutwo-org/mutwo.ext-csound): Create electronic music parts via [csound](csound.com/)
+- [mutwo.ext-isis](https://github.com/mutwo-org/mutwo.ext-isis): Use singing synthesis via [ISiS](https://forum.ircam.fr/projects/detail/isis/)
+- [mutwo.ext-reaper](https://github.com/mutwo-org/mutwo.ext-reaper): Helpful converters for the [Reaper](https://www.reaper.fm/) DAW
+- [mutwo.ext-ekmelily](https://github.com/mutwo-org/mutwo.ext-ekmelily): Simplify writing microtonal notation in Lilypond by rendering files for the Lilypond extension [Ekmelily](http://ekmelic-music.org/en/extra/ekmelily.htm)
+- [mutwo.ext-mmml](https://github.com/mutwo-org/mutwo.ext-mmml): Write music in plain text files and convert it to mutwo events (experimental)
+
+Writing new plugins is simple, its basic structure can be understood at the [mutwo.ext-example](https://github.com/mutwo-org/mutwo.ext-example) repo.
+
 ### Documentation
 
 For more information how to use mutwo read the [documentation](https://mutwo.readthedocs.io/en/latest/).
@@ -56,21 +78,14 @@ Mutwo is available on [pypi](https://pypi.org/project/mutwo/) and can be install
 pip3 install mutwo
 ```
 
-For using different backends or frontends (midi, abjad, ...) mutwo may need additional extra requirements. They can be installed by adding the respective backend in parenthesis:
-
-```sh
-pip3 install mutwo[abjad]
-```
-
-To install all extra requirements simply run:
-
-```sh
-pip3 install mutwo[all]
-```
+This only installs the core functionality (see plugins above).
 
 ### Requirements
 
-Depending on the used converter classes, mutwo may need additional software to work properly. For using the Csound converter, you should install Csound first. For using Lilypond via mutwos abjad Converter, install Lilypond first. For using the ISiS converter, install ISiS first.
+Depending on the used converter classes, mutwo may need additional software to work properly.
+For using the Csound converter, you should install Csound first.
+For using Lilypond via mutwos abjad Converter, install Lilypond first.
+For using the ISiS converter, install ISiS first.
 
 
 ### Similar projects
