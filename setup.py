@@ -8,7 +8,7 @@ extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0", "mutwo.ext-music>
 
 setuptools.setup(
     name="mutwo",
-    version="0.43.2",
+    version="0.44.0",
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,
@@ -22,11 +22,11 @@ setuptools.setup(
     ],
     setup_requires=[],
     install_requires=[
+        "dill>=0.3.4, <1.0.0",
         "expenvelope>=0.6.5, <1.0.0",
         "primesieve>=2.0.0, <3.0.0",
         "numpy>=1.18, <2.00",
         "scipy>=1.4.1, <2.0.0",
-        "natsort>=5.3.3, <6.0.0",
         "python-ranges>=0.2.0, <1.0.0",
     ],
     extras_require=extras_require,

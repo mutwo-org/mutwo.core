@@ -7,3 +7,5 @@ data and the resulting data can be very different in type and form.
 The term 'generators' simply labels the functionality of the module and shouldn't be confused with the Python
 term for specific functions with the 'yield' keyword.
 """
+
+from . import generic
