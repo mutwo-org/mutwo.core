@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.45.0] - 2022-01-09
+
+### Added
+- `mutwo.core.events.envelopes` module
+
+### Changed
+- moved `DurationType` to `mutwo.core.utilities.constants`
+
+
 ## [0.43.0] - 2022-01-08
 
 ### Changed
