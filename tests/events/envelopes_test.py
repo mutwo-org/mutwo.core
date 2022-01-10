@@ -66,5 +66,23 @@ class EnvelopeTest(unittest.TestCase):
         self.assertEqual(envelope_from_points, envelope_from_init)
 
 
+class RelativeEnvelopeTest(unittest.TestCase):
+    def setUp(cls):
+        cls.envelope = events.envelopes.RelativeEnvelope(
+            [
+                [0, 0],
+                [5, 5],
+                [10, 10],
+            ],
+            base_parameter_and_relative_parameter_to_absolute_parameter=lambda base_parameter, relative_parameter: base_parameter
+            + relative_parameter,
+        )
+
+    def test_resolve(self):
+        resolved_envelope = self.envelope.resolve(duration=1, base_parameter=100)
+        self.assertEqual(resolved_envelope.duration, 1)
+        self.assertEqual(resolved_envelope.value_tuple, (100, 105, 110))
+
+
 if __name__ == "__main__":
     unittest.main()
