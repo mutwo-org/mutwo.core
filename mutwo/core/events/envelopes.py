@@ -153,6 +153,10 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
             )
         super().__init__(event_iterable)
 
+    # ###################################################################### #
+    #                      public class methods                              #
+    # ###################################################################### #
+
     @classmethod
     def from_points(
         cls,
@@ -160,6 +164,10 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         **kwargs,
     ) -> Envelope:
         return cls(point, **kwargs)
+
+    # ###################################################################### #
+    #                    private static methods                              #
+    # ###################################################################### #
 
     @staticmethod
     def _point_sequence_to_corrected_point_list(
@@ -177,6 +185,10 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
                 )
             corrected_point_list.append(point)  # type: ignore
         return corrected_point_list
+
+    # ###################################################################### #
+    #                         private methods                                #
+    # ###################################################################### #
 
     def _point_sequence_to_event_list(
         self,
@@ -211,9 +223,17 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
     def _event_to_value(self, event: events.abc.Event) -> Value:
         return self.parameter_to_value(self.event_to_parameter(event))
 
+    # ###################################################################### #
+    #                         public properties                              #
+    # ###################################################################### #
+
     @property
     def value_tuple(self) -> tuple[Value, ...]:
         return tuple(map(self._event_to_value, self))
+
+    # ###################################################################### #
+    #                          public methods                                #
+    # ###################################################################### #
 
     def value_at(self, absolute_time: constants.DurationType) -> Value:
         absolute_time_tuple = self.absolute_time_tuple
