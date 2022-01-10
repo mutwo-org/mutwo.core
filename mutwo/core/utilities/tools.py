@@ -97,7 +97,7 @@ def scale(
     old_max: constants.Real,
     new_min: constants.Real,
     new_max: constants.Real,
-    translation_shape: float = 0,
+    translation_shape: constants.Real = 0,
 ) -> constants.Real:
     """Scale a value from one range to another range.
 
