@@ -11,8 +11,6 @@ try:
 except ImportError:
     import fractions  # type: ignore
 
-import expenvelope
-
 from mutwo.core.events import envelopes
 from mutwo.core.parameters import pitches_constants
 from mutwo.core.parameters import volumes_constants
@@ -24,66 +22,31 @@ __all__ = ("Pitch", "Volume", "PlayingIndicator", "NotationIndicator")
 DurationType = constants.Real
 
 
-class AbsoluteEnvelope(envelopes.Envelope):
-    def __init__(
-        self,
-        absolute_value_to_numerical_value: typing.Callable[[typing.Any], typing.Any],
-        numerical_value_to_absolute_value: typing.Callable[[typing.Any], typing.Any],
-    ):
-        self._absolute_value_to_numerical_value = absolute_value_to_numerical_value
-        self._numerical_value_to_absolute_value = numerical_value_to_absolute_value
-
-
-class RelativeEnvelope(expenvelope.Envelope):
-    def __init__(
-        self,
-        relative_value_and_base_value_to_absolute_value: typing.Callable[
-            [typing.Any, typing.Any], typing.Any
-        ],
-    ):
-        self._relative_value_and_base_value_to_absolute_value = (
-            relative_value_and_base_value_to_absolute_value
-        )
-
-    def resolve(
-        self, base_object: typing.Any, duration: constants.DurationType
-    ) -> AbsoluteEnvelope:
-        absolute_point_list = []
-        start_time, end_time = self.start_time(), self.end_time()
-        for relative_value, time in (self.levels, self.times):
-            absolute_time = tools.scale(time, start_time, end_time, 0, duration)
-            absolute_value = self._relative_value_and_base_value_to_absolute_value(
-                relative_value, base_object
-            )
-            absolute_point = (absolute_time, absolute_value)
-            absolute_point_list.append(absolute_point)
-        return AbsoluteEnvelope.from_points(*absolute_point_list)
-
-
 class ParameterWithEnvelope(abc.ABC):
     """Abstract base class for all parameters with an envelope."""
 
-    def __init__(self, envelope: RelativeEnvelope):
+    def __init__(self, envelope: envelopes.RelativeEnvelope):
         self.envelope = envelope
 
     @property
-    def envelope(self) -> RelativeEnvelope:
+    def envelope(self) -> envelopes.RelativeEnvelope:
         return self._envelope
 
     @envelope.setter
-    def envelope(self, new_envelope: RelativeEnvelope):
+    def envelope(self, new_envelope: typing.Any):
         try:
-            assert isinstance(new_envelope, RelativeEnvelope)
+            assert isinstance(new_envelope, envelopes.RelativeEnvelope)
         except AssertionError:
             raise TypeError(
                 f"Found illegal object '{new_envelope}' of not "
                 f"supported type '{type(new_envelope)}'. "
-                f"Only instances of '{RelativeEnvelope}' are allowed!"
+                f"Only instances of '{envelopes.RelativeEnvelope}'"
+                " are allowed!"
             )
         self._envelope = new_envelope
 
-    def resolve_envelope(self, duration: constants.DurationType) -> AbsoluteEnvelope:
-        return self.envelope.resolve(self, duration)
+    def resolve_envelope(self, duration: constants.DurationType) -> envelopes.Envelope:
+        return self.envelope.resolve(duration, self)
 
 
 @functools.total_ordering  # type: ignore
@@ -94,7 +57,10 @@ class Pitch(ParameterWithEnvelope):
     property :attr:`frequency` has to be overridden.
     """
 
-    class PitchAbsoluteEnvelope(AbsoluteEnvelope):
+    class PitchEnvelope(envelopes.Envelope):
+        pass
+
+    class IntervalEnvelope(envelopes.RelativeEnvelope):
         pass
 
     # conversion methods between different pitch describing units
