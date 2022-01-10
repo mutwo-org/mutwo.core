@@ -73,6 +73,7 @@ class ParameterWithEnvelope(abc.ABC):
         return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
+@functools.total_ordering  # type: ignore
 class PitchInterval(abc.ABC):
     """Abstract base class for any pitch interval class
 
@@ -93,6 +94,9 @@ class PitchInterval(abc.ABC):
             return self.cents == other.cents
         except AttributeError:
             return False
+
+    def __lt__(self, other: PitchInterval) -> bool:
+        return self.cents < other.cents
 
 
 @functools.total_ordering  # type: ignore
@@ -443,7 +447,7 @@ class Pitch(ParameterWithEnvelope):
     #                            comparison methods                          #
     # ###################################################################### #
 
-    def __lt__(self, other: "Pitch") -> bool:
+    def __lt__(self, other: Pitch) -> bool:
         return self.frequency < other.frequency
 
     def __eq__(self, other: object) -> bool:
@@ -678,7 +682,7 @@ class Volume(abc.ABC):
         return self.decibel_to_midi_velocity(self.decibel)
 
     # comparison methods
-    def __lt__(self, other: "Volume") -> bool:
+    def __lt__(self, other: Volume) -> bool:
         return self.amplitude < other.amplitude
 
     def __eq__(self, other: object) -> bool:
