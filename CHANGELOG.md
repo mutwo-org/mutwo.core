@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.46.0] - 2022-01-10
+
+### Added
+- `mutwo.core.parameters.abc.PitchInterval` class
+- `mutwo.core.events.envelopes.RelativeEnvelope` class
+
+### Changed
+- pitch classes need to define a `add` and a `subtract` method from now!
+
+
 ## [0.45.0] - 2022-01-09
 
 ### Added
