@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.47.0] - 2022-01-10
+
+### Added
+- `mutwo.core.events.envelopes.Envelope.is_static` property
+
 ## [0.46.0] - 2022-01-10
 
 ### Added
