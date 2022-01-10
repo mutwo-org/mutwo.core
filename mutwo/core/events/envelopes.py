@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import typing
 
+from scipy import integrate
+
 from mutwo.core import events
 from mutwo.core.utilities import constants
 from mutwo.core.utilities import tools
@@ -53,7 +55,7 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
 
     This class is inspired by Marc Evanstein `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
-    python package and made to fit more into the `mutwo` ecosystem.
+    python package and is made to fit better into the `mutwo` ecosystem.
     """
 
     # Type definitions
@@ -271,6 +273,32 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         self, absolute_time: constants.DurationType
     ) -> constants.ParameterType:
         return self.value_to_parameter(self.value_at(absolute_time))
+
+    def integrate_interval(
+        self, start: constants.DurationType, end: constants.DurationType
+    ) -> float:
+        return integrate.quad(lambda x: self.value_at(x), start, end)[0]
+
+    def get_average_value(
+        self,
+        start: typing.Optional[constants.DurationType] = None,
+        end: typing.Optional[constants.DurationType] = None,
+    ) -> Value:
+        if start is None:
+            start = 0
+        if end is None:
+            end = self.duration
+        duration = end - start
+        if duration == 0:
+            return 0
+        return self.integrate_interval(start, end) / duration
+
+    def get_average_parameter(
+        self,
+        start: typing.Optional[constants.DurationType] = None,
+        end: typing.Optional[constants.DurationType] = None,
+    ) -> constants.ParameterType:
+        return self.value_to_parameter(self.get_average_value(start, end))
 
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):

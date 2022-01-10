@@ -75,6 +75,27 @@ class EnvelopeTest(unittest.TestCase):
             False,
         )
 
+    def test_integrate_interval(self):
+        self.assertAlmostEqual(
+            self.envelope.integrate_interval(0, 5), 3.163953413738653
+        )
+        self.assertAlmostEqual(self.envelope.integrate_interval(1, 1), 0)
+        self.assertAlmostEqual(
+            self.envelope.integrate_interval(0, 30), 15.663953413738653
+        )
+        self.assertAlmostEqual(self.envelope.integrate_interval(-3, 0.25), 0.03125)
+
+    def test_get_average_value(self):
+        self.assertEqual(self.envelope.get_average_value(-1, 0), 0)
+        self.assertAlmostEqual(
+            self.envelope.get_average_value(0, 5), 0.6327906827477305
+        )
+
+    def test_get_average_parameter(self):
+        self.assertAlmostEqual(
+            self.envelope.get_average_parameter(0, 5), 0.6327906827477305
+        )
+
 
 class RelativeEnvelopeTest(unittest.TestCase):
     def setUp(cls):
