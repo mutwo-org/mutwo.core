@@ -17,12 +17,12 @@ T = typing.TypeVar("T", bound=events.abc.Event)
 class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
     """Model continuous changing values (e.g. glissandi, crescendo).
 
-    :param iterable: An iterable filled with events. Each event represents
+    :param event_iterable_or_point_sequence: An iterable filled with events. Each event represents
         a point in a two dimensional graph where the y-axis presents time
         and the x-axis a changing value. Any event class can be used. It is
         more important that the used event classes fit with the functions
         passed in the following parameters.
-    :type iterable: typing.Iterable[T]
+    :type event_iterable_or_point_sequence: typing.Iterable[T]
     :param event_to_parameter: A function which receives an event and has to
         return a parameter object (any object). By default the function will
         ask the event for its `value` property. If the property can't be found
@@ -307,21 +307,19 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         base_parameter: constants.ParameterType,
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
-        event_list = []
-        copied_self = self.copy()
-        copied_self.duration = duration
-        for event in copied_self:
+        point_list = []
+        duration_factor = duration / self.duration
+        for absolute_time, event in zip(self.absolute_time_tuple, self):
             relative_parameter = self.event_to_parameter(event)
             new_parameter = (
                 self.base_parameter_and_relative_parameter_to_absolute_parameter(
                     base_parameter, relative_parameter
                 )
             )
-            self.apply_parameter_on_event(event, new_parameter)
-            event_list.append(event)
-        kwargs = {
-            name: getattr(self, name)
-            for name in resolve_envelope_class._class_specific_side_attribute_tuple
-            if hasattr(self, name)
-        }
-        return resolve_envelope_class(event_list, **kwargs)
+            point = (
+                absolute_time * duration_factor,
+                new_parameter,
+                self.event_to_curve_shape(event),
+            )
+            point_list.append(point)
+        return resolve_envelope_class(point_list)

@@ -291,3 +291,16 @@ DEFAULT_PRIME_TO_COMMA_DICT = {
     47: commas.Comma(fractions.Fraction(752, 729)),
 }
 """Standard commas defined by the `Helmholtz-Ellis JI Pitch Notation <https://marsbat.space/pdfs/notation.pdf>`_."""
+
+PITCH_ENVELOPE_REFERENCE_FREQUENCY = 100
+"""Reference frequency for internal calculation in
+:class:`mutwo.core.parameters.abc.Pitch.PitchEnvelope`. Exact
+number doesn't really matter, it only has to keep consistent."""
+
+DEFAULT_PITCH_ENVELOPE_PARAMETER_NAME = "pitch"
+"""Default property parameter name for events in
+:class:`mutwo.core.parameters.abc.Pitch.PitchEnvelope`."""
+
+DEFAULT_PITCH_INTERVAL_ENVELOPE_PARAMETER_NAME = "pitch_interval"
+"""Default property parameter name for events in
+:class:`mutwo.core.parameters.abc.Pitch.PitchIntervalEnvelope`."""

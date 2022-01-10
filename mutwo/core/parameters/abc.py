@@ -1,4 +1,12 @@
-"""Abstract base classes for different parameters."""
+"""Abstract base classes for different parameters.
+
+This module defines the public API of parameters.
+Most other mutwo classes rely on this API. This means
+when someone creates a new class inheriting from any of the
+abstract parameter classes which are defined in this module,
+she or he can make use of all other mutwo modules with this
+newly created parameter class.
+"""
 
 from __future__ import annotations
 
@@ -13,10 +21,11 @@ try:
 except ImportError:
     import fractions  # type: ignore
 
-from mutwo.core.events import envelopes
+from mutwo.core import events
 from mutwo.core.parameters import pitches_constants
 from mutwo.core.parameters import volumes_constants
 from mutwo.core.utilities import constants
+from mutwo.core.utilities import decorators
 from mutwo.core.utilities import tools
 
 __all__ = (
@@ -34,28 +43,34 @@ DurationType = constants.Real
 class ParameterWithEnvelope(abc.ABC):
     """Abstract base class for all parameters with an envelope."""
 
-    def __init__(self, envelope: envelopes.RelativeEnvelope):
+    def __init__(self, envelope: events.envelopes.RelativeEnvelope):
         self.envelope = envelope
 
     @property
-    def envelope(self) -> envelopes.RelativeEnvelope:
+    def envelope(self) -> events.envelopes.RelativeEnvelope:
         return self._envelope
 
     @envelope.setter
     def envelope(self, new_envelope: typing.Any):
         try:
-            assert isinstance(new_envelope, envelopes.RelativeEnvelope)
+            assert isinstance(new_envelope, events.envelopes.RelativeEnvelope)
         except AssertionError:
             raise TypeError(
                 f"Found illegal object '{new_envelope}' of not "
                 f"supported type '{type(new_envelope)}'. "
-                f"Only instances of '{envelopes.RelativeEnvelope}'"
+                f"Only instances of '{events.envelopes.RelativeEnvelope}'"
                 " are allowed!"
             )
         self._envelope = new_envelope
 
-    def resolve_envelope(self, duration: constants.DurationType) -> envelopes.Envelope:
-        return self.envelope.resolve(duration, self)
+    def resolve_envelope(
+        self,
+        duration: constants.DurationType,
+        resolve_envelope_class: type[
+            events.envelopes.Envelope
+        ] = events.envelopes.Envelope,
+    ) -> events.envelopes.Envelope:
+        return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
 class PitchInterval(abc.ABC):
@@ -73,6 +88,12 @@ class PitchInterval(abc.ABC):
     def cents(self) -> float:
         raise NotImplementedError
 
+    def __eq__(self, other: typing.Any) -> bool:
+        try:
+            return self.cents == other.cents
+        except AttributeError:
+            return False
+
 
 @functools.total_ordering  # type: ignore
 class Pitch(ParameterWithEnvelope):
@@ -84,11 +105,242 @@ class Pitch(ParameterWithEnvelope):
     to define an :func:`add` and a :func:`subtract` method.
     """
 
-    class PitchEnvelope(envelopes.Envelope):
-        pass
+    class PitchEnvelope(events.envelopes.Envelope):
+        """Default resolution envelope class for :class:`Pitch`"""
 
-    class PitchIntervalEnvelope(envelopes.RelativeEnvelope):
-        pass
+        def __init__(
+            self,
+            *args,
+            event_to_parameter: typing.Optional[
+                typing.Callable[[events.abc.Event], constants.ParameterType]
+            ] = None,
+            value_to_parameter: typing.Optional[
+                typing.Callable[
+                    [events.envelopes.Envelope.Value], constants.ParameterType
+                ]
+            ] = None,
+            parameter_to_value: typing.Optional[
+                typing.Callable[
+                    [constants.ParameterType], events.envelopes.Envelope.Value
+                ]
+            ] = None,
+            apply_parameter_on_event: typing.Optional[
+                typing.Callable[[events.abc.Event, constants.ParameterType], None]
+            ] = None,
+            **kwargs,
+        ):
+            if not event_to_parameter:
+                event_to_parameter = self._event_to_parameter
+            if not value_to_parameter:
+                value_to_parameter = self._value_to_parameter
+            if not apply_parameter_on_event:
+                apply_parameter_on_event = self._apply_parameter_on_event
+            if not parameter_to_value:
+                parameter_to_value = self._parameter_to_value
+
+            super().__init__(
+                *args,
+                event_to_parameter=event_to_parameter,
+                value_to_parameter=value_to_parameter,
+                parameter_to_value=parameter_to_value,
+                apply_parameter_on_event=apply_parameter_on_event,
+                **kwargs,
+            )
+
+        @classmethod
+        def make_generic_pitch_class(cls, frequency: constants.Real) -> type[Pitch]:
+            @decorators.add_copy_option
+            def generic_add(self, pitch_interval: PitchInterval) -> Pitch:
+                self.frequency = (
+                    Pitch.cents_to_ratio(pitch_interval.cents) * self.frequency
+                )
+                return self
+
+            @decorators.add_copy_option
+            def generic_subtract(self, pitch_interval: PitchInterval) -> Pitch:
+                self.frequency = self.frequency / Pitch.cents_to_ratio(
+                    pitch_interval.cents
+                )
+                return self
+
+            generic_pitch_class = type(
+                "GenericPitch",
+                (Pitch,),
+                {
+                    "frequency": frequency,
+                    "add": generic_add,
+                    "subtract": generic_subtract,
+                    "__repr__": lambda self: f"GenericPitchInterval(frequency = {self.frequency})",
+                },
+            )
+
+            return generic_pitch_class
+
+        @classmethod
+        def make_generic_pitch(cls, frequency: constants.Real) -> Pitch:
+            return cls.make_generic_pitch_class(frequency)
+
+        @classmethod
+        def _value_to_parameter(
+            cls,
+            value: events.envelopes.Envelope.Value,  # type: ignore
+        ) -> constants.ParameterType:
+            # For inner calculation (value) cents are used instead
+            # of frequencies. In this way we can ensure that the transitions
+            # are closer to the human logarithmic hearing.
+            # See als `_parameter_to_value`.
+            frequency = (
+                Pitch.cents_to_ratio(value)
+                * pitches_constants.PITCH_ENVELOPE_REFERENCE_FREQUENCY
+            )
+            return cls.make_generic_pitch(frequency)
+
+        @classmethod
+        def _event_to_parameter(
+            cls, event: events.abc.Event
+        ) -> constants.ParameterType:
+            if hasattr(
+                event,
+                pitches_constants.DEFAULT_PITCH_ENVELOPE_PARAMETER_NAME,
+            ):
+                return getattr(
+                    event,
+                    pitches_constants.DEFAULT_PITCH_ENVELOPE_PARAMETER_NAME,
+                )
+            else:
+                return cls.make_generic_pitch(pitches_constants.DEFAULT_CONCERT_PITCH)
+
+        @classmethod
+        def _apply_parameter_on_event(
+            cls, event: events.abc.Event, parameter: constants.ParameterType
+        ):
+            setattr(
+                event,
+                pitches_constants.DEFAULT_PITCH_ENVELOPE_PARAMETER_NAME,
+                parameter,
+            )
+
+        @classmethod
+        def _parameter_to_value(
+            cls, parameter: constants.ParameterType
+        ) -> constants.Real:
+            # For inner calculation (value) cents are used instead
+            # of frequencies. In this way we can ensure that the transitions
+            # are closer to the human logarithmic hearing.
+            # See als `_value_to_parameter`.
+            return Pitch.hertz_to_cents(
+                pitches_constants.PITCH_ENVELOPE_REFERENCE_FREQUENCY,
+                parameter.frequency,
+            )
+
+    class PitchIntervalEnvelope(events.envelopes.RelativeEnvelope):
+        """Default envelope class for :class:`Pitch`
+
+        Resolves into :class:`Pitch.PitchEnvelope`.
+        """
+
+        def __init__(
+            self,
+            *args,
+            event_to_parameter: typing.Optional[
+                typing.Callable[[events.abc.Event], constants.ParameterType]
+            ] = None,
+            value_to_parameter: typing.Optional[
+                typing.Callable[
+                    [events.envelopes.Envelope.Value], constants.ParameterType
+                ]
+            ] = None,
+            parameter_to_value: typing.Callable[
+                [constants.ParameterType], events.envelopes.Envelope.Value
+            ] = lambda parameter: parameter.cents,
+            apply_parameter_on_event: typing.Optional[
+                typing.Callable[[events.abc.Event, constants.ParameterType], None]
+            ] = None,
+            base_parameter_and_relative_parameter_to_absolute_parameter: typing.Optional[
+                typing.Callable[
+                    [constants.ParameterType, constants.ParameterType],
+                    constants.ParameterType,
+                ]
+            ] = None,
+            **kwargs,
+        ):
+            if not event_to_parameter:
+                event_to_parameter = self._event_to_parameter
+            if not value_to_parameter:
+                value_to_parameter = self._value_to_parameter
+            if not apply_parameter_on_event:
+                apply_parameter_on_event = self._apply_parameter_on_event
+            if not base_parameter_and_relative_parameter_to_absolute_parameter:
+                base_parameter_and_relative_parameter_to_absolute_parameter = (
+                    self._base_parameter_and_relative_parameter_to_absolute_parameter
+                )
+
+            super().__init__(
+                *args,
+                event_to_parameter=event_to_parameter,
+                value_to_parameter=value_to_parameter,
+                parameter_to_value=parameter_to_value,
+                apply_parameter_on_event=apply_parameter_on_event,
+                base_parameter_and_relative_parameter_to_absolute_parameter=base_parameter_and_relative_parameter_to_absolute_parameter,
+                **kwargs,
+            )
+
+        @staticmethod
+        def make_generic_pitch_interval(cents: constants.Real) -> PitchInterval:
+            return type(
+                "GenericPitchInterval",
+                (PitchInterval,),
+                {
+                    "cents": cents,
+                    "__repr__": lambda self: f"GenericPitchInterval(cents = {self.cents})",
+                },
+            )()
+
+        @classmethod
+        def _event_to_parameter(
+            cls, event: events.abc.Event
+        ) -> constants.ParameterType:
+            if hasattr(
+                event, pitches_constants.DEFAULT_PITCH_INTERVAL_ENVELOPE_PARAMETER_NAME
+            ):
+                return getattr(
+                    event,
+                    pitches_constants.DEFAULT_PITCH_INTERVAL_ENVELOPE_PARAMETER_NAME,
+                )
+            else:
+                return cls.make_generic_pitch_interval(0)
+
+        @classmethod
+        def _value_to_parameter(
+            cls, value: events.envelopes.Envelope.Value
+        ) -> constants.ParameterType:
+            return cls.make_generic_pitch_interval(value)
+
+        @classmethod
+        def _apply_parameter_on_event(
+            cls, event: events.abc.Event, parameter: constants.ParameterType
+        ):
+            setattr(
+                event,
+                pitches_constants.DEFAULT_PITCH_INTERVAL_ENVELOPE_PARAMETER_NAME,
+                parameter,
+            ),
+
+        @classmethod
+        def _base_parameter_and_relative_parameter_to_absolute_parameter(
+            cls, base_parameter: Pitch, relative_parameter: PitchInterval
+        ) -> Pitch:
+            return base_parameter + relative_parameter
+
+    def __init__(self, envelope: typing.Optional[Pitch.PitchIntervalEnvelope] = None):
+        if not envelope:
+            generic_pitch_interval = (
+                self.PitchIntervalEnvelope.make_generic_pitch_interval(0)
+            )
+            envelope = self.PitchIntervalEnvelope(
+                [[0, generic_pitch_interval], [1, generic_pitch_interval]]
+            )
+        super().__init__(envelope)
 
     # ###################################################################### #
     #     conversion methods between different pitch describing units        #
@@ -213,6 +465,15 @@ class Pitch(ParameterWithEnvelope):
 
     def __sub__(self, pitch_interval: PitchInterval) -> Pitch:
         return self.subtract(pitch_interval, mutate=False)
+
+    def resolve_envelope(
+        self,
+        duration: constants.DurationType,
+        resolve_envelope_class: typing.Optional[type[events.envelopes.Envelope]] = None,
+    ) -> events.envelopes.Envelope:
+        if not resolve_envelope_class:
+            resolve_envelope_class = Pitch.PitchEnvelope
+        return super().resolve_envelope(duration, resolve_envelope_class)
 
 
 @functools.total_ordering  # type: ignore

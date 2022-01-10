@@ -91,7 +91,8 @@ class DirectPitch(parameters.abc.Pitch):
     >>> my_pitch = pitches.DirectPitch(440)
     """
 
-    def __init__(self, frequency: constants.Real):
+    def __init__(self, frequency: constants.Real, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._frequency = float(frequency)
 
     @property
@@ -133,7 +134,8 @@ class MidiPitch(parameters.abc.Pitch):
     >>> middle_c_quarter_tone_high = pitches.MidiPitch(60.5)
     """
 
-    def __init__(self, midi_pitch_number: float):
+    def __init__(self, midi_pitch_number: float, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._midi_pitch_number = midi_pitch_number
 
     @property
@@ -206,7 +208,11 @@ class JustIntonationPitch(parameters.abc.Pitch, parameters.abc.PitchInterval):
             str, fractions.Fraction, typing.Iterable[int]
         ] = "1/1",
         concert_pitch: ConcertPitch = None,
+        *args,
+        **kwargs,
     ):
+        super().__init__(*args, **kwargs)
+
         if concert_pitch is None:
             concert_pitch = parameters.pitches_constants.DEFAULT_CONCERT_PITCH
 
@@ -594,12 +600,6 @@ class JustIntonationPitch(parameters.abc.Pitch, parameters.abc.PitchInterval):
         if len(ratio) == 1:
             ratio += "/1"
         return f"JustIntonationPitch('{ratio}')"
-
-    def __add__(self, other: JustIntonationPitch) -> JustIntonationPitch:
-        return self._math(other, operator.add, mutate=False)  # type: ignore
-
-    def __sub__(self, other: JustIntonationPitch) -> JustIntonationPitch:
-        return self._math(other, operator.sub, mutate=False)  # type: ignore
 
     def __abs__(self):
         if self.numerator > self.denominator:
@@ -1387,8 +1387,10 @@ class CommonHarmonic(JustIntonationPitch):
             str, fractions.Fraction, typing.Iterable[int]
         ] = "1/1",
         concert_pitch: ConcertPitch = None,
+        *args,
+        **kwargs,
     ):
-        super().__init__(ratio_or_exponent_tuple, concert_pitch)
+        super().__init__(ratio_or_exponent_tuple, concert_pitch, *args, **kwargs)
         self.partial_tuple = partial_tuple
 
     def __repr__(self) -> str:
@@ -1422,7 +1424,13 @@ class EqualDividedOctavePitch(parameters.abc.Pitch):
         concert_pitch_pitch_class: constants.Real,
         concert_pitch_octave: int,
         concert_pitch: ConcertPitch = None,
+        *args,
+        **kwargs,
     ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
         if concert_pitch is None:
             concert_pitch = parameters.pitches_constants.DEFAULT_CONCERT_PITCH
 
@@ -1614,6 +1622,8 @@ class WesternPitch(EqualDividedOctavePitch):
         concert_pitch_pitch_class: constants.Real = None,
         concert_pitch_octave: int = None,
         concert_pitch: ConcertPitch = None,
+        *args,
+        **kwargs,
     ):
         if concert_pitch_pitch_class is None:
             concert_pitch_pitch_class = (
@@ -1638,6 +1648,8 @@ class WesternPitch(EqualDividedOctavePitch):
             concert_pitch_pitch_class,
             concert_pitch_octave,
             concert_pitch,
+            *args,
+            **kwargs,
         )
 
         self._pitch_class_name = pitch_class_name

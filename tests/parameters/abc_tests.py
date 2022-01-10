@@ -52,39 +52,140 @@ class PitchTest(unittest.TestCase):
         )
 
 
+class PitchIntervalEnvelopeTest(unittest.TestCase):
+    def setUp(cls):
+        pitch_interval0 = (
+            parameters.abc.Pitch.PitchIntervalEnvelope.make_generic_pitch_interval(1200)
+        )
+        pitch_interval1 = (
+            parameters.abc.Pitch.PitchIntervalEnvelope.make_generic_pitch_interval(0)
+        )
+        pitch_interval2 = (
+            parameters.abc.Pitch.PitchIntervalEnvelope.make_generic_pitch_interval(-100)
+        )
+        cls.pitch = parameters.abc.Pitch.PitchEnvelope.make_generic_pitch_class(440)(
+            envelope=parameters.abc.Pitch.PitchIntervalEnvelope(
+                [[0, pitch_interval0], [10, pitch_interval1], [20, pitch_interval2]]
+            )
+        )
+        cls.pitch_envelope = cls.pitch.resolve_envelope(1)
+
+    def test_value_at(self):
+        self.assertEqual(self.pitch.envelope.value_at(0), 1200)
+        self.assertEqual(self.pitch.envelope.value_at(5), 600)
+        self.assertEqual(self.pitch.envelope.value_at(10), 0)
+        self.assertEqual(self.pitch.envelope.value_at(15), -50)
+        self.assertEqual(self.pitch.envelope.value_at(20), -100)
+
+    def test_parameter_at(self):
+        for absolute_time, cents in (
+            (0, 1200),
+            (5, 600),
+            (10, 0),
+            (15, -50),
+            (20, -100),
+        ):
+            self.assertEqual(
+                self.pitch.envelope.parameter_at(absolute_time),
+                parameters.abc.Pitch.PitchIntervalEnvelope.make_generic_pitch_interval(
+                    cents
+                ),
+            )
+
+    def test_value_tuple(self):
+        self.assertEqual(self.pitch.envelope.value_tuple, (1200, 0, -100))
+
+    def test_resolve_envelope(self):
+        point_list = []
+        for position, frequency in (
+            (0, 880),
+            (0.5, 440),
+            (1, fractions.Fraction(116897880079141095, 281474976710656)),
+        ):
+            point_list.append(
+                (
+                    position,
+                    parameters.abc.Pitch.PitchEnvelope.make_generic_pitch(frequency),
+                )
+            )
+        pitch_envelope = self.pitch.PitchEnvelope(point_list)
+        self.assertEqual(self.pitch_envelope, pitch_envelope)
+
+    def test_value_at_resolved_envelope(self):
+        for position, frequency in (
+            (0, 880),
+            (0.25, 622.2539674441618),
+            (0.5, 440),
+            (1, 415.3046975799451),
+        ):
+            self.assertAlmostEqual(
+                self.pitch_envelope.value_at(position),  # type: ignore
+                parameters.abc.Pitch.hertz_to_cents(
+                    parameters.pitches_constants.PITCH_ENVELOPE_REFERENCE_FREQUENCY,
+                    frequency,
+                ),  # type: ignore
+            )
+
+    def test_parameter_at_resolved_envelope(self):
+        for position, frequency in (
+            (0, 880),
+            (0.25, 622.2539674441618),
+            (0.5, 440),
+            (1, 415.3046975799451),
+        ):
+            self.assertAlmostEqual(
+                self.pitch_envelope.parameter_at(position).frequency, frequency
+            )
+
+
 class VolumeTest(unittest.TestCase):
     def test_decibel_to_amplitude_ratio(self):
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_amplitude_ratio(0), 1,
+            parameters.abc.Volume.decibel_to_amplitude_ratio(0),
+            1,
         )
         self.assertEqual(
-            round(parameters.abc.Volume.decibel_to_amplitude_ratio(-6), 2,), 0.5,
+            round(
+                parameters.abc.Volume.decibel_to_amplitude_ratio(-6),
+                2,
+            ),
+            0.5,
         )
         self.assertEqual(
-            round(parameters.abc.Volume.decibel_to_amplitude_ratio(-12), 2,), 0.25,
+            round(
+                parameters.abc.Volume.decibel_to_amplitude_ratio(-12),
+                2,
+            ),
+            0.25,
         )
         # different reference amplitude
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_amplitude_ratio(0, 0.5), 0.5,
+            parameters.abc.Volume.decibel_to_amplitude_ratio(0, 0.5),
+            0.5,
         )
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_amplitude_ratio(0, 2), 2,
+            parameters.abc.Volume.decibel_to_amplitude_ratio(0, 2),
+            2,
         )
 
     def test_decibel_to_power_ratio(self):
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_power_ratio(0), 1,
+            parameters.abc.Volume.decibel_to_power_ratio(0),
+            1,
         )
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_power_ratio(-6), 0.251188643150958,
+            parameters.abc.Volume.decibel_to_power_ratio(-6),
+            0.251188643150958,
         )
         self.assertEqual(
-            parameters.abc.Volume.decibel_to_power_ratio(6), 3.9810717055349722,
+            parameters.abc.Volume.decibel_to_power_ratio(6),
+            3.9810717055349722,
         )
 
     def test_amplitude_ratio_to_decibel(self):
         self.assertEqual(
-            parameters.abc.Volume.amplitude_ratio_to_decibel(1), 0,
+            parameters.abc.Volume.amplitude_ratio_to_decibel(1),
+            0,
         )
         self.assertEqual(
             parameters.abc.Volume.amplitude_ratio_to_decibel(
@@ -99,12 +200,14 @@ class VolumeTest(unittest.TestCase):
             parameters.abc.Volume.amplitude_ratio_to_decibel(0.25), -12.041, places=3
         )
         self.assertEqual(
-            parameters.abc.Volume.amplitude_ratio_to_decibel(0), float("-inf"),
+            parameters.abc.Volume.amplitude_ratio_to_decibel(0),
+            float("-inf"),
         )
 
     def test_power_ratio_to_decibel(self):
         self.assertEqual(
-            parameters.abc.Volume.power_ratio_to_decibel(1), 0,
+            parameters.abc.Volume.power_ratio_to_decibel(1),
+            0,
         )
         self.assertEqual(
             parameters.abc.Volume.power_ratio_to_decibel(0.5, reference_amplitude=0.5),
@@ -117,7 +220,8 @@ class VolumeTest(unittest.TestCase):
             parameters.abc.Volume.power_ratio_to_decibel(0.06309), -12, places=3
         )
         self.assertEqual(
-            parameters.abc.Volume.power_ratio_to_decibel(0), float("-inf"),
+            parameters.abc.Volume.power_ratio_to_decibel(0),
+            float("-inf"),
         )
 
     def test_amplitude_ratio_to_velocity(self):
