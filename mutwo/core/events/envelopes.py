@@ -37,21 +37,19 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         `curve_shape` property. If the property can't be found
         it will return 0.
     :type event_to_curve_shape: typing.Callable[[events.abc.Event], CurveShape]
-    :param parameter_to_value: A value is any object which supports mathematical
-        operations.
+    :param parameter_to_value: Convert a parameter to a value. A value is any
+        object which supports mathematical operations.
     :type parameter_to_value: typing.Callable[[Value], constants.ParameterType]
     :param value_to_parameter:
     :type value_to_parameter: typing.Callable[[Value], constants.ParameterType]
     :param apply_parameter_on_event:
-    :type apply_parameter_on_event:
+    :type apply_parameter_on_event: typing.Callable[[events.abc.Event, constants.ParameterType], None]
     :param apply_curve_shape_on_event:
-    :type apply_curve_shape_on_event:
-    :param apply_curve_shape_on_event:
-    :type apply_curve_shape_on_event:
+    :type apply_curve_shape_on_event: typing.Callable[[events.abc.Event, CurveShape], None]
     :param default_event_class:
-    :type default_event_class:
+    :type default_event_class: type[events.abc.Event]
     :param initialise_default_event_class:
-    :type initialise_default_event_class:
+    :type initialise_default_event_class: typing.Callable[[type[events.abc.Event], constants.DurationType], events.abc.Event]
 
     This class is inspired by Marc Evanstein `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
@@ -119,9 +117,9 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
             events.envelopes_constants.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
             curve_shape,
         ),
-        default_event_class: type = events.basic.SimpleEvent,
+        default_event_class: type[events.abc.Event] = events.basic.SimpleEvent,
         initialise_default_event_class: typing.Callable[
-            [type, constants.DurationType], events.abc.Event
+            [type[events.abc.Event], constants.DurationType], events.abc.Event
         ] = lambda simple_event, duration: simple_event(duration),
     ):
         self.event_to_parameter = event_to_parameter
