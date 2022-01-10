@@ -231,6 +231,12 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
     def value_tuple(self) -> tuple[Value, ...]:
         return tuple(map(self._event_to_value, self))
 
+    @property
+    def is_static(self) -> bool:
+        """Return `True` if :class:`Envelope` only has one static value."""
+
+        return len(set(self.value_tuple)) <= 1
+
     # ###################################################################### #
     #                          public methods                                #
     # ###################################################################### #

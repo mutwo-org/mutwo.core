@@ -65,6 +65,16 @@ class EnvelopeTest(unittest.TestCase):
         envelope_from_points = events.envelopes.Envelope.from_points((0, 0, 10), (1, 1))
         self.assertEqual(envelope_from_points, envelope_from_init)
 
+    def test_is_static(self):
+        self.assertEqual(self.envelope.is_static, False)
+        self.assertEqual(events.envelopes.Envelope([]).is_static, True)
+        self.assertEqual(events.envelopes.Envelope([[0, 10]]).is_static, True)
+        self.assertEqual(events.envelopes.Envelope([[0, 10], [10, 10]]).is_static, True)
+        self.assertEqual(
+            events.envelopes.Envelope([[0, 10], [10, 10], [20, 10.001]]).is_static,
+            False,
+        )
+
 
 class RelativeEnvelopeTest(unittest.TestCase):
     def setUp(cls):
