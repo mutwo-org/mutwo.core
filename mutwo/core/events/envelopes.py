@@ -308,7 +308,10 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
         point_list = []
-        duration_factor = duration / self.duration
+        try:
+            duration_factor = duration / self.duration
+        except ZeroDivisionError:
+            duration_factor = 0
         for absolute_time, event in zip(self.absolute_time_tuple, self):
             relative_parameter = self.event_to_parameter(event)
             new_parameter = (

@@ -341,9 +341,7 @@ class Pitch(ParameterWithEnvelope):
             generic_pitch_interval = (
                 self.PitchIntervalEnvelope.make_generic_pitch_interval(0)
             )
-            envelope = self.PitchIntervalEnvelope(
-                [[0, generic_pitch_interval], [1, generic_pitch_interval]]
-            )
+            envelope = self.PitchIntervalEnvelope([[0, generic_pitch_interval]])
         super().__init__(envelope)
 
     # ###################################################################### #
