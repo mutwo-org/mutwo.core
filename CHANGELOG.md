@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.48.0] - 2022-01-10
+
+### Added
+- `mutwo.core.events.envelopes.Envelope.integrate_interval` function
+- `mutwo.core.events.envelopes.Envelope.get_average_value` function
+- `mutwo.core.events.envelopes.Envelope.get_average_parameter` function
+
+
 ## [0.47.0] - 2022-01-10
 
 ### Added
