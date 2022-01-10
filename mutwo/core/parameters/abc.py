@@ -1,5 +1,7 @@
 """Abstract base classes for different parameters."""
 
+from __future__ import annotations
+
 import abc
 import dataclasses
 import functools
@@ -17,7 +19,14 @@ from mutwo.core.parameters import volumes_constants
 from mutwo.core.utilities import constants
 from mutwo.core.utilities import tools
 
-__all__ = ("Pitch", "Volume", "PlayingIndicator", "NotationIndicator")
+__all__ = (
+    "ParameterWithEnvelope",
+    "PitchInterval",
+    "Pitch",
+    "Volume",
+    "PlayingIndicator",
+    "NotationIndicator",
+)
 
 DurationType = constants.Real
 
@@ -49,21 +58,42 @@ class ParameterWithEnvelope(abc.ABC):
         return self.envelope.resolve(duration, self)
 
 
+class PitchInterval(abc.ABC):
+    """Abstract base class for any pitch interval class
+
+    If the user wants to define a new pitch class, the abstract
+    property :attr:`cents` has to be overridden.
+
+    See `wikipedia entry <https://en.wikipedia.org/wiki/Cent_(music)>`_
+    for definition of 'cents'.
+    """
+
+    @property
+    @abc.abstractmethod
+    def cents(self) -> float:
+        raise NotImplementedError
+
+
 @functools.total_ordering  # type: ignore
 class Pitch(ParameterWithEnvelope):
     """Abstract base class for any pitch class.
 
     If the user wants to define a new pitch class, the abstract
-    property :attr:`frequency` has to be overridden.
+    property :attr:`frequency` has to be overridden. Starting
+    from mutwo version = 0.46.0 the user will furthermore have
+    to define an :func:`add` and a :func:`subtract` method.
     """
 
     class PitchEnvelope(envelopes.Envelope):
         pass
 
-    class IntervalEnvelope(envelopes.RelativeEnvelope):
+    class PitchIntervalEnvelope(envelopes.RelativeEnvelope):
         pass
 
-    # conversion methods between different pitch describing units
+    # ###################################################################### #
+    #     conversion methods between different pitch describing units        #
+    # ###################################################################### #
+
     @staticmethod
     def hertz_to_cents(frequency0: constants.Real, frequency1: constants.Real) -> float:
         """Calculates the difference in cents between two frequencies.
@@ -142,7 +172,10 @@ class Pitch(ParameterWithEnvelope):
         difference_in_cents = Pitch.hertz_to_cents(frequency, closest_frequency)
         return float(closest_midi_pitch_number + (difference_in_cents / 100))
 
-    # properties
+    # ###################################################################### #
+    #                            public properties                           #
+    # ###################################################################### #
+
     @property
     @abc.abstractmethod
     def frequency(self) -> float:
@@ -154,7 +187,10 @@ class Pitch(ParameterWithEnvelope):
         """The midi pitch number (from 0 to 127) of the pitch."""
         return self.hertz_to_midi_pitch_number(self.frequency)
 
-    # comparison methods
+    # ###################################################################### #
+    #                            comparison methods                          #
+    # ###################################################################### #
+
     def __lt__(self, other: "Pitch") -> bool:
         return self.frequency < other.frequency
 
@@ -163,6 +199,20 @@ class Pitch(ParameterWithEnvelope):
             return self.frequency == other.frequency  # type: ignore
         except AttributeError:
             return False
+
+    @abc.abstractmethod
+    def add(self, pitch_interval: PitchInterval, mutate: bool = True) -> Pitch:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def subtract(self, pitch_interval: PitchInterval, mutate: bool = True) -> Pitch:
+        raise NotImplementedError
+
+    def __add__(self, pitch_interval: PitchInterval) -> Pitch:
+        return self.add(pitch_interval, mutate=False)
+
+    def __sub__(self, pitch_interval: PitchInterval) -> Pitch:
+        return self.subtract(pitch_interval, mutate=False)
 
 
 @functools.total_ordering  # type: ignore
