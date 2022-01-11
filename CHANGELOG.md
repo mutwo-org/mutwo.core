@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.49.0] - 2022-01-11
+
+### Removed
+- all music/sound related parameter and converter modules (moved to [mutwo.ext-music](https://github.com/mutwo-org/mutwo.ext-music))
+
+
 ## [0.48.1] - 2022-01-11
 
 ### Changed
 - set correct order in auto import of modules (function: `mutwo.core.utilities.tools.import_all_submodules`)
+
 
 ## [0.48.0] - 2022-01-10
 
