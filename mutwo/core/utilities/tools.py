@@ -7,6 +7,7 @@ import importlib
 import inspect
 import itertools
 import math
+import operator
 import pkgutil
 import types
 import typing
@@ -18,7 +19,7 @@ from mutwo.core.utilities import constants
 __all__ = (
     # "fetch_called_module"  # not for public use
     # "fetch_doc_string_from_core_module"  # not for public use
-    # "import_all_modules"  # not for public use
+    # "import_all_submodules"  # not for public use
     "scale",
     "scale_sequence_to_sum",
     "accumulate_from_n",
@@ -71,12 +72,37 @@ def import_all_submodules(module: typing.Optional[types.ModuleType] = None):
 
     :param module: The module which submodules shall be imported.
     :type module: typing.Optional[types.ModuleType]
+    :return: None
+
+    The method will import submodules in an order which is specified
+    by the submodules name:
+
+    1. It will first import all modules which are named "constants"
+        (e.g. 'pitches_constants', 'basic_constants', etc.)
+
+    2. Next it will import a module with the exact name "abc"
+        (which is supposed to contain the public API for all other
+        classes in the other submodules)
+
+    3. Finally all other modules get imported.
     """
+
+    def module_name_to_sort_index(module_name: str) -> int:
+        if "constants" in module_name:
+            return 0
+        elif "abc" == module_name:
+            return 1
+        else:
+            return 2
 
     if not module:
         module = fetch_called_module()
 
-    for _, name, is_package in pkgutil.walk_packages(module.__path__):
+    module_name_list = sorted(
+        list(map(operator.itemgetter(1), pkgutil.walk_packages(module.__path__))),
+        key=module_name_to_sort_index,
+    )
+    for name in module_name_list:
         try:
             importlib.import_module(module.__name__ + "." + name)
         except ModuleNotFoundError:
