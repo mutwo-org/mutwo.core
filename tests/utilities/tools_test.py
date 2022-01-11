@@ -1,7 +1,6 @@
 import unittest
 
 from mutwo.core.utilities import tools
-from mutwo.core.parameters import pitches
 
 
 class ToolsTest(unittest.TestCase):
@@ -93,24 +92,9 @@ class ToolsTest(unittest.TestCase):
         expected_result2 = [[1, 2], [3, 2], [3, 3], [100]]
         unique2 = tools.uniqify_sequence(data2, sort_key=lambda iterable: sum(iterable))
 
-        # test for mutwo objects
-        data3 = [
-            pitches.JustIntonationPitch(frequency_ratio)
-            for frequency_ratio in "6/5 3/2 1/1 3/2 6/5 5/4".split(" ")
-        ]
-        expected_result3 = [
-            pitches.JustIntonationPitch(frequency_ratio)
-            for frequency_ratio in "1/1 6/5 5/4 3/2".split(" ")
-        ]
-        unique3 = tools.uniqify_sequence(
-            data3,
-            sort_key=lambda just_intonation_pitch: just_intonation_pitch.frequency,
-        )
-
         self.assertEqual(expected_result0, unique0)
         self.assertEqual(expected_result1, unique1)
         self.assertEqual(expected_result2, unique2)
-        self.assertEqual(expected_result3, unique3)
 
         # test if type preserving
         self.assertEqual(type(expected_result0), type(unique0))

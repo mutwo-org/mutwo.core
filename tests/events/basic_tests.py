@@ -1,9 +1,9 @@
+import typing
 import unittest
 
 import ranges
 
 from mutwo.core.events import basic
-from mutwo.core import parameters
 from mutwo.core.utilities import exceptions
 
 
@@ -353,6 +353,19 @@ class SequentialEventTest(unittest.TestCase):
 
 
 class SimultaneousEventTest(unittest.TestCase):
+    class DummyParameter(object):
+        def __init__(self, value: float):
+            self.value = value
+
+        def double_value(self):
+            self.value *= 2
+
+        def __eq__(self, other: typing.Any) -> bool:
+            try:
+                return self.value == other.value
+            except AttributeError:
+                return False
+
     def setUp(self) -> None:
         self.sequence: basic.SimultaneousEvent[
             basic.SimpleEvent
@@ -411,9 +424,9 @@ class SimultaneousEventTest(unittest.TestCase):
         self.assertEqual(self.sequence.get_parameter("duration"), (2, 4, 6))
 
     def test_mutate_parameter(self):
-        pitch_tuple = (
-            parameters.pitches.JustIntonationPitch("1/1"),
-            parameters.pitches.JustIntonationPitch("5/4"),
+        dummy_parameter_tuple = (
+            self.DummyParameter(1),
+            self.DummyParameter(2),
             None,
         )
         simple_event_tuple = (
@@ -421,24 +434,29 @@ class SimultaneousEventTest(unittest.TestCase):
             basic.SimpleEvent(1),
             basic.SimpleEvent(2),
         )
-        for simple_event, pitch in zip(simple_event_tuple, pitch_tuple):
-            if pitch is not None:
-                simple_event.pitch_list = [pitch]  # type: ignore
+        for simple_event, dummy_parameter in zip(
+            simple_event_tuple, dummy_parameter_tuple
+        ):
+            if dummy_parameter is not None:
+                simple_event.dummy_parameter = dummy_parameter  # type: ignore
         simultaneous_event = basic.SimultaneousEvent(
             simple_event_tuple
         ).destructive_copy()
-        interval = parameters.pitches.JustIntonationPitch("2/1")
         simultaneous_event.mutate_parameter(
-            "pitch_list",
-            lambda pitch_list: pitch_list[0].add(interval),
+            "dummy_parameter",
+            lambda dummy_parameter: dummy_parameter.double_value(),
         )
-        for event, pitch in zip(simultaneous_event, pitch_tuple):
-            if pitch is not None:
-                expected_pitch_list = [pitch + interval]
+        for event, dummy_parameter in zip(simultaneous_event, dummy_parameter_tuple):
+            if dummy_parameter is not None:
+                expected_dummy_parameter = self.DummyParameter(
+                    dummy_parameter.value * 2
+                )
             else:
-                expected_pitch_list = None
+                expected_dummy_parameter = None
 
-            self.assertEqual(event.get_parameter("pitch_list"), expected_pitch_list)
+            self.assertEqual(
+                event.get_parameter("dummy_parameter"), expected_dummy_parameter
+            )
 
     def test_cut_up(self):
         result = basic.SimultaneousEvent([basic.SimpleEvent(0.5) for _ in range(3)])

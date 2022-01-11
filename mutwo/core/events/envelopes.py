@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import typing
+import warnings
 
 from scipy import integrate
 
@@ -290,6 +291,7 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
             end = self.duration
         duration = end - start
         if duration == 0:
+            warnings.warn("Average value for range where start == end is always 0!")
             return 0
         return self.integrate_interval(start, end) / duration
 

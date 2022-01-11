@@ -4,7 +4,7 @@ import setuptools  # type: ignore
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0", "mutwo.ext-music>=0.1.0, <1.0.0"]}
+extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0"]}
 
 setuptools.setup(
     name="mutwo",
