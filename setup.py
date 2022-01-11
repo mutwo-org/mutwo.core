@@ -8,7 +8,7 @@ extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0"]}
 
 setuptools.setup(
     name="mutwo",
-    version="0.49.0",
+    version="0.49.1",
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,
