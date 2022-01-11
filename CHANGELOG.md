@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.48.1] - 2022-01-11
+
+### Changed
+- set correct order in auto import of modules (function: `mutwo.core.utilities.tools.import_all_submodules`)
+
 ## [0.48.0] - 2022-01-10
 
 ### Added
@@ -19,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - `mutwo.core.events.envelopes.Envelope.is_static` property
+
 
 ## [0.46.0] - 2022-01-10
 
