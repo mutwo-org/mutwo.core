@@ -123,7 +123,9 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         default_event_class: type[events.abc.Event] = events.basic.SimpleEvent,
         initialise_default_event_class: typing.Callable[
             [type[events.abc.Event], constants.DurationType], events.abc.Event
-        ] = lambda simple_event, duration: simple_event(duration),
+        ] = lambda simple_event_class, duration: simple_event_class(
+            duration
+        ),  # type: ignore
     ):
         self.event_to_parameter = event_to_parameter
         self.event_to_curve_shape = event_to_curve_shape
@@ -134,24 +136,9 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         self.default_event_class = default_event_class
         self.initialise_default_event_class = initialise_default_event_class
 
-        item_type_list = [
-            isinstance(event_or_point, events.abc.Event)
-            for event_or_point in event_iterable_or_point_sequence
-        ]
-        if all(item_type_list):
-            event_iterable = event_iterable_or_point_sequence
-        elif any(item_type_list):
-            raise TypeError(
-                "Found inconsistent iterable with mixed types. "
-                "Please only use events or only use points for "
-                "'event_iterable_or_point_sequence'. First 200 "
-                "characters of the problematic iterable: \n"
-                f"{str(event_iterable_or_point_sequence)[:200]}"
-            )
-        else:
-            event_iterable = self._point_sequence_to_event_list(
-                event_iterable_or_point_sequence  # type: ignore
-            )
+        event_iterable = self._event_iterable_or_point_sequence_to_event_iterable(
+            event_iterable_or_point_sequence
+        )
         super().__init__(event_iterable)
 
     # ###################################################################### #
@@ -165,6 +152,39 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         **kwargs,
     ) -> Envelope:
         return cls(point, **kwargs)
+
+    # ###################################################################### #
+    #                           magic methods                                #
+    # ###################################################################### #
+
+    @typing.overload  # type: ignore
+    def __setitem__(self, index_or_slice: int, event_or_sequence: T):
+        ...
+
+    @typing.overload
+    def __setitem__(
+        self,
+        index_or_slice: slice,
+        event_or_sequence: typing.Union[
+            typing.Iterable[T], typing.Iterable[Envelope.Point]
+        ],
+    ):
+        ...
+
+    def __setitem__(
+        self,
+        index_or_slice: typing.Union[int, slice],
+        event_or_sequence: typing.Union[
+            T, typing.Iterable[T], typing.Iterable[Envelope.Point]
+        ],
+    ):
+        if isinstance(index_or_slice, slice) and isinstance(
+            event_or_sequence, typing.Iterable
+        ):
+            event_or_sequence = self._event_iterable_or_point_sequence_to_event_iterable(  # type: ignore
+                event_or_sequence  # type: ignore
+            )
+        super().__setitem__(index_or_slice, event_or_sequence)  # type: ignore
 
     # ###################################################################### #
     #                    private static methods                              #
@@ -220,6 +240,32 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
             self.apply_curve_shape_on_event(event, curve_shape)
             event_list.append(event)
         return event_list
+
+    def _event_iterable_or_point_sequence_to_event_iterable(
+        self,
+        event_iterable_or_point_sequence: typing.Union[
+            typing.Iterable[T], typing.Sequence[Point]
+        ],
+    ) -> typing.Iterable[events.abc.Event]:
+        item_type_list = [
+            isinstance(event_or_point, events.abc.Event)
+            for event_or_point in event_iterable_or_point_sequence
+        ]
+        if all(item_type_list):
+            event_iterable = event_iterable_or_point_sequence
+        elif any(item_type_list):
+            raise TypeError(
+                "Found inconsistent iterable with mixed types. "
+                "Please only use events or only use points for "
+                "'event_iterable_or_point_sequence'. First 200 "
+                "characters of the problematic iterable: \n"
+                f"{str(event_iterable_or_point_sequence)[:200]}"
+            )
+        else:
+            event_iterable = self._point_sequence_to_event_list(
+                event_iterable_or_point_sequence  # type: ignore
+            )
+        return event_iterable  # type: ignore
 
     def _event_to_value(self, event: events.abc.Event) -> Value:
         return self.parameter_to_value(self.event_to_parameter(event))

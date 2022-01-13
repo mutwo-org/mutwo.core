@@ -27,6 +27,23 @@ class EnvelopeTest(unittest.TestCase):
             ]
         )
 
+    def _test_setitem(self, envelope_to_test: events.envelopes.Envelope):
+        self.assertEqual(type(envelope_to_test), events.envelopes.Envelope)
+        self.assertEqual(len(envelope_to_test), 2)
+        self.assertEqual(envelope_to_test.duration, 3)
+        self.assertEqual(envelope_to_test.value_tuple, (0, 1))
+
+    def test_setitem(self):
+        envelope = events.envelopes.Envelope([])
+        envelope[:] = [self.EnvelopeEvent(3, 0), self.EnvelopeEvent(0, 1)]
+        self._test_setitem(envelope)
+
+    def test_setitem_from_points(self):
+        # Use syntactic sugar
+        envelope = events.envelopes.Envelope([])
+        envelope[:] = [(0, 0), (3, 1)]
+        self._test_setitem(envelope)
+
     def test_value_at_before(self):
         self.assertEqual(self.envelope.value_at(-1), self.envelope[0].value)
         self.assertEqual(self.envelope.value_at(-100), self.envelope[0].value)
