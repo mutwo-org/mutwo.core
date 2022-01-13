@@ -20,9 +20,11 @@ T = typing.TypeVar("T", bound=events.abc.Event)
 class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
     """Model continuous changing values (e.g. glissandi, crescendo).
 
-    :param event_iterable_or_point_sequence: An iterable filled with events. Each event represents
-        a point in a two dimensional graph where the y-axis presents time
-        and the x-axis a changing value. Any event class can be used. It is
+    :param event_iterable_or_point_sequence: An iterable filled with events
+        or with points. If the sequence is filled with points, the points
+        will be converted to events. Each event represents a point in a
+        two dimensional graph where the y-axis presents time and the x-axis
+        a changing value. Any event class can be used. It is
         more important that the used event classes fit with the functions
         passed in the following parameters.
     :type event_iterable_or_point_sequence: typing.Iterable[T]
@@ -54,7 +56,7 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
     :param initialise_default_event_class:
     :type initialise_default_event_class: typing.Callable[[type[events.abc.Event], constants.DurationType], events.abc.Event]
 
-    This class is inspired by Marc Evanstein `Envelope` class in his
+    This class is inspired by Marc Evansteins `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
     python package and is made to fit better into the `mutwo` ecosystem.
     """
