@@ -8,7 +8,7 @@
 
 ### disclaimer: This framework is still in an early stage of development and the API may still change until version 1.0.0.
 
-**Mutwo** is a flexible, event based framework for composing music or other time-based arts in Python.
+**Mutwo** is a flexible, modular, event based framework for composing music or other time-based arts in Python.
 It aims to help composers to build musical structures in a meaningful way and translate those structures to different third party objects (e.g. midi files, [csound](https://csound.com/) scores, musical notation with [Lilypond](https://lilypond.org/) via [abjad](https://github.com/Abjad/abjad)).
 The general design philosophy stresses out the independence and freedom of the user with the help of generic data structures and an easily extensible and tweakable software design.
 
@@ -48,9 +48,9 @@ abjad.show(abjad_score)
 
 ### Plugins
 
-Starting from version 0.43.0 mutwo uses a plugin based design.
+Starting from version 0.43.0 mutwo uses a modular design.
 Only basic and internal functionality is provided by the main mutwo core package.
-For adding various third party converter support and additional functionality the mutwo ecosystem supports plugin-like extension packages.
+For adding various third party converter or better representation for certain areas the mutwo ecosystem supports plugin-like extensions.
 The following list gives an overview of currently supported extensions:
 
 - [mutwo.ext-music](https://github.com/mutwo-org/mutwo.ext-music): Improve workflow in writing traditional note based music by adding the `mutwo.ext.events.music` module
