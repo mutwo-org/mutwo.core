@@ -43,7 +43,7 @@ jobs:
 workflows:
   build_test_publish:
     jobs:
-      - build_test
+      - build_test:
           filters:
             tags:
               only: /.*/
