@@ -31,7 +31,9 @@ jobs:
       - run:
           filters:
             tags:
-              only: /.*/
+              only: /[0-9]+(\.[0-9]+)*/
+            branches: 
+              ignore: /.*/
           command: |  # create whl, install twine and publish to PyPI
             pip3 install virtualenv
             virtualenv venv
