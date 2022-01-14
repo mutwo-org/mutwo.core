@@ -80,13 +80,6 @@ pip3 install mutwo
 
 This only installs the core functionality (see plugins above).
 
-### Requirements
-
-Depending on the used converter classes, mutwo may need additional software to work properly.
-For using the Csound converter, you should install Csound first.
-For using Lilypond via mutwos abjad Converter, install Lilypond first.
-For using the ISiS converter, install ISiS first.
-
 
 ### Similar projects
 
