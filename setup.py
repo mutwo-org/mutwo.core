@@ -1,5 +1,12 @@
 import setuptools  # type: ignore
 
+MAJOR, MINOR, PATCH = 0, 49, 2
+VERSION = f"{MAJOR}.{MINOR}.{PATCH}"
+"""This project uses semantic versioning.
+See https://semver.org/
+Before MAJOR = 1, there is no promise for
+backwards compatibility between minor versions.
+"""
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -8,7 +15,7 @@ extras_require = {"testing": ["nose", "pillow>=8.2.0, <9.0.0"]}
 
 setuptools.setup(
     name="mutwo",
-    version="0.49.2",
+    version=VERSION,
     license="GPL",
     description="event based framework for generative art",
     long_description=long_description,
