@@ -294,7 +294,16 @@ class Envelope(events.basic.SequentialEvent, typing.Generic[T]):
         absolute_time_tuple = self.absolute_time_tuple
 
         use_only_first_event = absolute_time <= absolute_time_tuple[0]
-        use_only_last_event = absolute_time >= absolute_time_tuple[-1]
+        use_only_last_event = absolute_time >= (
+            # If the duration of the last event == 0 there is the danger
+            # of floating point errors (the value in absolute_time_tuple could
+            # be slightly higher than the duration of the Envelope. If this
+            # happens the function will raise an AssertionError, because
+            # "_get_index_at_from_absolute_time_tuple" will return
+            # "None"). With explicitly testing if the last duration
+            # equals 0 we can avoid this danger.
+            absolute_time_tuple[-1] if self[-1].duration > 0 else self.duration
+        )
         if use_only_first_event or use_only_last_event:
             index = 0 if use_only_first_event else -1
             return self._event_to_value(self[index])
