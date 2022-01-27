@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.50.0] - 2022-01-28
+
+### Changed
+- Define mutwo as an empty namespace with only one functionality: adding all found mutwo extensions to this by default empty namespace. Mutwo extensions are simply python packages with specified entry points for the "mutwo" group. This change is a major refactoring.
+
 ## [0.49.0] - 2022-01-11
 
 ### Removed

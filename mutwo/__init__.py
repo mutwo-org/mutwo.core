@@ -9,5 +9,23 @@ mutwo data to third-party software data (or upside down). The :mod:`mutwo.genera
 package supports algorithmic generation of artistic data.
 """
 
-from . import core
-from . import ext
+from importlib.metadata import entry_points
+import sys
+import warnings
+
+try:
+    discovered_plugin_list = entry_points()["mutwo"]
+except IndexError:
+    warnings.warn(
+        "No mutwo plugin could be found. "
+        "Without plugins mutwo is only an empty namespace. "
+        "Please read the mutwo README.md at "
+        "'https://github.com/mutwo-org/mutwo' for further information."
+    )
+    discovered_plugin_list = []
+
+
+for discovered_plugin in discovered_plugin_list:
+    globals().update({discovered_plugin.name: discovered_plugin.load()})
+
+del entry_points, sys

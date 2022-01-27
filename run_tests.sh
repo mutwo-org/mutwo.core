@@ -8,6 +8,7 @@ pip3 install virtualenv
 virtualenv $TEST_VIRTUALENV_NAME
 source $TEST_VIRTUALENV_NAME/bin/activate
 pip3 install .[testing]
+pip3 install tests/dummy_plugin/.
 cp -r tests $TEST_VIRTUALENV_DIR
 cd $TEST_VIRTUALENV_DIR
 nosetests --cover-package=mutwo
