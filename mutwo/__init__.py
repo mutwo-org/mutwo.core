@@ -15,7 +15,7 @@ import warnings
 
 try:
     discovered_plugin_list = entry_points()["mutwo"]
-except IndexError:
+except KeyError:
     warnings.warn(
         "No mutwo plugin could be found. "
         "Without plugins mutwo is only an empty namespace. "
