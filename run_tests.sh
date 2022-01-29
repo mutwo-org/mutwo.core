@@ -10,5 +10,5 @@ source $TEST_VIRTUALENV_NAME/bin/activate
 pip3 install .[testing]
 cp -r tests $TEST_VIRTUALENV_DIR
 cd $TEST_VIRTUALENV_DIR
-nosetests --cover-package=mutwo
+nosetests --with-coverage --cover-package=mutwo
 deactivate
