@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.51.0] - 2022-01-29
+
+### Changed
+- Refactor mutwo: no longer use entry points, but simply use [namespace packages](https://packaging.python.org/en/latest/guides/packaging-namespace-packages/)
+- Because of this mutwo.ext-core has been moved back to this repo
+
 
 ## [0.50.0] - 2022-01-28
 
