@@ -1,6 +1,6 @@
 """Utility functions."""
 
-from . import decorators
-from . import exceptions
-from . import prime_factors
-from . import tools
+from .decorators import *
+from .exceptions import *
+from .prime_factors import *
+from .tools import *

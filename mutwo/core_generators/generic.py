@@ -69,5 +69,5 @@ class DynamicChoice(object):
         """
         weight_list = [curve.value_at(time) for curve in self._curve_sequence]
         return self._random.choice(
-            self._value_sequence, p=core_utilities.tools.scale_sequence_to_sum(weight_list, 1)
+            self._value_sequence, p=core_utilities.scale_sequence_to_sum(weight_list, 1)
         )

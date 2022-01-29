@@ -326,7 +326,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         old_duration = self.duration
         self.set_parameter(
             "duration",
-            lambda duration: core_utilities.tools.scale(duration, 0, old_duration, 0, new_duration),  # type: ignore
+            lambda duration: core_utilities.scale(duration, 0, old_duration, 0, new_duration),  # type: ignore
         )
 
     # ###################################################################### #
@@ -405,7 +405,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         SimpleEvent(duration = 2)
         """
 
-        return core_utilities.tools.get_nested_item_from_index_sequence(
+        return core_utilities.get_nested_item_from_index_sequence(
             index_sequence, self
         )
 
@@ -421,7 +421,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
                 parameter_value_list.append(parameter_values_of_event)
         return tuple(parameter_value_list)
 
-    @core_utilities.decorators.add_copy_option
+    @core_utilities.add_copy_option
     def set_parameter(  # type: ignore
         self,
         parameter_name: str,
@@ -442,7 +442,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             for event in self
         ]
 
-    @core_utilities.decorators.add_copy_option
+    @core_utilities.add_copy_option
     def mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
@@ -452,7 +452,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     ) -> ComplexEvent[T]:
         [event.mutate_parameter(parameter_name, function) for event in self]
 
-    @core_utilities.decorators.add_copy_option
+    @core_utilities.add_copy_option
     def filter(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
     ) -> ComplexEvent[T]:
@@ -479,7 +479,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             if not shall_survive:
                 del self[nth_item]
 
-    @core_utilities.decorators.add_copy_option
+    @core_utilities.add_copy_option
     def tie_by(  # type: ignore
         self,
         condition: typing.Callable[[Event, Event], bool],

@@ -321,7 +321,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         )
         curve_shape = self.event_to_curve_shape(self[event_0_index])
 
-        return core_utilities.tools.scale(
+        return core_utilities.scale(
             absolute_time,
             absolute_time_tuple[event_0_index],
             absolute_time_tuple[event_0_index + 1],

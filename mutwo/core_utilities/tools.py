@@ -35,6 +35,7 @@ __all__ = (
     "set_nested_item_from_index_sequence",
     "find_numbers_which_sums_up_to",
     # call_function_except_attribute_error  # not for public use
+    "round_floats",
 )
 
 

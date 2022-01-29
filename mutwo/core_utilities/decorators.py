@@ -10,7 +10,7 @@ try:
 except ImportError:
     import pickle
 
-__all__ = ("add_copy_option", "compute_lazy")
+__all__ = ("add_copy_option", "add_tag_to_class", "compute_lazy")
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
