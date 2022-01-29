@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.52.0] - 2022-01-29
+
+### Changed
+- Make `core_utilites` flat
+    - old style: `from mutwo import core_utilites; core_utilites.tools.FUNCTION`
+    - new style: `from mutwo import core_utilites; core_utilites.FUNCTION`
+
+
 ## [0.51.0] - 2022-01-29
 
 ### Changed
