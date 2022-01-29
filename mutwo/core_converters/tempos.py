@@ -14,7 +14,7 @@ from mutwo import core_parameters
 
 
 TempoEvents = expenvelope.Envelope
-TempoPoint = typing.Union[core_parameters.tempos.TempoPoint, core_constants.Real]
+TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
 
 
 __all__ = (
