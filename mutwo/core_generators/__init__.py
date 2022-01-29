@@ -9,3 +9,6 @@ term for specific functions with the 'yield' keyword.
 """
 
 from .generic import *
+
+# Force flat structure
+del generic

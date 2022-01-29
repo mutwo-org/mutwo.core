@@ -4,3 +4,6 @@
 
 from . import abc
 from .tempos import *
+
+# Force flat structure
+del tempos

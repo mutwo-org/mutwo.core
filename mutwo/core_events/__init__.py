@@ -26,3 +26,6 @@ from . import abc
 
 from .basic import *
 from .envelopes import *
+
+# Force flat structure
+del basic, envelopes

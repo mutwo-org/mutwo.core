@@ -11,3 +11,6 @@ object (that can be started to play for triggering events in real-time).
 
 from . import abc
 from .tempos import *
+
+# Force flat structure
+del tempos
