@@ -36,6 +36,7 @@ __all__ = (
     "find_numbers_which_sums_up_to",
     # call_function_except_attribute_error  # not for public use
     "round_floats",
+    "camel_case_to_snake_case",
 )
 
 

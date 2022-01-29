@@ -7,18 +7,18 @@ from mutwo import core_utilities
 
 class PrimeFactorsTest(unittest.TestCase):
     def test_is_prime(self):
-        self.assertEqual(core_utilities.prime_factors.is_prime(4), False)
-        self.assertEqual(core_utilities.prime_factors.is_prime(3), True)
-        self.assertEqual(core_utilities.prime_factors.is_prime(100), False)
-        self.assertEqual(core_utilities.prime_factors.is_prime(23), True)
-        self.assertEqual(core_utilities.prime_factors.is_prime(19), True)
-        self.assertEqual(core_utilities.prime_factors.is_prime(18), False)
+        self.assertEqual(core_utilities.is_prime(4), False)
+        self.assertEqual(core_utilities.is_prime(3), True)
+        self.assertEqual(core_utilities.is_prime(100), False)
+        self.assertEqual(core_utilities.is_prime(23), True)
+        self.assertEqual(core_utilities.is_prime(19), True)
+        self.assertEqual(core_utilities.is_prime(18), False)
 
     def test_factorise(self):
         factorised_numbers = ([2, 2], [2, 3, 13, 23, 31], [3, 5, 7], [11, 11, 11])
         for factorised_number in factorised_numbers:
             self.assertEqual(
-                core_utilities.prime_factors.factorise(
+                core_utilities.factorise(
                     functools.reduce(operator.mul, factorised_number)
                 ),
                 factorised_number,
@@ -35,7 +35,7 @@ class PrimeFactorsTest(unittest.TestCase):
                 ],
             )
             self.assertEqual(
-                list(core_utilities.prime_factors.factors(number)),
+                list(core_utilities.factors(number)),
                 primes_and_exponents,
             )
 

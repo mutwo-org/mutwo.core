@@ -9,7 +9,7 @@ class DecoratorsTest(unittest.TestCase):
         class TestClass(object):
             a = 10
 
-            @core_utilities.decorators.add_copy_option
+            @core_utilities.add_copy_option
             def duplicate(self) -> None:
                 self.a *= 2
 
@@ -27,7 +27,7 @@ class DecoratorsTest(unittest.TestCase):
         nth_calculation = 0
         pickle_path = "tests/utilities/compute_lazy_test.pickle"
 
-        @core_utilities.decorators.compute_lazy(path=pickle_path)
+        @core_utilities.compute_lazy(path=pickle_path)
         def make_complex_calculation(_=0):
             globals()["nth_calculation"] += 1
             return globals()["nth_calculation"]

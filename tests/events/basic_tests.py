@@ -387,7 +387,7 @@ class SequentialEventTest(unittest.TestCase):
 
     def test_split_child_at_unavailable_time(self):
         self.assertRaises(
-            core_utilities.exceptions.SplitUnavailableChildError,
+            core_utilities.SplitUnavailableChildError,
             lambda: self.sequence.split_child_at(1000),
         )
 
