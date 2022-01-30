@@ -33,7 +33,7 @@ __all__ = (
     "get_nested_item_from_index_sequence",
     "set_nested_item_from_index_sequence",
     "find_numbers_which_sums_up_to",
-    "call_function_except_attribute_error"
+    "call_function_except_attribute_error",
     "round_floats",
     "camel_case_to_snake_case",
 )
