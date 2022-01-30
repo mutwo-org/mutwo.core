@@ -30,11 +30,10 @@ __all__ = (
     # "import_module_if_dependencies_have_been_installed",  # not for public use
     "find_closest_index",
     "find_closest_item",
-    # "class_name_to_object_name",  # not for public use
     "get_nested_item_from_index_sequence",
     "set_nested_item_from_index_sequence",
     "find_numbers_which_sums_up_to",
-    # call_function_except_attribute_error  # not for public use
+    "call_function_except_attribute_error"
     "round_floats",
     "camel_case_to_snake_case",
 )
