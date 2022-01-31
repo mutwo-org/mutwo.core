@@ -26,6 +26,25 @@ class EnvelopeTest(unittest.TestCase):
                 cls.EnvelopeEvent(1, 0.5),
             ]
         )
+        cls.double_value_envelope = core_events.Envelope(
+            [
+                cls.EnvelopeEvent(1, 0),
+                cls.EnvelopeEvent(1, 1, 1),
+                cls.EnvelopeEvent(1, 0, -1),
+                cls.EnvelopeEvent(2, 1),
+                cls.EnvelopeEvent(1, 0.5),
+            ],
+            value_to_parameter=lambda value: value / 2,
+            parameter_to_value=lambda parameter: parameter * 2,
+        )
+
+    def test_parameter_tuple(self):
+        self.assertEqual(self.envelope.parameter_tuple, (0, 1, 0, 1, 0.5))
+        self.assertEqual(self.double_value_envelope.parameter_tuple, (0, 1, 0, 1, 0.5))
+
+    def test_value_tuple(self):
+        self.assertEqual(self.envelope.value_tuple, (0, 1, 0, 1, 0.5))
+        self.assertEqual(self.double_value_envelope.value_tuple, (0, 2, 0, 2, 1))
 
     def _test_setitem(self, envelope_to_test: core_events.Envelope):
         self.assertEqual(type(envelope_to_test), core_events.Envelope)

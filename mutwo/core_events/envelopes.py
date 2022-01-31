@@ -278,8 +278,12 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @property
+    def parameter_tuple(self) -> tuple[core_constants.ParameterType, ...]:
+        return tuple(map(self.event_to_parameter, self))
+
+    @property
     def value_tuple(self) -> tuple[Value, ...]:
-        return tuple(map(self._event_to_value, self))
+        return tuple(map(self.parameter_to_value, self.parameter_tuple))
 
     @property
     def is_static(self) -> bool:

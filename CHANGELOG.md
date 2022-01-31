@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.55.0] - 2022-01-31
+
+### Added
+- `parameter_tuple` attribute for `Envelope` class
+
+
 ## [0.54.0] - 2022-01-31
 
 ### Added
