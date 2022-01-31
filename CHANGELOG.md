@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.53.0] - 2022-01-31
+
+### Added
+- `__call__` method to `core_converters.abc.Converter`: The method simply calls the `convert` method of the `Converter` class. This method isn't indented to finally replace the `convert` method but to allow converters to be passed as arguments when functions (callable objects) are expected. In this way anonymous functions which are passed to converters in order to extract information from events can be standardised and shared between various packages.
+
+
 ## [0.52.0] - 2022-01-29
 
 ### Changed

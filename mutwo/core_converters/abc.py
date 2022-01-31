@@ -24,6 +24,9 @@ class Converter(abc.ABC):
     ) -> typing.Any:
         raise NotImplementedError
 
+    def __call__(self, *args, **kwargs) -> typing.Any:
+        return self.convert(*args, **kwargs)
+
 
 class EventConverter(Converter):
     """Abstract base class for Converter which handle mutwo core_events.
