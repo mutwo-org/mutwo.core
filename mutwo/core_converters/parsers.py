@@ -7,6 +7,9 @@ from mutwo import core_events
 from mutwo import core_utilities
 
 
+__all__ = ("SimpleEventToAttribute",)
+
+
 class SimpleEventToAttribute(core_converters.abc.Converter):
     """Extract from a simple event an attribute.
 
