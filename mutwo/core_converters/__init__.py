@@ -10,7 +10,8 @@ object (that can be started to play for triggering events in real-time).
 """
 
 from . import abc
+from .parsers import *
 from .tempos import *
 
 # Force flat structure
-del tempos
+del parsers, tempos

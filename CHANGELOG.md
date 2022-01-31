@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.54.0] - 2022-01-31
+
+### Added
+- `SimpleEventToAttribute` class in `core_converters` module: This class is a blueprint class for any standardised converters to extract data (e.g. pitches, volumes, ...) from events
+
+
 ## [0.53.0] - 2022-01-31
 
 ### Added
