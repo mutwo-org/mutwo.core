@@ -15,12 +15,12 @@ The general design philosophy stresses out the independence and freedom of the u
 The following example generates a short midi file:
 
 ```python3
-from mutwo.core.events import basic
-from mutwo.ext.events import music
-from mutwo.ext.converters import frontends
-simple_melody = basic.SequentialEvent(
+from mutwo import core_events
+from mutwo import music_events
+from mutwo import midi_converters
+simple_melody = core_events.SequentialEvent(
     [
-        music.NoteLike(pitch_name, duration=duration, volume="mf")
+        music_events.NoteLike(pitch_name, duration=duration, volume="mf")
         for pitch_name, duration in (
             ("c", 0.75),
             ("a", 0.25),
@@ -29,15 +29,16 @@ simple_melody = basic.SequentialEvent(
         )
     ]
 )
-midi_file_converter = frontends.midi.MidiFileConverter()
-midi_file_converter.convert(simple_melody, "my_simple_melody.mid")
+event_to_midi_file = midi_converters.EventToMidiFile()
+event_to_midi_file.convert(simple_melody, "my_simple_melody.mid")
 ```
 
 Making Western notation via [abjad](https://github.com/Abjad/abjad) of the same melody:
 
 ```python3
+from mutwo import abjad_converters
 import abjad
-abjad_voice_converter = frontends.abjad.SequentialEventToAbjadVoiceConverter()
+abjad_voice_converter = abjad_converters.SequentialEventToAbjadVoice()
 abjad_voice = abjad_voice_converter.convert(simple_melody)
 abjad_score = abjad.Score([abjad.Staff([abjad_voice])])
 abjad.show(abjad_score)
