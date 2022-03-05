@@ -47,24 +47,27 @@ abjad.show(abjad_score)
 ![Lilypond engraving](docs/pictures/readme_abjad_example.png)
 
 
-### Plugins
+### Modules
 
 Starting from version 0.43.0 mutwo uses a modular design.
-Only basic and internal functionality is provided by the main mutwo core package.
-For adding various third party converter or better representation for certain areas the mutwo ecosystem supports plugin-like extensions.
-The following list gives an overview of currently supported extensions:
+Only basic functionality is provided by the mutwo core package.
 
-- [mutwo.ext-music](https://github.com/mutwo-org/mutwo.ext-music): Improve workflow in writing traditional note based music by adding the `mutwo.ext.events.music` module
+#### Added internal functionality
+- [mutwo.ext-music](https://github.com/mutwo-org/mutwo.ext-music): Add music parameters (pitch, volume, ...) and a `SimpleEvent` based class to represent a Note/Chord/Rest (`NoteLike`)
 - [mutwo.ext-common-generators](https://github.com/mutwo-org/mutwo.ext-common-generators): Algorithmic generation of data to be used for artistic works
-- [mutwo.ext-midi](https://github.com/mutwo-org/mutwo.ext-midi): Render mutwo events to midi files
+
+#### Added conversion methods
+- [mutwo.ext-midi](https://github.com/mutwo-org/mutwo.ext-midi): Write midi files
 - [mutwo.ext-abjad](https://github.com/mutwo-org/mutwo.ext-abjad): Build [Lilypond based](lilypond.org/) Western score notation via [Abjad](abjad.github.io/)
 - [mutwo.ext-csound](https://github.com/mutwo-org/mutwo.ext-csound): Create electronic music parts via [csound](csound.com/)
 - [mutwo.ext-isis](https://github.com/mutwo-org/mutwo.ext-isis): Use singing synthesis via [ISiS](https://forum.ircam.fr/projects/detail/isis/)
+- [mutwo.ext-mbrola](https://github.com/mutwo-org/mutwo.ext-mbrola): Render mutwo events to speaking synthesis signals via [mbrola](https://en.wikipedia.org/wiki/MBROLA)
 - [mutwo.ext-reaper](https://github.com/mutwo-org/mutwo.ext-reaper): Helpful converters for the [Reaper](https://www.reaper.fm/) DAW
 - [mutwo.ext-ekmelily](https://github.com/mutwo-org/mutwo.ext-ekmelily): Simplify writing microtonal notation in Lilypond by rendering files for the Lilypond extension [Ekmelily](http://ekmelic-music.org/en/extra/ekmelily.htm)
 - [mutwo.ext-mmml](https://github.com/mutwo-org/mutwo.ext-mmml): Write music in plain text files and convert it to mutwo events (experimental)
 
 Writing new plugins is simple, its basic structure can be understood at the [mutwo.ext-example](https://github.com/mutwo-org/mutwo.ext-example) repo.
+
 
 ### Documentation
 
