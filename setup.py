@@ -1,6 +1,6 @@
 import setuptools  # type: ignore
 
-MAJOR, MINOR, PATCH = 0, 56, 0
+MAJOR, MINOR, PATCH = 0, 57, 0
 VERSION = f"{MAJOR}.{MINOR}.{PATCH}"
 """This project uses semantic versioning.
 See https://semver.org/
@@ -31,7 +31,6 @@ setuptools.setup(
     ],
     setup_requires=[],
     install_requires=[
-        "dill>=0.3.4, <1.0.0",
         "expenvelope>=0.6.5, <1.0.0",
         "primesieve>=2.0.0, <3.0.0",
         "numpy>=1.18, <2.00",

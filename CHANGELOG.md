@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.57.0] - 2022-03-11
+
+### Added
+- `pickle_module` keyword to `compute_lazy` decorated and `PICKLE_MODULE_TO_SEARCH_TUPLE` configuration
+
+
 ## [0.56.0] - 2022-03-11
 
 ### Changed
