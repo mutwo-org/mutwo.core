@@ -92,7 +92,7 @@ class SimpleEvent(core_events.abc.Event):
     @property
     def duration(self) -> core_constants.DurationType:
         return core_utilities.round_floats(
-            self._duration, core_events.constants.ROUND_DURATION_TO_N_DIGITS
+            self._duration, core_events.configurations.ROUND_DURATION_TO_N_DIGITS
         )
 
     @duration.setter
@@ -298,7 +298,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def duration(self) -> core_constants.DurationType:
         return core_utilities.round_floats(
             sum(event.duration for event in self),
-            core_events.constants.ROUND_DURATION_TO_N_DIGITS,
+            core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
         )
 
     @property
@@ -475,7 +475,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             # avoid floating point error
             rounded_split_position = core_utilities.round_floats(
                 split_position,
-                core_events.constants.ROUND_DURATION_TO_N_DIGITS,
+                core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
             )
             # potentially split event
             if (
@@ -529,7 +529,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def duration(self) -> core_constants.DurationType:
         return core_utilities.round_floats(
             max(event.duration for event in self),
-            core_events.constants.ROUND_DURATION_TO_N_DIGITS,
+            core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
         )
 
     # ###################################################################### #

@@ -14,14 +14,7 @@ The most often used classes may be:
     - :class:`mutwo.core.events.basic.SimultaneousEvent`
 """
 
-# from . import basic_constants
-# from . import envelopes_constants
-# 
-# from . import abc
-# from . import basic
-# from . import envelopes
-
-from . import constants
+from . import configurations
 from . import abc
 
 from .basic import *

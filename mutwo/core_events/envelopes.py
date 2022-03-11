@@ -91,16 +91,16 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         event_to_parameter: typing.Callable[
             [core_events.abc.Event], core_constants.ParameterType
         ] = lambda event: getattr(
-            event, core_events.constants.DEFAULT_PARAMETER_ATTRIBUTE_NAME
+            event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME
         )
-        if hasattr(event, core_events.constants.DEFAULT_PARAMETER_ATTRIBUTE_NAME)
+        if hasattr(event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME)
         else 0,
         event_to_curve_shape: typing.Callable[
             [core_events.abc.Event], CurveShape
         ] = lambda event: getattr(
-            event, core_events.constants.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME
+            event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME
         )
-        if hasattr(event, core_events.constants.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME)
+        if hasattr(event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME)
         else 0,
         parameter_to_value: typing.Callable[
             [Value], core_constants.ParameterType
@@ -112,14 +112,14 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
             [core_events.abc.Event, core_constants.ParameterType], None
         ] = lambda event, parameter: setattr(
             event,
-            core_events.constants.DEFAULT_PARAMETER_ATTRIBUTE_NAME,
+            core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME,
             parameter,
         ),
         apply_curve_shape_on_event: typing.Callable[
             [core_events.abc.Event, CurveShape], None
         ] = lambda event, curve_shape: setattr(
             event,
-            core_events.constants.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
+            core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
             curve_shape,
         ),
         default_event_class: type[core_events.abc.Event] = core_events.SimpleEvent,

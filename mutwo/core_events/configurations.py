@@ -1,6 +1,6 @@
-"""Constants which are shared for all event classes in :mod:`mutwo.events.basic`."""
+"""Configurations which are shared for all event classes in :mod:`mutwo.events.basic`."""
 
-# Constants for basic
+# Configure basic submodule
 
 ROUND_DURATION_TO_N_DIGITS = 10
 """Set floating point precision for the duration property of all
@@ -16,7 +16,7 @@ for instance the :func:`mutwo.events.abc.ComplexEvent.squash_in`
 method or the :func:`mutwo.events.abc.Event.cut_off`
 method)."""
 
-# Constants for envelopes
+# Configure envelopes submodule
 
 DEFAULT_PARAMETER_ATTRIBUTE_NAME = "value"
 """Default attribute name when fetching the parameter of an event"""
