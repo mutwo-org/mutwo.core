@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.56.0] - 2022-03-11
+
+### Changed
+- renamed `mutwo.core_events.constants` to `mutwo.core_events.configurations`
+
+
 ## [0.55.0] - 2022-01-31
 
 ### Added
