@@ -465,7 +465,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         self.cut_off(start, cut_off_end)
 
-        if start == self.duration:
+        # We already know that the given start is within the
+        # range of the event. This means that if the start
+        # is bigger than the duration, it is only due to a
+        # floating point rounding error. To avoid odd bugs
+        # we therefore have to define the bigger-equal
+        # relationship.
+        if start >= self.duration:
             self.append(event_to_squash_in)
 
         else:
