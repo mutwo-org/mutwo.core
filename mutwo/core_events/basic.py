@@ -31,7 +31,7 @@ __all__ = (
 class SimpleEvent(core_events.abc.Event):
     """Event-Object which doesn't contain other Event-Objects (the node or leaf).
 
-    :param new_duration: The duration of the ``SimpleEvent``. This can be any number.
+    :param duration: The duration of the ``SimpleEvent``. This can be any number.
         The unit of the duration is up to the interpretation of the user and the
         respective converter routine that will be used.
 
@@ -43,8 +43,8 @@ class SimpleEvent(core_events.abc.Event):
     SimpleEvent(duration = 2)
     """
 
-    def __init__(self, new_duration: core_constants.DurationType):
-        self.duration = new_duration
+    def __init__(self, duration: core_constants.DurationType):
+        self.duration = duration
 
     # ###################################################################### #
     #                           magic methods                                #

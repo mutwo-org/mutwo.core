@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.58.0] - 2022-04-02
+
+### Added
+- various classes to standardise the conversion from mutwo parameters to concrete simple events:
+    - `core_converters.MutwoParameterDictToSimpleEvent`
+    - `core_converters.MutwoParameterDictToDuration`
+    - `core_converters.MutwoParameterDictToKeywordArgument`
+    - `core_converters.MutwoParameterDict`
+
+### Changed
+- `new_duration` argument of `mutwo.core_events.SimpleEvent` to `duration`
+
+
 ## [0.57.0] - 2022-03-11
 
 ### Added
