@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.59.0] - 2022-04-03
+
+### Added
+- `core_parameters.abc.SingleValueParameter`
+- `core_parameters.abc.SingleNumberParameter`
+
+
 ## [0.58.0] - 2022-04-02
 
 ### Added
