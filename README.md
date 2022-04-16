@@ -47,6 +47,22 @@ abjad.show(abjad_score)
 ![Lilypond engraving](docs/pictures/readme_abjad_example.png)
 
 
+### Installation
+
+Mutwo is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
+
+```sh
+pip3 install mutwo.ext-core
+```
+
+This only installs the core functionality (see infos regarding plugins below).
+
+
+### Documentation
+
+For more information how to use mutwo read the [documentation](https://mutwo.readthedocs.io/en/latest/).
+
+
 ### Modules
 
 Starting from version 0.43.0 mutwo uses a modular design.
@@ -67,22 +83,6 @@ Only basic functionality is provided by the mutwo core package.
 - [mutwo.ext-mmml](https://github.com/mutwo-org/mutwo.ext-mmml): Write music in plain text files and convert it to mutwo events (experimental)
 
 Writing new plugins is simple, its basic structure can be understood at the [mutwo.ext-example](https://github.com/mutwo-org/mutwo.ext-example) repo.
-
-
-### Documentation
-
-For more information how to use mutwo read the [documentation](https://mutwo.readthedocs.io/en/latest/).
-
-
-### Installation
-
-Mutwo is available on [pypi](https://pypi.org/project/mutwo/) and can be installed via pip:
-
-```sh
-pip3 install mutwo
-```
-
-This only installs the core functionality (see plugins above).
 
 
 ### Similar projects
