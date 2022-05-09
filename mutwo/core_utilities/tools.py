@@ -4,12 +4,8 @@ import bisect
 import copy
 import functools
 import importlib
-import inspect
 import itertools
 import math
-import operator
-import pkgutil
-import types
 import typing
 import warnings
 
@@ -17,9 +13,6 @@ from mutwo import core_constants
 
 
 __all__ = (
-    # "fetch_called_module"  # not for public use
-    # "fetch_doc_string_from_core_module"  # not for public use
-    # "import_all_submodules"  # not for public use
     "scale",
     "scale_sequence_to_sum",
     "accumulate_from_n",
@@ -37,85 +30,6 @@ __all__ = (
     "round_floats",
     "camel_case_to_snake_case",
 )
-
-
-def fetch_called_module() -> types.ModuleType:
-    """Fetch module from which the function got called.
-
-    Raises error if function has not been called from a module.
-    """
-
-    frame = inspect.stack()[2]
-    module = inspect.getmodule(frame[0])
-    if module:
-        return module
-    else:
-        raise NotImplementedError("Function hasn't been called from a module!")
-
-
-def fetch_doc_string_from_core_module(module: typing.Optional[types.ModuleType] = None):
-    """Fetch doc string for ext module __init__ file from core
-
-    :param module: The mutwo.ext module.
-    :type module: typing.Optional[types.ModuleType]
-    """
-
-    if not module:
-        module = fetch_called_module()
-
-    ext_module_name = ".".join(module.__name__.split(".")[2:])
-    core_module = importlib.import_module(f"mutwo.core.{ext_module_name}")
-    module.__doc__ = core_module.__doc__
-
-
-def import_all_submodules(module: typing.Optional[types.ModuleType] = None):
-    """Import all submodules from current module.
-
-    :param module: The module which submodules shall be imported.
-    :type module: typing.Optional[types.ModuleType]
-    :return: None
-
-    The method will import submodules in an order which is specified
-    by the submodules name:
-
-    1. It will first import all modules which are named "core_constants"
-        (e.g. 'pitches_core_constants', 'basic_constants', etc.)
-
-    2. Next it will import a module with the exact name "abc"
-        (which is supposed to contain the public API for all other
-        classes in the other submodules)
-
-    3. Finally all other modules get imported.
-    """
-
-    def module_name_to_sort_index(module_name: str) -> int:
-        if "core_constants" in module_name:
-            return 0
-        elif "abc" == module_name:
-            return 1
-        else:
-            return 2
-
-    if not module:
-        module = fetch_called_module()
-
-    module_name_list = sorted(
-        list(map(operator.itemgetter(1), pkgutil.walk_packages(module.__path__))),
-        key=module_name_to_sort_index,
-    )
-    for name in module_name_list:
-        try:
-            importlib.import_module(module.__name__ + "." + name)
-        except ModuleNotFoundError:
-            pass
-
-
-def initialise_mutwo_ext_init():
-    """Setup __init__.py file for mutwo.ext module"""
-
-    module = fetch_called_module()
-    fetch_doc_string_from_core_module(module)
-    import_all_submodules(module)
 
 
 def scale(
