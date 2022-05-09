@@ -1,7 +1,6 @@
 import unittest
 
-import expenvelope
-
+from mutwo import core_events
 from mutwo import core_generators
 
 
@@ -10,8 +9,8 @@ class DynamicChoiceTest(unittest.TestCase):
         dynamic_choice = core_generators.DynamicChoice(
             [0, 1],
             [
-                expenvelope.Envelope.from_points((0, 0), (0.45, 0), (0.5, 0.5), (1, 1)),
-                expenvelope.Envelope.from_points((0, 1), (0.5, 0.5), (0.6, 0), (1, 0)),
+                core_events.Envelope([(0, 0), (0.45, 0), (0.5, 0.5), (1, 1)]),
+                core_events.Envelope([(0, 1), (0.5, 0.5), (0.6, 0), (1, 0)]),
             ],
         )
         for _ in range(1000):
@@ -25,8 +24,8 @@ class DynamicChoiceTest(unittest.TestCase):
         dynamic_choice = core_generators.DynamicChoice(
             [0, 1],
             [
-                expenvelope.Envelope.from_points((0, 0), (1, 1)),
-                expenvelope.Envelope.from_points((0, 1), (1, 0)),
+                core_events.Envelope([(0, 0), (1, 1)]),
+                core_events.Envelope([(0, 1), (1, 0)]),
             ],
         )
         self.assertEqual(repr(dynamic_choice), "DynamicChoice([0, 1])")
@@ -34,8 +33,8 @@ class DynamicChoiceTest(unittest.TestCase):
     def test_items(self):
         value0, value1 = 0, 1
         envelope0, envelope1 = [
-            expenvelope.Envelope.from_points((0, 0), (1, 1)),
-            expenvelope.Envelope.from_points((0, 1), (1, 0)),
+            core_events.Envelope([(0, 0), (1, 1)]),
+            core_events.Envelope([(0, 1), (1, 0)]),
         ]
         dynamic_choice = core_generators.DynamicChoice(
             [value0, value1],

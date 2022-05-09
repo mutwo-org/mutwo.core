@@ -3,9 +3,9 @@
 import numbers
 import typing
 
-import expenvelope  # type: ignore
 import numpy as np  # type: ignore
 
+from mutwo import core_events
 from mutwo import core_utilities
 
 __all__ = ("DynamicChoice",)
@@ -17,20 +17,20 @@ class DynamicChoice(object):
     :param value_sequence: The items to choose from.
     :type value_sequence: typing.Sequence[typing.Any]
     :param curve_sequence: The dynamically changing weight for each value.
-    :type curve_sequence: typing.Sequence[expenvelope.Envelope]
+    :type curve_sequence: typing.Sequence[core_events.Envelope]
     :param random_seed: The seed which shall be set at class initialisation.
     :type random_seed: int
 
     **Example:**
 
-    >>> import expenvelope
-    >>> from mutwo.generators import generic
-    >>> dynamic_choice = generic.DynamicChoice(
+    >>> from mutwo import core_events
+    >>> from mutwo import core_generators
+    >>> dynamic_choice = core_generators.DynamicChoice(
     >>>    [0, 1, 2],
     >>>    [
-    >>>        expenvelope.Envelope.from_points((0, 0), (0.5, 1), (1, 0)),
-    >>>        expenvelope.Envelope.from_points((0, 0.5), (0.5, 0), (1, 0.5)),
-    >>>        expenvelope.Envelope.from_points((0, 0.5), (1, 1)),
+    >>>        core_events.Envelope([(0, 0), (0.5, 1), (1, 0)]),
+    >>>        core_events.Envelope([(0, 0.5), (0.5, 0), (1, 0.5)]),
+    >>>        core_events.Envelope([(0, 0.5), (1, 1)]),
     >>>    ],
     >>> )
     >>> dynamic_choice.gamble_at(0.3)
@@ -44,7 +44,7 @@ class DynamicChoice(object):
     def __init__(
         self,
         value_sequence: typing.Sequence[typing.Any],
-        curve_sequence: typing.Sequence[expenvelope.Envelope],
+        curve_sequence: typing.Sequence[core_events.Envelope],
         random_seed: int = 100,
     ):
 
@@ -57,7 +57,7 @@ class DynamicChoice(object):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._value_sequence})"
 
-    def items(self) -> tuple[tuple[typing.Any, expenvelope.Envelope]]:
+    def items(self) -> tuple[tuple[typing.Any, core_events.Envelope]]:
         return tuple(zip(self._value_sequence, self._curve_sequence))
 
     def gamble_at(self, time: numbers.Real) -> typing.Any:
