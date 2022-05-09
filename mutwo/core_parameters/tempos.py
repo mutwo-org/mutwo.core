@@ -62,5 +62,5 @@ class TempoPoint(object):
             return self.tempo_or_tempo_range_in_beats_per_minute
 
     @property
-    def absolute_tempo_in_beat_per_minute(self) -> float:
+    def absolute_tempo_in_beats_per_minute(self) -> float:
         return self.tempo_in_beats_per_minute * self.reference
