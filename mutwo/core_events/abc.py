@@ -510,6 +510,10 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             and `False` if the first (right) event shall be removed.
         """
 
+        # Nothing to tie if no child events exist
+        if not self:
+            return self
+
         def tie_by_if_available(event_to_tie: Event):
             if hasattr(event_to_tie, "tie_by"):
                 event_to_tie.tie_by(

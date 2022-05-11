@@ -268,6 +268,14 @@ class SequentialEventTest(unittest.TestCase):
         )
 
     def test_tie_by(self):
+        # Ensure empty event can be tied without error
+        self.assertEqual(
+            core_events.SequentialEvent([]).tie_by(
+                lambda event_left, event_right: True
+            ),
+            core_events.SequentialEvent([]),
+        )
+        # Ensure tie_by function as expected
         self.assertEqual(
             self.sequence.tie_by(
                 lambda event_left, event_right: event_left.duration + 1
