@@ -37,8 +37,8 @@ class SimpleEvent(core_events.abc.Event):
 
     **Example:**
 
-    >>> from mutwo.core_events import basic
-    >>> simple_event = basic.SimpleEvent(2)
+    >>> from mutwo import core_events
+    >>> simple_event = core_events.SimpleEvent(2)
     >>> print(simple_event)
     SimpleEvent(duration = 2)
     """
@@ -142,8 +142,8 @@ class SimpleEvent(core_events.abc.Event):
 
         **Example:**
 
-        >>> from mutwo.core_events import basic
-        >>> simple_event = basic.SimpleEvent(2)
+        >>> from mutwo import core_events
+        >>> simple_event = core_events.SimpleEvent(2)
         >>> simple_event.pitch = 200
         >>> simple_event.get_parameter('pitch')
         200
@@ -187,8 +187,8 @@ class SimpleEvent(core_events.abc.Event):
 
         **Example:**
 
-        >>> from mutwo.core_events import basic
-        >>> simple_event = basic.SimpleEvent(2)
+        >>> from mutwo import core_events
+        >>> simple_event = core_events.SimpleEvent(2)
         >>> simple_event.set_parameter('duration', lambda old_duration: old_duration * 2)
         >>> simple_event.duration
         4
@@ -340,8 +340,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.core_events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
         >>> sequential_event.get_event_index_at(1)
         0
         >>> sequential_event.get_event_index_at(3)
@@ -368,8 +368,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.core_events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(2), basic.SimpleEvent(3)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
         >>> sequential_event.get_event_at(1)
         SimpleEvent(duration = 2)
         >>> sequential_event.get_event_at(3)

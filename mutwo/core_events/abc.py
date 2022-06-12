@@ -80,10 +80,10 @@ class Event(abc.ABC):
         and destructive_copy:
 
         >>> import copy
-        >>> from mutwo.events import basic
-        >>> my_simple_event_0 = basic.SimpleEvent(2)
-        >>> my_simple_event_1 = basic.SimpleEvent(3)
-        >>> my_sequential_event = basic.SequentialEvent([my_simple_event_0, my_simple_event_1, my_simple_event_0])
+        >>> from mutwo import core_events
+        >>> my_simple_event_0 = core_events.SimpleEvent(2)
+        >>> my_simple_event_1 = core_events.SimpleEvent(3)
+        >>> my_sequential_event = core_events.SequentialEvent([my_simple_event_0, my_simple_event_1, my_simple_event_0])
         >>> deepcopied_event = copy.deepcopy(my_sequential_event)
         >>> destructivecopied_event = my_sequential_event.destructive_copy()
         >>> deepcopied_event[0].duration = 10  # setting the duration of the first event
@@ -118,9 +118,9 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent(
-        >>>     [basic.SimpleEvent(2), basic.SimpleEvent(3)]
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent(
+        >>>     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
         >>> )
         >>> sequential_event.get_parameter('duration')
         (2, 3)
@@ -156,9 +156,9 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent(
-        >>>     [basic.SimpleEvent(2), basic.SimpleEvent(3)]
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent(
+        >>>     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
         >>> )
         >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
         >>> sequential_event.get_parameter('duration')
@@ -190,13 +190,13 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.core.events import basic
-        >>> from mutwo.ext import music
-        >>> from mutwo.core.parameters import pitches
-        >>> sequential_event = basic.SequentialEvent([music.NoteLike([pitches.WesternPitch('c', 4), pitches.WesternPitch('e', 4)], 2, 1)])
-        >>> sequential_event.mutate_parameter('pitch_or_pitches', lambda pitch_or_pitches: [pitch.add(12) for pitch in pitch_or_pitches])
+        >>> from mutwo import core_events
+        >>> from mutwo import music_events
+        >>> from mutwo import music_parameters
+        >>> sequential_event = core_events.SequentialEvent([music_events.NoteLike([music_parameters.WesternPitch('c', 4), music_parameters.WesternPitch('e', 4)], 2, 1)])
+        >>> sequential_event.mutate_parameter('pitch_list', lambda pitch_list: [pitch.add(12) for pitch in pitch_list])
         >>> # now all pitches should be one octave higher (from 4 to 5)
-        >>> sequential_event.get_parameter('pitch_or_pitches')
+        >>> sequential_event.get_parameter('pitch_list')
         ([WesternPitch(c5), WesternPitch(e5)],)
         """
 
@@ -217,8 +217,8 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3), core_events.SimpleEvent(2)])
         >>> sequential_event.cut_out(1, 4)
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 2), SimpleEvent(duration = 1)])
@@ -241,8 +241,8 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3), basic.SimpleEvent(2)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3), core_events.SimpleEvent(2)])
         >>> sequential_event.cut_off(1, 3)
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1)])
@@ -260,8 +260,8 @@ class Event(abc.ABC):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.split_at(1)
         (SequentialEvent([SimpleEvent(duration = 1)]), SequentialEvent([SimpleEvent(duration = 2)]))
         >>> sequential_event[0].split_at(1)
@@ -370,8 +370,8 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> piano_voice_0 = basic.TaggedSequentialEvent([basic.SimpleEvent(2)], tag="piano")
+        >>> from mutwo import core_events
+        >>> piano_voice_0 = core_events.TaggedSequentialEvent([core_events.SimpleEvent(2)], tag="piano")
         >>> piano_voice_1 = piano_voice_0.empty_copy()
         >>> piano_voice_1.tag
         'piano'
@@ -396,8 +396,8 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> nested_sequential_event = basic.SequentialEvent([basic.SequentialEvent([basic.SimpleEvent(2)])])
+        >>> from mutwo import core_events
+        >>> nested_sequential_event = core_events.SequentialEvent([core_events.SequentialEvent([core_events.SimpleEvent(2)])])
         >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
         SimpleEvent(duration = 2)
         >>> # this is equal to:
@@ -465,9 +465,9 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> simultaneous_event = basic.SimultaneousEvent(
-            [basic.SimpleEvent(1), basic.SimpleEvent(3), basic.SimpleEvent(2)]
+        >>> from mutwo import core_events
+        >>> simultaneous_event = core_events.SimultaneousEvent(
+            [core_events.SimpleEvent(1), core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
         )
         >>> simultaneous_event.filter(lambda event: event.duration > 2)
         >>> simultaneous_event
@@ -505,7 +505,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             event.
         :param event_type_to_examine: Defines which events shall be compared.
             If one only wants to process the leaves, this should perhaps be
-            :class:`mutwo.events.basic.SimpleEvent`.
+            :class:`mutwo.core_events.SimpleEvent`.
         :param event_to_remove: `True` if the second (left) event shall be removed
             and `False` if the first (right) event shall be removed.
         """
@@ -567,9 +567,9 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
-        >>> sequential_event.squash_in(1, basic.SimpleEvent(1.5))
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
+        >>> sequential_event.squash_in(1, core_events.SimpleEvent(1.5))
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1.5), SimpleEvent(duration = 0.5)])
         """
@@ -586,8 +586,8 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
         **Example:**
 
-        >>> from mutwo.events import basic
-        >>> sequential_event = basic.SequentialEvent([basic.SimpleEvent(3)])
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.split_child_at(1)
         >>> sequential_event
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 2)])
