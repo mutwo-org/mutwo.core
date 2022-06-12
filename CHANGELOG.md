@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.60.0] - 2022-05-09
+
+### Added
+- `curve_shape_tuple` property for `mutwo.core_events.Envelope`
+- `copy` method for all events (not only for complex events)
+
+### Changed
+- refactor `core_parameters.TempoPoint.absolute_tempo_in_beat_per_minute` to `core_parameters.TempoPoint.absolute_tempo_in_beats_per_minute` (use plural for beats)
+- use `core_events.Envelope` instead of `expenvelope.Envelope` objects in `core_converters.TempoConverter`
+- use `core_events.Envelope` instead of `expenvelope.Envelope` objects in `core_generators.DynamicChoice`
+
+### Removed
+- deprecated import helper functions in `mutwo.core_utilites` (artefacts from deprecated extension model)
+- `expenvelope` dependency
+
+
 ## [0.59.0] - 2022-04-03
 
 ### Added
