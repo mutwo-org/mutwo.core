@@ -8,6 +8,14 @@ from mutwo import core_utilities
 
 
 class SimpleEventTest(unittest.TestCase):
+    def test_copy(self):
+        simple_event0 = core_events.SimpleEvent(20)
+        simple_event1 = simple_event0.copy()
+        simple_event1.duration = 300
+
+        self.assertEqual(simple_event0.duration, 20)
+        self.assertEqual(simple_event1.duration, 300)
+
     def test_get_assigned_parameter(self):
         duration = 10
         self.assertEqual(

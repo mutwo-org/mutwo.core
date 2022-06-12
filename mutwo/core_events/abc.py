@@ -63,6 +63,10 @@ class Event(abc.ABC):
     #                           public methods                               #
     # ###################################################################### #
 
+    def copy(self) -> Event:
+        """Return a deep copy of the given Event."""
+        return copy.deepcopy(self)
+
     @abc.abstractmethod
     def destructive_copy(self) -> Event:
         """Adapted deep copy method that returns a new object for every leaf.
@@ -351,10 +355,6 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     # ###################################################################### #
     #                           public methods                               #
     # ###################################################################### #
-
-    def copy(self) -> ComplexEvent[T]:
-        """Return a deep copy of the ComplexEvent."""
-        return copy.deepcopy(self)
 
     def destructive_copy(self) -> ComplexEvent[T]:
         empty_copy = self.empty_copy()
