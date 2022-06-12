@@ -5,15 +5,13 @@
 import typing
 import warnings
 
-import expenvelope  # type: ignore
-
 from mutwo import core_constants
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_parameters
 
 
-TempoEvents = expenvelope.Envelope
+TempoEvents = core_events.Envelope
 TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
 
 
@@ -104,7 +102,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     """Class for applying tempo curves on mutwo events.
 
     :param tempo_envelope: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a :class:`expenvelope.Envelope`
+        mutwo events. This is expected to be a :class:`core_events.Envelope`
         which levels are filled with numbers that will be interpreted as BPM
         [beats per minute]) or with :class:`mutwo.parameters.tempos.TempoPoint`
         objects.
@@ -114,7 +112,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     >>> import expenvelope
     >>> from mutwo.converters import symmetrical
     >>> from mutwo.parameters import tempos
-    >>> tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+    >>> tempo_envelope = core_events.Envelope.from_levels_and_durations(
     >>>     levels=[tempos.TempoPoint(60), 60, 30, 50],
     >>>     durations=[3, 0, 2],
     >>> )
@@ -123,7 +121,7 @@ class TempoConverter(core_converters.abc.EventConverter):
 
     _tempo_point_converter = TempoPointConverter()
 
-    def __init__(self, tempo_envelope: expenvelope.Envelope):
+    def __init__(self, tempo_envelope: core_events.Envelope):
         self._envelope = (
             TempoConverter._tempo_envelope_to_beat_length_in_seconds_envelope(
                 tempo_envelope
@@ -136,19 +134,26 @@ class TempoConverter(core_converters.abc.EventConverter):
 
     @staticmethod
     def _tempo_envelope_to_beat_length_in_seconds_envelope(
-        tempo_envelope: expenvelope.Envelope,
-    ) -> expenvelope.Envelope:
+        tempo_envelope: core_events.Envelope,
+    ) -> core_events.Envelope:
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
 
         level_list: list[float] = []
-        for tempo_point in tempo_envelope.levels:
+        for tempo_point in tempo_envelope.value_tuple:
             beat_length_in_seconds = TempoConverter._tempo_point_converter.convert(
                 tempo_point
             )
             level_list.append(beat_length_in_seconds)
 
-        return expenvelope.Envelope.from_levels_and_durations(
-            level_list, tempo_envelope.durations, tempo_envelope.curve_shapes
+        return core_events.Envelope(
+            [
+                [absolute_time, value, curve_shape]
+                for absolute_time, value, curve_shape in zip(
+                    tempo_envelope.absolute_time_tuple,
+                    level_list,
+                    tempo_envelope.curve_shape_tuple,
+                )
+            ]
         )
 
     # ###################################################################### #
@@ -189,7 +194,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> from mutwo.events import basic
         >>> from mutwo.parameters import tempos
         >>> from mutwo.converters import symmetrical
-        >>> tempo_envelope = expenvelope.Envelope.from_levels_and_durations(
+        >>> tempo_envelope = core_events.Envelope.from_levels_and_durations(
         >>>     levels=[tempos.TempoPoint(60), 60, 120, 120],
         >>>     durations=[3, 2, 5],
         >>> )

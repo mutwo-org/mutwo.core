@@ -286,6 +286,10 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         return tuple(map(self.parameter_to_value, self.parameter_tuple))
 
     @property
+    def curve_shape_tuple(self) -> tuple[CurveShape, ...]:
+        return tuple(map(self.event_to_curve_shape, self))
+
+    @property
     def is_static(self) -> bool:
         """Return `True` if :class:`Envelope` only has one static value."""
 
