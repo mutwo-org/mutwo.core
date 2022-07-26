@@ -109,7 +109,10 @@ class TempoConverterTest(unittest.TestCase):
         converted_sequential_event = converter.convert(sequential_event)
         expected_duration_tuple = (4, 3, 3, 3.800090804, 2.199909196)
         self.assertEqual(
-            converted_sequential_event.get_parameter("duration"),
+            tuple(
+                float(duration)
+                for duration in converted_sequential_event.get_parameter("duration")
+            ),
             expected_duration_tuple,
         )
 

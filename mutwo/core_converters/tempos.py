@@ -11,10 +11,6 @@ from mutwo import core_events
 from mutwo import core_parameters
 
 
-TempoEvents = core_events.Envelope
-TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
-
-
 __all__ = (
     "TempoPointConverter",
     "TempoConverter",
@@ -37,6 +33,8 @@ class TempoPointConverter(core_converters.abc.Converter):
     >>> from mutwo.converters import symmetrical
     >>> tempo_point_converter = symmetrical.tempos.TempoPointConverter()
     """
+
+    TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
 
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(

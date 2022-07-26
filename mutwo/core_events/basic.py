@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import bisect
 import copy
+import functools
+import operator
 import types
 import typing
 
@@ -15,6 +17,7 @@ import ranges
 
 from mutwo import core_constants
 from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
 
 
@@ -31,20 +34,28 @@ __all__ = (
 class SimpleEvent(core_events.abc.Event):
     """Event-Object which doesn't contain other Event-Objects (the node or leaf).
 
-    :param duration: The duration of the ``SimpleEvent``. This can be any number.
-        The unit of the duration is up to the interpretation of the user and the
-        respective converter routine that will be used.
+    :param duration: The duration of the ``SimpleEvent``. Mutwo will convert
+        the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
+        with the global `core_events.configurations.UNKNOWN_OBJECT_TO_DURATION`
+        callable.
 
     **Example:**
 
     >>> from mutwo import core_events
     >>> simple_event = core_events.SimpleEvent(2)
     >>> print(simple_event)
-    SimpleEvent(duration = 2)
+    SimpleEvent(duration = DirectDuration(2))
     """
 
-    def __init__(self, duration: core_constants.DurationType):
+    parameter_to_exclude_from_representation_tuple = tuple([])
+
+    def __init__(
+        self,
+        duration: core_parameters.abc.Duration,
+        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+    ):
         self.duration = duration
+        self.tempo_envelope = tempo_envelope
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -71,33 +82,47 @@ class SimpleEvent(core_events.abc.Event):
     @property
     def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
-        return self._parameter_to_compare_tuple
+        # XXX: Fix infinite circular loop
+        return tuple(
+            filter(
+                lambda attribute: attribute
+                not in self.parameter_to_exclude_from_representation_tuple,
+                self._parameter_to_compare_tuple,
+            )
+        )
 
     @property
     def _parameter_to_compare_tuple(self) -> tuple[str, ...]:
-        """Return tuple of attribute names which values define the SimpleEvent.
+        """Return tuple of attribute names which values define the :class:`SimpleEvent`.
 
         The returned attribute names are used for equality check between two
-        SimpleEvent objects.
+        :class:`SimpleEvent` objects.
         """
         return tuple(
             attribute
             for attribute in dir(self)
+            # XXX: We have to use 'and' (lazy evaluation) instead of
+            #      'all', to avoid redundant checks!
+            #
             # no private attributes
             if attribute[0] != "_"
+            # no redundant comparisons
+            and attribute
+            not in (
+                "parameter_to_exclude_from_representation_tuple",
+                "tempo_envelope",
+            )
             # no methods
             and not isinstance(getattr(self, attribute), types.MethodType)
         )
 
     @property
-    def duration(self) -> core_constants.DurationType:
-        return core_utilities.round_floats(
-            self._duration, core_events.configurations.ROUND_DURATION_TO_N_DIGITS
-        )
+    def duration(self) -> core_parameters.abc.Duration:
+        return self._duration
 
     @duration.setter
-    def duration(self, new_duration: core_constants.DurationType):
-        self._duration = new_duration
+    def duration(self, duration: core_parameters.abc.Duration):
+        self._duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
 
     # ###################################################################### #
     #                           private methods                              #
@@ -189,16 +214,22 @@ class SimpleEvent(core_events.abc.Event):
 
         >>> from mutwo import core_events
         >>> simple_event = core_events.SimpleEvent(2)
-        >>> simple_event.set_parameter('duration', lambda old_duration: old_duration * 2)
+        >>> simple_event.set_parameter(
+        >>>     'duration', lambda old_duration: old_duration * 2
+        >>> )
         >>> simple_event.duration
         4
         >>> simple_event.set_parameter('duration', 3)
         >>> simple_event.duration
         3
-        >>> simple_event.set_parameter('unknown_parameter', 10, set_unassigned_parameter=False)  # this will be ignored
+        >>> simple_event.set_parameter(
+        >>>     'unknown_parameter', 10, set_unassigned_parameter=False
+        >>> )  # this will be ignored
         >>> simple_event.unknown_parameter
         AttributeError: 'SimpleEvent' object has no attribute 'unknown_parameter'
-        >>> simple_event.set_parameter('unknown_parameter', 10, set_unassigned_parameter=True)  # this will be written
+        >>> simple_event.set_parameter(
+        >>>     'unknown_parameter', 10, set_unassigned_parameter=True
+        >>> )  # this will be written
         >>> simple_event.unknown_parameter
         10
         """
@@ -226,16 +257,22 @@ class SimpleEvent(core_events.abc.Event):
     @core_utilities.add_copy_option
     def cut_out(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> SimpleEvent:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )
 
         duration = self.duration
 
-        difference_to_duration: core_constants.Real = 0
+        difference_to_duration: core_parameters.DirectDuration = (
+            core_parameters.DirectDuration(0)
+        )
 
         if start > 0:
             difference_to_duration += start
@@ -245,20 +282,24 @@ class SimpleEvent(core_events.abc.Event):
         try:
             assert difference_to_duration < duration
         except AssertionError:
-            message = (
+            raise ValueError(
                 f"Can't cut out SimpleEvent '{self}' with duration '{duration}' from"
                 f" (start = {start} to end = {end})."
             )
-            raise ValueError(message)
 
         self.duration -= difference_to_duration
 
     @core_utilities.add_copy_option
     def cut_off(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> SimpleEvent:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
+
         self._assert_correct_start_and_end_values(start, end)
 
         duration = self.duration
@@ -281,10 +322,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @staticmethod
     def _get_index_at_from_absolute_time_tuple(
-        absolute_time: core_constants.DurationType,
+        absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any],
         absolute_time_tuple: tuple[core_constants.DurationType, ...],
         duration: core_constants.DurationType,
     ) -> typing.Optional[int]:
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
         if absolute_time < duration and absolute_time >= 0:
             return bisect.bisect_right(absolute_time_tuple, absolute_time) - 1
         else:
@@ -295,18 +339,19 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @core_events.abc.ComplexEvent.duration.getter
-    def duration(self) -> core_constants.DurationType:
-        return core_utilities.round_floats(
-            sum(event.duration for event in self),
-            core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
-        )
+    def duration(self) -> core_parameters.abc.Duration:
+        return functools.reduce(operator.add, (event.duration for event in self))
 
     @property
     def absolute_time_tuple(self) -> tuple[core_constants.Real, ...]:
         """Return absolute point in time for each event."""
 
         duration_iterator = (event.duration for event in self)
-        return tuple(core_utilities.accumulate_from_zero(duration_iterator))[:-1]
+        return tuple(
+            core_utilities.accumulate_from_n(
+                duration_iterator, core_parameters.DirectDuration(0)
+            )
+        )[:-1]
 
     @property
     def start_and_end_time_per_event(
@@ -316,7 +361,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         duration_iterator = (event.duration for event in self)
         absolute_time_tuple = tuple(
-            core_utilities.accumulate_from_zero(duration_iterator)
+            core_utilities.accumulate_from_n(
+                duration_iterator, core_parameters.DirectDuration(0)
+            )
         )
         return tuple(
             ranges.Range(*start_and_end_time)
@@ -328,13 +375,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     def get_event_index_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> typing.Optional[int]:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: core_constants.DurationType
+        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
         :return: Index of event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -356,13 +403,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
 
     def get_event_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> typing.Optional[T]:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: core_constants.DurationType
+        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
         :return: Event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -390,6 +437,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_constants.DurationType,
         end: core_constants.DurationType,
     ) -> SequentialEvent[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
         self._assert_correct_start_and_end_values(start, end)
 
         remove_nth_event_list = []
@@ -399,7 +450,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             event_duration = event.duration
             event_end = event_start + event_duration
 
-            cut_out_start: core_constants.Real = 0
+            cut_out_start: core_parameters.DirectDuration = (
+                core_parameters.DirectDuration(0)
+            )
             cut_out_end = event_duration
 
             if event_start < start:
@@ -422,6 +475,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_constants.DurationType,
         end: core_constants.DurationType,
     ) -> SequentialEvent[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
         cut_off_duration = end - start
 
         # avoid unnecessary iterations
@@ -456,9 +513,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def squash_in(  # type: ignore
         self,
-        start: core_constants.DurationType,
+        start: typing.Union[core_parameters.abc.Duration, typing.Any],
         event_to_squash_in: core_events.abc.Event,
     ) -> SequentialEvent[T]:
+        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_start_in_range(start)
 
         cut_off_end = start + event_to_squash_in.duration
@@ -478,19 +536,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             absolute_time_tuple = self.absolute_time_tuple
             active_event_index = self.get_event_index_at(start)
             split_position = start - absolute_time_tuple[active_event_index]
-            # avoid floating point error
-            rounded_split_position = core_utilities.round_floats(
-                split_position,
-                core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
-            )
-            # potentially split event
             if (
-                rounded_split_position > 0
-                and rounded_split_position < self[active_event_index].duration
+                split_position > 0
+                and split_position < self[active_event_index].duration
             ):
-                split_active_event = self[active_event_index].split_at(
-                    rounded_split_position
-                )
+                split_active_event = self[active_event_index].split_at(split_position)
                 self[active_event_index] = split_active_event[1]
                 self.insert(active_event_index, split_active_event[0])
                 active_event_index += 1
@@ -499,7 +549,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @core_utilities.add_copy_option
     def split_child_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> SequentialEvent[T]:
         absolute_time_tuple = self.absolute_time_tuple
         nth_event = SequentialEvent._get_index_at_from_absolute_time_tuple(
@@ -533,10 +583,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @core_events.abc.ComplexEvent.duration.getter
     def duration(self) -> core_constants.DurationType:
-        return core_utilities.round_floats(
-            max(event.duration for event in self),
-            core_events.configurations.ROUND_DURATION_TO_N_DIGITS,
-        )
+        return max(event.duration for event in self)
 
     # ###################################################################### #
     #                           public methods                               #
@@ -548,6 +595,10 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_constants.DurationType,
         end: core_constants.DurationType,
     ) -> SimultaneousEvent[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_out(start, end) for event in self]
 
@@ -557,15 +608,20 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_constants.DurationType,
         end: core_constants.DurationType,
     ) -> SimultaneousEvent[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_off(start, end) for event in self]
 
     @core_utilities.add_copy_option
     def squash_in(  # type: ignore
         self,
-        start: core_constants.DurationType,
+        start: typing.Union[core_parameters.abc.Duration, typing.Any],
         event_to_squash_in: core_events.abc.Event,
     ) -> SimultaneousEvent[T]:
+        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_start_in_range(start)
 
         for event in self:
@@ -599,8 +655,6 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 @core_utilities.add_tag_to_class
 class TaggedSimpleEvent(SimpleEvent):
     """:class:`SimpleEvent` with tag."""
-
-    pass
 
 
 @core_utilities.add_tag_to_class

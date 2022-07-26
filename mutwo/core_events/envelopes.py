@@ -9,10 +9,11 @@ from scipy import integrate
 
 from mutwo import core_constants
 from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = ("Envelope", "RelativeEnvelope")
+__all__ = ("Envelope", "RelativeEnvelope", "TempoEnvelope")
 
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
@@ -23,7 +24,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     :param event_iterable_or_point_sequence: An iterable filled with events
         or with points. If the sequence is filled with points, the points
         will be converted to events. Each event represents a point in a
-        two dimensional graph where the y-axis presents time and the x-axis
+        two dimensional graph where the x-axis presents time and the y-axis
         a changing value. Any event class can be used. It is
         more important that the used event classes fit with the functions
         passed in the following parameters.
@@ -59,6 +60,12 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     This class is inspired by Marc Evansteins `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
     python package and is made to fit better into the `mutwo` ecosystem.
+
+    **Example:**
+
+    >>> from mutwo import core_events
+    >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
+    Envelope([SimpleEvent(curve_shape = 1, duration = 0.5, value = 0), SimpleEvent(curve_shape = 0, duration = 0.0, value = 1)])
     """
 
     # Type definitions
@@ -299,7 +306,12 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     #                          public methods                                #
     # ###################################################################### #
 
-    def value_at(self, absolute_time: core_constants.DurationType) -> Value:
+    def value_at(
+        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+    ) -> Value:
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
         absolute_time_tuple = self.absolute_time_tuple
 
         use_only_first_event = absolute_time <= absolute_time_tuple[0]
@@ -330,9 +342,9 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         curve_shape = self.event_to_curve_shape(self[event_0_index])
 
         return core_utilities.scale(
-            absolute_time,
-            absolute_time_tuple[event_0_index],
-            absolute_time_tuple[event_0_index + 1],
+            absolute_time.duration_in_floats,
+            absolute_time_tuple[event_0_index].duration_in_floats,
+            absolute_time_tuple[event_0_index + 1].duration_in_floats,
             value0,
             value1,
             curve_shape,
@@ -406,15 +418,16 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
 
     def resolve(
         self,
-        duration: core_constants.DurationType,
+        duration: typing.Union[core_parameters.abc.Duration, typing.Any],
         base_parameter: core_constants.ParameterType,
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
+        duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         point_list = []
         try:
             duration_factor = duration / self.duration
         except ZeroDivisionError:
-            duration_factor = 0
+            duration_factor = core_parameters.DirectDuration(0)
         for absolute_time, event in zip(self.absolute_time_tuple, self):
             relative_parameter = self.event_to_parameter(event)
             new_parameter = (
@@ -429,3 +442,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
             )
             point_list.append(point)
         return resolve_envelope_class(point_list)
+
+
+class TempoEnvelope(Envelope):
+    ...

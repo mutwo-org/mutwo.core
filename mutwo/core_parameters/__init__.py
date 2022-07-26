@@ -2,8 +2,11 @@
 
 """
 
+from . import configurations
 from . import abc
+
+from .durations import *
 from .tempos import *
 
 # Force flat structure
-del tempos
+del durations, tempos

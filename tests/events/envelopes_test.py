@@ -2,6 +2,7 @@ import unittest
 
 from mutwo import core_constants
 from mutwo import core_events
+from mutwo import core_parameters
 
 
 class EnvelopeTest(unittest.TestCase):
@@ -49,7 +50,7 @@ class EnvelopeTest(unittest.TestCase):
     def _test_setitem(self, envelope_to_test: core_events.Envelope):
         self.assertEqual(type(envelope_to_test), core_events.Envelope)
         self.assertEqual(len(envelope_to_test), 2)
-        self.assertEqual(envelope_to_test.duration, 3)
+        self.assertEqual(envelope_to_test.duration, core_parameters.DirectDuration(3))
         self.assertEqual(envelope_to_test.value_tuple, (0, 1))
 
     def test_setitem(self):
@@ -147,7 +148,7 @@ class RelativeEnvelopeTest(unittest.TestCase):
 
     def test_resolve(self):
         resolved_envelope = self.envelope.resolve(duration=1, base_parameter=100)
-        self.assertEqual(resolved_envelope.duration, 1)
+        self.assertEqual(resolved_envelope.duration, core_parameters.DirectDuration(1))
         self.assertEqual(resolved_envelope.value_tuple, (100, 105, 110))
 
 

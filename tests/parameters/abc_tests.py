@@ -101,6 +101,8 @@ class SingleNumberParameterTest(unittest.TestCase):
         sound_speed = self.Speed(343)
 
         self.assertEqual(light_speed, light_speed1)
+        self.assertNotEqual(light_speed, "not_a_speed_object")
+        self.assertNotEqual(light_speed, 299792458)
         self.assertTrue(light_speed > sound_speed)
         self.assertTrue(light_speed >= sound_speed)
         self.assertTrue(sound_speed < light_speed)
@@ -112,6 +114,9 @@ class SingleNumberParameterTest(unittest.TestCase):
         light_speed = self.Speed(299792458)
         light_speed1 = self.Speed(299792458.000001)
         self.assertEqual(light_speed, light_speed1)
+
+    def test_raise_exception_for_invalid_comparison(self):
+        self.assertRaises(TypeError, lambda: self.Speed(100) > "abc")
 
 
 if __name__ == "__main__":

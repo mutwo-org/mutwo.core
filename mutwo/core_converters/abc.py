@@ -22,16 +22,16 @@ class Converter(abc.ABC):
     def convert(
         self, event_or_parameter_or_file_to_convert: typing.Any, *args, **kwargs
     ) -> typing.Any:
-        raise NotImplementedError
+        ...
 
     def __call__(self, *args, **kwargs) -> typing.Any:
         return self.convert(*args, **kwargs)
 
 
 class EventConverter(Converter):
-    """Abstract base class for Converter which handle mutwo core_events.
+    """Abstract base class for Converter which handle mutwo events.
 
-    This class helps building new classes which convert mutwo core_events
+    This class helps building new classes which convert mutwo events
     with few general private methods (and without adding any new public
     method). Converting mutwo event often involves the same pattern:
     due to the nested structure of an Event, the converter has
@@ -50,8 +50,8 @@ class EventConverter(Converter):
     The following example defines a dummy class for demonstrating how
     to use EventConverter.
 
-    >>> from mutwo.converters import abc
-    >>> class DurationPrintConverter(abc.EventConverter):
+    >>> from mutwo import core_converters
+    >>> class DurationPrintConverter(core_converters.abc.EventConverter):
     >>>     def _convert_simple_event(self, event_to_convert, absolute_entry_delay):
     >>>         return "{}: {}".format(absolute_entry_delay, event_to_convert.duration),
     >>>     def convert(self, event_to_convert):
@@ -59,13 +59,13 @@ class EventConverter(Converter):
     >>>         [print(data) for data in data_per_event]
     >>> # now test with random event
     >>> import random
-    >>> from mutwo.core_events import
+    >>> from mutwo import core_events
     >>> random.seed(100)
-    >>> random_event =.SimultaneousEvent(
+    >>> random_event = core_events.SimultaneousEvent(
     >>>     [
-    >>>        .SequentialEvent(
+    >>>        core_events.SequentialEvent(
     >>>             [
-    >>>                .SimpleEvent(random.uniform(0.5, 2))
+    >>>                core_events.SimpleEvent(random.uniform(0.5, 2))
     >>>                 for _ in range(random.randint(2, 5))
     >>>             ]
     >>>         )
@@ -87,8 +87,6 @@ class EventConverter(Converter):
         absolute_entry_delay: core_constants.DurationType,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
-
-        raise NotImplementedError
 
     def _convert_simultaneous_event(
         self,
@@ -156,15 +154,12 @@ class EventConverter(Converter):
             return self._convert_simple_event(event_to_convert, absolute_entry_delay)
 
         else:
-            message = (
-                "Can't convert object '{}' of type '{}' with EventConverter.".format(
-                    event_to_convert, type(event_to_convert)
-                )
+            raise TypeError(
+                f"Can't convert object '{event_to_convert}' of type "
+                f"'{type(event_to_convert)}' with EventConverter."
+                " Supported types only include all inherited classes "
+                f"from '{core_events.abc.Event}'."
             )
-
-            message += " Supported types only include all inherited classes "
-            message += "from '{}'.".format(core_events.abc.Event)
-            raise TypeError(message)
 
 
 class SymmetricalEventConverter(EventConverter):
@@ -181,8 +176,6 @@ class SymmetricalEventConverter(EventConverter):
         absolute_entry_delay: core_constants.DurationType,
     ) -> core_events.SimpleEvent:
         """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
-
-        raise NotImplementedError
 
     def _convert_simultaneous_event(
         self,

@@ -12,16 +12,24 @@ from __future__ import annotations
 
 import abc
 import functools
+import operator
 import typing
+
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
 
 from mutwo import core_constants
 from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
 
 __all__ = (
     "SingleValueParameter",
     "SingleNumberParameter",
     "ParameterWithEnvelope",
+    "Duration",
 )
 
 
@@ -51,8 +59,15 @@ class ParameterWithEnvelope(abc.ABC):
     def resolve_envelope(
         self,
         duration: core_constants.DurationType,
-        resolve_envelope_class: type[core_events.Envelope] = core_events.Envelope,
+        # XXX: We can't directly set the default attribute value,
+        # but we have to do it with `None` and resolve it later,
+        # because otherwise we will get a circular import
+        # (core_parameters need to be imported before core_events,
+        #  because we need core_parameters.Duration in core_events).
+        resolve_envelope_class: typing.Optional[type[core_events.Envelope]] = None,
     ) -> core_events.Envelope:
+        if resolve_envelope_class is None:
+            resolve_envelope_class = core_events.Envelope
         return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
@@ -111,16 +126,17 @@ class SingleValueParameter(abc.ABC):
         #
         #   2. If the class already defines a method with the specific
         #      value_name it shouldn't be overridden (because the user already
-        #      ensured there is a property). Overriding this manually defined property would lead to unexpected and undesired results.
-        if value_name and not hasattr(cls, value_name):
-
-            @abc.abstractmethod
-            def abstract_method(_) -> value_return_type:
-                raise NotImplementedError
-
-            setattr(cls, value_name, property(abstract_method))
-
+        #      ensured there is a property). Overriding this manually defined property
+        #      would lead to unexpected and undesired results.
         if value_name:
+            if not hasattr(cls, value_name):
+
+                @abc.abstractmethod
+                def abstract_method(_) -> value_return_type:
+                    raise NotImplementedError
+
+                setattr(cls, value_name, property(abstract_method))
+
             if hasattr(cls, "value_name"):
                 raise Exception(
                     (
@@ -180,6 +196,8 @@ class SingleNumberParameter(SingleValueParameter):
     True
     """
 
+    direct_comparison_type_tuple = tuple([])
+
     @property
     def digit_to_round_to_count(self) -> typing.Optional[int]:
         return None
@@ -198,15 +216,23 @@ class SingleNumberParameter(SingleValueParameter):
         self,
         other: typing.Any,
         compare: typing.Callable[[core_constants.Real, core_constants.Real], bool],
+        raise_exception: bool,
     ):
         """Compare itself with other object"""
 
         try:
             value_pair = (
                 getattr(self, self.value_name),  # type: ignore
-                getattr(other, self.value_name),  # type: ignore
+                other
+                if isinstance(other, self.direct_comparison_type_tuple)
+                else getattr(other, self.value_name),  # type: ignore
             )
         except AttributeError:
+            if raise_exception:
+                raise TypeError(
+                    f"Can't compare object '{self}' of type '{type(self)}' with"
+                    f" object '{other}' of type '{type(other)}'!"
+                )
             return False
 
         value0, value1 = self._prepare_value_pair_for_comparison(value_pair)
@@ -219,7 +245,79 @@ class SingleNumberParameter(SingleValueParameter):
         return int(float(self))
 
     def __eq__(self, other: typing.Any) -> bool:
-        return self._compare(other, lambda value0, value1: value0 == value1)
+        return self._compare(other, lambda value0, value1: value0 == value1, False)
 
     def __lt__(self, other: typing.Any) -> bool:
-        return self._compare(other, lambda value0, value1: value0 < value1)
+        return self._compare(other, lambda value0, value1: value0 < value1, True)
+
+
+class Duration(
+    SingleNumberParameter, value_name="duration", value_return_type="fractions.Fraction"
+):
+    """Abstract base class for any duration.
+
+    If the user wants to define a Duration class, the abstract
+    property :attr:`duration` has to be overridden.
+
+    The attribute :attr:`duration` is stored in unit `beats`.
+    """
+
+    direct_comparison_type_tuple = (float, int, fractions.Fraction)
+
+    def _math_operation(
+        self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
+    ) -> Duration:
+        if isinstance(other, core_constants.Real.__args__):
+            other = core_parameters.DirectDuration(float(other))
+        self.duration = fractions.Fraction(operation(self.duration, other.duration))
+        return self
+
+    @core_utilities.add_copy_option
+    def add(self, other: DurationOrReal) -> Duration:
+        return self._math_operation(other, operator.add)
+
+    @core_utilities.add_copy_option
+    def subtract(self, other: DurationOrReal) -> Duration:
+        return self._math_operation(other, operator.sub)
+
+    @core_utilities.add_copy_option
+    def multiply(self, other: DurationOrReal) -> Duration:
+        return self._math_operation(other, operator.mul)
+
+    @core_utilities.add_copy_option
+    def divide(self, other: DurationOrReal) -> Duration:
+        return self._math_operation(other, operator.truediv)
+
+    def __add__(self, other: DurationOrReal) -> Duration:
+        return self.add(other, mutate=False)
+
+    def __sub__(self, other: DurationOrReal) -> Duration:
+        return self.subtract(other, mutate=False)
+
+    def __mul__(self, other: DurationOrReal) -> Duration:
+        return self.multiply(other, mutate=False)
+
+    def __truediv__(self, other: DurationOrReal) -> Duration:
+        return self.divide(other, mutate=False)
+
+    def __float__(self) -> float:
+        return core_utilities.round_floats(
+            float(self.duration),
+            core_parameters.configurations.ROUND_DURATION_TO_N_DIGITS,
+        )
+
+    @property
+    def duration_in_floats(self) -> float:
+        return float(self)
+
+    @property
+    def duration(self) -> fractions.Fraction:
+        ...
+
+    @duration.setter
+    @abc.abstractmethod
+    def duration(self, duration: fractions.Fraction):
+        ...
+
+
+DurationOrReal = typing.Union[Duration, core_constants.Real]

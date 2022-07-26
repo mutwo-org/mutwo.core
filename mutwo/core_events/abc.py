@@ -7,7 +7,10 @@ import copy
 import typing
 
 from mutwo import core_constants
+from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
+
 
 __all__ = ("Event", "ComplexEvent")
 
@@ -21,16 +24,11 @@ class Event(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def duration(self) -> core_constants.DurationType:
-        """The duration of an event (which can be any number).
+    def duration(self) -> core_parameters.abc.Duration:
+        """The duration of an event.
 
-        The unit of the duration is up to the interpretation of the user
-        and the respective conversion routine that will be used. For
-        instance when using :class:`CsoundScoreConverter`, the duration will be
-        understood as seconds, while :class:`MidiFileConverter` will read duration
-        as beats.
+        This has to be an instance of :class:`mutwo.core_parameters.abc.Duration`.
         """
-        raise NotImplementedError
 
     # ###################################################################### #
     #                           private methods                              #
@@ -38,10 +36,10 @@ class Event(abc.ABC):
 
     @staticmethod
     def _assert_correct_start_and_end_values(
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
         condition: typing.Callable[
-            [core_constants.DurationType, core_constants.DurationType], bool
+            [core_parameters.abc.Duration, core_parameters.abc.Duration], bool
         ] = lambda start, end: end
         >= start,
     ):
@@ -52,12 +50,11 @@ class Event(abc.ABC):
         try:
             assert condition(start, end)
         except AssertionError:
-            message = (
-                "Invalid values for start and end property (start = '{}' and end ="
-                " '{}')!".format(start, end)
+            raise ValueError(
+                f"Invalid values for start and end property (start = '{start}' "
+                f"and end = '{end}')!"
+                " Value for 'end' has to be bigger than value for 'start'."
             )
-            message += " Value for end has to be bigger than value for start."
-            raise ValueError(message)
 
     # ###################################################################### #
     #                           public methods                               #
@@ -83,7 +80,9 @@ class Event(abc.ABC):
         >>> from mutwo import core_events
         >>> my_simple_event_0 = core_events.SimpleEvent(2)
         >>> my_simple_event_1 = core_events.SimpleEvent(3)
-        >>> my_sequential_event = core_events.SequentialEvent([my_simple_event_0, my_simple_event_1, my_simple_event_0])
+        >>> my_sequential_event = core_events.SequentialEvent(
+        >>>     [my_simple_event_0, my_simple_event_1, my_simple_event_0]
+        >>> )
         >>> deepcopied_event = copy.deepcopy(my_sequential_event)
         >>> destructivecopied_event = my_sequential_event.destructive_copy()
         >>> deepcopied_event[0].duration = 10  # setting the duration of the first event
@@ -96,8 +95,6 @@ class Event(abc.ABC):
         >>> destructivecopied_event[0].duration == destructivecopied_event[2].duration
         False
         """
-
-        raise NotImplementedError
 
     @abc.abstractmethod
     def get_parameter(
@@ -125,8 +122,6 @@ class Event(abc.ABC):
         >>> sequential_event.get_parameter('duration')
         (2, 3)
         """
-
-        raise NotImplementedError
 
     @abc.abstractmethod
     def set_parameter(
@@ -165,8 +160,6 @@ class Event(abc.ABC):
         (4, 6)
         """
 
-        raise NotImplementedError
-
     @abc.abstractmethod
     def mutate_parameter(
         self,
@@ -193,65 +186,71 @@ class Event(abc.ABC):
         >>> from mutwo import core_events
         >>> from mutwo import music_events
         >>> from mutwo import music_parameters
-        >>> sequential_event = core_events.SequentialEvent([music_events.NoteLike([music_parameters.WesternPitch('c', 4), music_parameters.WesternPitch('e', 4)], 2, 1)])
-        >>> sequential_event.mutate_parameter('pitch_list', lambda pitch_list: [pitch.add(12) for pitch in pitch_list])
+        >>> sequential_event = core_events.SequentialEvent(
+        >>>     [
+        >>>         music_events.NoteLike(
+        >>>             [
+        >>>                 music_parameters.WesternPitch('c', 4),
+        >>>                 music_parameters.WesternPitch('e', 4)],
+        >>>             ],
+        >>>             2, 1,
+        >>>         )
+        >>>     ]
+        >>> )
+        >>> sequential_event.mutate_parameter(
+        >>>     'pitch_list', lambda pitch_list: [pitch.add(12) for pitch in pitch_list]
+        >>> )
         >>> # now all pitches should be one octave higher (from 4 to 5)
         >>> sequential_event.get_parameter('pitch_list')
         ([WesternPitch(c5), WesternPitch(e5)],)
         """
 
-        raise NotImplementedError
-
     @abc.abstractmethod
     def cut_out(
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> typing.Optional[Event]:
         """Time-based slicing of the respective event.
 
-        :param start: number that indicates the point when the
-            cut out shall start.
-        :param end: number that indicates the point when the cut
-            up shall end.
+        :param start: Duration when the cut out shall start.
+        :param end: Duration when the cut up shall end.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3), core_events.SimpleEvent(2)])
+        >>> sequential_event = core_events.SequentialEvent(
+        >>>     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> )
         >>> sequential_event.cut_out(1, 4)
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 2), SimpleEvent(duration = 1)])
         """
 
-        raise NotImplementedError
-
     @abc.abstractmethod
     def cut_off(
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> typing.Optional[Event]:
         """Time-based deletion / shortening of the respective event.
 
-        :param start: number that indicates absolute time when the
-            cut off shall start.
-        :param end: number that indicates the absolute time when the cut
-            off shall end.
+        :param start: Duration when the cut off shall start.
+        :param end: Duration when the cut off shall end.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3), core_events.SimpleEvent(2)])
+        >>> sequential_event = core_events.SequentialEvent(
+        >>>     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> )
         >>> sequential_event.cut_off(1, 3)
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1)])
         """
 
-        raise NotImplementedError
-
     def split_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: core_parameters.abc.Duration
     ) -> tuple[Event, Event]:
         """Split event in two events at :attr:`absolute_time`.
 
@@ -267,6 +266,10 @@ class Event(abc.ABC):
         >>> sequential_event[0].split_at(1)
         (SimpleEvent(duration = 1), SimpleEvent(duration = 2))
         """
+
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
 
         return (
             self.cut_out(0, absolute_time, mutate=False),  # type: ignore
@@ -326,18 +329,21 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     # ###################################################################### #
 
     @Event.duration.setter  # type: ignore
-    def duration(self, new_duration: core_constants.DurationType):
+    def duration(self, duration: core_parameters.abc.Duration):
+        duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         old_duration = self.duration
         self.set_parameter(
             "duration",
-            lambda duration: core_utilities.scale(duration, 0, old_duration, 0, new_duration),  # type: ignore
+            lambda event_duration: core_utilities.scale(
+                event_duration, 0, old_duration, 0, duration
+            ),
         )
 
     # ###################################################################### #
     #                           private methods                              #
     # ###################################################################### #
 
-    def _assert_start_in_range(self, start: core_constants.DurationType):
+    def _assert_start_in_range(self, start: core_parameters.abc.Duration):
         """Helper method to make sure that start < event.duration.
 
         Can be used within the different squash_in methods.
@@ -345,12 +351,11 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         try:
             assert self.duration >= start
         except AssertionError:
-            message = (
-                "Invalid value for start = '{}' in 'squash_in' call for event with"
-                " duration = '{}'!".format(start, self.duration)
+            raise ValueError(
+                f"Invalid value for start = '{start}' in 'squash_in' call "
+                f"for event with duration = '{self.duration}'!"
+                " Start has to be equal or smaller than the events duration."
             )
-            message += " Start has to be equal or smaller than the events duration."
-            raise ValueError(message)
 
     # ###################################################################### #
     #                           public methods                               #
@@ -383,7 +388,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
             **{
                 attribute_name: getattr(self, attribute_name)
                 for attribute_name in self._class_specific_side_attribute_tuple
-            }
+            },
         )
 
     def get_event_from_index_sequence(
@@ -397,7 +402,9 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> nested_sequential_event = core_events.SequentialEvent([core_events.SequentialEvent([core_events.SimpleEvent(2)])])
+        >>> nested_sequential_event = core_events.SequentialEvent(
+        >>>     [core_events.SequentialEvent([core_events.SimpleEvent(2)])]
+        >>> )
         >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
         SimpleEvent(duration = 2)
         >>> # this is equal to:
@@ -405,9 +412,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         SimpleEvent(duration = 2)
         """
 
-        return core_utilities.get_nested_item_from_index_sequence(
-            index_sequence, self
-        )
+        return core_utilities.get_nested_item_from_index_sequence(index_sequence, self)
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False
@@ -537,7 +542,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
                         del self[pointer]
                 else:
                     pointer += 1
-            # if event doesn't contain the event type which shall be tied,
+            # If event doesn't contain the event type which shall be tied,
             # it may still contain nested events which contains events with
             # the searched type
             else:
@@ -555,7 +560,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def squash_in(
-        self, start: core_constants.DurationType, event_to_squash_in: Event
+        self, start: core_parameters.abc.Duration, event_to_squash_in: Event
     ) -> typing.Optional[ComplexEvent[T]]:
         """Time-based insert of a new event into the present event.
 
@@ -574,11 +579,9 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1.5), SimpleEvent(duration = 0.5)])
         """
 
-        raise NotImplementedError
-
     @abc.abstractmethod
     def split_child_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: core_parameters.abc.Duration
     ) -> typing.Optional[ComplexEvent[T]]:
         """Split child event in two events at :attr:`absolute_time`.
 
@@ -592,5 +595,3 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         >>> sequential_event
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 2)])
         """
-
-        raise NotImplementedError

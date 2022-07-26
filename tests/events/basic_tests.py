@@ -3,7 +3,13 @@ import unittest
 
 import ranges
 
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
 from mutwo import core_events
+from mutwo import core_parameters
 from mutwo import core_utilities
 
 
@@ -13,11 +19,11 @@ class SimpleEventTest(unittest.TestCase):
         simple_event1 = simple_event0.copy()
         simple_event1.duration = 300
 
-        self.assertEqual(simple_event0.duration, 20)
-        self.assertEqual(simple_event1.duration, 300)
+        self.assertEqual(simple_event0.duration.duration, 20)
+        self.assertEqual(simple_event1.duration.duration, 300)
 
     def test_get_assigned_parameter(self):
-        duration = 10
+        duration = core_parameters.DirectDuration(10)
         self.assertEqual(
             core_events.SimpleEvent(duration).get_parameter("duration"), duration
         )
@@ -26,7 +32,7 @@ class SimpleEventTest(unittest.TestCase):
         self.assertEqual(core_events.SimpleEvent(1).get_parameter("anyParameter"), None)
 
     def test_get_flat_assigned_parameter(self):
-        duration = 10
+        duration = core_parameters.DirectDuration(10)
         self.assertEqual(
             core_events.SimpleEvent(duration).get_parameter("duration", flat=True),
             (duration,),
@@ -34,15 +40,17 @@ class SimpleEventTest(unittest.TestCase):
 
     def test_set_assigned_parameter_by_object(self):
         simple_event = core_events.SimpleEvent(1)
-        new_duration = 10
-        simple_event.set_parameter("duration", new_duration)
-        self.assertEqual(simple_event.duration, new_duration)
+        duration = core_parameters.DirectDuration(10)
+        simple_event.set_parameter("duration", duration)
+        self.assertEqual(simple_event.duration, duration)
 
     def test_set_assigned_parameter_by_function(self):
         old_duration = 1
         simple_event = core_events.SimpleEvent(old_duration)
         simple_event.set_parameter("duration", lambda old_duration: old_duration * 2)
-        self.assertEqual(simple_event.duration, old_duration * 2)
+        self.assertEqual(
+            simple_event.duration, core_parameters.DirectDuration(old_duration * 2)
+        )
 
     def test_set_not_assigned_parameter(self):
         simple_event = core_events.SimpleEvent(1)
@@ -82,25 +90,25 @@ class SimpleEventTest(unittest.TestCase):
         self.assertNotEqual(simple_event2, simple_event2.duration)
         self.assertNotEqual(simple_event0, [1, 2, 3])
 
-    def test_cut_up(self):
+    def test_cut_out(self):
         event0 = core_events.SimpleEvent(4)
-        cut_up_event0 = core_events.SimpleEvent(2)
+        cut_out_event0 = core_events.SimpleEvent(2)
 
         event1 = core_events.SimpleEvent(10)
-        cut_up_event1 = core_events.SimpleEvent(5)
+        cut_out_event1 = core_events.SimpleEvent(5)
 
         event2 = core_events.SimpleEvent(5)
-        cut_up_event2 = core_events.SimpleEvent(1)
+        cut_out_event2 = core_events.SimpleEvent(1)
 
         event2.cut_out(2, 3)
 
         self.assertEqual(
-            event0.cut_out(2, 4, mutate=False).duration, cut_up_event0.duration
+            event0.cut_out(2, 4, mutate=False).duration, cut_out_event0.duration
         )
         self.assertEqual(
-            event1.cut_out(0, 5, mutate=False).duration, cut_up_event1.duration
+            event1.cut_out(0, 5, mutate=False).duration, cut_out_event1.duration
         )
-        self.assertEqual(event2.duration, cut_up_event2.duration)
+        self.assertEqual(event2.duration, cut_out_event2.duration)
 
         # this will raise an error because the simple event isn't within the
         # asked range.
@@ -156,17 +164,24 @@ class SequentialEventTest(unittest.TestCase):
         )
 
     def test_get_duration(self):
-        self.assertEqual(self.sequence.duration, 6)
+        self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(6))
 
     def test_set_duration(self):
         self.sequence.duration = 3
-        self.assertEqual(self.sequence[0].duration, 0.5)
-        self.assertEqual(self.sequence[1].duration, 1)
-        self.assertEqual(self.sequence[2].duration, 1.5)
+        self.assertEqual(self.sequence[0].duration, core_parameters.DirectDuration(0.5))
+        self.assertEqual(self.sequence[1].duration, core_parameters.DirectDuration(1))
+        self.assertEqual(self.sequence[2].duration, core_parameters.DirectDuration(1.5))
 
     def test_get_absolute_time_tuple(self):
         result = tuple(self.sequence.absolute_time_tuple)
-        self.assertEqual(result, (0, 1, 3))
+        self.assertEqual(
+            result,
+            (
+                core_parameters.DirectDuration(0),
+                core_parameters.DirectDuration(1),
+                core_parameters.DirectDuration(3),
+            ),
+        )
 
     def test_get_event_at(self):
         result = self.sequence.get_event_at(1.5)
@@ -176,7 +191,7 @@ class SequentialEventTest(unittest.TestCase):
         result_for_unavailable_event = self.sequence.get_event_at(100)
         self.assertEqual(result_for_unavailable_event, None)
 
-    def test_cut_up(self):
+    def test_cut_out(self):
         result0 = core_events.SequentialEvent(
             [
                 core_events.SimpleEvent(0.5),
@@ -265,12 +280,15 @@ class SequentialEventTest(unittest.TestCase):
         )
 
     def test_squash_in_with_minor_differences(self):
+        minor_difference = fractions.Fraction(6e-10)
         self.assertEqual(
-            self.sequence.squash_in(6e-10, core_events.SimpleEvent(1), mutate=False),
+            self.sequence.squash_in(
+                minor_difference, core_events.SimpleEvent(1), mutate=False
+            ),
             core_events.SequentialEvent(
                 [
                     core_events.SimpleEvent(duration)
-                    for duration in (6e-10, 1, 2 - 6e-10, 3)
+                    for duration in (minor_difference, 1, 2 - minor_difference, 3)
                 ]
             ),
         )
@@ -410,7 +428,17 @@ class SequentialEventTest(unittest.TestCase):
     def test_start_and_end_time_per_event(self):
         self.assertEqual(
             self.sequence.start_and_end_time_per_event,
-            (ranges.Range(0, 1), ranges.Range(1, 3), ranges.Range(3, 6)),
+            (
+                ranges.Range(
+                    core_parameters.DirectDuration(0), core_parameters.DirectDuration(1)
+                ),
+                ranges.Range(
+                    core_parameters.DirectDuration(1), core_parameters.DirectDuration(3)
+                ),
+                ranges.Range(
+                    core_parameters.DirectDuration(3), core_parameters.DirectDuration(6)
+                ),
+            ),
         )
 
 
@@ -460,13 +488,13 @@ class SimultaneousEventTest(unittest.TestCase):
         self.assertEqual(self.sequence.get_event_from_index_sequence([]), self.sequence)
 
     def test_get_duration(self):
-        self.assertEqual(self.sequence.duration, 3)
+        self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(3))
 
     def test_set_duration(self):
         self.sequence.duration = 1.5
-        self.assertEqual(self.sequence[0].duration, 0.5)
-        self.assertEqual(self.sequence[1].duration, 1)
-        self.assertEqual(self.sequence[2].duration, 1.5)
+        self.assertEqual(self.sequence[0].duration, core_parameters.DirectDuration(0.5))
+        self.assertEqual(self.sequence[1].duration, core_parameters.DirectDuration(1))
+        self.assertEqual(self.sequence[2].duration, core_parameters.DirectDuration(1.5))
 
     def test_destructive_copy(self):
         simple_event = core_events.SimpleEvent(2)
@@ -479,19 +507,44 @@ class SimultaneousEventTest(unittest.TestCase):
 
     def test_get_parameter(self):
         result = self.sequence.get_parameter("duration")
-        self.assertEqual(result, (1, 2, 3))
+        self.assertEqual(
+            result,
+            (
+                core_parameters.DirectDuration(1),
+                core_parameters.DirectDuration(2),
+                core_parameters.DirectDuration(3),
+            ),
+        )
 
     def test_get_nested_parameter(self):
         result = self.nested_sequence.get_parameter("duration")
-        self.assertEqual(result, ((1, 2, 3), (1, 2, 3)))
+        duration_tuple = (
+            core_parameters.DirectDuration(1),
+            core_parameters.DirectDuration(2),
+            core_parameters.DirectDuration(3),
+        )
+        self.assertEqual(result, (duration_tuple, duration_tuple))
 
     def test_get_flat_parameter(self):
         result = self.nested_sequence.get_parameter("duration", flat=True)
-        self.assertEqual(result, (1, 2, 3, 1, 2, 3))
+        self.assertEqual(
+            result,
+            tuple(
+                core_parameters.DirectDuration(duration)
+                for duration in (1, 2, 3, 1, 2, 3)
+            ),
+        )
 
     def test_set_parameter(self):
-        self.sequence.set_parameter("duration", lambda x: 2 * x)
-        self.assertEqual(self.sequence.get_parameter("duration"), (2, 4, 6))
+        self.sequence.set_parameter("duration", lambda x: x * 2)
+        self.assertEqual(
+            self.sequence.get_parameter("duration"),
+            (
+                core_parameters.DirectDuration(2),
+                core_parameters.DirectDuration(4),
+                core_parameters.DirectDuration(6),
+            ),
+        )
 
     def test_mutate_parameter(self):
         dummy_parameter_tuple = (
@@ -528,7 +581,7 @@ class SimultaneousEventTest(unittest.TestCase):
                 event.get_parameter("dummy_parameter"), expected_dummy_parameter
             )
 
-    def test_cut_up(self):
+    def test_cut_out(self):
         result = core_events.SimultaneousEvent(
             [core_events.SimpleEvent(0.5) for _ in range(3)]
         )
@@ -628,7 +681,7 @@ class SimultaneousEventTest(unittest.TestCase):
                 core_events.SimpleEvent(2),
             ]
         )
-        simultaneous_event_to_filter.filter(lambda event: event.duration > 2)
+        simultaneous_event_to_filter.filter(lambda event: event.duration > core_parameters.DirectDuration(2))
         self.assertEqual(
             simultaneous_event_to_filter,
             core_events.SimultaneousEvent([core_events.SimpleEvent(3)]),

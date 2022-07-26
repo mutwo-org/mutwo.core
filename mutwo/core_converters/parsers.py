@@ -20,6 +20,7 @@ __all__ = (
     "MutwoParameterDictToKeywordArgument",
     "MutwoParameterDictToDuration",
     "MutwoParameterDictToSimpleEvent",
+    "UnknownObjectToObject",
 )
 
 
@@ -193,3 +194,56 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
                 keyword, argument = keyword_argument_or_none
                 keyword_argument_dict.update({keyword: argument})
         return self._simple_event_class(**keyword_argument_dict)
+
+
+T = typing.TypeVar("T")
+
+
+class UnknownObjectToObject(core_converters.abc.Converter, typing.Generic[T]):
+    """Helper to simplify standardisation of syntactic sugar.
+
+    :param type_tuple_to_callable_dict: Define which types are converted by
+        which methods.
+
+    **Example:**
+
+    >>> from mutwo impot core_converters
+    >>> anything_to_string = core_converters.UnknownObjectToObject[str](
+    >>>     (
+    >>>         ((float, int, list), str),
+    >>>         ((tuple,), lambda t: str(len(t))),
+    >>>         ([], lambda _: "..."),
+    >>>     )
+    >>> )
+    >>> anything_to_string.convert(100)
+    "100"
+    >>> anything_to_string.convert(7.32)
+    "7.32"
+    >>> anything_to_string.convert((1, 2, 3))
+    "3"
+    >>> anything_to_string.convert(b'')
+    "..."
+    """
+
+    def __init__(
+        self,
+        type_tuple_and_callable_tuple: tuple[tuple[typing.Type, ...], typing.Callable],
+    ):
+        self._type_tuple_and_callable_tuple = type_tuple_and_callable_tuple
+
+    def convert(self, unknown_object_to_convert: typing.Any) -> T:
+        # XXX: This may break in the future, because it is an implementation
+        # detail.
+        if isinstance(unknown_object_to_convert, typing.get_args(self.__orig_class__)):
+            return unknown_object_to_convert
+        for type_tuple, callable_object in self._type_tuple_and_callable_tuple:
+            if type_tuple:
+                if isinstance(unknown_object_to_convert, type_tuple):
+                    return callable_object(unknown_object_to_convert)
+            else:
+                return callable_object(unknown_object_to_convert)
+
+        raise NotImplementedError(
+            f"No conversion routine defined for object '{unknown_object_to_convert}'"
+            f" of type '{type(unknown_object_to_convert)}'."
+        )
