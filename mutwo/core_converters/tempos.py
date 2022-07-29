@@ -14,7 +14,17 @@ from mutwo import core_parameters
 __all__ = (
     "TempoPointConverter",
     "TempoConverter",
+    "EventToMetrizedEvent",
 )
+
+
+class UndefinedReferenceWarning(RuntimeWarning):
+    def __init__(self, tempo_point: typing.Any):
+        super().__init__(
+            f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
+            "doesn't know attribute 'reference'."
+            " Therefore reference has been set to 1."
+        )
 
 
 class TempoPointConverter(core_converters.abc.Converter):
@@ -54,13 +64,7 @@ class TempoPointConverter(core_converters.abc.Converter):
         try:
             reference = tempo_point.reference  # type: ignore
         except AttributeError:
-            message = (
-                "Tempo point {} of type {} doesn't know attribute 'reference'.".format(
-                    tempo_point, type(tempo_point)
-                )
-            )
-            message += " Therefore reference has been set to 1."
-            warnings.warn(message)
+            warnings.warn(UndefinedReferenceWarning(tempo_point))
             reference = 1
 
         return beats_per_minute, reference
@@ -97,33 +101,43 @@ class TempoPointConverter(core_converters.abc.Converter):
 
 
 class TempoConverter(core_converters.abc.EventConverter):
-    """Class for applying tempo curves on mutwo events.
+    """Apply tempo curves on mutwo events
 
     :param tempo_envelope: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a :class:`core_events.Envelope`
-        which levels are filled with numbers that will be interpreted as BPM
-        [beats per minute]) or with :class:`mutwo.parameters.tempos.TempoPoint`
+        mutwo events. This is expected to be a :class:`core_events.TempoEnvelope`
+        which values are filled with numbers that will be interpreted as BPM
+        [beats per minute]) or with :class:`mutwo.core_parameters.TempoPoint`
         objects.
+    :param apply_converter_on_events_tempo_envelope: If set to `True` the
+        converter will also adjust the :attr:`tempo_envelope` attribute of
+        each converted event. Default to `True`.
 
     **Example:**
 
-    >>> import expenvelope
-    >>> from mutwo.converters import symmetrical
-    >>> from mutwo.parameters import tempos
-    >>> tempo_envelope = core_events.Envelope.from_levels_and_durations(
-    >>>     levels=[tempos.TempoPoint(60), 60, 30, 50],
-    >>>     durations=[3, 0, 2],
+    >>> from mutwo import core_converters
+    >>> from mutwo import core_events
+    >>> from mutwo import core_parameters
+    >>> tempo_envelope = core_events.Envelope(
+    >>>     [[0, tempos.TempoPoint(60)], [3, 60], [3, 30], [5, 50]],
     >>> )
-    >>> my_tempo_converter = symmetrical.tempos.TempoConverter(tempo_envelope)
+    >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
     """
 
-    _tempo_point_converter = TempoPointConverter()
+    _tempo_point_to_beat_length_in_seconds = TempoPointConverter().convert
 
-    def __init__(self, tempo_envelope: core_events.Envelope):
-        self._envelope = (
+    def __init__(
+        self,
+        tempo_envelope: core_events.TempoEnvelope,
+        apply_converter_on_events_tempo_envelope: bool = True,
+    ):
+        self._tempo_envelope = tempo_envelope
+        self._beat_length_in_seconds_envelope = (
             TempoConverter._tempo_envelope_to_beat_length_in_seconds_envelope(
                 tempo_envelope
             )
+        )
+        self._apply_converter_on_events_tempo_envelope = (
+            apply_converter_on_events_tempo_envelope
         )
 
     # ###################################################################### #
@@ -138,8 +152,8 @@ class TempoConverter(core_converters.abc.EventConverter):
 
         level_list: list[float] = []
         for tempo_point in tempo_envelope.value_tuple:
-            beat_length_in_seconds = TempoConverter._tempo_point_converter.convert(
-                tempo_point
+            beat_length_in_seconds = (
+                TempoConverter._tempo_point_to_beat_length_in_seconds(tempo_point)
             )
             level_list.append(beat_length_in_seconds)
 
@@ -161,12 +175,32 @@ class TempoConverter(core_converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event: core_events.SimpleEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> tuple[typing.Any, ...]:
-        simple_event.duration = self._envelope.integrate_interval(
-            absolute_entry_delay, simple_event.duration + absolute_entry_delay
+        simple_event.duration = (
+            self._beat_length_in_seconds_envelope.integrate_interval(
+                absolute_entry_delay, simple_event.duration + absolute_entry_delay
+            )
         )
         return tuple([])
+
+    def _convert_event(
+        self,
+        event_to_convert: core_events.abc.Event,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
+    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+        if self._apply_converter_on_events_tempo_envelope:
+            event_to_convert.tempo_envelope = TempoConverter(
+                self._tempo_envelope.cut_out(
+                    absolute_entry_delay,
+                    absolute_entry_delay + event_to_convert.duration,
+                    mutate=False,
+                ),
+                apply_converter_on_events_tempo_envelope=False,
+            ).convert(event_to_convert.tempo_envelope)
+        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
@@ -188,19 +222,58 @@ class TempoConverter(core_converters.abc.EventConverter):
 
         **Example:**
 
-        >>> import expenvelope
-        >>> from mutwo.events import basic
-        >>> from mutwo.parameters import tempos
-        >>> from mutwo.converters import symmetrical
-        >>> tempo_envelope = core_events.Envelope.from_levels_and_durations(
-        >>>     levels=[tempos.TempoPoint(60), 60, 120, 120],
-        >>>     durations=[3, 2, 5],
+        >>> from mutwo import core_converters
+        >>> from mutwo import core_events
+        >>> from mutwo import core_parameters
+        >>> tempo_envelope = core_events.Envelope(
+        >>>     [[0, tempos.TempoPoint(60)], [3, 60], [3, 30], [5, 50]],
         >>> )
-        >>> my_tempo_converter = symmetrical.tempos.TempoConverter(tempo_envelope)
-        >>> my_events = basic.SequentialEvent([basic.SimpleEvent(d) for d in (3, 2, 5)])
+        >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
+        >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
         SequentialEvent([SimpleEvent(duration = 3.0), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2.5)])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
-        self._convert_event(copied_event_to_convert, 0)
+        self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))
         return copied_event_to_convert
+
+
+class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
+    """Apply tempo envelope of event on itself"""
+
+    def __init__(
+        self,
+        skip_level_count: typing.Optional[int] = None,
+        maxima_depth_count: typing.Optional[int] = None,
+    ):
+        self._skip_level_count = skip_level_count
+        self._maxima_depth_count = maxima_depth_count
+
+    def _convert_simple_event(
+        self,
+        event_to_convert: core_events.SimpleEvent,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
+    ) -> core_events.SimpleEvent:
+        return event_to_convert
+
+    def _convert_event(
+        self,
+        event_to_convert: core_events.abc.Event,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
+    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+        if (self._skip_level_count is None or self._skip_level_count < depth) and (
+            self._maxima_depth_count is None or depth < self._maxima_depth_count
+        ):
+            tempo_converter = TempoConverter(event_to_convert.tempo_envelope)
+            event_to_convert = tempo_converter.convert(event_to_convert)
+            event_to_convert.reset_tempo_envelope()
+        else:
+            # XXX: Ensure we return copied event!
+            event_to_convert = event_to_convert.destructive_copy()
+        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+
+    def convert(self, event_to_convert: core_events.abc.Event) -> core_events.abc.Event:
+        """Apply tempo envelope of event on itself"""
+        return self._convert_event(event_to_convert, 0, 0)

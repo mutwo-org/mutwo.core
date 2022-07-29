@@ -16,10 +16,19 @@ __all__ = ("Event", "ComplexEvent")
 
 
 class Event(abc.ABC):
-    """Abstract Event-Object"""
+    """Abstract Event-Object
+
+    :param tempo_envelope: An envelope which describes the dynamic tempo of an event.
+    """
+
+    def __init__(
+        self,
+        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+    ):
+        self.tempo_envelope = tempo_envelope
 
     # ###################################################################### #
-    #                           properties                                   #
+    #                        abstract properties                             #
     # ###################################################################### #
 
     @property
@@ -55,6 +64,28 @@ class Event(abc.ABC):
                 f"and end = '{end}')!"
                 " Value for 'end' has to be bigger than value for 'start'."
             )
+
+    # ###################################################################### #
+    #                           public properties                            #
+    # ###################################################################### #
+
+    @property
+    def tempo_envelope(self) -> core_events.TempoEnvelope:
+        """The dynamic tempo of an event; specified as an envelope.
+
+        Tempo envelopes are represented as :class:`core_events.TempoEnvelope`
+        objects. Tempo envelopes are valid for its respective event and all its
+        children events.
+        """
+        if self._tempo_envelope is None:
+            self.reset_tempo_envelope()
+        return self._tempo_envelope
+
+    @tempo_envelope.setter
+    def tempo_envelope(
+        self, tempo_envelope: typing.Optional[core_events.TempoEnvelope]
+    ):
+        self._tempo_envelope = tempo_envelope
 
     # ###################################################################### #
     #                           public methods                               #
@@ -134,7 +165,7 @@ class Event(abc.ABC):
             core_constants.ParameterType,
         ],
         set_unassigned_parameter: bool = True,
-    ) -> None:
+    ) -> typing.Optional[Event]:
         """Sets parameter to new value for all children events.
 
         :param parameter_name: The name of the parameter which values shall be changed.
@@ -167,7 +198,7 @@ class Event(abc.ABC):
         function: typing.Union[
             typing.Callable[[core_constants.ParameterType], None], typing.Any
         ],
-    ) -> None:
+    ) -> typing.Optional[Event]:
         """Mutate parameter with a function.
 
         :param parameter_name: The name of the parameter which shall be mutated.
@@ -203,6 +234,38 @@ class Event(abc.ABC):
         >>> # now all pitches should be one octave higher (from 4 to 5)
         >>> sequential_event.get_parameter('pitch_list')
         ([WesternPitch(c5), WesternPitch(e5)],)
+        """
+
+    @core_utilities.add_copy_option
+    def reset_tempo_envelope(self) -> Event:
+        """Set events tempo envelope so that one beat equals one second (tempo 60).
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> simple_event = core_events.SimpleEvent(duration = 1)
+        >>> simple_event.tempo_envelope[0].value = 100
+        >>> print(simple_event.tempo_envelope)
+        TempoEnvelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 100), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 60)])
+        >>> simple_event.reset_tempo_envelope()
+        >>> print(simple_event.tempo_envelope)
+        TempoEnvelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 60), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 60)])
+        """
+
+        self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
+
+    @abc.abstractmethod
+    def metrize(self) -> typing.Optional[Event]:
+        """Apply tempo envelope of event on itself
+
+        Metrize is only syntactic sugar for a call of
+        :class:`EventToMetrizedEvent`:
+
+        >>> from mutwo import core_converters
+        >>> core_converters.EventToMetrizedEvent().convert(
+        >>>     my_event
+        >>> ) == my_event.metrize()
+        True
         """
 
     @abc.abstractmethod
@@ -283,10 +346,17 @@ T = typing.TypeVar("T", bound=Event)
 class ComplexEvent(Event, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
-    _class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
+    # TODO(Add docstring)
+    # TODO(Set '_class_specific_side_attribute_tuple' in __init_subclass__)
+    _class_specific_side_attribute_tuple: tuple[str, ...] = ("tempo_envelope",)
 
-    def __init__(self, iterable: typing.Iterable[T]):
-        super().__init__(iterable)
+    def __init__(
+        self,
+        iterable: typing.Iterable[T],
+        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+    ):
+        Event.__init__(self, tempo_envelope)
+        list.__init__(self, iterable)
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -557,6 +627,15 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
     # ###################################################################### #
     #                           abstract methods                             #
     # ###################################################################### #
+
+    @core_utilities.add_copy_option
+    def metrize(self):
+        # XXX: import in method to avoid circular import error
+        metrized_event = __import__(
+            "mutwo.core_converters"
+        ).core_converters.EventToMetrizedEvent()(self)
+        self.tempo_envelope = metrized_event.tempo_envelope
+        self[:] = metrized_event[:]
 
     @abc.abstractmethod
     def squash_in(

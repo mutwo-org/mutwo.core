@@ -88,13 +88,14 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         "apply_curve_shape_on_event",
         "default_event_class",
         "initialise_default_event_class",
-    )
+    ) + core_events.SequentialEvent._class_specific_side_attribute_tuple
 
     def __init__(
         self,
         event_iterable_or_point_sequence: typing.Union[
             typing.Iterable[T], typing.Sequence[Point]
         ],
+        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
         event_to_parameter: typing.Callable[
             [core_events.abc.Event], core_constants.ParameterType
         ] = lambda event: getattr(
@@ -149,7 +150,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         event_iterable = self._event_iterable_or_point_sequence_to_event_iterable(
             event_iterable_or_point_sequence
         )
-        super().__init__(event_iterable)
+        super().__init__(event_iterable, tempo_envelope)
 
     # ###################################################################### #
     #                      public class methods                              #
@@ -445,4 +446,21 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
 
 
 class TempoEnvelope(Envelope):
-    ...
+    def __eq__(self, other: typing.Any):
+        # XXX: TempoEnvelope can't use the default '__eq__' method inherited
+        # from list, because this would create endless recursion
+        # (because every event has a TempoEnvelope, so Python would forever
+        #  compare the TempoEnvelopes of TempoEnvelopes).
+        try:
+            return (
+                # XXX: Prefer lazy evaluation for better performance
+                # (use 'and' instead of 'all').
+                self.absolute_time_tuple == other.absolute_time_tuple
+                and self.curve_shape_tuple == other.curve_shape_tuple
+                and self.value_tuple == other.value_tuple
+            )
+        except AttributeError:
+            return False
+
+    def __ne__(self, other: typing.Any):
+        return not self.__eq__(other)

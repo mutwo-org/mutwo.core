@@ -47,15 +47,15 @@ class SimpleEvent(core_events.abc.Event):
     SimpleEvent(duration = DirectDuration(2))
     """
 
-    parameter_to_exclude_from_representation_tuple = tuple([])
+    parameter_to_exclude_from_representation_tuple = ("tempo_envelope",)
 
     def __init__(
         self,
         duration: core_parameters.abc.Duration,
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
     ):
+        super().__init__(tempo_envelope)
         self.duration = duration
-        self.tempo_envelope = tempo_envelope
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -82,7 +82,8 @@ class SimpleEvent(core_events.abc.Event):
     @property
     def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
-        # XXX: Fix infinite circular loop
+        # XXX: Fix infinite circular loop (due to 'tempo_envelope')
+        # and avoid printing too verbose parameters.
         return tuple(
             filter(
                 lambda attribute: attribute
@@ -107,11 +108,7 @@ class SimpleEvent(core_events.abc.Event):
             # no private attributes
             if attribute[0] != "_"
             # no redundant comparisons
-            and attribute
-            not in (
-                "parameter_to_exclude_from_representation_tuple",
-                "tempo_envelope",
-            )
+            and attribute not in ("parameter_to_exclude_from_representation_tuple",)
             # no methods
             and not isinstance(getattr(self, attribute), types.MethodType)
         )
@@ -253,6 +250,15 @@ class SimpleEvent(core_events.abc.Event):
         parameter = self.get_parameter(parameter_name)
         if parameter is not None:
             function(parameter)
+
+    @core_utilities.add_copy_option
+    def metrize(self):
+        # XXX: import in method to avoid circular import error
+        metrized_event = __import__(
+            "mutwo.core_converters"
+        ).core_converters.EventToMetrizedEvent()(self)
+        self.duration = metrized_event.duration
+        self.tempo_envelope = metrized_event.tempo_envelope
 
     @core_utilities.add_copy_option
     def cut_out(  # type: ignore
@@ -443,8 +449,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
         self._assert_correct_start_and_end_values(start, end)
 
-        remove_nth_event_list = []
-        for nth_event, event_start, event in zip(
+        event_to_remove_index_list = []
+        for event_index, event_start, event in zip(
             range(len(self)), self.absolute_time_tuple, self
         ):
             event_duration = event.duration
@@ -463,11 +469,14 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
             if cut_out_start < cut_out_end:
                 event.cut_out(cut_out_start, cut_out_end)
-            else:
-                remove_nth_event_list.append(nth_event)
+            elif not (
+                # XXX: Support special case of events with duration = 0.
+                event.duration == 0 and event_start >= start and event_start <= end
+            ):
+                event_to_remove_index_list.append(event_index)
 
-        for nth_event_to_remove in reversed(remove_nth_event_list):
-            del self[nth_event_to_remove]
+        for event_to_remove_index in reversed(event_to_remove_index_list):
+            del self[event_to_remove_index]
 
     @core_utilities.add_copy_option
     def cut_off(  # type: ignore
@@ -661,11 +670,15 @@ class TaggedSimpleEvent(SimpleEvent):
 class TaggedSequentialEvent(SequentialEvent, typing.Generic[T]):
     """:class:`SequentialEvent` with tag."""
 
-    _class_specific_side_attribute_tuple = ("tag",)
+    _class_specific_side_attribute_tuple = (
+        SequentialEvent._class_specific_side_attribute_tuple + ("tag",)
+    )
 
 
 @core_utilities.add_tag_to_class
 class TaggedSimultaneousEvent(SimultaneousEvent, typing.Generic[T]):
     """:class:`SimultaneousEvent` with tag."""
 
-    _class_specific_side_attribute_tuple = ("tag",)
+    _class_specific_side_attribute_tuple = (
+        SimultaneousEvent._class_specific_side_attribute_tuple + ("tag",)
+    )

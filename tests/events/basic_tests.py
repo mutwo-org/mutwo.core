@@ -1,3 +1,4 @@
+import abc
 import typing
 import unittest
 
@@ -8,12 +9,41 @@ try:
 except ImportError:
     import fractions
 
+from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-class SimpleEventTest(unittest.TestCase):
+class EventTest(abc.ABC):
+    """Define tests which should pass on various event classes"""
+
+    @abc.abstractmethod
+    def get_event_class(self) -> typing.Type:
+        ...
+
+    @abc.abstractmethod
+    def get_event_instance(self) -> core_events.abc.Event:
+        ...
+
+    def test_tempo_envelope_auto_initialization(self):
+        event = self.get_event_instance()
+        self.assertTrue(bool(event.tempo_envelope))
+        self.assertTrue(isinstance(event.tempo_envelope, core_events.TempoEnvelope))
+
+    def test_tempo_envelope_auto_initialization_and_settable(self):
+        event = self.get_event_instance()
+        event.tempo_envelope[0].duration = 100
+        self.assertEqual(event.tempo_envelope[0].duration, 100)
+
+
+class SimpleEventTest(unittest.TestCase, EventTest):
+    def get_event_class(self) -> typing.Type:
+        return core_events.SimpleEvent
+
+    def get_event_instance(self) -> core_events.SimpleEvent:
+        return self.get_event_class()(10)
+
     def test_copy(self):
         simple_event0 = core_events.SimpleEvent(20)
         simple_event1 = simple_event0.copy()
@@ -21,6 +51,28 @@ class SimpleEventTest(unittest.TestCase):
 
         self.assertEqual(simple_event0.duration.duration, 20)
         self.assertEqual(simple_event1.duration.duration, 300)
+
+    def test_metrize(self):
+        """Minimal test to ensure API keeps stable
+
+        Please consult EventToMetrizedEventTest for tests of actual
+        functionality.
+        """
+
+        simple_event = core_events.SimpleEvent(
+            1, tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]])
+        )
+        self.assertEqual(
+            simple_event.metrize(mutate=False),
+            core_converters.EventToMetrizedEvent().convert(simple_event),
+        )
+
+    def test_reset_tempo_envelope(self):
+        simple_event = self.get_event_instance()
+        simple_event.tempo_envelope[0].value = 100
+        self.assertEqual(simple_event.tempo_envelope[0].value, 100)
+        simple_event.reset_tempo_envelope()
+        self.assertEqual(simple_event.tempo_envelope[0].value, 60)
 
     def test_get_assigned_parameter(self):
         duration = core_parameters.DirectDuration(10)
@@ -66,7 +118,7 @@ class SimpleEventTest(unittest.TestCase):
 
     def test_parameter_to_compare_tuple(self):
         simple_event = core_events.SimpleEvent(1)
-        expected_parameter_to_compare_tuple = ("duration",)
+        expected_parameter_to_compare_tuple = ("duration", "tempo_envelope")
         self.assertEqual(
             simple_event._parameter_to_compare_tuple,
             expected_parameter_to_compare_tuple,
@@ -140,7 +192,7 @@ class SimpleEventTest(unittest.TestCase):
         self.assertEqual(event.split_at(3), split2)
 
 
-class SequentialEventTest(unittest.TestCase):
+class SequentialEventTest(unittest.TestCase, EventTest):
     def setUp(self) -> None:
         self.sequence: core_events.SequentialEvent[
             core_events.SimpleEvent
@@ -150,6 +202,32 @@ class SequentialEventTest(unittest.TestCase):
                 core_events.SimpleEvent(2),
                 core_events.SimpleEvent(3),
             ]
+        )
+
+    def get_event_class(self) -> typing.Type:
+        return core_events.SequentialEvent
+
+    def get_event_instance(self) -> core_events.SimpleEvent:
+        return self.get_event_class()([])
+
+    def test_metrize(self):
+        """Minimal test to ensure API keeps stable
+
+        Please consult EventToMetrizedEventTest for tests of actual
+        functionality.
+        """
+
+        sequential_event = core_events.SequentialEvent(
+            [
+                core_events.SimpleEvent(
+                    1, tempo_envelope=core_events.TempoEnvelope([[0, 120], [1, 120]])
+                )
+            ],
+            tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]]),
+        )
+        self.assertEqual(
+            sequential_event.metrize(mutate=False),
+            core_converters.EventToMetrizedEvent().convert(sequential_event),
         )
 
     def test_magic_method_add(self):
@@ -442,7 +520,7 @@ class SequentialEventTest(unittest.TestCase):
         )
 
 
-class SimultaneousEventTest(unittest.TestCase):
+class SimultaneousEventTest(unittest.TestCase, EventTest):
     class DummyParameter(object):
         def __init__(self, value: float):
             self.value = value
@@ -455,6 +533,12 @@ class SimultaneousEventTest(unittest.TestCase):
                 return self.value == other.value
             except AttributeError:
                 return False
+
+    def get_event_class(self) -> typing.Type:
+        return core_events.SimultaneousEvent
+
+    def get_event_instance(self) -> core_events.SimpleEvent:
+        return self.get_event_class()([])
 
     def setUp(self) -> None:
         self.sequence: core_events.SimultaneousEvent[
@@ -681,7 +765,9 @@ class SimultaneousEventTest(unittest.TestCase):
                 core_events.SimpleEvent(2),
             ]
         )
-        simultaneous_event_to_filter.filter(lambda event: event.duration > core_parameters.DirectDuration(2))
+        simultaneous_event_to_filter.filter(
+            lambda event: event.duration > core_parameters.DirectDuration(2)
+        )
         self.assertEqual(
             simultaneous_event_to_filter,
             core_events.SimultaneousEvent([core_events.SimpleEvent(3)]),

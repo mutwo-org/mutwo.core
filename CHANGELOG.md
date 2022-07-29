@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- new class: `mutwo.core_parameters.abc.Duration`
+- new class: `mutwo.core_parameters.DirectDuration`
+- new `UnknownObjectToObjectTest` in `core_converters` module
+- `EventToMetrizedEvent` in `core_converters`
+
+#### To all event classes
+- `metrize` method
+- `tempo_envelope` as property of each event class
+- `reset_tempo_envelope` method
+
+### Changed
+- implicit `duration` of any numerical type to explicit `duration` of `mutwo.core_parameters.abc.Duration` type
+
+### Fixed
+- illegal comparison of `SingleValueParameter` (raises error now)
+
 
 ## [0.60.0] - 2022-05-09
 

@@ -5,6 +5,7 @@ import typing
 
 from mutwo import core_constants
 from mutwo import core_events
+from mutwo import core_parameters
 
 __all__ = ("Converter", "EventConverter", "SymmetricalEventConverter")
 
@@ -84,14 +85,16 @@ class EventConverter(Converter):
     def _convert_simple_event(
         self,
         event_to_convert: core_events.SimpleEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
 
     def _convert_simultaneous_event(
         self,
         simultaneous_event: core_events.SimultaneousEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.core_events.SimultaneousEvent`."""
 
@@ -99,14 +102,15 @@ class EventConverter(Converter):
 
         for event in simultaneous_event:
             data_per_simple_event_list.extend(
-                self._convert_event(event, absolute_entry_delay)
+                self._convert_event(event, absolute_entry_delay, depth + 1)
             )
         return tuple(data_per_simple_event_list)
 
     def _convert_sequential_event(
         self,
         sequential_event: core_events.SequentialEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
         """Convert instance of :class:`mutwo.core_events.SequentialEvent`."""
 
@@ -115,14 +119,17 @@ class EventConverter(Converter):
             sequential_event.absolute_time_tuple, sequential_event
         ):
             data_per_simple_event_list.extend(
-                self._convert_event(event, event_start + absolute_entry_delay)
+                self._convert_event(
+                    event, event_start + absolute_entry_delay, depth + 1
+                )
             )
         return tuple(data_per_simple_event_list)
 
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> typing.Any:
         """Convert :class:`mutwo.core_events.abc.Event` of unknown type.
 
@@ -134,25 +141,22 @@ class EventConverter(Converter):
             3. :class:`mutwo.core_events.SimultaneousEvent`.
         """
 
-        if isinstance(event_to_convert, core_events.SequentialEvent):
-            return self._convert_sequential_event(
-                event_to_convert, absolute_entry_delay
-            )
+        absolute_entry_delay = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_entry_delay
+        )
 
+        if isinstance(event_to_convert, core_events.SequentialEvent):
+            conversion_method = self._convert_sequential_event
         elif isinstance(
             event_to_convert,
             core_events.SimultaneousEvent,
         ):
-            return self._convert_simultaneous_event(
-                event_to_convert, absolute_entry_delay
-            )
-
+            conversion_method = self._convert_simultaneous_event
         elif isinstance(
             event_to_convert,
             core_events.SimpleEvent,
         ):
-            return self._convert_simple_event(event_to_convert, absolute_entry_delay)
-
+            conversion_method = self._convert_simple_event
         else:
             raise TypeError(
                 f"Can't convert object '{event_to_convert}' of type "
@@ -160,6 +164,11 @@ class EventConverter(Converter):
                 " Supported types only include all inherited classes "
                 f"from '{core_events.abc.Event}'."
             )
+
+        try:
+            return conversion_method(event_to_convert, absolute_entry_delay, depth)
+        except TypeError:
+            return conversion_method(event_to_convert, absolute_entry_delay)
 
 
 class SymmetricalEventConverter(EventConverter):
@@ -173,14 +182,16 @@ class SymmetricalEventConverter(EventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: core_events.SimpleEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> core_events.SimpleEvent:
         """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
 
     def _convert_simultaneous_event(
         self,
         simultaneous_event: core_events.SimultaneousEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> core_events.SimultaneousEvent:
         """Convert instance of :class:`mutwo.core_events.SimultaneousEvent`."""
 
@@ -190,14 +201,15 @@ class SymmetricalEventConverter(EventConverter):
 
         for event in simultaneous_event:
             converted_simultaneous_event.append(
-                self._convert_event(event, absolute_entry_delay)
+                self._convert_event(event, absolute_entry_delay, depth + 1)
             )
         return converted_simultaneous_event
 
     def _convert_sequential_event(
         self,
         sequential_event: core_events.SequentialEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> core_events.SequentialEvent:
         """Convert instance of :class:`mutwo.core_events.SequentialEvent`."""
 
@@ -208,13 +220,16 @@ class SymmetricalEventConverter(EventConverter):
             sequential_event.absolute_time_tuple, sequential_event
         ):
             converted_sequential_event.append(
-                self._convert_event(event, event_start + absolute_entry_delay)
+                self._convert_event(
+                    event, event_start + absolute_entry_delay, depth + 1
+                )
             )
         return converted_sequential_event
 
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
-        return super()._convert_event(event_to_convert, absolute_entry_delay)
+        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
