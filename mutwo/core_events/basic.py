@@ -70,7 +70,9 @@ class SimpleEvent(core_events.abc.Event):
                     parameter_to_compare_set.add(parameter_to_compare)
         except AttributeError:
             return False
-        return self._is_equal(other, tuple(parameter_to_compare_set))
+        return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
+            self, other, tuple(parameter_to_compare_set)
+        )
 
     def __repr__(self) -> str:
         attribute_iterator = (
@@ -124,32 +126,6 @@ class SimpleEvent(core_events.abc.Event):
     @duration.setter
     def duration(self, duration: core_parameters.abc.Duration):
         self._duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
-
-    # ###################################################################### #
-    #                           private methods                              #
-    # ###################################################################### #
-
-    def _is_equal(
-        self, other: typing.Any, parameter_to_compare_tuple: tuple[str, ...]
-    ) -> bool:
-        """Helper function to inspect if two SimpleEvent objects are equal."""
-
-        for parameter_to_compare in parameter_to_compare_tuple:
-            try:
-                # If the assigned values of the specific parameter aren't
-                # equal, both objects can't be equal.
-                if getattr(self, parameter_to_compare) != getattr(
-                    other, parameter_to_compare
-                ):
-                    return False
-
-            # If the other object doesn't know the essential parameter
-            # mutwo assumes that both objects can't be equal.
-            except AttributeError:
-                return False
-
-        # If all compared parameters are equal, return True.
-        return True
 
     # ###################################################################### #
     #                           public methods                               #

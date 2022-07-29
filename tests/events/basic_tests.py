@@ -193,7 +193,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
 
 class SequentialEventTest(unittest.TestCase, EventTest):
-    def setUp(self) -> None:
+    def setUp(self):
         self.sequence: core_events.SequentialEvent[
             core_events.SimpleEvent
         ] = core_events.SequentialEvent(
@@ -209,6 +209,24 @@ class SequentialEventTest(unittest.TestCase, EventTest):
 
     def get_event_instance(self) -> core_events.SimpleEvent:
         return self.get_event_class()([])
+
+    def test_equal_with_different_side_attributes(self):
+        """Ensure __eq__ takes _class_specific_side_attribute_tuple into account"""
+
+        sequential_event0 = core_events.SequentialEvent([])
+        sequential_event1 = core_events.SequentialEvent([])
+
+        self.assertEqual(sequential_event0, sequential_event1)
+
+        sequential_event0.tempo_envelope = core_events.TempoEnvelope(
+            [[0, 100], [10, 100]]
+        )
+
+        self.assertNotEqual(
+            sequential_event0.tempo_envelope, sequential_event1.tempo_envelope
+        )
+        self.assertNotEqual(sequential_event0, sequential_event1)
+        self.assertTrue(list.__eq__(sequential_event0, sequential_event1))
 
     def test_metrize(self):
         """Minimal test to ensure API keeps stable

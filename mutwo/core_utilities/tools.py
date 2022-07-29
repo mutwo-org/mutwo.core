@@ -29,6 +29,7 @@ __all__ = (
     "call_function_except_attribute_error",
     "round_floats",
     "camel_case_to_snake_case",
+    "test_if_objects_are_equal_by_parameter_tuple",
 )
 
 
@@ -495,3 +496,54 @@ def call_function_except_attribute_error(
         value = exception_value
 
     return value
+
+
+def test_if_objects_are_equal_by_parameter_tuple(
+    object0: typing.Any,
+    object1: typing.Any,
+    parameter_to_compare_tuple: tuple[str, ...],
+) -> bool:
+    """Check if the parameters of two objects have equal values.
+
+    :param object0: The first object which shall be compared.
+    :param object1: The second object with which the first object shall be compared.
+    :parameter_to_compare_tuple: A tuple of attribute names which shall be compared.
+    :return: `True` if all values of all parameters of the objects are equal and `False`
+        if not or if an `AttributeError` is raised.
+
+    **Example:**
+
+    >>> from mutwo import core_utilites
+    >>> class A: pass
+    >>> first_object = A()
+    >>> first_object.a = 100
+    >>> second_object = A()
+    >>> second_object.a = 100
+    >>> third_object = A()
+    >>> third_object.a = 200
+    >>> core_utilites.test_if_objects_are_equal_by_parameter_tuple(
+    >>>     first_object, second_object, ("a",)
+    >>> )
+    True
+    >>> core_utilites.test_if_objects_are_equal_by_parameter_tuple(
+    >>>     first_object, third_object, ("a",)
+    >>> )
+    False
+    """
+
+    for parameter_to_compare in parameter_to_compare_tuple:
+        try:
+            # If the assigned values of the specific parameter aren't
+            # equal, both objects can't be equal.
+            if getattr(object0, parameter_to_compare) != getattr(
+                object1, parameter_to_compare
+            ):
+                return False
+
+        # If the other object doesn't know the essential parameter
+        # mutwo assumes that both objects can't be equal.
+        except AttributeError:
+            return False
+
+    # If all compared parameters are equal, return True.
+    return True

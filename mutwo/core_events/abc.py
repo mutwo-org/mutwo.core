@@ -394,6 +394,24 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
         else:
             return event
 
+    def __eq__(self, other: typing.Any) -> bool:
+        """Test for checking if two objects are equal."""
+        try:
+            parameter_to_compare_set = set([])
+            for object_ in (self, other):
+                for (
+                    parameter_to_compare
+                ) in object_._class_specific_side_attribute_tuple:
+                    parameter_to_compare_set.add(parameter_to_compare)
+        except AttributeError:
+            return False
+        return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
+            self, other, tuple(parameter_to_compare_set)
+        ) and super().__eq__(other)
+
+    def __ne__(self, other: typing.Any):
+        return not self.__eq__(other)
+
     # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #

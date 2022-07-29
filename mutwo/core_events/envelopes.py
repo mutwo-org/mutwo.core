@@ -461,6 +461,3 @@ class TempoEnvelope(Envelope):
             )
         except AttributeError:
             return False
-
-    def __ne__(self, other: typing.Any):
-        return not self.__eq__(other)
