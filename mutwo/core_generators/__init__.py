@@ -10,7 +10,7 @@ term for specific functions with the 'yield' keyword.
 
 from .generic import *
 
-import generic
+from . import generic
 
 __all__ = generic.__all__
 
