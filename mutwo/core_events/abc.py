@@ -343,7 +343,10 @@ class Event(abc.ABC):
 T = typing.TypeVar("T", bound=Event)
 
 
-class ComplexEvent(Event, list[T], typing.Generic[T]):
+# FIXME(This Event can be initialised (no abstract error),
+#  maybe abc.update_abstractmethods can help, but we have to wait
+#  until mutwo migrates to python 3.10)
+class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
     # TODO(Add docstring)
