@@ -5,7 +5,9 @@ import copy
 import functools
 import importlib
 import itertools
+import operator
 import math
+import types
 import typing
 import warnings
 
@@ -30,6 +32,7 @@ __all__ = (
     "round_floats",
     "camel_case_to_snake_case",
     "test_if_objects_are_equal_by_parameter_tuple",
+    "get_all",
 )
 
 
@@ -547,3 +550,12 @@ def test_if_objects_are_equal_by_parameter_tuple(
 
     # If all compared parameters are equal, return True.
     return True
+
+
+def get_all(*submodule_tuple: types.ModuleType) -> tuple[str, ...]:
+    return functools.reduce(
+        operator.add,
+        map(
+            lambda submodule: getattr(submodule, "__all__", tuple([])), submodule_tuple
+        ),
+    )

@@ -10,5 +10,9 @@ term for specific functions with the 'yield' keyword.
 
 from .generic import *
 
+import generic
+
+__all__ = generic.__all__
+
 # Force flat structure
 del generic

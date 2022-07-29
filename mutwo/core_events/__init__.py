@@ -19,5 +19,11 @@ from . import abc
 from .basic import *
 from .envelopes import *
 
+from . import basic, envelopes
+
+from mutwo import core_utilities
+
+__all__ = core_utilities.get_all(basic, envelopes)
+
 # Force flat structure
-del basic, envelopes
+del basic, core_utilities, envelopes
