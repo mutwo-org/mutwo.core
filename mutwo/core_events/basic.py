@@ -64,9 +64,13 @@ class SimpleEvent(core_events.abc.Event):
     def __eq__(self, other: typing.Any) -> bool:
         """Test for checking if two objects are equal."""
         try:
-            return self._is_equal(other) and other._is_equal(self)
+            parameter_to_compare_set = set([])
+            for object_ in (self, other):
+                for parameter_to_compare in object_._parameter_to_compare_tuple:
+                    parameter_to_compare_set.add(parameter_to_compare)
         except AttributeError:
             return False
+        return self._is_equal(other, tuple(parameter_to_compare_set))
 
     def __repr__(self) -> str:
         attribute_iterator = (
@@ -125,24 +129,26 @@ class SimpleEvent(core_events.abc.Event):
     #                           private methods                              #
     # ###################################################################### #
 
-    def _is_equal(self, other: typing.Any) -> bool:
+    def _is_equal(
+        self, other: typing.Any, parameter_to_compare_tuple: tuple[str, ...]
+    ) -> bool:
         """Helper function to inspect if two SimpleEvent objects are equal."""
 
-        for parameter_to_compare in self._parameter_to_compare_tuple:
+        for parameter_to_compare in parameter_to_compare_tuple:
             try:
-                # if the assigned values of the specific parameter aren't
-                # equal, both objects can't be equal
+                # If the assigned values of the specific parameter aren't
+                # equal, both objects can't be equal.
                 if getattr(self, parameter_to_compare) != getattr(
                     other, parameter_to_compare
                 ):
                     return False
 
-            # if the other object doesn't know the essential parameter
-            # mutwo assumes that both objects can't be equal
+            # If the other object doesn't know the essential parameter
+            # mutwo assumes that both objects can't be equal.
             except AttributeError:
                 return False
 
-        # if all compared parameters are equal, return True
+        # If all compared parameters are equal, return True.
         return True
 
     # ###################################################################### #
@@ -471,7 +477,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 event.cut_out(cut_out_start, cut_out_end)
             elif not (
                 # XXX: Support special case of events with duration = 0.
-                event.duration == 0 and event_start >= start and event_start <= end
+                event.duration == 0
+                and event_start >= start
+                and event_start <= end
             ):
                 event_to_remove_index_list.append(event_index)
 
