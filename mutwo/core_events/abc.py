@@ -352,7 +352,7 @@ class ComplexEvent(Event, list[T], typing.Generic[T]):
 
     def __init__(
         self,
-        iterable: typing.Iterable[T],
+        iterable: typing.Iterable[T] = [],
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
     ):
         Event.__init__(self, tempo_envelope)
