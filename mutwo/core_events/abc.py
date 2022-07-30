@@ -128,6 +128,9 @@ class Event(abc.ABC):
         :param attribute_name: The name of the attribute which value shall be set.
         :param value: The value which shall be assigned to the given
             :attr:`attribute_name`
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
         :return: The event.
 
         This function is merely a convenience wrapper for...
@@ -207,6 +210,10 @@ class Event(abc.ABC):
             respective `parameter_name`. If the Event doesn't know the attribute yet
             and `set_unassigned_parameter` is False, the method call will simply be
             ignored.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
+        :return: The event.
 
         **Example:**
 
@@ -234,6 +241,9 @@ class Event(abc.ABC):
             as an input the assigned value for the passed parameter_name of the
             respective object. The function shouldn't return anything, but simply
             calls a method of the parameter value.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         This method is useful when a particular parameter has been assigned to objects
         that know methods which mutate themselves. Then 'mutate_parameter' is a
@@ -267,6 +277,10 @@ class Event(abc.ABC):
     @core_utilities.add_copy_option
     def reset_tempo_envelope(self) -> Event:
         """Set events tempo envelope so that one beat equals one second (tempo 60).
+
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         **Example:**
 
@@ -600,6 +614,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             or ``False``. If the return value of the function is ``False`` the
             respective `Event` will be deleted.
         :type condition: typing.Callable[[Event], bool]
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         **Example:**
 
@@ -646,6 +663,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             :class:`mutwo.core_events.SimpleEvent`.
         :param event_to_remove: `True` if the second (left) event shall be removed
             and `False` if the first (right) event shall be removed.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
         """
 
         # Nothing to tie if no child events exist
@@ -709,6 +729,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         :param start: Absolute time where the event shall be inserted.
         :param event_to_squash_in: the event that shall be squashed into
             the present event.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         Squash in a new event to the present event.
 
@@ -728,6 +751,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         """Split child event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where child event shall be split
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         **Example:**
 

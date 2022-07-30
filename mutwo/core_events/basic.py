@@ -163,6 +163,9 @@ class SimpleEvent(core_events.abc.Event):
             respective `parameter_name`. If the Event doesn't know the attribute yet
             and `set_unassigned_parameter` is False, the method call will simply be
             ignored.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
 
         **Example:**
 

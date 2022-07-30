@@ -2,6 +2,7 @@
 
 import copy
 import functools
+import inspect
 import os
 import types
 import typing
@@ -15,12 +16,12 @@ F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
 
 
 def add_copy_option(function: F) -> F:
-    """This decorator adds a return option for object mutating methods.
+    """This decorator adds a copy option for object mutating methods.
 
     :arg function: The method which shall be adjusted.
 
     The 'add_copy_option' decorator adds the 'mutate' keyword argument
-    to the decorated method. If 'mutate' is set to False, the decorator deep
+    to the decorated method. If 'mutate' is set to ``False``, the decorator deep
     copies the respective object, then applies the called method on the new
     copied object and finally returns the copied object. This can be useful
     for methods that by default mutate its object. When adding this method,
@@ -41,6 +42,7 @@ def add_copy_option(function: F) -> F:
 
     wrapped_function = typing.cast(F, wrapper)
     wrapped_function.__annotations__.update({"mutate": bool})
+
     return wrapped_function
 
 
