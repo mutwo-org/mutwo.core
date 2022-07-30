@@ -1,4 +1,5 @@
-__all__ = ("DirectDuration",) 
+__all__ = ("DirectDuration",)
+
 try:
     import quicktions as fractions
 except ImportError:

@@ -120,8 +120,8 @@ def scale_sequence_to_sum(
             factor = sum_to_scale_to / current_sum
             scaled_sequence = map(lambda number: number * factor, sequence_to_scale)
         else:
-            n_items_to_scale = len(sequence_to_scale)
-            size_per_item = sum_to_scale_to / n_items_to_scale
+            item_to_scale_count = len(sequence_to_scale)
+            size_per_item = sum_to_scale_to / item_to_scale_count
             scaled_sequence = (size_per_item for _ in sequence_to_scale)
         return type(sequence_to_scale)(scaled_sequence)
     else:
@@ -215,9 +215,11 @@ def find_closest_index(
         index = solution
 
     else:
-        indices = (solution, solution - 1)
-        differences = tuple(abs(-sorted_research_data[n] + item) for n in indices)
-        index = indices[differences.index(min(differences))]  # type: ignore
+        index_tuple = (solution, solution - 1)
+        difference_tuple = tuple(
+            abs(-sorted_research_data[index] + item) for index in index_tuple
+        )
+        index = index_tuple[difference_tuple.index(min(difference_tuple))]
 
     return research_data.index(sorted_research_data[index])
 
@@ -240,7 +242,11 @@ def find_closest_item(
     1
     >>> tools.find_closest_item(127, (100, 4, 300, 53, 129))
     129
-    >>> tools.find_closest_item(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
+    >>> tools.find_closest_item(
+    >>>     127,
+    >>>     (('hi', 100), ('hey', 4), ('hello', 300)),
+    >>>     key=lambda item: item[1]
+    >>> )
     ('hi', 100)
     """
     return sequence[find_closest_index(item, sequence, key=key)]
@@ -404,9 +410,9 @@ def set_nested_item_from_index_sequence(
     >>> nested_sequence[2][2][0] = 100  # is equal
     """
 
-    n_indices = len(index_sequence)
-    for nth_index, index in enumerate(index_sequence):
-        if n_indices == nth_index + 1:
+    index_count = len(index_sequence)
+    for index_index, index in enumerate(index_sequence):
+        if index_count == index_index + 1:
             sequence.__setitem__(index, item)
         else:
             sequence = sequence[index]
@@ -432,7 +438,7 @@ def round_floats(
 def find_numbers_which_sums_up_to(
     given_sum: float,
     number_to_choose_from_sequence: typing.Optional[typing.Sequence[float]] = None,
-    n_items_to_sum_up: typing.Optional[set[int]] = None,
+    item_to_sum_up_count_set: typing.Optional[set[int]] = None,
 ) -> tuple[tuple[float, ...], ...]:
     """Find all combinations of numbers which sum is equal to the given sum.
 
@@ -444,11 +450,11 @@ def find_numbers_which_sums_up_to(
         doesn't specify this argument mutwo will use all natural numbers
         equal or smaller than the :attr:`given_sum`.
     :type number_to_choose_from_sequence: typing.Optional[typing.Sequence[float]]
-    :param n_items_to_sum_up: How many numbers can be combined to result
+    :param item_to_sum_up_count_set: How many numbers can be combined to result
         in the :attr:`given_sum`. If the user doesn't specify this argument
         mutwo will use all natural numbers equal or smaller than the
         :attr:`given_sum`.
-    :type n_items_to_sum_up: typing.Optional[set[int]]
+    :type item_to_sum_up_count_set: typing.Optional[set[int]]
 
     **Example:**
 
@@ -460,21 +466,21 @@ def find_numbers_which_sums_up_to(
     if not number_to_choose_from_sequence:
         number_to_choose_from_sequence = tuple(range(1, int(given_sum) + 1))
 
-    if not n_items_to_sum_up:
-        n_items_to_sum_up = set(range(1, given_sum + 1))
+    if not item_to_sum_up_count_set:
+        item_to_sum_up_count_set = set(range(1, given_sum + 1))
 
-    numbers = []
-    for n_items in n_items_to_sum_up:
-        numbers.extend(
+    number_tuple_list = []
+    for item_to_sum_up_count in item_to_sum_up_count_set:
+        number_tuple_list.extend(
             [
                 pair
                 for pair in itertools.combinations_with_replacement(
-                    number_to_choose_from_sequence, n_items
+                    number_to_choose_from_sequence, item_to_sum_up_count
                 )
                 if sum(pair) == given_sum
             ]
         )
-    return tuple(numbers)
+    return tuple(number_tuple_list)
 
 
 def call_function_except_attribute_error(
@@ -553,6 +559,12 @@ def test_if_objects_are_equal_by_parameter_tuple(
 
 
 def get_all(*submodule_tuple: types.ModuleType) -> tuple[str, ...]:
+    """Fetch from all arguments their `__all__` attribute and combine them to one tuple
+
+    :param submodule_tuple: Submodules which `__all__` attribute shall be fetched.
+
+    This function is mostly useful in the `__init__` code of each :mod:`mutwo` module.
+    """
     return functools.reduce(
         operator.add,
         map(

@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - implicit `duration` of any numerical type to explicit `duration` of `mutwo.core_parameters.abc.Duration` type
 - return type of `get_parameter(flat=True)` for `SimpleEvent` is no longer a tuple but only the parameter value itself
+- argument `n_items_to_sum_up` of `core_utilites.find_numbers_which_sums_up_to` to `item_to_sum_up_count_set`
 
 ### Fixed
 - illegal comparison of `SingleValueParameter` (raises error now)

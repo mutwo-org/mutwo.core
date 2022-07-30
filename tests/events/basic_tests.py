@@ -174,8 +174,14 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
         # this will raise an error because the simple event isn't within the
         # asked range.
-        self.assertRaises(ValueError, lambda: event0.cut_out(4, 5))
-        self.assertRaises(ValueError, lambda: event0.cut_out(-2, -1))
+        self.assertRaises(
+            core_utilities.InvalidCutOutStartAndEndValuesError,
+            lambda: event0.cut_out(4, 5),
+        )
+        self.assertRaises(
+            core_utilities.InvalidCutOutStartAndEndValuesError,
+            lambda: event0.cut_out(-2, -1),
+        )
 
     def test_cut_off(self):
         event0 = core_events.SimpleEvent(4)
@@ -393,7 +399,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             ),
         )
         self.assertRaises(
-            ValueError,
+            core_utilities.InvalidStartValueError,
             lambda: self.sequence.squash_in(
                 7, core_events.SimpleEvent(1.5), mutate=False
             ),
@@ -740,7 +746,10 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
 
         # this will raise an error because the simultaneous event contains simple events
         # where some simple event aren't long enough for the following cut up arguments.
-        self.assertRaises(ValueError, lambda: self.sequence.cut_out(2, 3))
+        self.assertRaises(
+            core_utilities.InvalidCutOutStartAndEndValuesError,
+            lambda: self.sequence.cut_out(2, 3),
+        )
 
     def test_cut_off(self):
         result0 = core_events.SimultaneousEvent(
@@ -761,7 +770,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
 
     def test_squash_in(self):
         self.assertRaises(
-            TypeError,
+            core_utilities.ImpossibleToSquashInError,
             lambda: self.sequence.squash_in(
                 0, core_events.SimpleEvent(1.5), mutate=False
             ),

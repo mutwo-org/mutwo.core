@@ -3,7 +3,6 @@
 import abc
 import typing
 
-from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
 

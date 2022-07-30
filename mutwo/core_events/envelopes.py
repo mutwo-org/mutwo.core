@@ -46,13 +46,13 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     :param parameter_to_value: Convert a parameter to a value. A value is any
         object which supports mathematical operations.
     :type parameter_to_value: typing.Callable[[Value], core_constants.ParameterType]
-    :param value_to_parameter:
+    :param value_to_parameter: A callable object which converts a value to a parameter.
     :type value_to_parameter: typing.Callable[[Value], core_constants.ParameterType]
-    :param apply_parameter_on_event:
+    :param apply_parameter_on_event: A callable object which applies a parameter on an event.
     :type apply_parameter_on_event: typing.Callable[[core_events.abc.Event, core_constants.ParameterType], None]
-    :param apply_curve_shape_on_event:
+    :param apply_curve_shape_on_event: A callable object which applies a curve shape on an event.
     :type apply_curve_shape_on_event: typing.Callable[[core_events.abc.Event, CurveShape], None]
-    :param default_event_class:
+    :param default_event_class: The default event class which describes a point.
     :type default_event_class: type[core_events.abc.Event]
     :param initialise_default_event_class:
     :type initialise_default_event_class: typing.Callable[[type[core_events.abc.Event], core_constants.DurationType], core_events.abc.Event]
@@ -207,14 +207,11 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     ) -> list[typing.Union[Envelope.CompletePoint, None]]:
         corrected_point_list: list[typing.Union[Envelope.CompletePoint, None]] = []
         for point in point_or_invalid_type_sequence:
-            point_length = len(point)
-            if point_length == 2:
+            point_count = len(point)
+            if point_count == 2:
                 point += (0,)  # type: ignore
-            elif point_length != 3:
-                raise TypeError(
-                    f"Found invalid point: '{point}' with {point_length} "
-                    "items! Points should have two or three items."
-                )
+            elif point_count != 3:
+                raise core_utilities.InvalidPointError(point, point_count)
             corrected_point_list.append(point)  # type: ignore
         return corrected_point_list
 
@@ -372,7 +369,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
             end = self.duration
         duration = end - start
         if duration == 0:
-            warnings.warn("Average value for range where start == end is always 0!")
+            warnings.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
             return 0
         return self.integrate_interval(start, end) / duration
 

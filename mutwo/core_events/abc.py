@@ -56,14 +56,8 @@ class Event(abc.ABC):
 
         Can be used within the different cut_out methods.
         """
-        try:
-            assert condition(start, end)
-        except AssertionError:
-            raise ValueError(
-                f"Invalid values for start and end property (start = '{start}' "
-                f"and end = '{end}')!"
-                " Value for 'end' has to be bigger than value for 'start'."
-            )
+        if not condition(start, end):
+            raise core_utilities.InvalidStartAndEndValueError(start, end)
 
     # ###################################################################### #
     #                           public properties                            #
@@ -473,14 +467,8 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
         Can be used within the different squash_in methods.
         """
-        try:
-            assert self.duration >= start
-        except AssertionError:
-            raise ValueError(
-                f"Invalid value for start = '{start}' in 'squash_in' call "
-                f"for event with duration = '{self.duration}'!"
-                " Start has to be equal or smaller than the events duration."
-            )
+        if self.duration < start:
+            raise core_utilities.InvalidStartValueError(start, self.duration)
 
     # ###################################################################### #
     #                           public methods                               #
@@ -624,10 +612,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         SimultaneousEvent([SimpleEvent(duration = 3)])
         """
 
-        for nth_item, item in zip(reversed(range(len(self))), reversed(self)):
+        for item_index, item in zip(reversed(range(len(self))), reversed(self)):
             shall_survive = condition(item)
             if not shall_survive:
-                del self[nth_item]
+                del self[item_index]
 
     @core_utilities.add_copy_option
     def tie_by(  # type: ignore

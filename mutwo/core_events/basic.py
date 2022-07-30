@@ -137,11 +137,7 @@ class SimpleEvent(core_events.abc.Event):
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
     ) -> core_constants.ParameterType:
-        try:
-            parameter_value = getattr(self, parameter_name)
-        except AttributeError:
-            parameter_value = None
-        return parameter_value
+        return getattr(self, parameter_name, None)
 
     @core_utilities.add_copy_option
     def set_parameter(  # type: ignore
@@ -162,8 +158,8 @@ class SimpleEvent(core_events.abc.Event):
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
             object and has to return a new value that will be assigned to the object.
-        :param set_unassigned_parameter: If set to False a new parameter will only be
-            assigned to an Event if the Event already has a attribute with the
+        :param set_unassigned_parameter: If set to ``False`` a new parameter will only
+            be assigned to an Event if the Event already has a attribute with the
             respective `parameter_name`. If the Event doesn't know the attribute yet
             and `set_unassigned_parameter` is False, the method call will simply be
             ignored.
@@ -246,12 +242,9 @@ class SimpleEvent(core_events.abc.Event):
         if end < duration:
             difference_to_duration += duration - end
 
-        try:
-            assert difference_to_duration < duration
-        except AssertionError:
-            raise ValueError(
-                f"Can't cut out SimpleEvent '{self}' with duration '{duration}' from"
-                f" (start = {start} to end = {end})."
+        if difference_to_duration >= duration:
+            raise core_utilities.InvalidCutOutStartAndEndValuesError(
+                start, end, self, duration
             )
 
         self.duration -= difference_to_duration
@@ -453,10 +446,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
         cut_off_duration = end - start
 
-        # avoid unnecessary iterations
+        # Avoid unnecessary iterations
         if cut_off_duration > 0:
 
-            # collect core_events which are only active within the
+            # Collect core_events which are only active within the
             # cut_off - range
             event_to_delete_list = []
             for event_index, event_start, event in zip(
@@ -466,7 +459,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 if event_start >= start and event_end <= end:
                     event_to_delete_list.append(event_index)
 
-                # shorten event which are partly active within the
+                # Shorten event which are partly active within the
                 # cut_off - range
                 elif event_start <= start and event_end >= start:
                     difference_to_event_start = start - event_start
@@ -524,26 +517,26 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> SequentialEvent[T]:
         absolute_time_tuple = self.absolute_time_tuple
-        nth_event = SequentialEvent._get_index_at_from_absolute_time_tuple(
+        event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
             absolute_time, absolute_time_tuple, self.duration
         )
 
-        # if there is no event at the requested time, raise error
-        if nth_event is None:
+        # If there is no event at the requested time, raise error
+        if event_index is None:
             raise core_utilities.SplitUnavailableChildError(absolute_time)
 
-        # only try to split child event at the requested time if there isn't
+        # Only try to split child event at the requested time if there isn't
         # a segregation already anyway
-        elif absolute_time != absolute_time_tuple[nth_event]:
+        elif absolute_time != absolute_time_tuple[event_index]:
             try:
-                end = absolute_time_tuple[nth_event + 1]
+                end = absolute_time_tuple[event_index + 1]
             except IndexError:
                 end = self.duration
 
             difference = end - absolute_time
-            first_event, second_event = self[nth_event].split_at(difference)
-            self[nth_event] = first_event
-            self.insert(nth_event, second_event)
+            first_event, second_event = self[event_index].split_at(difference)
+            self[event_index] = first_event
+            self.insert(event_index, second_event)
 
 
 class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
@@ -599,29 +592,21 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         for event in self:
             try:
                 event.squash_in(start, event_to_squash_in)  # type: ignore
-
-            # simple events don't have a 'squash_in' method
+            # Simple events don't have a 'squash_in' method.
             except AttributeError:
-                message = (
-                    f"Can't squash '{event_to_squash_in}' in '{self}'. Does the"
-                    " SimultaneousEvent contain SimpleEvents or events that inherit"
-                    " from SimpleEvent? For being able to squash in, the"
-                    " SimultaneousEvent needs to only contain SequentialEvents or"
-                    " SimultaneousEvents."
-                )
-                raise TypeError(message)
+                raise core_utilities.ImpossibleToSquashInError(self, event_to_squash_in)
 
     @core_utilities.add_copy_option
     def split_child_at(
         self, absolute_time: core_constants.DurationType
     ) -> SimultaneousEvent[T]:
-        for nth_event, event in enumerate(self):
+        for event_index, event in enumerate(self):
             try:
                 event.split_child_at(absolute_time)
             # simple events don't have a 'split_child_at' method
             except AttributeError:
                 split_event = event.split_at(absolute_time)
-                self[nth_event] = SequentialEvent(split_event)
+                self[event_index] = SequentialEvent(split_event)
 
 
 @core_utilities.add_tag_to_class

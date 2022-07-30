@@ -45,9 +45,7 @@ class ParameterWithEnvelope(abc.ABC):
 
     @envelope.setter
     def envelope(self, new_envelope: typing.Any):
-        try:
-            assert isinstance(new_envelope, core_events.RelativeEnvelope)
-        except AssertionError:
+        if not isinstance(new_envelope, core_events.RelativeEnvelope):
             raise TypeError(
                 f"Found illegal object '{new_envelope}' of not "
                 f"supported type '{type(new_envelope)}'. "
@@ -138,14 +136,7 @@ class SingleValueParameter(abc.ABC):
                 setattr(cls, value_name, property(abstract_method))
 
             if hasattr(cls, "value_name"):
-                raise Exception(
-                    (
-                        f"Confusing setup in class '{cls}' which inherits from "
-                        "'SingleValueParameter'. Found already a defined value for"
-                        " 'value_name'. SingleValueParameter instances can only "
-                        "have one value!"
-                    )
-                )
+                raise core_utilities.AlreadyDefinedValueNameError(cls)
 
             setattr(cls, "value_name", property(lambda _: value_name))
 
