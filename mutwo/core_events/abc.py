@@ -711,14 +711,17 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           abstract methods                             #
     # ###################################################################### #
 
-    @core_utilities.add_copy_option
-    def metrize(self):
+    def metrize(self, mutate: bool = True) -> ComplexEvent:
         # XXX: import in method to avoid circular import error
         metrized_event = __import__(
             "mutwo.core_converters"
         ).core_converters.EventToMetrizedEvent()(self)
-        self.tempo_envelope = metrized_event.tempo_envelope
-        self[:] = metrized_event[:]
+        if mutate:
+            self.tempo_envelope = metrized_event.tempo_envelope
+            self[:] = metrized_event[:]
+            return self
+        else:
+            return metrized_event
 
     @abc.abstractmethod
     def squash_in(

@@ -211,14 +211,17 @@ class SimpleEvent(core_events.abc.Event):
         if parameter is not None:
             function(parameter)
 
-    @core_utilities.add_copy_option
-    def metrize(self):
+    def metrize(self, mutate: bool = True) -> SimpleEvent:
         # XXX: import in method to avoid circular import error
         metrized_event = __import__(
             "mutwo.core_converters"
         ).core_converters.EventToMetrizedEvent()(self)
-        self.duration = metrized_event.duration
-        self.tempo_envelope = metrized_event.tempo_envelope
+        if mutate:
+            self.duration = metrized_event.duration
+            self.tempo_envelope = metrized_event.tempo_envelope
+            return self
+        else:
+            return metrized_event
 
     @core_utilities.add_copy_option
     def cut_out(  # type: ignore
