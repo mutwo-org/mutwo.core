@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - new class: `mutwo.core_parameters.DirectDuration`
 - new `UnknownObjectToObjectTest` in `core_converters` module
 - `EventToMetrizedEvent` in `core_converters`
+- `filter_undefined` keyword to `get_parameter` method
 
 #### To all event classes
 - `metrize` method
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - implicit `duration` of any numerical type to explicit `duration` of `mutwo.core_parameters.abc.Duration` type
+- return type of `get_parameter(flat=True)` for `SimpleEvent` is no longer a tuple but only the parameter value itself
 
 ### Fixed
 - illegal comparison of `SingleValueParameter` (raises error now)

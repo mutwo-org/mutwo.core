@@ -154,7 +154,7 @@ class Event(abc.ABC):
 
     @abc.abstractmethod
     def get_parameter(
-        self, parameter_name: str, flat: bool = False
+        self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
     ) -> typing.Union[
         tuple[core_constants.ParameterType, ...], core_constants.ParameterType
     ]:
@@ -165,7 +165,11 @@ class Event(abc.ABC):
         :param flat: ``True`` for flat sequence of parameter values, ``False`` if the
             resulting ``tuple`` shall repeat the nested structure of the event.
         :type flat: bool
-        :returns: Return tuple containing the assigned values for each contained
+        :param filter_undefined: If set to ``True`` all ``None`` values will be filtered
+            from the returned tuple. Default to ``False``. This flag has no effect on
+            :func:`get_parameter` of :class:`mutwo.core_events.SimpleEvent`.
+        :type flat: filter_undefined
+        :return: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
             add None to the tuple for the respective event.
 
@@ -177,6 +181,11 @@ class Event(abc.ABC):
         >>> )
         >>> sequential_event.get_parameter('duration')
         (2, 3)
+        >>> simple_event = core_events.SimpleEvent(10)
+        >>> simple_event.get_parameter('duration')
+        DirectDuration(10)
+        >>> simple_event.get_parameter('undefined_parameter')
+        None
         """
 
     @abc.abstractmethod
@@ -531,15 +540,35 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         return core_utilities.get_nested_item_from_index_sequence(index_sequence, self)
 
     def get_parameter(
-        self, parameter_name: str, flat: bool = False
+        self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
     ) -> tuple[core_constants.ParameterType, ...]:
         parameter_value_list: list[core_constants.ParameterType] = []
         for event in self:
-            parameter_values_of_event = event.get_parameter(parameter_name, flat=flat)
-            if flat:
-                parameter_value_list.extend(parameter_values_of_event)
+            parameter_value_or_parameter_value_tuple = event.get_parameter(
+                parameter_name, flat=flat
+            )
+
+            if is_simple_event := isinstance(event, core_events.SimpleEvent):
+                parameter_value_tuple = (parameter_value_or_parameter_value_tuple,)
             else:
-                parameter_value_list.append(parameter_values_of_event)
+                parameter_value_tuple = parameter_value_or_parameter_value_tuple
+            if filter_undefined:
+                parameter_value_tuple = tuple(
+                    filter(
+                        lambda parameter_value: parameter_value is not None,
+                        parameter_value_tuple,
+                    )
+                )
+            if flat:
+                parameter_value_list.extend(parameter_value_tuple)
+            else:
+                # XXX: Simple events should be added without tuple, they only
+                # provide one parameter.
+                if is_simple_event:
+                    if parameter_value_tuple:
+                        parameter_value_list.append(parameter_value_tuple[0])
+                else:
+                    parameter_value_list.append(parameter_value_tuple)
         return tuple(parameter_value_list)
 
     @core_utilities.add_copy_option

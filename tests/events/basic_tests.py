@@ -97,7 +97,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
         duration = core_parameters.DirectDuration(10)
         self.assertEqual(
             core_events.SimpleEvent(duration).get_parameter("duration", flat=True),
-            (duration,),
+            duration,
         )
 
     def test_set_assigned_parameter_by_object(self):
@@ -659,6 +659,16 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 core_parameters.DirectDuration(duration)
                 for duration in (1, 2, 3, 1, 2, 3)
             ),
+        )
+
+    def test_get_parameter_but_filter_undefined(self):
+        sequential_event = core_events.SequentialEvent(
+            [core_events.SimpleEvent(1), core_events.SimpleEvent(2)]
+        )
+        sequential_event[0].set("name", "event0")
+        self.assertEqual(sequential_event.get_parameter("name"), ("event0", None))
+        self.assertEqual(
+            sequential_event.get_parameter("name", filter_undefined=True), ("event0",)
         )
 
     def test_set_parameter(self):

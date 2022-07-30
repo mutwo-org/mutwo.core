@@ -135,34 +135,13 @@ class SimpleEvent(core_events.abc.Event):
         return copy.deepcopy(self)
 
     def get_parameter(
-        self, parameter_name: str, flat: bool = False
+        self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
     ) -> core_constants.ParameterType:
-        """Return event attribute with the entered name.
-
-        :parameter_name: The name of the attribute that shall be returned.
-        :returns: Return the value that has been assigned to the passed
-            parameter_name. If an event doesn't posses the asked parameter,
-            the method will simply return None.
-
-        **Example:**
-
-        >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(2)
-        >>> simple_event.pitch = 200
-        >>> simple_event.get_parameter('pitch')
-        200
-        >>> simple_event.get_parameter('pitches')
-        None
-        """
         try:
             parameter_value = getattr(self, parameter_name)
         except AttributeError:
             parameter_value = None
-
-        if flat:
-            return (parameter_value,)
-        else:
-            return parameter_value
+        return parameter_value
 
     @core_utilities.add_copy_option
     def set_parameter(  # type: ignore
