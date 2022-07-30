@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.61.0] - 2022-07-30
+
 ### Added
 - new class: `mutwo.core_parameters.abc.Duration`
 - new class: `mutwo.core_parameters.DirectDuration`
