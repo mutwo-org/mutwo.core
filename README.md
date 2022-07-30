@@ -44,7 +44,7 @@ abjad_score = abjad.Score([abjad.Staff([abjad_voice])])
 abjad.show(abjad_score)
 ```
 
-![Lilypond engraving](docs/pictures/readme_abjad_example.png)
+![Lilypond engraving](lilypond_engraving.png)
 
 
 ### Installation
