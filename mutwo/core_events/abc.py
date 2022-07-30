@@ -127,6 +127,31 @@ class Event(abc.ABC):
         False
         """
 
+    @core_utilities.add_copy_option
+    def set(self, attribute_name: str, value: typing.Any) -> Event:
+        """Set an attribute of the object to a specific value
+
+        :param attribute_name: The name of the attribute which value shall be set.
+        :param value: The value which shall be assigned to the given
+            :attr:`attribute_name`
+        :return: The event.
+
+        This function is merely a convenience wrapper for...
+
+        >>> event.attribute_name = value
+
+        Because the function return the event itself it can be used
+        in function composition.
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2)])
+        >>> sequential_event.set('duration', 10).set('my_new_attribute', 'hello-world!')
+        """
+        setattr(self, attribute_name, value)
+        return self
+
     @abc.abstractmethod
     def get_parameter(
         self, parameter_name: str, flat: bool = False
