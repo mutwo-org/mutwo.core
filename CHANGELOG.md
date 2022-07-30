@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - illegal comparison of `SingleValueParameter` (raises error now)
 
+### Removed
+- `core_utilites.import_module_if_dependencies_have_been_installed` (no longer used)
+
 
 ## [0.60.0] - 2022-05-09
 

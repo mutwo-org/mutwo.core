@@ -3,13 +3,11 @@
 import bisect
 import copy
 import functools
-import importlib
 import itertools
 import operator
 import math
 import types
 import typing
-import warnings
 
 from mutwo import core_constants
 
@@ -22,7 +20,6 @@ __all__ = (
     "insert_next_to",
     "uniqify_sequence",
     "cyclic_permutations",
-    # "import_module_if_dependencies_have_been_installed",  # not for public use
     "find_closest_index",
     "find_closest_item",
     "get_nested_item_from_index_sequence",
@@ -250,26 +247,6 @@ def find_closest_item(
     ('hi', 100)
     """
     return sequence[find_closest_index(item, sequence, key=key)]
-
-
-def import_module_if_dependencies_have_been_installed(
-    module: str, dependencies: tuple[str, ...], import_class: bool = False
-) -> None:
-    for dependency in dependencies:
-        if not importlib.util.find_spec(dependency):
-            message = (
-                "Can't load module '{0}'. Install dependency '{1}' if you want to use"
-                " '{0}'.".format(module, dependency)
-            )
-            warnings.warn(message)
-            return
-
-    if import_class:
-        class_name = module.split(".")[-1]
-        return getattr(importlib.import_module(module), class_name)
-
-    else:
-        importlib.import_module(module)
 
 
 def uniqify_sequence(
