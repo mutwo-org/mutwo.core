@@ -621,18 +621,14 @@ class TaggedSimpleEvent(SimpleEvent):
 
 
 @core_utilities.add_tag_to_class
-class TaggedSequentialEvent(SequentialEvent, typing.Generic[T]):
+class TaggedSequentialEvent(
+    SequentialEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
+):
     """:class:`SequentialEvent` with tag."""
-
-    _class_specific_side_attribute_tuple = (
-        SequentialEvent._class_specific_side_attribute_tuple + ("tag",)
-    )
 
 
 @core_utilities.add_tag_to_class
-class TaggedSimultaneousEvent(SimultaneousEvent, typing.Generic[T]):
+class TaggedSimultaneousEvent(
+    SimultaneousEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
+):
     """:class:`SimultaneousEvent` with tag."""
-
-    _class_specific_side_attribute_tuple = (
-        SimultaneousEvent._class_specific_side_attribute_tuple + ("tag",)
-    )

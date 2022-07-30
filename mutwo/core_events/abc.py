@@ -391,10 +391,6 @@ T = typing.TypeVar("T", bound=Event)
 class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
-    # TODO(Add docstring)
-    # TODO(Set '_class_specific_side_attribute_tuple' in __init_subclass__)
-    _class_specific_side_attribute_tuple: tuple[str, ...] = ("tempo_envelope",)
-
     def __init__(
         self,
         iterable: typing.Iterable[T] = [],
@@ -402,6 +398,35 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     ):
         Event.__init__(self, tempo_envelope)
         list.__init__(self, iterable)
+
+    def __init_subclass__(
+        cls, class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
+    ):
+        # XXX: It's better to prove `class_specific_side_attribute_tuple`
+        # as a class initialisation attribute instead of a simple class attribute,
+        # because with a simple class attribute we have no guarantee that the
+        # content of the parent class is available and we always have to explicitly
+        # make it available with something like:
+        #
+        #   class MyComplexEvent(ComplexEvent):
+        #        _class_specific_side_attribute_tuple = (("new_attribute",) +
+        #          ComplexEvent._class_specific_side_attribute_tuple)
+        #
+        # With __init_subclass__ we can simply write:
+        #
+        #   class MyComplexEvent(
+        #     ComplexEvent,
+        #    class_specific_side_attribute_tuple = ("new_attribute",)
+        #   ): pass
+        #
+        super_class_class_specific_side_attribute_tuple = getattr(
+            cls, "_class_specific_side_attribute_tuple", ("tempo_envelope",)
+        )
+        class_specific_side_attribute_tuple = (
+            super_class_class_specific_side_attribute_tuple
+            + class_specific_side_attribute_tuple
+        )
+        cls._class_specific_side_attribute_tuple = class_specific_side_attribute_tuple
 
     # ###################################################################### #
     #                           magic methods                                #

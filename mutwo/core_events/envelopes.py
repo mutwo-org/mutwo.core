@@ -18,7 +18,20 @@ __all__ = ("Envelope", "RelativeEnvelope", "TempoEnvelope")
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
-class Envelope(core_events.SequentialEvent, typing.Generic[T]):
+class Envelope(
+    core_events.SequentialEvent,
+    typing.Generic[T],
+    class_specific_side_attribute_tuple=(
+        "event_to_parameter",
+        "event_to_curve_shape",
+        "value_to_parameter",
+        "parameter_to_value",
+        "apply_parameter_on_event",
+        "apply_curve_shape_on_event",
+        "default_event_class",
+        "initialise_default_event_class",
+    ),
+):
     """Model continuous changing values (e.g. glissandi, crescendo).
 
     :param event_iterable_or_point_sequence: An iterable filled with events
@@ -76,19 +89,6 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         core_constants.DurationType, core_constants.ParameterType, CurveShape  # type: ignore
     ]
     Point = typing.Union[CompletePoint, IncompletePoint]
-
-    # class specific side attributes (keep consistent
-    # when applying the "empty_copy" method)
-    _class_specific_side_attribute_tuple = (
-        "event_to_parameter",
-        "event_to_curve_shape",
-        "value_to_parameter",
-        "parameter_to_value",
-        "apply_parameter_on_event",
-        "apply_curve_shape_on_event",
-        "default_event_class",
-        "initialise_default_event_class",
-    ) + core_events.SequentialEvent._class_specific_side_attribute_tuple
 
     def __init__(
         self,
