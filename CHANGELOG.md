@@ -26,18 +26,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - argument `n_items_to_sum_up` of `core_utilites.find_numbers_which_sums_up_to` to `item_to_sum_up_count_set`
 - use `class_specific_side_attribute_tuple` as a class init instead of a simple class attribute
     old:
-        ```python3
         class MyComplexEvent(ComplexEvent):
             _class_specific_side_attribute_tuple = (("new_attribute",) +
             ComplexEvent._class_specific_side_attribute_tuple)
-        ```
     new:
-        ```python3
         class MyComplexEvent(
           ComplexEvent,
          class_specific_side_attribute_tuple = ("new_attribute",)
         ): pass
-        ```
 
 ### Fixed
 - illegal comparison of `SingleValueParameter` (raises error now)
