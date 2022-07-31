@@ -17,23 +17,23 @@ class EnvelopeTest(unittest.TestCase):
             self.value = value
             self.curve_shape = curve_shape
 
-    def setUp(cls):
-        cls.envelope = core_events.Envelope(
+    def setUp(self):
+        self.envelope = core_events.Envelope(
             [
-                cls.EnvelopeEvent(1, 0),
-                cls.EnvelopeEvent(1, 1, 1),
-                cls.EnvelopeEvent(1, 0, -1),
-                cls.EnvelopeEvent(2, 1),
-                cls.EnvelopeEvent(1, 0.5),
+                self.EnvelopeEvent(1, 0),
+                self.EnvelopeEvent(1, 1, 1),
+                self.EnvelopeEvent(1, 0, -1),
+                self.EnvelopeEvent(2, 1),
+                self.EnvelopeEvent(1, 0.5),
             ]
         )
-        cls.double_value_envelope = core_events.Envelope(
+        self.double_value_envelope = core_events.Envelope(
             [
-                cls.EnvelopeEvent(1, 0),
-                cls.EnvelopeEvent(1, 1, 1),
-                cls.EnvelopeEvent(1, 0, -1),
-                cls.EnvelopeEvent(2, 1),
-                cls.EnvelopeEvent(1, 0.5),
+                self.EnvelopeEvent(1, 0),
+                self.EnvelopeEvent(1, 1, 1),
+                self.EnvelopeEvent(1, 0, -1),
+                self.EnvelopeEvent(2, 1),
+                self.EnvelopeEvent(1, 0.5),
             ],
             value_to_parameter=lambda value: value / 2,
             parameter_to_value=lambda parameter: parameter * 2,
@@ -126,6 +126,12 @@ class EnvelopeTest(unittest.TestCase):
         self.assertEqual(self.envelope.get_average_value(-1, 0), 0)
         self.assertAlmostEqual(
             self.envelope.get_average_value(0, 5), 0.6327906827477305
+        )
+        # With implicit start and end
+        self.assertAlmostEqual(self.envelope.get_average_value(), 0.6106589022895331)
+        self.assertEqual(
+            self.envelope.get_average_value(),
+            self.envelope.get_average_value(0, self.envelope.duration),
         )
 
     def test_get_average_parameter(self):

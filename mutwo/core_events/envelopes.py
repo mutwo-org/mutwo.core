@@ -360,18 +360,28 @@ class Envelope(
 
     def get_average_value(
         self,
-        start: typing.Optional[core_constants.DurationType] = None,
-        end: typing.Optional[core_constants.DurationType] = None,
+        start: typing.Optional[
+            typing.Union[core_parameters.abc.Duration, typing.Any]
+        ] = None,
+        end: typing.Optional[
+            typing.Union[core_parameters.abc.Duration, typing.Any]
+        ] = None,
     ) -> Value:
         if start is None:
-            start = 0
+            start = core_parameters.DirectDuration(0)
         if end is None:
             end = self.duration
+
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
+
         duration = end - start
         if duration == 0:
             warnings.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
             return 0
-        return self.integrate_interval(start, end) / duration
+        return self.integrate_interval(start, end) / duration.duration
 
     def get_average_parameter(
         self,
