@@ -226,6 +226,14 @@ class SequentialEventTest(unittest.TestCase, EventTest):
     def get_event_instance(self) -> core_events.SimpleEvent:
         return self.get_event_class()([])
 
+    def test_duration(self):
+        self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(6))
+
+    def test_zero_duration(self):
+        self.assertEqual(
+            core_events.SequentialEvent().duration, core_parameters.DirectDuration(0)
+        )
+
     def test_set(self):
         sequential_event = core_events.SequentialEvent(
             [core_events.SimpleEvent(1), core_events.SimpleEvent(1)]
@@ -611,6 +619,17 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 )
                 for _ in range(2)
             ]
+        )
+
+    def test_duration(self):
+        self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(3))
+
+    def test_nested_event_duration(self):
+        self.assertEqual(self.nested_sequence.duration, core_parameters.DirectDuration(6))
+
+    def test_zero_duration(self):
+        self.assertEqual(
+            core_events.SimultaneousEvent().duration, core_parameters.DirectDuration(0)
         )
 
     def test_get_event_from_index_sequence(self):

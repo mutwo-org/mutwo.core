@@ -306,7 +306,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @core_events.abc.ComplexEvent.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
-        return functools.reduce(operator.add, (event.duration for event in self))
+        try:
+            return functools.reduce(operator.add, (event.duration for event in self))
+        # If SequentialEvent is empty
+        except TypeError:
+            return core_parameters.DirectDuration(0)
 
     @property
     def absolute_time_tuple(self) -> tuple[core_constants.Real, ...]:
@@ -554,7 +558,11 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @core_events.abc.ComplexEvent.duration.getter
     def duration(self) -> core_constants.DurationType:
-        return max(event.duration for event in self)
+        try:
+            return max(event.duration for event in self)
+        # If SimultaneousEvent is empty
+        except ValueError:
+            return core_parameters.DirectDuration(0)
 
     # ###################################################################### #
     #                           public methods                               #
