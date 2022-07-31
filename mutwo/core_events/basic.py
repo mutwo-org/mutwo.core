@@ -571,8 +571,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def cut_out(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: typing.Union[core_parameters.abc.Duration, typing.Any],
+        end: typing.Union[core_parameters.abc.Duration, typing.Any],
     ) -> SimultaneousEvent[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
