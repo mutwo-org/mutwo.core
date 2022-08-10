@@ -12,7 +12,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 extras_require = {"testing": ["nose"]}
 
 setuptools.setup(
-    name="mutwo.ext-core",
+    name="mutwo.core",
     version=VERSION,
     license="GPL",
     description="core library for event based framework mutwo",
