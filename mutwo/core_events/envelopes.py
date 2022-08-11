@@ -380,7 +380,7 @@ class Envelope(
         duration = end - start
         if duration == 0:
             warnings.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
-            return 0
+            return self.value_at(start)
         return self.integrate_interval(start, end) / duration.duration
 
     def get_average_parameter(

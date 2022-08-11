@@ -40,7 +40,10 @@ class InvalidStartValueError(Exception):
 
 class InvalidAverageValueStartAndEndWarning(RuntimeWarning):
     def __init__(self):
-        super().__init__("Average value for range where start == end is always 0!")
+        super().__init__(
+            "Average value for range where start == end is equal to"
+            " envelope.value_at(start)!"
+        )
 
 
 class InvalidPointError(Exception):
