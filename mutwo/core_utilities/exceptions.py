@@ -38,7 +38,7 @@ class InvalidStartValueError(Exception):
         )
 
 
-class InvalidAverageValueStartAndEndWarning(RuntimeError):
+class InvalidAverageValueStartAndEndWarning(RuntimeWarning):
     def __init__(self):
         super().__init__("Average value for range where start == end is always 0!")
 

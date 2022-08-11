@@ -3,6 +3,7 @@ import unittest
 from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
+from mutwo import core_utilities
 
 
 class EnvelopeTest(unittest.TestCase):
@@ -133,6 +134,12 @@ class EnvelopeTest(unittest.TestCase):
             self.envelope.get_average_value(),
             self.envelope.get_average_value(0, self.envelope.duration),
         )
+
+    def test_get_average_value_with_zero_duration(self):
+        self.assertEqual(self.envelope.get_average_value(0, 0), 0)
+
+        with self.assertWarns(core_utilities.InvalidAverageValueStartAndEndWarning):
+            self.envelope.get_average_value(0, 0)
 
     def test_get_average_parameter(self):
         self.assertAlmostEqual(
