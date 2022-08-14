@@ -4,8 +4,6 @@
 import fractions
 import typing
 
-from .version import *
-
 Real = typing.Union[float, fractions.Fraction, int]
 """The main reason for this constant is a mypy issue with Pythons buildin
 [numbers module](https://docs.python.org/3/library/numbers.html) which
@@ -24,5 +22,3 @@ ParameterType = typing.Any
 """Type variable to assign to arguments and return values
 which expect objects from the :mod:`mutwo.core.parameters` module,
 but could actually be anything."""
-
-del fractions, typing
