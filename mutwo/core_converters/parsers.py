@@ -16,7 +16,7 @@ from mutwo import core_utilities
 
 __all__ = (
     "SimpleEventToAttribute",
-    # "MutwoParameterDict",
+    "MutwoParameterDict",
     "MutwoParameterDictToKeywordArgument",
     "MutwoParameterDictToDuration",
     "MutwoParameterDictToSimpleEvent",
