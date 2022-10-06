@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.62.0] - 2022-10-06
+
+### Removed
+- prime_factors module with `is_prime`, `factorize` and `factors` functions (see https://github.com/mutwo-org/mutwo.core/commit/56218a3abd42e4ac93b6a31fc3db2ecfcdef73b1 for rationale)
+
+### Added
+- [nix derivation](https://github.com/mutwo-org/mutwo.core/commit/10e2e47b56de5621ffea180d70ba533d7c26c78e)
+
 
 ## [0.61.0] - 2022-07-30
 
