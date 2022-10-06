@@ -3,13 +3,13 @@ with pkgs.python3Packages;
 
 let
 
-  pythonRanges = pkgs.python39Packages.buildPythonPackage rec {
+  python-ranges = pkgs.python39Packages.buildPythonPackage rec {
     name = "python-ranges";
     src = fetchFromGitHub {
       owner = "Superbird11";
       repo = "ranges";
-      rev = "e285da71f3572e7d1c753d3bafd7d0fc07a70f69";
-      sha256 = "sha256-JwF41ygY1w8v/ftzr4Ja0NelAx45t8oi84v3iXHt27o=";
+      rev = "38ac789b61e1e33d1a8be999ca969f909bb652c0";
+      sha256 = "sha256-oRQCtDBQnViNP6sJZU0NqFWkn2YpcIeGWmfx3Ne/n2c=";
     };
     doCheck = false;
   };
@@ -20,13 +20,14 @@ in
     name = "mutwo.core";
     src = fetchFromGitHub {
       owner = "mutwo-org";
-      repo = "mutwo.core";
-      rev = "56218a3abd42e4ac93b6a31fc3db2ecfcdef73b1";
-      sha256 = "sha256-odA2+pTtjRyRbyJDKfmFh+nzXJfrizWcHUClhpcYx2s=";
+      repo = name;
+      rev = "337cfa0c42cfa3a0974731008385a3264942e136";
+      sha256 = "sha256-2fc7IMLyHwIQMOsG5W4oRbAN4+l4LFP7mhkNP5+VO+M=";
     };
     propagatedBuildInputs = [ 
       python39Packages.numpy
       python39Packages.scipy
-      pythonRanges
+      python-ranges
     ];
+    doCheck = true;
   }
