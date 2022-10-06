@@ -10,3 +10,5 @@ This is the `core` package of the [mutwo ecosystem](https://github.com/mutwo-org
 It mainly implements general purpose event abstractions, parameter base classes and other shared utility functions.
 Its independent from specific medias, aesthetics or interfaces and only provides a common base library.
 Any mutwo package depends on this core package.
+
+![Mutwo package structure](mutwo-structure.png)
