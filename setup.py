@@ -31,7 +31,7 @@ setuptools.setup(
     install_requires=[
         "numpy>=1.18, <2.00",
         "scipy>=1.4.1, <2.0.0",
-        "python-ranges>=0.2.0, <1.0.0",
+        "python-ranges>=1.2.0, <2.0.0",
     ],
     extras_require=extras_require,
     python_requires=">=3.9, <4",
