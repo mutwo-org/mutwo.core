@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - `EmptyEnvelopeError` in case user tries to call `value_at` on an envelope without any events.
+- `split_at` method for `Envelope`
 
 ### Changed
 - `TempoPointConverter` to `TempoPointToBeatLengthInSeconds`

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import bisect
 import typing
 import warnings
 
@@ -219,6 +220,12 @@ class Envelope(
     #                         private methods                                #
     # ###################################################################### #
 
+    def _make_event(self, duration, parameter, curve_shape):
+        event = self.initialise_default_event_class(self.default_event_class, duration)
+        self.apply_parameter_on_event(event, parameter)
+        self.apply_curve_shape_on_event(event, curve_shape)
+        return event
+
     def _point_sequence_to_event_list(
         self,
         point_or_invalid_type_sequence: typing.Sequence[
@@ -241,11 +248,7 @@ class Envelope(
             else:
                 absolute_time1 = absolute_time0
             duration = absolute_time1 - absolute_time0
-            event = self.initialise_default_event_class(
-                self.default_event_class, duration
-            )
-            self.apply_parameter_on_event(event, value_or_parameter)
-            self.apply_curve_shape_on_event(event, curve_shape)
+            event = self._make_event(duration, value_or_parameter, curve_shape)
             event_list.append(event)
         return event_list
 
@@ -315,7 +318,7 @@ class Envelope(
         try:
             use_only_first_event = absolute_time <= absolute_time_tuple[0]
         except IndexError:
-            raise core_utilities.EmptyEnvelopeError(self)
+            raise core_utilities.EmptyEnvelopeError(self, "value_at")
         use_only_last_event = absolute_time >= (
             # If the duration of the last event == 0 there is the danger
             # of floating point errors (the value in absolute_time_tuple could
@@ -352,9 +355,100 @@ class Envelope(
         )
 
     def parameter_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> core_constants.ParameterType:
         return self.value_to_parameter(self.value_at(absolute_time))
+
+    @core_utilities.add_copy_option
+    def sample_at(
+        self,
+        absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any],
+        append_duration: typing.Union[
+            core_parameters.abc.Duration, typing.Any
+        ] = core_parameters.DirectDuration(0),
+    ) -> Envelope:
+        """Discretize envelope at given time
+
+        :param absolute_time: Position in time where the envelope should
+            define a new event.
+        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        :param append_duration: In case we add a new control point after any
+            already defined point, the duration of this control point will be
+            equal to "append_duration". Default to core_parameters.DirectDuration(0)
+        """
+
+        def find_duration(
+            absolute_time: core_parameters.abc.Duration,
+            absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+        ):
+            """Find duration of new control point"""
+            next_event_start_index = bisect.bisect_right(
+                absolute_time_tuple, absolute_time
+            )
+            try:
+                next_event_start = absolute_time_tuple[next_event_start_index]
+            # In case we call "sample_at" at a position after any already
+            # specified point.
+            except IndexError:
+                duration_new_event = append_duration
+            else:
+                duration_new_event = next_event_start - absolute_time
+
+            return duration_new_event
+
+        def find_curve_shape(
+            absolute_time: core_parameters.abc.Duration,
+            absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+            envelope_duration: core_parameters.abc.Duration,
+        ):
+            """Find curve shape of new control point"""
+            old_event_index = (
+                core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+                    absolute_time, absolute_time_tuple, envelope_duration
+                )
+            )
+            if old_event_index is not None:
+                old_event = self[old_event_index]
+                curve_shape = self.event_to_curve_shape(old_event)
+                curve_shape_old_event = (
+                    (absolute_time - absolute_time_tuple[old_event_index])
+                    / old_event.duration
+                ).duration_in_floats * curve_shape
+                curve_shape_new_event = curve_shape - curve_shape_old_event
+                self.apply_curve_shape_on_event(old_event, curve_shape_old_event)
+            else:
+                curve_shape_new_event = 0
+
+            return curve_shape_new_event
+
+        if not self:
+            raise core_utilities.EmptyEnvelopeError(self, "sample_at")
+
+        absolute_time, append_duration = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (absolute_time, append_duration)
+        )
+
+        # We only add a new event in case there isn't any event yet at
+        # given point in time.
+        if absolute_time not in (absolute_time_tuple := self.absolute_time_tuple):
+            envelope_duration = absolute_time_tuple[-1] + self[-1].duration
+            event = self._make_event(
+                find_duration(absolute_time, absolute_time_tuple),
+                self.parameter_at(absolute_time),
+                find_curve_shape(absolute_time, absolute_time_tuple, envelope_duration),
+            )
+
+            try:
+                self.squash_in(absolute_time, event)
+            # This means we want to squash in at a position much
+            # later than any already defined event.
+            except core_utilities.InvalidStartValueError:
+                difference = absolute_time - envelope_duration
+                self[-1].duration += difference
+                self.append(event)
+
+        return self
 
     def integrate_interval(
         self, start: core_constants.DurationType, end: core_constants.DurationType

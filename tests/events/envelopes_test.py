@@ -96,6 +96,11 @@ class EnvelopeTest(unittest.TestCase):
     def test_value_at_with_duration_2(self):
         self.assertEqual(self.envelope.value_at(4), 0.75)
 
+    def test_value_at_empty_envelope(self):
+        self.assertRaises(
+            core_utilities.EmptyEnvelopeError, core_events.Envelope([]).value_at, 0
+        )
+
     def test_from_points_simple(self):
         envelope_from_init = core_events.Envelope(
             [self.EnvelopeEvent(1, 0, 10), self.EnvelopeEvent(0, 1)]
@@ -144,6 +149,65 @@ class EnvelopeTest(unittest.TestCase):
     def test_get_average_parameter(self):
         self.assertAlmostEqual(
             self.envelope.get_average_parameter(0, 5), 0.6327906827477305
+        )
+
+    def _test_sample_at(
+        self, sample_position: float, envelope_to_sample: core_events.Envelope
+    ):
+        sampled_envelope = envelope_to_sample.sample_at(sample_position, mutate=False)
+
+        before_sample_position = sample_position * 0.9
+        after_sample_position = sample_position * 1.1
+
+        # Before new sampled point it should be the same
+        self.assertEqual(
+            envelope_to_sample.value_at(before_sample_position),
+            sampled_envelope.value_at(before_sample_position),
+        )
+
+        # On new sampled point it should be the same
+        self.assertEqual(
+            envelope_to_sample.value_at(sample_position),
+            sampled_envelope.value_at(sample_position),
+        )
+
+        # After new sampled point it should be the same
+        self.assertEqual(
+            envelope_to_sample.value_at(after_sample_position),
+            sampled_envelope.value_at(after_sample_position),
+        )
+
+        return sampled_envelope
+
+    def test_sample_at_with_curve_shape_0(self):
+        sample_position = 0.5
+        envelope_to_sample = self.envelope
+        sampled_envelope = self._test_sample_at(sample_position, envelope_to_sample)
+
+        self.assertNotEqual(sampled_envelope[1], envelope_to_sample[1])
+        self.assertEqual(sampled_envelope[1].value, 0.5)
+        self.assertEqual(sampled_envelope[1].duration, 0.5)
+
+    def test_sample_at_with_curve_shape_1(self):
+        sample_position = 1.5
+        envelope_to_sample = self.envelope
+        self._test_sample_at(sample_position, envelope_to_sample)
+
+    def test_sample_at_after_any_already_defined_event(self):
+        envelope_to_sample = self.envelope
+        event_count_before = len(envelope_to_sample)
+        envelope_to_sample_duration = envelope_to_sample.duration
+        envelope_to_sample.sample_at(envelope_to_sample_duration + 1)
+        event_count_after = len(envelope_to_sample)
+        self.assertEqual(event_count_before, event_count_after - 1)
+        self.assertEqual(
+            envelope_to_sample.value_at(envelope_to_sample_duration),
+            envelope_to_sample.value_at(envelope_to_sample_duration + 1),
+        )
+
+    def test_sample_at_empty_envelope(self):
+        self.assertRaises(
+            core_utilities.EmptyEnvelopeError, core_events.Envelope([]).sample_at, 0
         )
 
 
