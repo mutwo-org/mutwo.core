@@ -1,4 +1,4 @@
-"""Apply tempo curve on any :class:`~mutwo.events.abc.Event` and convert :class:`~mutwo.parameters.tempos.TempoPoint` to beat-length-in-seconds.
+"""Apply tempo curve on any :class:`~mutwo.core_events.abc.Event` and convert :class:`~mutwo.core_parameters.TempoPoint` to beat-length-in-seconds.
 
 """
 
@@ -28,11 +28,11 @@ class UndefinedReferenceWarning(RuntimeWarning):
 
 
 class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
-    """Convert a :class:`~mutwo.parameters.tempos.TempoPoint` with BPM to beat-length-in-seconds.
+    """Convert a :class:`~mutwo.core_parameters.TempoPoint` with BPM to beat-length-in-seconds.
 
     A :class:`TempoPoint` is defined as an object that has a particular tempo in
     beats per seconds (BPM) and a reference value (1 for a quarter note, 4
-    for a whole note, etc.). Besides elaborate :class:`mutwo.parameters.tempos.TempoPoint`
+    for a whole note, etc.). Besides elaborate :class:`mutwo.core_parameters.TempoPoint`
     objects, any number can also be interpreted as a `TempoPoint`. In this case
     the number simply represents the BPM number and the reference will be set to 1.
     The returned beat-length-in-seconds always indicates the length for one quarter
@@ -40,8 +40,8 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
 
     **Example:**
 
-    >>> from mutwo.converters import symmetrical
-    >>> tempo_point_converter = symmetrical.tempos.TempoPointToBeatLengthInSeconds()
+    >>> from mutwo import core_converters
+    >>> tempo_point_converter = core_converters.TempoPointToBeatLengthInSeconds()
     """
 
     TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
@@ -75,13 +75,13 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         :param tempo_point_to_convert: A tempo point defines the active tempo
             from which the beat-length-in-seconds shall be calculated. The argument
             can either be any number (which will be interpreted as beats per
-            minute [BPM]) or a ``mutwo.parameters.tempos.TempoPoint`` object.
+            minute [BPM]) or a ``mutwo.core_parameters.TempoPoint`` object.
         :return: The duration of one beat in seconds within the passed tempo.
 
         **Example:**
 
-        >>> from mutwo.converters import symmetrical
-        >>> converter = symmetrical.tempos.TempoPointToBeatLengthInSeconds()
+        >>> from mutwo import core_converters
+        >>> converter = core_converters.TempoPointToBeatLengthInSeconds()
         >>> converter.convert(60)  # one beat in tempo 60 bpm takes 1 second
         1
         >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
@@ -214,7 +214,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         on the tempo curve.
 
         :param event_to_convert: The event to convert. Can be any object
-            that inherits from ``mutwo.events.abc.Event``. If the event that
+            that inherits from ``mutwo.core_events.abc.Event``. If the event that
             shall be converted is longer than the tempo curve of the
             ``TempoConverter``, then the last tempo of the curve will be hold.
         :return: A new ``Event`` object which duration property has been adapted
