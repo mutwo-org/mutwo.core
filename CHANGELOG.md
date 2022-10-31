@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `EmptyEnvelopeError` in case user tries to call `value_at` on an envelope without any events.
+
+
 ## [0.62.0] - 2022-10-06
 
 ### Removed

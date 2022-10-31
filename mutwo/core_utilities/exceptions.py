@@ -12,6 +12,7 @@ __all__ = (
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
     "NoSolutionFoundError",
+    "EmptyEnvelopeError",
 )
 
 
@@ -94,3 +95,8 @@ class SplitUnavailableChildError(Exception):
 class NoSolutionFoundError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class EmptyEnvelopeError(Exception):
+    def __init__(self, envelope):
+        super().__init__(f"Can't call 'value_at' on empty envelope '{envelope}'!")

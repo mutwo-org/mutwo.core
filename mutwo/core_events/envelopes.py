@@ -312,7 +312,10 @@ class Envelope(
         )
         absolute_time_tuple = self.absolute_time_tuple
 
-        use_only_first_event = absolute_time <= absolute_time_tuple[0]
+        try:
+            use_only_first_event = absolute_time <= absolute_time_tuple[0]
+        except IndexError:
+            raise core_utilities.EmptyEnvelopeError(self)
         use_only_last_event = absolute_time >= (
             # If the duration of the last event == 0 there is the danger
             # of floating point errors (the value in absolute_time_tuple could
