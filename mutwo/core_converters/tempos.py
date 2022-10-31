@@ -12,7 +12,7 @@ from mutwo import core_parameters
 
 
 __all__ = (
-    "TempoPointConverter",
+    "TempoPointToBeatLengthInSeconds",
     "TempoConverter",
     "EventToMetrizedEvent",
 )
@@ -27,7 +27,7 @@ class UndefinedReferenceWarning(RuntimeWarning):
         )
 
 
-class TempoPointConverter(core_converters.abc.Converter):
+class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
     """Convert a :class:`~mutwo.parameters.tempos.TempoPoint` with BPM to beat-length-in-seconds.
 
     A :class:`TempoPoint` is defined as an object that has a particular tempo in
@@ -41,7 +41,7 @@ class TempoPointConverter(core_converters.abc.Converter):
     **Example:**
 
     >>> from mutwo.converters import symmetrical
-    >>> tempo_point_converter = symmetrical.tempos.TempoPointConverter()
+    >>> tempo_point_converter = symmetrical.tempos.TempoPointToBeatLengthInSeconds()
     """
 
     TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
@@ -81,7 +81,7 @@ class TempoPointConverter(core_converters.abc.Converter):
         **Example:**
 
         >>> from mutwo.converters import symmetrical
-        >>> converter = symmetrical.tempos.TempoPointConverter()
+        >>> converter = symmetrical.tempos.TempoPointToBeatLengthInSeconds()
         >>> converter.convert(60)  # one beat in tempo 60 bpm takes 1 second
         1
         >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
@@ -95,7 +95,7 @@ class TempoPointConverter(core_converters.abc.Converter):
             tempo_point_to_convert
         )
         return (
-            TempoPointConverter._beats_per_minute_to_seconds_per_beat(beats_per_minute)
+            TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(beats_per_minute)
             / reference
         )
 
@@ -123,7 +123,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
     """
 
-    _tempo_point_to_beat_length_in_seconds = TempoPointConverter().convert
+    _tempo_point_to_beat_length_in_seconds = TempoPointToBeatLengthInSeconds().convert
 
     def __init__(
         self,

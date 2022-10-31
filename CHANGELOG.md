@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `EmptyEnvelopeError` in case user tries to call `value_at` on an envelope without any events.
 
+### Changed
+- `TempoPointConverter` to `TempoPointToBeatLengthInSeconds`
+
 
 ## [0.62.0] - 2022-10-06
 
