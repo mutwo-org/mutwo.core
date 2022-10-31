@@ -138,6 +138,27 @@ class TempoConverterTest(unittest.TestCase):
         converted_simple_event = converter.convert(simple_event)
         self.assertEqual(converted_simple_event.tempo_envelope.duration, 6)
 
+    def test_convert_tempo_envelope_with_too_short_global_tempo_envelope(self):
+        # Tempo envelope only goes until duration "1", but
+        # sequential event has duration == 2. This will throw
+        # an error, because in line 196 the tempo envelope is cut out
+        # to fit to the specific event and to adjust the events tempo
+        # envelope. But then, if the envelope is too short, the cut-out
+        # envelope won't contain any items and therefore it won't be
+        # possible to call "value_at" on this envelope.
+        # This has to be fixed, by adjusting an envelopes "cut_out"
+        # method. The envelope first has to find the current value at
+        # the given cut points, than add events which represent those
+        # values at the cut points and then finally add all points in
+        # between those cut points.
+        tempo_envelope = core_events.Envelope([[0, 30], [0.5, 30]])
+        sequential_event = core_events.SequentialEvent(
+            [core_events.SimpleEvent(1), core_events.SimpleEvent(1)]
+        )
+        converter = core_converters.TempoConverter(tempo_envelope)
+        converted_sequential_event = converter.convert(sequential_event)
+        self.assertEqual(converted_sequential_event[1].tempo_envelope.duration, 1)
+
 
 class EventToMetrizedEventTest(unittest.TestCase):
     def test_convert_simple_event(self):
