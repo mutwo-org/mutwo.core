@@ -325,6 +325,12 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         result_for_unavailable_event = self.sequence.get_event_at(100)
         self.assertEqual(result_for_unavailable_event, None)
 
+    def test_get_event_at_for_unavailable_event_at_corner(self):
+        self.assertEqual(self.sequence.get_event_at(6), None)
+
+    def test_get_event_at_for_unavailable_event_before(self):
+        self.assertEqual(self.sequence.get_event_at(-1), None)
+
     def test_cut_out(self):
         result0 = core_events.SequentialEvent(
             [
@@ -625,7 +631,9 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(3))
 
     def test_nested_event_duration(self):
-        self.assertEqual(self.nested_sequence.duration, core_parameters.DirectDuration(6))
+        self.assertEqual(
+            self.nested_sequence.duration, core_parameters.DirectDuration(6)
+        )
 
     def test_zero_duration(self):
         self.assertEqual(
