@@ -210,6 +210,20 @@ class EnvelopeTest(unittest.TestCase):
             core_utilities.EmptyEnvelopeError, core_events.Envelope([]).sample_at, 0
         )
 
+    def test_cut_out(self):
+        # Envelope needs extra test for customized cut out method.
+        cut_out_envelope = self.envelope.cut_out(0.5, 1.5, mutate=False)
+        self.assertEqual(cut_out_envelope.value_at(0.25), self.envelope.value_at(0.75))
+        self.assertEqual(cut_out_envelope.value_at(0.5), self.envelope.value_at(1))
+        self.assertEqual(cut_out_envelope.value_at(0.75), self.envelope.value_at(1.25))
+        self.assertEqual(cut_out_envelope.value_at(1), self.envelope.value_at(1.5))
+
+    def test_split_at(self):
+        split_envelope_left, split_envelope_right = self.envelope.split_at(1.5)
+        self.assertEqual(
+            split_envelope_left.value_at(1.5), split_envelope_right.value_at(0)
+        )
+
 
 class RelativeEnvelopeTest(unittest.TestCase):
     def setUp(cls):

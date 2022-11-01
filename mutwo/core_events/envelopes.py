@@ -487,6 +487,37 @@ class Envelope(
     ) -> core_constants.ParameterType:
         return self.value_to_parameter(self.get_average_value(start, end))
 
+    @core_utilities.add_copy_option
+    def cut_out(
+        self,
+        start: typing.Union[core_parameters.abc.Duration, typing.Any],
+        end: typing.Union[core_parameters.abc.Duration, typing.Any],
+    ) -> Envelope[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
+
+        self.sample_at(start, append_duration=end - start)
+        self.sample_at(end)
+
+        last_point = self.get_event_at(end)
+
+        # In case last_point.duration == 0 "get_event_at" won't return
+        # any object. This only happens in case
+        #
+        #   end > self.duration
+        #
+        # So the new point will be appended.
+        if last_point is None:
+            last_point = self[-1]
+        assert last_point
+
+        cut_out_envelope = super().cut_out(start, end)
+        cut_out_envelope.append(last_point.set('duration', 0))
+
+        return cut_out_envelope
+
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):
     __parent_doc_string = Envelope.__doc__.split("\n")[2:]  # type: ignore

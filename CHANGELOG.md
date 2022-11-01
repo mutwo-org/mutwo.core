@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `TempoPointConverter` to `TempoPointToBeatLengthInSeconds`
 
+### Fixed
+- `cut_out` method of `Envelope`
+- `split_at` method of `Envelope`
+
 
 ## [0.62.0] - 2022-10-06
 
