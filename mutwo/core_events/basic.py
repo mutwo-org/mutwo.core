@@ -365,6 +365,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         1
         >>> sequential_event.get_event_index_at(100)
         None
+
+        **Warning:**
+
+        This method ignores events with duration == 0.
         """
 
         absolute_time_tuple = self.absolute_time_tuple
@@ -393,6 +397,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         SimpleEvent(duration = 3)
         >>> sequential_event.get_event_at(100)
         None
+
+        **Warning:**
+
+        This method ignores events with duration == 0.
         """
 
         event_index = self.get_event_index_at(absolute_time)
