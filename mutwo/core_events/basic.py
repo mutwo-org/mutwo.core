@@ -508,9 +508,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_start_in_range(start)
 
-        cut_off_end = start + event_to_squash_in.duration
-
-        self.cut_off(start, cut_off_end)
+        # Only run cut_off if necessary -> Improve performance
+        if (event_to_squash_in_duration := event_to_squash_in.duration) > 0:
+            cut_off_end = start + event_to_squash_in_duration
+            self.cut_off(start, cut_off_end)
 
         # We already know that the given start is within the
         # range of the event. This means that if the start
