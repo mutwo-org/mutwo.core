@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `cut_out` method of `Envelope`
 - `split_at` method of `Envelope`
 - `TempoEnvelope.convert` corner case issue
+- `squash_in` will always insert before any other event on the same absolute time
 
 
 ## [0.62.0] - 2022-10-06

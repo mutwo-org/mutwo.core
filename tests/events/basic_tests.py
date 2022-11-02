@@ -434,12 +434,26 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         )
 
     def test_squash_in_event_with_0_duration(self):
+        squashed_in_sequence = self.sequence.squash_in(
+            1, core_events.SimpleEvent(0), mutate=False
+        )
         self.assertEqual(
-            self.sequence.squash_in(1, core_events.SimpleEvent(0), mutate=False),
+            squashed_in_sequence,
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(duration) for duration in (1, 0, 2, 3)]
             ),
         )
+
+        # Now ensure that when we squash_in, we will always be
+        # before the old event (just like index
+        # based squash_in: insert).
+
+        # XXX: This still raises an error because of the problematic
+        # behaviour of "get_event_index_at" -> that it doesn't
+        # return events with duration = 0.
+
+        squashed_in_sequence.squash_in(1, core_events.SimpleEvent(0).set("test", 100))
+        self.assertEqual(squashed_in_sequence[1].get_parameter('test'), 100)
 
     def test_tie_by(self):
         # Ensure empty event can be tied without error

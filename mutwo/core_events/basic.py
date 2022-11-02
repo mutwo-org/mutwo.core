@@ -524,18 +524,31 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         else:
             absolute_time_tuple = self.absolute_time_tuple
-            active_event_index = self.get_event_index_at(start)
-            split_position = start - absolute_time_tuple[active_event_index]
-            if (
-                split_position > 0
-                and split_position < self[active_event_index].duration
-            ):
-                split_active_event = self[active_event_index].split_at(split_position)
-                self[active_event_index] = split_active_event[1]
-                self.insert(active_event_index, split_active_event[0])
-                active_event_index += 1
+            try:
+                insert_index = absolute_time_tuple.index(start)
+            # There is an event on the given point which need to be
+            # split.
+            except ValueError:
+                active_event_index = (
+                    SequentialEvent._get_index_at_from_absolute_time_tuple(
+                        start, absolute_time_tuple, self.duration
+                    )
+                )
+                split_position = start - absolute_time_tuple[active_event_index]
+                if (
+                    split_position > 0
+                    and split_position < self[active_event_index].duration
+                ):
+                    split_active_event = self[active_event_index].split_at(
+                        split_position
+                    )
+                    self[active_event_index] = split_active_event[1]
+                    self.insert(active_event_index, split_active_event[0])
+                    active_event_index += 1
 
-            self.insert(active_event_index, event_to_squash_in)
+                insert_index = active_event_index
+
+            self.insert(insert_index, event_to_squash_in)
 
     @core_utilities.add_copy_option
     def split_child_at(
