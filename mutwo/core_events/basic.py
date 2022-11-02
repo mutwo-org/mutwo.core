@@ -470,10 +470,16 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             # Collect core_events which are only active within the
             # cut_off - range
             event_to_delete_list = []
-            for event_index, event_start, event in zip(
-                range(len(self)), self.absolute_time_tuple, self
+            absolute_time_tuple = self.absolute_time_tuple
+            for event_index, event_start, event_end, event in zip(
+                range(len(self)),
+                absolute_time_tuple,
+                absolute_time_tuple[1:] + (None,),
+                self,
             ):
-                event_end = event_start + event.duration
+                if event_end is None:
+                    event_end = event_start + event.duration
+
                 if event_start >= start and event_end <= end:
                     event_to_delete_list.append(event_index)
 
