@@ -433,6 +433,14 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             ),
         )
 
+    def test_squash_in_event_with_0_duration(self):
+        self.assertEqual(
+            self.sequence.squash_in(1, core_events.SimpleEvent(0), mutate=False),
+            core_events.SequentialEvent(
+                [core_events.SimpleEvent(duration) for duration in (1, 0, 2, 3)]
+            ),
+        )
+
     def test_tie_by(self):
         # Ensure empty event can be tied without error
         self.assertEqual(
