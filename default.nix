@@ -23,8 +23,8 @@ in
     src = fetchFromGitHub {
       owner = "mutwo-org";
       repo = name;
-      rev = "9accb5f03d0155a4872cb429111b7d6c5a47ce28";
-      sha256 = "sha256-cr30PxPtePZCwDYsfxM7l+M5fDNrxqh8OybLiHz+Ip4=";
+      rev = "a1fc891feb02812c413a7fb1bbcaaa8fcb6b6011";
+      sha256 = "sha256-Ucaiw0sZJjungzvM3Q61npT6WSGroudhiCfzoWbse5g=";
     };
     propagatedBuildInputs = [ 
       python39Packages.numpy
