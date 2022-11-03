@@ -224,6 +224,14 @@ class EnvelopeTest(unittest.TestCase):
             split_envelope_left.value_at(1.5), split_envelope_right.value_at(0)
         )
 
+    def test_cut_off(self):
+        cut_off_envelope = self.envelope.cut_off(0.5, 1.5, mutate=False)
+        self.assertEqual(self.envelope.value_at(0.4), cut_off_envelope.value_at(0.4))
+        # XXX: There is a very small floating point error
+        self.assertAlmostEqual(
+            self.envelope.value_at(1.6), cut_off_envelope.value_at(0.6)
+        )
+
 
 class RelativeEnvelopeTest(unittest.TestCase):
     def setUp(cls):

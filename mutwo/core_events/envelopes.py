@@ -514,9 +514,38 @@ class Envelope(
         assert last_point
 
         cut_out_envelope = super().cut_out(start, end)
-        cut_out_envelope.append(last_point.set('duration', 0))
+        cut_out_envelope.append(last_point.set("duration", 0))
 
         return cut_out_envelope
+
+    @core_utilities.add_copy_option
+    def cut_off(
+        self,
+        start: typing.Union[core_parameters.abc.Duration, typing.Any],
+        end: typing.Union[core_parameters.abc.Duration, typing.Any],
+    ) -> Envelope[T]:
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
+            for unknown_object in (start, end)
+        )
+
+        if (cut_off_duration := end - start) > 0:
+            # XXX: It is sufficient to find the first control point
+            # by simply using "parameter_at" instead of "sample_at":
+            # We don't need an accurate curve_shape or duration,
+            # because this point only exists in an infinitely short
+            # moment in time anyway (or better: its main function is
+            # to ensure that interpolation from the previous point
+            # to this point works as expected).
+            parameter_0 = self.parameter_at(start)
+            event_0 = self._make_event(0, parameter_0, 0)
+
+            self.sample_at(end)
+
+            self._cut_off(start, end, cut_off_duration)
+            self.squash_in(start, event_0)
+
+        return self
 
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):

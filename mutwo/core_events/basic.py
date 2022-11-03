@@ -301,6 +301,60 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             return None
 
     # ###################################################################### #
+    #                        private  methods                                #
+    # ###################################################################### #
+
+    # XXX: We need to have a private "_cut_off" method to simplify
+    # overriding the public "cut_off" method in children classes
+    # of SequentialEvent. This is necessary, because the implementation
+    # of "squash_in" makes use of "_cut_off". In this way it is possible
+    # to adjust the meaning of the public "cut_off" method, without
+    # having to change the meaning of "squash_in" (this happens for instance
+    # in the mutwo.core_events.Envelope class).
+    def _cut_off(
+        self,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
+        cut_off_duration: typing.Optional[core_parameters.abc.Duration] = None,
+    ) -> SequentialEvent[T]:
+        if cut_off_duration is None:
+            cut_off_duration = end - start
+
+        # Collect core_events which are only active within the
+        # cut_off - range
+        event_to_delete_list = []
+        absolute_time_tuple = self.absolute_time_tuple
+        for event_index, event_start, event_end, event in zip(
+            range(len(self)),
+            absolute_time_tuple,
+            absolute_time_tuple[1:] + (None,),
+            self,
+        ):
+            if event_end is None:
+                event_end = event_start + event.duration
+
+            if event_start >= start and event_end <= end:
+                event_to_delete_list.append(event_index)
+
+            # Shorten event which are partly active within the
+            # cut_off - range
+            elif event_start <= start and event_end >= start:
+                difference_to_event_start = start - event_start
+                event.cut_off(
+                    difference_to_event_start,
+                    difference_to_event_start + cut_off_duration,
+                )
+
+            elif event_start < end and event_end > end:
+                difference_to_event_start = event_start - start
+                event.cut_off(0, cut_off_duration - difference_to_event_start)
+
+        for index in reversed(event_to_delete_list):
+            del self[index]
+
+        return self
+
+    # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
@@ -466,38 +520,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         # Avoid unnecessary iterations
         if cut_off_duration > 0:
-
-            # Collect core_events which are only active within the
-            # cut_off - range
-            event_to_delete_list = []
-            absolute_time_tuple = self.absolute_time_tuple
-            for event_index, event_start, event_end, event in zip(
-                range(len(self)),
-                absolute_time_tuple,
-                absolute_time_tuple[1:] + (None,),
-                self,
-            ):
-                if event_end is None:
-                    event_end = event_start + event.duration
-
-                if event_start >= start and event_end <= end:
-                    event_to_delete_list.append(event_index)
-
-                # Shorten event which are partly active within the
-                # cut_off - range
-                elif event_start <= start and event_end >= start:
-                    difference_to_event_start = start - event_start
-                    event.cut_off(
-                        difference_to_event_start,
-                        difference_to_event_start + cut_off_duration,
-                    )
-
-                elif event_start < end and event_end > end:
-                    difference_to_event_start = event_start - start
-                    event.cut_off(0, cut_off_duration - difference_to_event_start)
-
-            for index in reversed(event_to_delete_list):
-                del self[index]
+            return self._cut_off(start, end, cut_off_duration)
 
     @core_utilities.add_copy_option
     def squash_in(  # type: ignore
@@ -511,7 +534,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # Only run cut_off if necessary -> Improve performance
         if (event_to_squash_in_duration := event_to_squash_in.duration) > 0:
             cut_off_end = start + event_to_squash_in_duration
-            self.cut_off(start, cut_off_end)
+            self._cut_off(start, cut_off_end, event_to_squash_in_duration)
 
         # We already know that the given start is within the
         # range of the event. This means that if the start

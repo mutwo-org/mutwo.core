@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `cut_out` method of `Envelope`
 - `split_at` method of `Envelope`
 - `TempoEnvelope.convert` corner case issue
-- `squash_in` will always insert before any other event on the same absolute time
+- `squash_in` always inserts before any other event on the same absolute time. This wasn't true when squashing in at positions which contains events with duration = 0.
+- `cut_off` method of `Envelope`
 
 
 ## [0.62.0] - 2022-10-06
