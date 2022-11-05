@@ -1,11 +1,9 @@
 """Configurations which are shared for all event classes in :mod:`mutwo.core_events`."""
 
+import fractions
 import typing
 
-try:
-    import quicktions as fractions
-except ImportError:
-    import fractions
+import quicktions
 
 # XXX: We can't set core_converters.UnknownObjectToObject
 # directly because it would raise a circular import error.
@@ -14,7 +12,12 @@ def __unknown_object_to_duration(unknown_object):
     from mutwo import core_parameters
 
     return core_converters.UnknownObjectToObject[core_parameters.abc.Duration](
-        (((float, int, fractions.Fraction), core_parameters.DirectDuration),)
+        (
+            (
+                (float, int, fractions.Fraction, quicktions.Fraction),
+                core_parameters.DirectDuration,
+            ),
+        )
     )(unknown_object)
 
 

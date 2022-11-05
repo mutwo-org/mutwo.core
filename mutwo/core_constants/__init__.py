@@ -4,7 +4,9 @@
 import fractions
 import typing
 
-Real = typing.Union[float, fractions.Fraction, int]
+import quicktions
+
+Real = typing.Union[float, fractions.Fraction, quicktions.Fraction, int]
 """The main reason for this constant is a mypy issue with Pythons buildin
 [numbers module](https://docs.python.org/3/library/numbers.html) which
 is documented [here](https://github.com/python/mypy/issues/3186). Mypy
