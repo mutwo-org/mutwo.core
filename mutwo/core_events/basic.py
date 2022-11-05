@@ -288,13 +288,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @staticmethod
     def _get_index_at_from_absolute_time_tuple(
-        absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any],
-        absolute_time_tuple: tuple[core_constants.DurationType, ...],
-        duration: core_constants.DurationType,
+        absolute_time: float,
+        absolute_time_tuple: float,
+        duration: float,
     ) -> typing.Optional[int]:
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
         if absolute_time < duration and absolute_time >= 0:
             return bisect.bisect_right(absolute_time_tuple, absolute_time) - 1
         else:
@@ -462,9 +459,15 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         This method ignores events with duration == 0.
         """
 
-        absolute_time_tuple = self.absolute_time_tuple
+        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        ).duration_in_floats
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
         return SequentialEvent._get_index_at_from_absolute_time_tuple(
-            absolute_time, absolute_time_tuple, self.duration
+            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
         )
 
     def get_event_at(
@@ -566,7 +569,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         event_to_squash_in: core_events.abc.Event,
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
-        self._assert_start_in_range(start)
+        start_in_floats = start.duration_in_floats
+
+        self._assert_start_in_range(start_in_floats)
 
         # Only run cut_off if necessary -> Improve performance
         if (event_to_squash_in_duration := event_to_squash_in.duration) > 0:
@@ -583,18 +588,25 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             self.append(event_to_squash_in)
 
         else:
-            absolute_time_tuple = self.absolute_time_tuple
+            (
+                absolute_time_in_floats_tuple,
+                duration_in_floats,
+            ) = self._absolute_time_in_floats_tuple_and_duration
             try:
-                insert_index = absolute_time_tuple.index(start)
+                insert_index = absolute_time_in_floats_tuple.index(start)
             # There is an event on the given point which need to be
             # split.
             except ValueError:
                 active_event_index = (
                     SequentialEvent._get_index_at_from_absolute_time_tuple(
-                        start, absolute_time_tuple, self.duration
+                        start_in_floats,
+                        absolute_time_in_floats_tuple,
+                        duration_in_floats,
                     )
                 )
-                split_position = start - absolute_time_tuple[active_event_index]
+                split_position = (
+                    start_in_floats - absolute_time_in_floats_tuple[active_event_index]
+                )
                 if (
                     split_position > 0
                     and split_position < self[active_event_index].duration
