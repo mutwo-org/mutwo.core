@@ -41,8 +41,7 @@ in
       sha256 = "sha256-CIXWB0lMjGsZRBD2UVss3OE2ql/5Jv9tUxEsCB9DYHc=";
     };
     checkInputs = [
-      python310Packages.nose
-      python310Packages.nose-timer
+      python310Packages.pytest
     ];
     propagatedBuildInputs = [ 
       python310Packages.numpy
@@ -52,7 +51,7 @@ in
     ];
     checkPhase = ''
       runHook preCheck
-      nosetests --with-timer
+      pytest
       runHook postCheck
     '';
     doCheck = true;
