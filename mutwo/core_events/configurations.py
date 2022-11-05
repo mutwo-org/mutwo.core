@@ -61,4 +61,8 @@ DEFAULT_PARAMETER_ATTRIBUTE_NAME = "value"
 DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME = "curve_shape"
 """Default attribute name when fetching the curve shape of an event"""
 
+DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
+"""Default property parameter name for events in
+:class:`mutwo.core_events.TempoEnvelope`."""
+
 del typing

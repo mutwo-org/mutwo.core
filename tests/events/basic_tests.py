@@ -82,7 +82,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
         simple_event.tempo_envelope[0].value = 100
         self.assertEqual(simple_event.tempo_envelope[0].value, 100)
         simple_event.reset_tempo_envelope()
-        self.assertEqual(simple_event.tempo_envelope[0].value, 60)
+        self.assertEqual(simple_event.tempo_envelope.value_tuple[0], 60)
 
     def test_get_assigned_parameter(self):
         duration = core_parameters.DirectDuration(10)

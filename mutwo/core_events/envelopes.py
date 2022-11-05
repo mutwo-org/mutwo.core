@@ -616,7 +616,101 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         return resolve_envelope_class(point_list)
 
 
+TempoPoint = typing.Union[core_parameters.abc.TempoPoint, float]
+
+
 class TempoEnvelope(Envelope):
+    """Define dynamic or static tempo trajectories.
+
+    You can either define a new `TempoEnvelope` with instances
+    of classes which inherit from :class:`mutwo.core_parameters.abc.TempoPoint`
+    (for instance :class:`mutwo.core_parameters.DirectTempoPoint`) or with
+    `float` or `int` objects which represent beats per minute.
+
+    Please see the :class:`mutwo.core_events.Envelope` for full documentation
+    for initialization attributes.
+
+    The default parameters of the `TempoEnvelope` class expects
+    :class:`mutwo.core_events.SimpleEvent` to which a tempo point
+    was assigned by the name "tempo_point". This is specified in the global
+    `mutwo.core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME`
+    and can be adjusted.
+
+    **Example:**
+
+    >>> from mutwo import core_events
+    >>> from mutwo import core_parameters
+    >>> # (1) define with floats
+    >>> #     So we have an envelope which moves from tempo 60 to 30
+    >>> #     and back to 60.
+    >>> tempo_envelope_with_float = core_events.TempoEnvelope(
+    >>>     [[0, 60], [1, 30], [2, 60]]
+    >>> )
+    >>> # (2) define with tempo points
+    >>> tempo_envelope_with_tempo_points = core_events.TempoEnvelope(
+    >>>     [
+    >>>         [0, core_parameters.DirectTempoPoint(60)],
+    >>>         [1, core_parameters.DirectTempoPoint(30)],
+    >>>         [2, core_parameters.DirectTempoPoint(30, reference=2)],
+    >>>     ]
+    >>> )
+    """
+
+    def __init__(
+        self,
+        *args,
+        event_to_parameter: typing.Optional[
+            typing.Callable[[core_events.abc.Event], core_constants.ParameterType]
+        ] = None,
+        value_to_parameter: typing.Optional[
+            typing.Callable[[core_events.Envelope.Value], core_constants.ParameterType]
+        ] = None,
+        parameter_to_value: typing.Optional[
+            typing.Callable[[core_constants.ParameterType], core_events.Envelope.Value]
+        ] = None,
+        apply_parameter_on_event: typing.Optional[
+            typing.Callable[[core_events.abc.Event, core_constants.ParameterType], None]
+        ] = None,
+        **kwargs,
+    ):
+        def default_event_to_parameter(event: core_events.abc.Event) -> TempoPoint:
+            return getattr(
+                event,
+                core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME,
+            )
+
+        def default_value_to_parameter(value: float) -> TempoPoint:
+            return core_parameters.DirectTempoPoint(value)
+
+        def default_parameter_to_value(parameter: TempoPoint) -> float:
+            # XXX: Here we specify, that we allow either core_parameters.abc.TempoPoint
+            # or float/number objects.
+            # So in case we have a core_parameters.abc.TempoPoint 'getattr' is
+            # successful, if not it will return 'parameter', because it
+            # will assume that we have a number based tempo point.
+            return float(
+                getattr(parameter, "absolute_tempo_in_beats_per_minute", parameter)
+            )
+
+        def default_apply_parameter_on_event(
+            event: core_events.abc.Event, parameter: TempoPoint
+        ):
+            setattr(
+                event,
+                core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME,
+                parameter,
+            )
+
+        super().__init__(
+            *args,
+            event_to_parameter=event_to_parameter or default_event_to_parameter,
+            value_to_parameter=value_to_parameter or default_value_to_parameter,
+            parameter_to_value=parameter_to_value or default_parameter_to_value,
+            apply_parameter_on_event=apply_parameter_on_event
+            or default_apply_parameter_on_event,
+            **kwargs,
+        )
+
     def __eq__(self, other: typing.Any):
         # XXX: TempoEnvelope can't use the default '__eq__' method inherited
         # from list, because this would create endless recursion
