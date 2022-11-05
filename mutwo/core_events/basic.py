@@ -614,9 +614,16 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def split_child_at(
         self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> SequentialEvent[T]:
-        absolute_time_tuple = self.absolute_time_tuple
+        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        ).duration_in_floats
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
+
         event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
-            absolute_time, absolute_time_tuple, self.duration
+            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
         )
 
         # If there is no event at the requested time, raise error
@@ -625,13 +632,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         # Only try to split child event at the requested time if there isn't
         # a segregation already anyway
-        elif absolute_time != absolute_time_tuple[event_index]:
+        elif absolute_time_in_floats != absolute_time_in_floats_tuple[event_index]:
             try:
-                end = absolute_time_tuple[event_index + 1]
+                end = absolute_time_in_floats_tuple[event_index + 1]
             except IndexError:
-                end = self.duration
+                end = duration_in_floats
 
-            difference = end - absolute_time
+            difference = end - absolute_time_in_floats
             first_event, second_event = self[event_index].split_at(difference)
             self[event_index] = first_event
             self.insert(event_index, second_event)
