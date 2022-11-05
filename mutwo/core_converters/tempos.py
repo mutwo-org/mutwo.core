@@ -95,7 +95,9 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
             tempo_point_to_convert
         )
         return (
-            TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(beats_per_minute)
+            TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(
+                beats_per_minute
+            )
             / reference
         )
 
