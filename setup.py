@@ -1,7 +1,5 @@
 import setuptools  # type: ignore
 
-# from Cython.Build import cythonize
-
 
 version = {}
 with open("mutwo/core_version/__init__.py") as fp:
@@ -38,5 +36,15 @@ setuptools.setup(
         "quicktions>=1.10, <2.0",
     ],
     extras_require=extras_require,
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
+        "Intended Audience :: Education",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: Unix",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Artistic Software",
+    ],
     python_requires=">=3.9, <4",
 )
