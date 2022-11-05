@@ -355,6 +355,44 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         return self
 
     # ###################################################################### #
+    #                        private   properties                            #
+    # ###################################################################### #
+
+    @property
+    def _absolute_time_tuple_and_duration(
+        self,
+    ) -> [tuple[core_parameters.abc.Duration, ...], core_parameters.abc.Duration]:
+        """Return start time for each event and the end time of the last event.
+
+        This property helps to improve performance of various functions
+        which uses duration and absolute_time_tuple attribute.
+        """
+
+        duration_iterator = (event.duration for event in self)
+        absolute_time_tuple = tuple(
+            core_utilities.accumulate_from_n(
+                duration_iterator, core_parameters.DirectDuration(0)
+            )
+        )
+        return absolute_time_tuple[:-1], absolute_time_tuple[-1]
+
+    @property
+    def _absolute_time_in_floats_tuple_and_duration(
+        self,
+    ) -> tuple[tuple[float, ...], float]:
+        """Return start time for each event and the end time of the last event.
+
+        This property helps to improve performance of various functions
+        which uses duration and absolute_time_tuple attribute.
+        """
+
+        duration_iterator = (event.duration.duration_in_floats for event in self)
+        absolute_time_tuple = tuple(
+            core_utilities.accumulate_from_n(duration_iterator, 0)
+        )
+        return absolute_time_tuple[:-1], absolute_time_tuple[-1]
+
+    # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
@@ -367,15 +405,14 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             return core_parameters.DirectDuration(0)
 
     @property
-    def absolute_time_tuple(self) -> tuple[core_constants.Real, ...]:
-        """Return absolute point in time for each event."""
+    def absolute_time_tuple(self) -> tuple[core_parameters.abc.Duration, ...]:
+        """Return start time as :class:`core_parameters.abc.Duration` for each event."""
+        return self._absolute_time_tuple_and_duration[0]
 
-        duration_iterator = (event.duration for event in self)
-        return tuple(
-            core_utilities.accumulate_from_n(
-                duration_iterator, core_parameters.DirectDuration(0)
-            )
-        )[:-1]
+    @property
+    def absolute_time_in_floats_tuple(self) -> tuple[float, ...]:
+        """Return start time as `float` for each event."""
+        return self._absolute_time_in_floats_tuple_and_duration[0]
 
     @property
     def start_and_end_time_per_event(

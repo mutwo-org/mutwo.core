@@ -310,16 +310,23 @@ class Envelope(
     def value_at(
         self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
     ) -> Value:
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
-        )
-        absolute_time_tuple = self.absolute_time_tuple
+        ).duration_in_floats
+
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
 
         try:
-            use_only_first_event = absolute_time <= absolute_time_tuple[0]
+            use_only_first_event = (
+                absolute_time_in_floats <= absolute_time_in_floats_tuple[0]
+            )
         except IndexError:
             raise core_utilities.EmptyEnvelopeError(self, "value_at")
-        use_only_last_event = absolute_time >= (
+
+        use_only_last_event = absolute_time_in_floats >= (
             # If the duration of the last event == 0 there is the danger
             # of floating point errors (the value in absolute_time_tuple could
             # be slightly higher than the duration of the Envelope. If this
@@ -327,16 +334,16 @@ class Envelope(
             # "_get_index_at_from_absolute_time_tuple" will return
             # "None"). With explicitly testing if the last duration
             # equals 0 we can avoid this danger.
-            absolute_time_tuple[-1]
+            absolute_time_in_floats_tuple[-1]
             if self[-1].duration > 0
-            else self.duration
+            else duration_in_floats
         )
         if use_only_first_event or use_only_last_event:
             index = 0 if use_only_first_event else -1
             return self._event_to_value(self[index])
 
         event_0_index = self._get_index_at_from_absolute_time_tuple(
-            absolute_time, absolute_time_tuple, self.duration
+            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
         )
         assert event_0_index is not None
 
@@ -346,9 +353,9 @@ class Envelope(
         curve_shape = self.event_to_curve_shape(self[event_0_index])
 
         return core_utilities.scale(
-            absolute_time.duration_in_floats,
-            absolute_time_tuple[event_0_index].duration_in_floats,
-            absolute_time_tuple[event_0_index + 1].duration_in_floats,
+            absolute_time_in_floats,
+            absolute_time_in_floats_tuple[event_0_index],
+            absolute_time_in_floats_tuple[event_0_index + 1],
             value0,
             value1,
             curve_shape,
