@@ -7,14 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [1.0.0] - 2022-11-05
+
+This release improves the performance from various `SequentialEvent` and `Envelope` methods.
+
 ### Added
 - `SequentialEvent.absolute_time_as_floats_tuple`
 - `core_parameters.abc.TempoPoint`
+- `core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME`
 
 ### Changed
 - `Event.filter` to `Event.remove_by`
 - `core_parameters.TempoPoint` to `core_parameters.DirectTempoPoint`
 - `TempoRangeInBeatsPerMinute` from `tuple[float, float]` to `ranges.Range`
+- allows `TempoPoint` and `float` objects in `TempoEnvelope`
 
 
 ## [0.63.0] - 2022-11-03
