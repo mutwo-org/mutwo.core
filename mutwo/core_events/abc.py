@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 import copy
+import functools
 import typing
 
 from mutwo import core_constants
@@ -58,6 +59,13 @@ class Event(abc.ABC):
         """
         if not condition(start, end):
             raise core_utilities.InvalidStartAndEndValueError(start, end)
+
+    @functools.cached_property
+    def _event_to_metrized_event(self):
+        # XXX: import in method to avoid circular import error
+        return __import__(
+            "mutwo.core_converters"
+        ).core_converters.EventToMetrizedEvent()
 
     # ###################################################################### #
     #                           public properties                            #
@@ -737,10 +745,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     # ###################################################################### #
 
     def metrize(self, mutate: bool = True) -> ComplexEvent:
-        # XXX: import in method to avoid circular import error
-        metrized_event = __import__(
-            "mutwo.core_converters"
-        ).core_converters.EventToMetrizedEvent()(self)
+        metrized_event = self._event_to_metrized_event(self)
         if mutate:
             self.tempo_envelope = metrized_event.tempo_envelope
             self[:] = metrized_event[:]

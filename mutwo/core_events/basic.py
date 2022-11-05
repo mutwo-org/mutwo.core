@@ -212,10 +212,7 @@ class SimpleEvent(core_events.abc.Event):
             function(parameter)
 
     def metrize(self, mutate: bool = True) -> SimpleEvent:
-        # XXX: import in method to avoid circular import error
-        metrized_event = __import__(
-            "mutwo.core_converters"
-        ).core_converters.EventToMetrizedEvent()(self)
+        metrized_event = self._event_to_metrized_event(self)
         if mutate:
             self.duration = metrized_event.duration
             self.tempo_envelope = metrized_event.tempo_envelope
