@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `Event.filter` to `Event.remove_by`
 - `core_parameters.TempoPoint` to `core_parameters.DirectTempoPoint`
+- `TempoRangeInBeatsPerMinute` from `tuple[float, float]` to `ranges.Range`
 
 
 ## [0.63.0] - 2022-11-03
