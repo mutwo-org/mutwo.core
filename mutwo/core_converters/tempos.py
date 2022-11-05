@@ -1,4 +1,4 @@
-"""Apply tempo curve on any :class:`~mutwo.core_events.abc.Event` and convert :class:`~mutwo.core_parameters.TempoPoint` to beat-length-in-seconds.
+"""Apply tempo curve on any :class:`~mutwo.core_events.abc.Event` and convert :class:`~mutwo.core_parameters.abc.TempoPoint` to beat-length-in-seconds.
 
 """
 
@@ -20,11 +20,11 @@ __all__ = (
 
 
 class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
-    """Convert a :class:`~mutwo.core_parameters.TempoPoint` with BPM to beat-length-in-seconds.
+    """Convert a :class:`~mutwo.core_parameters.abc.TempoPoint` with BPM to beat-length-in-seconds.
 
     A :class:`TempoPoint` is defined as an object that has a particular tempo in
     beats per seconds (BPM) and a reference value (1 for a quarter note, 4
-    for a whole note, etc.). Besides elaborate :class:`mutwo.core_parameters.TempoPoint`
+    for a whole note, etc.). Besides elaborate :class:`mutwo.core_parameters.abc.TempoPoint`
     objects, any number can also be interpreted as a `TempoPoint`. In this case
     the number simply represents the BPM number and the reference will be set to 1.
     The returned beat-length-in-seconds always indicates the length for one quarter
@@ -36,7 +36,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
     >>> tempo_point_converter = core_converters.TempoPointToBeatLengthInSeconds()
     """
 
-    TempoPoint = typing.Union[core_parameters.TempoPoint, core_constants.Real]
+    TempoPoint = typing.Union[core_parameters.abc.TempoPoint, core_constants.Real]
 
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(
@@ -67,7 +67,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         :param tempo_point_to_convert: A tempo point defines the active tempo
             from which the beat-length-in-seconds shall be calculated. The argument
             can either be any number (which will be interpreted as beats per
-            minute [BPM]) or a ``mutwo.core_parameters.TempoPoint`` object.
+            minute [BPM]) or a ``mutwo.core_parameters.abc.TempoPoint`` object.
         :return: The duration of one beat in seconds within the passed tempo.
 
         **Example:**
@@ -100,7 +100,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     :param tempo_envelope: The tempo curve that shall be applied on the
         mutwo events. This is expected to be a :class:`core_events.TempoEnvelope`
         which values are filled with numbers that will be interpreted as BPM
-        [beats per minute]) or with :class:`mutwo.core_parameters.TempoPoint`
+        [beats per minute]) or with :class:`mutwo.core_parameters.abc.TempoPoint`
         objects.
     :param apply_converter_on_events_tempo_envelope: If set to `True` the
         converter will also adjust the :attr:`tempo_envelope` attribute of
@@ -112,7 +112,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.Envelope(
-    >>>     [[0, tempos.TempoPoint(60)], [3, 60], [3, 30], [5, 50]],
+    >>>     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
     >>> )
     >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
     """
@@ -220,7 +220,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> from mutwo import core_events
         >>> from mutwo import core_parameters
         >>> tempo_envelope = core_events.Envelope(
-        >>>     [[0, tempos.TempoPoint(60)], [3, 60], [3, 30], [5, 50]],
+        >>>     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
         >>> )
         >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
         >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])

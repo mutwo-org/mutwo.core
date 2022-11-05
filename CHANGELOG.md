@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - `SequentialEvent.absolute_time_as_floats_tuple`
+- `core_parameters.abc.TempoPoint`
 
 ### Changed
 - `Event.filter` to `Event.remove_by`
+- `core_parameters.TempoPoint` to `core_parameters.DirectTempoPoint`
 
 
 ## [0.63.0] - 2022-11-03

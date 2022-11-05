@@ -30,6 +30,7 @@ __all__ = (
     "SingleNumberParameter",
     "ParameterWithEnvelope",
     "Duration",
+    "TempoPoint",
 )
 
 
@@ -312,3 +313,63 @@ class Duration(
 
 
 DurationOrReal = typing.Union[Duration, core_constants.Real]
+
+
+class TempoPoint(abc.ABC):
+    """Represent the active tempo at a specific moment in time.
+
+    If the user wants to define a `TempoPoint` class, the abstract
+    properties :attr:`tempo_or_tempo_range_in_beats_per_minute`
+    and `reference` have to be overridden.
+    """
+
+    def __repr__(self) -> str:
+        return "{}(BPM = {}, reference = {})".format(
+            type(self).__name__, self.tempo_in_beats_per_minute, self.reference
+        )
+
+    def __eq__(self, other: object) -> bool:
+        attribute_to_compare_tuple = (
+            "tempo_in_beats_per_minute",
+            "reference",
+        )
+        return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
+            self, other, attribute_to_compare_tuple
+        )
+
+    @property
+    @abc.abstractmethod
+    def tempo_or_tempo_range_in_beats_per_minute(
+        self,
+    ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
+        ...
+
+    @property
+    @abc.abstractmethod
+    def reference(self) -> core_constants.Real:
+        ...
+
+    @property
+    def tempo_in_beats_per_minute(
+        self,
+    ) -> core_parameters.constants.TempoInBeatsPerMinute:
+        """Get tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
+
+        If :attr:`tempo_or_tempo_range_in_beats_per_minute` is a range
+        mutwo will return the minimal tempo.
+        """
+
+        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, tuple):
+            return self.tempo_or_tempo_range_in_beats_per_minute[0]
+        else:
+            return self.tempo_or_tempo_range_in_beats_per_minute
+
+    @property
+    def absolute_tempo_in_beats_per_minute(self) -> float:
+        """Get absolute tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
+
+        The absolute tempo takes the :attr:`reference` of the :class:`TempoPoint`
+        into account.
+        """
+
+        return self.tempo_in_beats_per_minute * self.reference

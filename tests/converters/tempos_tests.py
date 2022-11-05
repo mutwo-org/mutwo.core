@@ -29,7 +29,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     def test_extract_beats_per_minute_and_reference_from_complete_tempo_point_object(
         self,
     ):
-        tempo_point = core_parameters.TempoPoint(40, 2)
+        tempo_point = core_parameters.DirectTempoPoint(40, 2)
         self.assertEqual(
             core_converters.TempoPointToBeatLengthInSeconds._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
@@ -40,7 +40,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     def test_extract_beats_per_minute_and_reference_from_incomplete_tempo_point_object(
         self,
     ):
-        tempo_point = core_parameters.TempoPoint(40)
+        tempo_point = core_parameters.DirectTempoPoint(40)
         self.assertEqual(
             core_converters.TempoPointToBeatLengthInSeconds._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
@@ -58,9 +58,9 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
         )
 
     def test_convert(self):
-        tempo_point0 = core_parameters.TempoPoint(60, 1)
-        tempo_point1 = core_parameters.TempoPoint(60, 2)
-        tempo_point2 = core_parameters.TempoPoint(30, 1)
+        tempo_point0 = core_parameters.DirectTempoPoint(60, 1)
+        tempo_point1 = core_parameters.DirectTempoPoint(60, 2)
+        tempo_point2 = core_parameters.DirectTempoPoint(30, 1)
         tempo_point3 = 60
         tempo_point4 = 120
 
@@ -89,10 +89,10 @@ class TempoConverterTest(unittest.TestCase):
         tempo_point_list = [
             # Event 0
             (0, 30, 0),
-            (2, core_parameters.TempoPoint(30), 0),
+            (2, core_parameters.DirectTempoPoint(30), 0),
             # Event 1
             (2, 60, 0),
-            (3, core_parameters.TempoPoint(60), 0),
+            (3, core_parameters.DirectTempoPoint(60), 0),
             (3, 30, 0),
             (4, 30, 0),  # Event 2
             (6, 60, 0),
@@ -100,8 +100,8 @@ class TempoConverterTest(unittest.TestCase):
             (6, 30, 10),
             (8, 60, 0),
             # Event 4
-            (8, core_parameters.TempoPoint(30, reference=1), -10),
-            (10, core_parameters.TempoPoint(30, reference=2), 0),
+            (8, core_parameters.DirectTempoPoint(30, reference=1), -10),
+            (10, core_parameters.DirectTempoPoint(30, reference=2), 0),
         ]
         tempo_envelope = core_events.Envelope(tempo_point_list)
         converter = core_converters.TempoConverter(tempo_envelope)
