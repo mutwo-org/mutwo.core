@@ -251,5 +251,40 @@ class RelativeEnvelopeTest(unittest.TestCase):
         self.assertEqual(resolved_envelope.value_tuple, (100, 105, 110))
 
 
+class TempoEnvelopeTest(unittest.TestCase):
+    def setUp(self):
+        self.tempo_envelope_with_float = core_events.TempoEnvelope(
+            [[0, 60], [1, 30], [2, 60]]
+        )
+
+        self.tempo_envelope_with_tempo_points = core_events.TempoEnvelope(
+            [
+                [0, core_parameters.DirectTempoPoint(60)],
+                [1, core_parameters.DirectTempoPoint(30)],
+                [2, core_parameters.DirectTempoPoint(30, reference=0.5)],
+            ]
+        )
+
+        self.mixed_tempo_envelope = core_events.TempoEnvelope(
+            [[0, 60], [1, core_parameters.DirectTempoPoint(30)], [2, 60]]
+        )
+
+    def _test_value_at(self, tempo_envelope: core_events.TempoEnvelope):
+        self.assertEqual(tempo_envelope.value_at(0), 60)
+        self.assertEqual(tempo_envelope.value_at(0.5), 45)
+        self.assertEqual(tempo_envelope.value_at(1), 30)
+        self.assertEqual(tempo_envelope.value_at(1.5), 45)
+        self.assertEqual(tempo_envelope.value_at(2), 60)
+
+    def test_value_at_with_float(self):
+        self._test_value_at(self.tempo_envelope_with_float)
+
+    def test_value_at_with_tempo_points(self):
+        self._test_value_at(self.tempo_envelope_with_tempo_points)
+
+    def test_value_at_with_mixed(self):
+        self._test_value_at(self.mixed_tempo_envelope)
+
+
 if __name__ == "__main__":
     unittest.main()
