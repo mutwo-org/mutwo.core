@@ -1,5 +1,7 @@
 """Module for mutwo specific exceptions."""
 
+import typing
+
 from mutwo import core_constants
 
 __all__ = (
@@ -13,6 +15,7 @@ __all__ = (
     "SplitUnavailableChildError",
     "NoSolutionFoundError",
     "EmptyEnvelopeError",
+    "UndefinedReferenceWarning",
 )
 
 
@@ -100,3 +103,12 @@ class NoSolutionFoundError(Exception):
 class EmptyEnvelopeError(Exception):
     def __init__(self, envelope, method):
         super().__init__(f"Can't call '{method}' on empty envelope '{envelope}'!")
+
+
+class UndefinedReferenceWarning(RuntimeWarning):
+    def __init__(self, tempo_point: typing.Any):
+        super().__init__(
+            f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
+            "doesn't know attribute 'reference'."
+            " Therefore reference has been set to 1."
+        )

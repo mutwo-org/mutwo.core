@@ -9,6 +9,7 @@ from mutwo import core_constants
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_parameters
+from mutwo import core_utilities
 
 
 __all__ = (
@@ -16,15 +17,6 @@ __all__ = (
     "TempoConverter",
     "EventToMetrizedEvent",
 )
-
-
-class UndefinedReferenceWarning(RuntimeWarning):
-    def __init__(self, tempo_point: typing.Any):
-        super().__init__(
-            f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
-            "doesn't know attribute 'reference'."
-            " Therefore reference has been set to 1."
-        )
 
 
 class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
@@ -64,7 +56,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         try:
             reference = tempo_point.reference  # type: ignore
         except AttributeError:
-            warnings.warn(UndefinedReferenceWarning(tempo_point))
+            warnings.warn(core_utilities.UndefinedReferenceWarning(tempo_point))
             reference = 1
 
         return beats_per_minute, reference
