@@ -261,9 +261,9 @@ class Duration(
     def _math_operation(
         self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
     ) -> Duration:
-        if isinstance(other, core_constants.Real.__args__):
-            other = core_parameters.DirectDuration(float(other))
-        self.duration = fractions.Fraction(operation(self.duration, other.duration))
+        self.duration = fractions.Fraction(
+            operation(self.duration, getattr(other, "duration", other))
+        )
         return self
 
     @core_utilities.add_copy_option
