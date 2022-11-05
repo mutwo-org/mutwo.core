@@ -20,6 +20,8 @@ try:
 except ImportError:
     import fractions
 
+import ranges
+
 from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
@@ -359,8 +361,8 @@ class TempoPoint(abc.ABC):
         mutwo will return the minimal tempo.
         """
 
-        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, tuple):
-            return self.tempo_or_tempo_range_in_beats_per_minute[0]
+        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, ranges.Range):
+            return self.tempo_or_tempo_range_in_beats_per_minute.start
         else:
             return self.tempo_or_tempo_range_in_beats_per_minute
 

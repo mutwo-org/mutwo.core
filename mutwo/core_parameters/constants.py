@@ -1,9 +1,11 @@
 import typing
 
+import ranges
+
 TempoInBeatsPerMinute = float
-TempoRangeInBeatsPerMinute = tuple[TempoInBeatsPerMinute, TempoInBeatsPerMinute]
+TempoRangeInBeatsPerMinute = ranges.Range
 TempoOrTempoRangeInBeatsPerMinute = typing.Union[
     TempoInBeatsPerMinute, TempoRangeInBeatsPerMinute
 ]
 
-del typing
+del ranges, typing
