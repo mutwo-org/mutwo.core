@@ -616,7 +616,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         return resolve_envelope_class(point_list)
 
 
-TempoPoint = typing.Union[core_parameters.abc.TempoPoint, float]
+TempoPoint = typing.Union[core_parameters.abc.TempoPoint, core_constants.Real]
 
 
 class TempoEnvelope(Envelope):
