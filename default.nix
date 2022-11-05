@@ -1,9 +1,9 @@
 with import <nixpkgs> {};
-with pkgs.python3Packages;
+with pkgs.python310Packages;
 
 let
 
-  python-ranges = pkgs.python39Packages.buildPythonPackage rec {
+  python-ranges = pkgs.python310Packages.buildPythonPackage rec {
     name = "python-ranges";
     src = fetchFromGitHub {
       owner = "Superbird11";
@@ -13,7 +13,21 @@ let
     };
     # TypeError: calling <class 'ranges.RangeDict.RangeDict'> returned {}, not a test
     doCheck = false;
-    propagatedBuildInputs = [ python39Packages.pytest ];
+    checkInputs = [ python310Packages.pytest ];
+  };
+
+  quicktions = pkgs.python310Packages.buildPythonPackage rec {
+    name = "quicktions";
+    src = fetchPypi {
+      pname = name;
+      version = "1.10";
+      sha256 = "sha256-Oy072x22dBvFHOHbmmWdkcUpdCC5GmIAnILJdKNlwO4=";
+    };
+    doCheck = true;
+    propagatedBuildInputs = [
+      python310Packages.cython
+      python310Packages.codecov
+    ];
   };
 
 in
@@ -23,13 +37,23 @@ in
     src = fetchFromGitHub {
       owner = "mutwo-org";
       repo = name;
-      rev = "a1fc891feb02812c413a7fb1bbcaaa8fcb6b6011";
-      sha256 = "sha256-Ucaiw0sZJjungzvM3Q61npT6WSGroudhiCfzoWbse5g=";
+      rev = "8c2bda48b7fd8f5161cd279b15bc2d18e7263455";
+      sha256 = "sha256-CIXWB0lMjGsZRBD2UVss3OE2ql/5Jv9tUxEsCB9DYHc=";
     };
-    propagatedBuildInputs = [ 
-      python39Packages.numpy
-      python39Packages.scipy
-      python-ranges
+    checkInputs = [
+      python310Packages.nose
+      python310Packages.nose-timer
     ];
+    propagatedBuildInputs = [ 
+      python310Packages.numpy
+      python310Packages.scipy
+      python-ranges
+      quicktions
+    ];
+    checkPhase = ''
+      runHook preCheck
+      nosetests --with-timer
+      runHook postCheck
+    '';
     doCheck = true;
   }
