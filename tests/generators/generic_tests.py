@@ -17,7 +17,7 @@ class DynamicChoiceTest(unittest.TestCase):
             self.assertEqual(dynamic_choice.gamble_at(0), 1)
         for _ in range(1000):
             self.assertEqual(dynamic_choice.gamble_at(1), 0)
-        center = [dynamic_choice.gamble_at(0.5) for _ in range(10000)]
+        center = [dynamic_choice.gamble_at(0.5) for _ in range(5000)]
         self.assertAlmostEqual(sum(center) / len(center), 0.5, places=2)
 
     def test_repr(self):
