@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `SequentialEvent.absolute_time_as_floats_tuple`
+
+### Changed
+- `Event.filter` to `Event.remove_by`
+
+
 ## [0.63.0] - 2022-11-03
 
 ### Added
