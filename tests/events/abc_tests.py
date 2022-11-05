@@ -13,7 +13,8 @@ class EventTest(unittest.TestCase):
 
 class ComplexEventTest(unittest.TestCase):
     @unittest.skip(
-        "ComplexEvent is broke (can be initialised); this need to be fixed in python 3.10!"
+        "ComplexEvent is broke (can be initialised); this need "
+        "to be fixed, but it's not clear how."
     )
     def test_abstract_error(self):
         self.assertRaises(TypeError, core_events.abc.ComplexEvent)
