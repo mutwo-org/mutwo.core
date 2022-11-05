@@ -867,7 +867,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         )
         self.assertEqual(simultaneous_event0, simultaneous_event_to_compare0)
 
-    def test_filter(self):
+    def test_remove_by(self):
         simultaneous_event_to_filter = core_events.SimultaneousEvent(
             [
                 core_events.SimpleEvent(1),
@@ -875,7 +875,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 core_events.SimpleEvent(2),
             ]
         )
-        simultaneous_event_to_filter.filter(
+        simultaneous_event_to_filter.remove_by(
             lambda event: event.duration > core_parameters.DirectDuration(2)
         )
         self.assertEqual(

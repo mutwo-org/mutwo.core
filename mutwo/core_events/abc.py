@@ -638,7 +638,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         [event.mutate_parameter(parameter_name, function) for event in self]
 
     @core_utilities.add_copy_option
-    def filter(  # type: ignore
+    def remove_by(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
     ) -> ComplexEvent[T]:
         """Condition-based deletion of child events.
@@ -657,7 +657,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> simultaneous_event = core_events.SimultaneousEvent(
             [core_events.SimpleEvent(1), core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
         )
-        >>> simultaneous_event.filter(lambda event: event.duration > 2)
+        >>> simultaneous_event.remove_by(lambda event: event.duration > 2)
         >>> simultaneous_event
         SimultaneousEvent([SimpleEvent(duration = 3)])
         """
