@@ -46,5 +46,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Artistic Software",
     ],
-    python_requires=">=3.9, <4",
+    python_requires=">=3.10, <4",
 )
