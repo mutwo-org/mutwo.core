@@ -20,12 +20,12 @@ let
     name = "quicktions";
     src = fetchPypi {
       pname = name;
-      version = "1.10";
-      sha256 = "sha256-Oy072x22dBvFHOHbmmWdkcUpdCC5GmIAnILJdKNlwO4=";
+      version = "1.13";
+      sha256 = "sha256-HzmMN1sAUjsSgy7vNvX/hq49LZmSnTQYbamjRoXeaL0=";
     };
     doCheck = true;
     propagatedBuildInputs = [
-      python310Packages.cython
+      python310Packages.cython_3
       python310Packages.codecov
     ];
   };
@@ -34,12 +34,13 @@ in
 
   buildPythonPackage rec {
     name = "mutwo.core";
-    src = fetchFromGitHub {
-      owner = "mutwo-org";
-      repo = name;
-      rev = "6539e7c7a9ec83128a9e9819524d6cbee7e90e76";
-      sha256 = "sha256-aQtZZJf/TbjqnYRU9dY8+BPRF7jJ77aixX/c7/CnCFs=";
-    };
+    src = ./.;
+    # src = fetchFromGitHub {
+    #   owner = "mutwo-org";
+    #   repo = name;
+    #   rev = "6539e7c7a9ec83128a9e9819524d6cbee7e90e76";
+    #   sha256 = "sha256-aQtZZJf/TbjqnYRU9dY8+BPRF7jJ77aixX/c7/CnCFs=";
+    # };
     checkInputs = [
       python310Packages.pytest
     ];
