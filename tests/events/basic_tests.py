@@ -677,6 +677,21 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         self.assertEqual(self.sequence[1].duration, core_parameters.DirectDuration(1))
         self.assertEqual(self.sequence[2].duration, core_parameters.DirectDuration(1.5))
 
+        nested_sequence = self.nested_sequence.copy()
+
+        nested_sequence.duration = 3
+
+        self.assertEqual(nested_sequence[0].duration, 3)
+        self.assertEqual(nested_sequence[1].duration, 3)
+
+        for sequential_event in nested_sequence:
+            self.assertEqual(sequential_event[0].duration, 0.5)
+            self.assertEqual(sequential_event[1].duration, 1)
+            self.assertEqual(sequential_event[2].duration, 1.5)
+
+        nested_sequence.duration = 6
+        self.assertEqual(nested_sequence, self.nested_sequence)
+
     def test_destructive_copy(self):
         simple_event = core_events.SimpleEvent(2)
         simultaneous_event = core_events.SimultaneousEvent([simple_event, simple_event])
