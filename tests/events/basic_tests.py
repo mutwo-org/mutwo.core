@@ -306,6 +306,14 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         self.assertEqual(self.sequence[1].duration, core_parameters.DirectDuration(1))
         self.assertEqual(self.sequence[2].duration, core_parameters.DirectDuration(1.5))
 
+    def test_set_duration_with_equal_event(self):
+        simple_event = core_events.SimpleEvent(1)
+        sequential_event = core_events.SequentialEvent([simple_event, simple_event])
+        sequential_event.duration = 5
+        self.assertEqual(sequential_event.duration, 5)
+        self.assertEqual(sequential_event[0].duration, 2.5)
+        self.assertEqual(sequential_event[1].duration, 2.5)
+
     def test_get_absolute_time_tuple(self):
         result = tuple(self.sequence.absolute_time_tuple)
         self.assertEqual(
