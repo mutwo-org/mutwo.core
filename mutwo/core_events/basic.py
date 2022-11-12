@@ -82,6 +82,44 @@ class SimpleEvent(core_events.abc.Event):
         return "{}({})".format(type(self).__name__, ", ".join(attribute_iterator))
 
     # ###################################################################### #
+    #                           private methods                              #
+    # ###################################################################### #
+
+    @core_utilities.add_copy_option
+    def _set_parameter(
+        self,
+        parameter_name: str,
+        object_or_function: typing.Union[
+            typing.Callable[
+                [core_constants.ParameterType], core_constants.ParameterType
+            ],
+            core_constants.ParameterType,
+        ],
+        set_unassigned_parameter: bool,
+        id_set: set[int],
+    ) -> SimpleEvent:
+        old_parameter = self.get_parameter(parameter_name)
+        if set_unassigned_parameter or old_parameter is not None:
+            if hasattr(object_or_function, "__call__"):
+                new_parameter = object_or_function(old_parameter)
+            else:
+                new_parameter = object_or_function
+            setattr(self, parameter_name, new_parameter)
+
+    @core_utilities.add_copy_option
+    def _mutate_parameter(
+        self,
+        parameter_name: str,
+        function: typing.Union[
+            typing.Callable[[core_constants.ParameterType], None], typing.Any
+        ],
+        id_set: set[int],
+    ) -> SimpleEvent:
+        parameter = self.get_parameter(parameter_name)
+        if parameter is not None:
+            function(parameter)
+
+    # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
@@ -139,17 +177,11 @@ class SimpleEvent(core_events.abc.Event):
     ) -> core_constants.ParameterType:
         return getattr(self, parameter_name, None)
 
-    @core_utilities.add_copy_option
+    # Update docstring
     def set_parameter(  # type: ignore
         self,
-        parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
-        set_unassigned_parameter: bool = True,
+        *args,
+        **kwargs,
     ) -> SimpleEvent:
         """Sets event parameter to new value.
 
@@ -191,25 +223,7 @@ class SimpleEvent(core_events.abc.Event):
         10
         """
 
-        old_parameter = self.get_parameter(parameter_name)
-        if set_unassigned_parameter or old_parameter is not None:
-            if hasattr(object_or_function, "__call__"):
-                new_parameter = object_or_function(old_parameter)
-            else:
-                new_parameter = object_or_function
-            setattr(self, parameter_name, new_parameter)
-
-    @core_utilities.add_copy_option
-    def mutate_parameter(  # type: ignore
-        self,
-        parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
-    ) -> SimpleEvent:
-        parameter = self.get_parameter(parameter_name)
-        if parameter is not None:
-            function(parameter)
+        return super().set_parameter(*args, **kwargs)
 
     def metrize(self, mutate: bool = True) -> SimpleEvent:
         metrized_event = self._event_to_metrized_event(self)

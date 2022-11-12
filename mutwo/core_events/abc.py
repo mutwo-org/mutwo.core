@@ -67,6 +67,32 @@ class Event(abc.ABC):
             "mutwo.core_converters"
         ).core_converters.EventToMetrizedEvent()
 
+    @abc.abstractmethod
+    def _set_parameter(
+        self,
+        parameter_name: str,
+        object_or_function: typing.Union[
+            typing.Callable[
+                [core_constants.ParameterType], core_constants.ParameterType
+            ],
+            core_constants.ParameterType,
+        ],
+        set_unassigned_parameter: bool,
+        id_set: set[int],
+    ) -> Event:
+        ...
+
+    @abc.abstractmethod
+    def _mutate_parameter(
+        self,
+        parameter_name: str,
+        function: typing.Union[
+            typing.Callable[[core_constants.ParameterType], None], typing.Any
+        ],
+        id_set: set[int],
+    ) -> Event:
+        ...
+
     # ###################################################################### #
     #                           public properties                            #
     # ###################################################################### #
@@ -193,7 +219,6 @@ class Event(abc.ABC):
         None
         """
 
-    @abc.abstractmethod
     def set_parameter(
         self,
         parameter_name: str,
@@ -204,6 +229,7 @@ class Event(abc.ABC):
             core_constants.ParameterType,
         ],
         set_unassigned_parameter: bool = True,
+        mutate: bool = True,
     ) -> typing.Optional[Event]:
         """Sets parameter to new value for all children events.
 
@@ -232,15 +258,35 @@ class Event(abc.ABC):
         >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
         >>> sequential_event.get_parameter('duration')
         (4, 6)
-        """
 
-    @abc.abstractmethod
+        **Warning:**
+
+        If there are multiple references of the same Event inside a
+        :class:`~mutwo.core_events.SequentialEvent` or a
+        ~mutwo.core_events.SimultaneousEvent`, ``set_parameter`` will
+        only be called once for each Event. So multiple references
+        of the same event will be ignored. This behaviour ensures,
+        that on a big scale level each item inside the
+        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        (so for instance the duration of each item is doubled, and
+        nor for some doubled and for those with references which
+        appear twice quadrupled).
+        """
+        return self._set_parameter(
+            parameter_name,
+            object_or_function,
+            set_unassigned_parameter=set_unassigned_parameter,
+            mutate=mutate,
+            id_set=set([]),
+        )
+
     def mutate_parameter(
         self,
         parameter_name: str,
         function: typing.Union[
             typing.Callable[[core_constants.ParameterType], None], typing.Any
         ],
+        mutate: bool = True,
     ) -> typing.Optional[Event]:
         """Mutate parameter with a function.
 
@@ -280,7 +326,26 @@ class Event(abc.ABC):
         >>> # now all pitches should be one octave higher (from 4 to 5)
         >>> sequential_event.get_parameter('pitch_list')
         ([WesternPitch(c5), WesternPitch(e5)],)
+
+        **Warning:**
+
+        If there are multiple references of the same Event inside a
+        :class:`~mutwo.core_events.SequentialEvent` or a
+        ~mutwo.core_events.SimultaneousEvent`, ``mutate_parameter`` will
+        only be called once for each Event. So multiple references
+        of the same event will be ignored. This behaviour ensures,
+        that on a big scale level each item inside the
+        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        (so for instance the duration of each item is doubled, and
+        nor for some doubled and for those with references which
+        appear twice quadrupled).
         """
+        return self._mutate_parameter(
+            parameter_name,
+            function,
+            mutate=mutate,
+            id_set=set([]),
+        )
 
     @core_utilities.add_copy_option
     def reset_tempo_envelope(self) -> Event:
@@ -517,6 +582,51 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         if self.duration < start:
             raise core_utilities.InvalidStartValueError(start, self.duration)
 
+    def _apply_once_per_event(
+        self, method_name: str, *args, id_set: set[int], **kwargs
+    ):
+        for event in self:
+            if (event_id := id(event)) not in id_set:
+                id_set.add(event_id)
+                getattr(event, method_name)(*args, id_set=id_set, **kwargs)
+
+    @core_utilities.add_copy_option
+    def _set_parameter(  # type: ignore
+        self,
+        parameter_name: str,
+        object_or_function: typing.Union[
+            typing.Callable[
+                [core_constants.ParameterType], core_constants.ParameterType
+            ],
+            core_constants.ParameterType,
+        ],
+        set_unassigned_parameter: bool,
+        id_set: set[int],
+    ) -> ComplexEvent[T]:
+        self._apply_once_per_event(
+            "_set_parameter",
+            parameter_name,
+            object_or_function,
+            id_set=id_set,
+            set_unassigned_parameter=set_unassigned_parameter,
+        )
+
+    @core_utilities.add_copy_option
+    def _mutate_parameter(  # type: ignore
+        self,
+        parameter_name: str,
+        function: typing.Union[
+            typing.Callable[[core_constants.ParameterType], None], typing.Any
+        ],
+        id_set: set[int],
+    ) -> ComplexEvent[T]:
+        self._apply_once_per_event(
+            "_mutate_parameter",
+            parameter_name,
+            function,
+            id_set=id_set,
+        )
+
     # ###################################################################### #
     #                           public methods                               #
     # ###################################################################### #
@@ -605,37 +715,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
                 else:
                     parameter_value_list.append(parameter_value_tuple)
         return tuple(parameter_value_list)
-
-    @core_utilities.add_copy_option
-    def set_parameter(  # type: ignore
-        self,
-        parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
-        set_unassigned_parameter: bool = True,
-    ) -> ComplexEvent[T]:
-        [
-            event.set_parameter(
-                parameter_name,
-                object_or_function,
-                set_unassigned_parameter=set_unassigned_parameter,
-            )
-            for event in self
-        ]
-
-    @core_utilities.add_copy_option
-    def mutate_parameter(  # type: ignore
-        self,
-        parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
-    ) -> ComplexEvent[T]:
-        [event.mutate_parameter(parameter_name, function) for event in self]
 
     @core_utilities.add_copy_option
     def remove_by(  # type: ignore
