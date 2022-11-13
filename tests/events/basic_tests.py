@@ -210,21 +210,60 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
 class SequentialEventTest(unittest.TestCase, EventTest):
     def setUp(self):
+        self.simple_event0 = core_events.SimpleEvent(1)
+        self.simple_event1 = core_events.SimpleEvent(2)
+        self.simple_event2 = core_events.SimpleEvent(3)
         self.sequence: core_events.SequentialEvent[
             core_events.SimpleEvent
         ] = core_events.SequentialEvent(
             [
-                core_events.SimpleEvent(1),
-                core_events.SimpleEvent(2),
-                core_events.SimpleEvent(3),
+                self.simple_event0,
+                self.simple_event1,
+                self.simple_event2,
             ]
         )
+
+    def tag_sequence(self) -> tuple[str, ...]:
+        tag_sequence = "abc"
+        for tag, item in zip(tag_sequence, self.sequence):
+            item.tag = tag
+
+        return tuple(tag_sequence)
 
     def get_event_class(self) -> typing.Type:
         return core_events.SequentialEvent
 
     def get_event_instance(self) -> core_events.SimpleEvent:
         return self.get_event_class()([])
+
+    def test_getitem_index(self):
+        self.assertEqual(self.simple_event0, self.sequence[0])
+        self.assertEqual(self.simple_event1, self.sequence[1])
+        self.assertEqual(self.simple_event2, self.sequence[2])
+
+    def test_getitem_slice(self):
+        self.assertEqual(
+            core_events.SequentialEvent([self.simple_event0, self.simple_event1]),
+            self.sequence[:2],
+        )
+
+    def test_getitem_tag(self):
+        tag0, tag1, tag2 = self.tag_sequence()
+
+        self.assertEqual(self.sequence[tag0], self.simple_event0)
+        self.assertEqual(self.sequence[tag1], self.simple_event1)
+        self.assertEqual(self.sequence[tag2], self.simple_event2)
+
+    def test_setitem_index(self):
+        simple_event = core_events.SimpleEvent(100).set("unique-id", 100)
+        self.sequence[0] = simple_event
+        self.assertEqual(self.sequence[0], simple_event)
+
+    def test_setitem_tag(self):
+        simple_event = core_events.SimpleEvent(100).set("unique-id", 100)
+        tag0, tag1, tag2 = self.tag_sequence()
+        self.sequence[tag1] = simple_event.set('tag', tag1)
+        self.assertEqual(self.sequence[tag1], simple_event)
 
     def test_duration(self):
         self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(6))
@@ -461,7 +500,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         # return events with duration = 0.
 
         squashed_in_sequence.squash_in(1, core_events.SimpleEvent(0).set("test", 100))
-        self.assertEqual(squashed_in_sequence[1].get_parameter('test'), 100)
+        self.assertEqual(squashed_in_sequence[1].get_parameter("test"), 100)
 
     def test_tie_by(self):
         # Ensure empty event can be tied without error

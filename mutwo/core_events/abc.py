@@ -519,23 +519,60 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         return empty_copy
 
     @typing.overload
-    def __getitem__(self, index_or_slice: int) -> T:
+    def __getitem__(self, index_or_slice_or_tag: int) -> T:
         ...
 
     @typing.overload
-    def __getitem__(self, index_or_slice: slice) -> ComplexEvent[T]:
+    def __getitem__(self, index_or_slice_or_tag: slice) -> ComplexEvent[T]:
+        ...
+
+    @typing.overload
+    def __getitem__(self, index_or_slice_or_tag: str) -> T:
         ...
 
     def __getitem__(
-        self, index_or_slice: typing.Union[int, slice]
+        self, index_or_slice_or_tag: int | slice | str
     ) -> typing.Union[T, ComplexEvent[T]]:
-        event = super().__getitem__(index_or_slice)
-        if isinstance(index_or_slice, slice):
+        try:
+            event = super().__getitem__(index_or_slice_or_tag)
+        except TypeError as error:
+            if isinstance(index_or_slice_or_tag, str):
+                return self.__getitem__(self._tag_to_index(index_or_slice_or_tag))
+            # It can't be a tag, therefore simply raise
+            # original exception.
+            raise error
+        if isinstance(index_or_slice_or_tag, slice):
             empty_event = self.empty_copy()
             empty_event.extend(event)
             return empty_event
         else:
             return event
+
+    @typing.overload
+    def __setitem__(self, index_or_slice_or_tag: int, event: core_events.abc.Event):
+        ...
+
+    @typing.overload
+    def __setitem__(self, index_or_slice_or_tag: slice, event: core_events.abc.Event):
+        ...
+
+    @typing.overload
+    def __setitem__(self, index_or_slice_or_tag: str, event: core_events.abc.Event):
+        ...
+
+    def __setitem__(
+        self, index_or_slice_or_tag: int | slice | str, event: core_events.abc.Event
+    ):
+        try:
+            super().__setitem__(index_or_slice_or_tag, event)
+        except TypeError as error:
+            if isinstance(index_or_slice_or_tag, str):
+                return self.__setitem__(
+                    self._tag_to_index(index_or_slice_or_tag), event
+                )
+            # It can't be a tag, therefore simply raise
+            # original exception.
+            raise error
 
     def __eq__(self, other: typing.Any) -> bool:
         """Test for checking if two objects are equal."""
@@ -573,6 +610,25 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     # ###################################################################### #
     #                           private methods                              #
     # ###################################################################### #
+
+    # Keep private because:
+    #   (1) Then we can later change the internal implementation of
+    #       ComplexEvent (for instance: no longer inheriting from list).
+    #   (2) It's not sure if tag_to_index is valuable for end users of
+    #       ComplexEvent
+    def _tag_to_index(self, tag: str) -> int:
+        # Find index of an event by its tag.
+        # param tag: The `tag` of the event which shall be found.
+        # type tag: str
+
+        for event_index, event in enumerate(self):
+            try:
+                event_tag = event.tag
+            except AttributeError:
+                continue
+            if tag == event_tag:
+                return event_index
+        raise KeyError(f"No event found with tag = '{tag}'.")
 
     def _assert_start_in_range(self, start: core_parameters.abc.Duration):
         """Helper method to make sure that start < event.duration.
