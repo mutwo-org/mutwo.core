@@ -37,8 +37,8 @@ in
     src = fetchFromGitHub {
       owner = "mutwo-org";
       repo = name;
-      rev = "6539e7c7a9ec83128a9e9819524d6cbee7e90e76";
-      sha256 = "sha256-aQtZZJf/TbjqnYRU9dY8+BPRF7jJ77aixX/c7/CnCFs=";
+      rev = "48baa6fd8393f27a979be4e087baaaa2c82cde1a";
+      sha256 = "sha256-JFwazTUTN0eyzNOnZ+wA4YAnYS1BvVXOBOUeox4QPNw=";
     };
     checkInputs = [
       python310Packages.pytest
