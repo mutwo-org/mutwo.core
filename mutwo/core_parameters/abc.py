@@ -15,10 +15,8 @@ import functools
 import operator
 import typing
 
-try:
-    import quicktions as fractions
-except ImportError:
-    import fractions
+import quicktions as fractions
+import fractions as _fractions
 
 import ranges
 
@@ -256,7 +254,7 @@ class Duration(
     The attribute :attr:`duration` is stored in unit `beats`.
     """
 
-    direct_comparison_type_tuple = (float, int, fractions.Fraction)
+    direct_comparison_type_tuple = (float, int, fractions.Fraction, _fractions.Fraction)
 
     def _math_operation(
         self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
