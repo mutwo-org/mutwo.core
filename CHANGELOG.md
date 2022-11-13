@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-11-13
+
+### Added
+- get and set items of `ComplexEvent` by tags
+
+Before:
+
+```
+>>> s = core_events.SequentialEvent(
+>>>     [core_events.TaggedSimpleEvent(1, tag='vl'), core_events.TaggedSimpleEvent(1, tag='va')]
+>>> )
+>>> for ev in s:
+>>>     if ev.tag == "vl"
+>>>         vl_ev = ev
+```
+
+After
+
+```
+>>> s = core_events.SequentialEvent(
+>>>     [core_events.TaggedSimpleEvent(1, tag='vl'), core_events.TaggedSimpleEvent(1, tag='va')]
+>>> )
+>>> vl_ev = s['vl']
+```
+
+### Fixed
+- `ComplexEvent.set_parameter` and `ComplexEvent.mutate_parameter` calls for `ComplexEvent`s which contained multiple references of the same event. [1](https://github.com/mutwo-org/mutwo.core/commit/8c17c27674fa8da20c87055e5357e0666fd5de9d)
+- math calculations on `mutwo.core_parameters.abc.Duration` for unexpected numbers [1](https://github.com/mutwo-org/mutwo.core/commit/2ae859104a8de2a7a0486be0aff6209f99fc2ba3) [2](https://github.com/mutwo-org/mutwo.core/commit/dafdf6ca6efaef70be15de5513ee9efbd4d88c08)
+- comparison between builtin `fractions.Fraction` and `mutwo.core_parameters.abc.Duration` objects (worked only with `quicktions.Fraction` objects before)
+
 
 ## [1.0.0] - 2022-11-05
 
