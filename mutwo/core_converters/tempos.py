@@ -145,7 +145,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
 
         level_list: list[float] = []
-        for tempo_point in tempo_envelope.value_tuple:
+        for tempo_point in tempo_envelope.parameter_tuple:
             beat_length_in_seconds = (
                 TempoConverter._tempo_point_to_beat_length_in_seconds(tempo_point)
             )
