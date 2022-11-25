@@ -495,7 +495,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         # before the old event (just like index
         # based squash_in: insert).
 
-        # XXX: This still raises an error because of the problematic
+        # This still raises an error because of the problematic
         # behaviour of "get_event_index_at" -> that it doesn't
         # return events with duration = 0.
 

@@ -537,7 +537,7 @@ class Envelope(
         )
 
         if (cut_off_duration := end - start) > 0:
-            # XXX: It is sufficient to find the first control point
+            # It is sufficient to find the first control point
             # by simply using "parameter_at" instead of "sample_at":
             # We don't need an accurate curve_shape or duration,
             # because this point only exists in an infinitely short
@@ -683,7 +683,7 @@ class TempoEnvelope(Envelope):
             return core_parameters.DirectTempoPoint(value)
 
         def default_parameter_to_value(parameter: TempoPoint) -> float:
-            # XXX: Here we specify, that we allow either core_parameters.abc.TempoPoint
+            # Here we specify, that we allow either core_parameters.abc.TempoPoint
             # or float/number objects.
             # So in case we have a core_parameters.abc.TempoPoint 'getattr' is
             # successful, if not it will return 'parameter', because it
@@ -712,13 +712,13 @@ class TempoEnvelope(Envelope):
         )
 
     def __eq__(self, other: typing.Any):
-        # XXX: TempoEnvelope can't use the default '__eq__' method inherited
+        # TempoEnvelope can't use the default '__eq__' method inherited
         # from list, because this would create endless recursion
         # (because every event has a TempoEnvelope, so Python would forever
         #  compare the TempoEnvelopes of TempoEnvelopes).
         try:
             return (
-                # XXX: Prefer lazy evaluation for better performance
+                # Prefer lazy evaluation for better performance
                 # (use 'and' instead of 'all').
                 self.absolute_time_tuple == other.absolute_time_tuple
                 and self.curve_shape_tuple == other.curve_shape_tuple

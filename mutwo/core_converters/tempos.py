@@ -264,7 +264,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
             event_to_convert = tempo_converter.convert(event_to_convert)
             event_to_convert.reset_tempo_envelope()
         else:
-            # XXX: Ensure we return copied event!
+            # Ensure we return copied event!
             event_to_convert = event_to_convert.destructive_copy()
         return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
 

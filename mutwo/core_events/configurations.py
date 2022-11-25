@@ -5,7 +5,7 @@ import typing
 
 import quicktions
 
-# XXX: We can't set core_converters.UnknownObjectToObject
+# We can't set core_converters.UnknownObjectToObject
 # directly because it would raise a circular import error.
 def __unknown_object_to_duration(unknown_object):
     from mutwo import core_converters
@@ -21,7 +21,7 @@ def __unknown_object_to_duration(unknown_object):
     )(unknown_object)
 
 
-# XXX: We don't define the function with `def UNKNOWN_OBJECT_TO_DURATION`
+# We don't define the function with `def UNKNOWN_OBJECT_TO_DURATION`
 # because this is and should look like a global variable and not like
 # a function.
 UNKNOWN_OBJECT_TO_DURATION = __unknown_object_to_duration

@@ -126,7 +126,7 @@ class SimpleEvent(core_events.abc.Event):
     @property
     def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
-        # XXX: Fix infinite circular loop (due to 'tempo_envelope')
+        # Fix infinite circular loop (due to 'tempo_envelope')
         # and avoid printing too verbose parameters.
         return tuple(
             filter(
@@ -146,7 +146,7 @@ class SimpleEvent(core_events.abc.Event):
         return tuple(
             attribute
             for attribute in dir(self)
-            # XXX: We have to use 'and' (lazy evaluation) instead of
+            # We have to use 'and' (lazy evaluation) instead of
             #      'all', to avoid redundant checks!
             #
             # no private attributes
@@ -312,7 +312,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     #                        private  methods                                #
     # ###################################################################### #
 
-    # XXX: We need to have a private "_cut_off" method to simplify
+    # We need to have a private "_cut_off" method to simplify
     # overriding the public "cut_off" method in children classes
     # of SequentialEvent. This is necessary, because the implementation
     # of "squash_in" makes use of "_cut_off". In this way it is possible
@@ -558,7 +558,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             if cut_out_start < cut_out_end:
                 event.cut_out(cut_out_start, cut_out_end)
             elif not (
-                # XXX: Support special case of events with duration = 0.
+                # Support special case of events with duration = 0.
                 event.duration == 0
                 and event_start >= start
                 and event_start <= end

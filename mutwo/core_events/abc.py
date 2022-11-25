@@ -62,7 +62,7 @@ class Event(abc.ABC):
 
     @functools.cached_property
     def _event_to_metrized_event(self):
-        # XXX: import in method to avoid circular import error
+        # Import in method to avoid circular import error
         return __import__(
             "mutwo.core_converters"
         ).core_converters.EventToMetrizedEvent()
@@ -475,7 +475,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def __init_subclass__(
         cls, class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
     ):
-        # XXX: It's better to prove `class_specific_side_attribute_tuple`
+        # It's better to prove `class_specific_side_attribute_tuple`
         # as a class initialisation attribute instead of a simple class attribute,
         # because with a simple class attribute we have no guarantee that the
         # content of the parent class is available and we always have to explicitly
@@ -763,7 +763,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             if flat:
                 parameter_value_list.extend(parameter_value_tuple)
             else:
-                # XXX: Simple events should be added without tuple, they only
+                # Simple events should be added without tuple, they only
                 # provide one parameter.
                 if is_simple_event:
                     if parameter_value_tuple:
