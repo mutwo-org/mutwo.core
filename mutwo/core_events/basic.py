@@ -396,7 +396,18 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         duration_iterator = (event.duration.duration_in_floats for event in self)
         absolute_time_tuple = tuple(
-            core_utilities.accumulate_from_n(duration_iterator, 0)
+            # We need to round each duration again after accumulation,
+            # because floats were summed which could lead to
+            # potential floating point errors again, which will
+            # lead to bad errors later (for instance in
+            # core_utilities.scale).
+            map(
+                lambda d: core_utilities.round_floats(
+                    d,
+                    core_parameters.configurations.ROUND_DURATION_TO_N_DIGITS,
+                ),
+                core_utilities.accumulate_from_n(duration_iterator, 0),
+            )
         )
         return absolute_time_tuple[:-1], absolute_time_tuple[-1]
 
