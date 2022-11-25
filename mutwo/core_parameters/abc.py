@@ -312,7 +312,7 @@ class Duration(
         ...
 
 
-DurationOrReal = typing.Union[Duration, core_constants.Real]
+DurationOrReal = Duration | core_constants.Real
 
 
 class TempoPoint(abc.ABC):

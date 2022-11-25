@@ -36,7 +36,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
     >>> tempo_point_converter = core_converters.TempoPointToBeatLengthInSeconds()
     """
 
-    TempoPoint = typing.Union[core_parameters.abc.TempoPoint, core_constants.Real]
+    TempoPoint = core_parameters.abc.TempoPoint | core_constants.Real
 
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(
@@ -169,7 +169,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event: core_events.SimpleEvent,
-        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
         simple_event.duration = (
@@ -182,7 +182,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
         if self._apply_converter_on_events_tempo_envelope:
@@ -246,7 +246,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
     def _convert_simple_event(
         self,
         event_to_convert: core_events.SimpleEvent,
-        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.SimpleEvent:
         return event_to_convert
@@ -254,7 +254,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: typing.Union[core_parameters.abc.Duration, float, int],
+        absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
         if (self._skip_level_count is None or self._skip_level_count < depth) and (

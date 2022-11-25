@@ -89,12 +89,10 @@ class SimpleEvent(core_events.abc.Event):
     def _set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
+        object_or_function: typing.Callable[
+            [core_constants.ParameterType], core_constants.ParameterType
+        ]
+        | core_constants.ParameterType,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> SimpleEvent:
@@ -110,9 +108,7 @@ class SimpleEvent(core_events.abc.Event):
     def _mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
+        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
     ) -> SimpleEvent:
         parameter = self.get_parameter(parameter_name)
@@ -455,13 +451,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     def get_event_index_at(
-        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> typing.Optional[int]:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
         :return: Index of event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -493,13 +489,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
 
     def get_event_at(
-        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> typing.Optional[T]:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
         :return: Event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -587,7 +583,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def squash_in(  # type: ignore
         self,
-        start: typing.Union[core_parameters.abc.Duration, typing.Any],
+        start: core_parameters.abc.Duration | typing.Any,
         event_to_squash_in: core_events.abc.Event,
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
@@ -646,7 +642,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @core_utilities.add_copy_option
     def split_child_at(
-        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> SequentialEvent[T]:
         absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
@@ -700,8 +696,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def cut_out(  # type: ignore
         self,
-        start: typing.Union[core_parameters.abc.Duration, typing.Any],
-        end: typing.Union[core_parameters.abc.Duration, typing.Any],
+        start: core_parameters.abc.Duration | typing.Any,
+        end: core_parameters.abc.Duration | typing.Any,
     ) -> SimultaneousEvent[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -726,7 +722,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def squash_in(  # type: ignore
         self,
-        start: typing.Union[core_parameters.abc.Duration, typing.Any],
+        start: core_parameters.abc.Duration | typing.Any,
         event_to_squash_in: core_events.abc.Event,
     ) -> SimultaneousEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)

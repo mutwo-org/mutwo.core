@@ -89,13 +89,11 @@ class Envelope(
     CompletePoint = tuple[
         core_constants.DurationType, core_constants.ParameterType, CurveShape  # type: ignore
     ]
-    Point = typing.Union[CompletePoint, IncompletePoint]
+    Point = CompletePoint | IncompletePoint
 
     def __init__(
         self,
-        event_iterable_or_point_sequence: typing.Union[
-            typing.Iterable[T], typing.Sequence[Point]
-        ],
+        event_iterable_or_point_sequence: typing.Iterable[T] | typing.Sequence[Point],
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
         event_to_parameter: typing.Callable[
             [core_events.abc.Event], core_constants.ParameterType
@@ -177,18 +175,14 @@ class Envelope(
     def __setitem__(
         self,
         index_or_slice: slice,
-        event_or_sequence: typing.Union[
-            typing.Iterable[T], typing.Iterable[Envelope.Point]
-        ],
+        event_or_sequence: typing.Iterable[T] | typing.Iterable[Envelope.Point],
     ):
         ...
 
     def __setitem__(
         self,
-        index_or_slice: typing.Union[int, slice],
-        event_or_sequence: typing.Union[
-            T, typing.Iterable[T], typing.Iterable[Envelope.Point]
-        ],
+        index_or_slice: int | slice,
+        event_or_sequence: T | typing.Iterable[T] | typing.Iterable[Envelope.Point],
     ):
         if isinstance(index_or_slice, slice) and isinstance(
             event_or_sequence, typing.Iterable
@@ -204,9 +198,9 @@ class Envelope(
 
     @staticmethod
     def _point_sequence_to_corrected_point_list(
-        point_or_invalid_type_sequence: typing.Sequence[typing.Union[Point, typing.Any]]
-    ) -> list[typing.Union[Envelope.CompletePoint, None]]:
-        corrected_point_list: list[typing.Union[Envelope.CompletePoint, None]] = []
+        point_or_invalid_type_sequence: typing.Sequence[Point | typing.Any],
+    ) -> list[Envelope.CompletePoint | None]:
+        corrected_point_list: list[Envelope.CompletePoint | None] = []
         for point in point_or_invalid_type_sequence:
             point_count = len(point)
             if point_count == 2:
@@ -228,9 +222,7 @@ class Envelope(
 
     def _point_sequence_to_event_list(
         self,
-        point_or_invalid_type_sequence: typing.Sequence[
-            typing.Union[Point, typing.Any]
-        ],
+        point_or_invalid_type_sequence: typing.Sequence[Point | typing.Any],
     ) -> list[core_events.abc.Event]:
         corrected_point_list = Envelope._point_sequence_to_corrected_point_list(
             point_or_invalid_type_sequence
@@ -254,9 +246,7 @@ class Envelope(
 
     def _event_iterable_or_point_sequence_to_event_iterable(
         self,
-        event_iterable_or_point_sequence: typing.Union[
-            typing.Iterable[T], typing.Sequence[Point]
-        ],
+        event_iterable_or_point_sequence: typing.Iterable[T] | typing.Sequence[Point],
     ) -> typing.Iterable[core_events.abc.Event]:
         item_type_list = [
             isinstance(event_or_point, core_events.abc.Event)
@@ -308,7 +298,7 @@ class Envelope(
     # ###################################################################### #
 
     def value_at(
-        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> Value:
         absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
@@ -362,23 +352,22 @@ class Envelope(
         )
 
     def parameter_at(
-        self, absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> core_constants.ParameterType:
         return self.value_to_parameter(self.value_at(absolute_time))
 
     @core_utilities.add_copy_option
     def sample_at(
         self,
-        absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any],
-        append_duration: typing.Union[
-            core_parameters.abc.Duration, typing.Any
-        ] = core_parameters.DirectDuration(0),
+        absolute_time: core_parameters.abc.Duration | typing.Any,
+        append_duration: core_parameters.abc.Duration
+        | typing.Any = core_parameters.DirectDuration(0),
     ) -> Envelope:
         """Discretize envelope at given time
 
         :param absolute_time: Position in time where the envelope should
             define a new event.
-        :type absolute_time: typing.Union[core_parameters.abc.Duration, typing.Any]
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
         :param append_duration: In case we add a new control point after any
             already defined point, the duration of this control point will be
             equal to "append_duration". Default to core_parameters.DirectDuration(0)
@@ -464,12 +453,8 @@ class Envelope(
 
     def get_average_value(
         self,
-        start: typing.Optional[
-            typing.Union[core_parameters.abc.Duration, typing.Any]
-        ] = None,
-        end: typing.Optional[
-            typing.Union[core_parameters.abc.Duration, typing.Any]
-        ] = None,
+        start: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
+        end: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
     ) -> Value:
         if start is None:
             start = core_parameters.DirectDuration(0)
@@ -497,8 +482,8 @@ class Envelope(
     @core_utilities.add_copy_option
     def cut_out(
         self,
-        start: typing.Union[core_parameters.abc.Duration, typing.Any],
-        end: typing.Union[core_parameters.abc.Duration, typing.Any],
+        start: core_parameters.abc.Duration | typing.Any,
+        end: core_parameters.abc.Duration | typing.Any,
     ) -> Envelope[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -528,8 +513,8 @@ class Envelope(
     @core_utilities.add_copy_option
     def cut_off(
         self,
-        start: typing.Union[core_parameters.abc.Duration, typing.Any],
-        end: typing.Union[core_parameters.abc.Duration, typing.Any],
+        start: core_parameters.abc.Duration | typing.Any,
+        end: core_parameters.abc.Duration | typing.Any,
     ) -> Envelope[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -590,7 +575,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
 
     def resolve(
         self,
-        duration: typing.Union[core_parameters.abc.Duration, typing.Any],
+        duration: core_parameters.abc.Duration | typing.Any,
         base_parameter: core_constants.ParameterType,
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
@@ -616,7 +601,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         return resolve_envelope_class(point_list)
 
 
-TempoPoint = typing.Union[core_parameters.abc.TempoPoint, core_constants.Real]
+TempoPoint = core_parameters.abc.TempoPoint | core_constants.Real
 
 
 class TempoEnvelope(Envelope):

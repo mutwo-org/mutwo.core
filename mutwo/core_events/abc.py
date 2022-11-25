@@ -71,12 +71,10 @@ class Event(abc.ABC):
     def _set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
+        object_or_function: typing.Callable[
+            [core_constants.ParameterType], core_constants.ParameterType
+        ]
+        | core_constants.ParameterType,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> Event:
@@ -86,9 +84,7 @@ class Event(abc.ABC):
     def _mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
+        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
     ) -> Event:
         ...
@@ -186,9 +182,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
-    ) -> typing.Union[
-        tuple[core_constants.ParameterType, ...], core_constants.ParameterType
-    ]:
+    ) -> tuple[core_constants.ParameterType, ...] | core_constants.ParameterType:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -222,12 +216,10 @@ class Event(abc.ABC):
     def set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
+        object_or_function: typing.Callable[
+            [core_constants.ParameterType], core_constants.ParameterType
+        ]
+        | core_constants.ParameterType,
         set_unassigned_parameter: bool = True,
         mutate: bool = True,
     ) -> typing.Optional[Event]:
@@ -283,9 +275,7 @@ class Event(abc.ABC):
     def mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
+        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         mutate: bool = True,
     ) -> typing.Optional[Event]:
         """Mutate parameter with a function.
@@ -532,7 +522,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def __getitem__(
         self, index_or_slice_or_tag: int | slice | str
-    ) -> typing.Union[T, ComplexEvent[T]]:
+    ) -> T | ComplexEvent[T]:
         try:
             event = super().__getitem__(index_or_slice_or_tag)
         except TypeError as error:
@@ -650,12 +640,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def _set_parameter(  # type: ignore
         self,
         parameter_name: str,
-        object_or_function: typing.Union[
-            typing.Callable[
-                [core_constants.ParameterType], core_constants.ParameterType
-            ],
-            core_constants.ParameterType,
-        ],
+        object_or_function: typing.Callable[
+            [core_constants.ParameterType], core_constants.ParameterType
+        ]
+        | core_constants.ParameterType,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> ComplexEvent[T]:
@@ -671,9 +659,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def _mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
-        function: typing.Union[
-            typing.Callable[[core_constants.ParameterType], None], typing.Any
-        ],
+        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
     ) -> ComplexEvent[T]:
         self._apply_once_per_event(
