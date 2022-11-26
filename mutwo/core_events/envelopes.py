@@ -75,6 +75,15 @@ class Envelope(
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
     python package and is made to fit better into the `mutwo` ecosystem.
 
+    **Hint:**
+
+    When comparing two envelopes (e.g. `env0 == env1`) `mutwo` will only return
+    `True` in case all control points (= simple events inside the envelope) are
+    equal between both envelopes. So `mutwo` won't make the much more
+    complicated test to check if two envelopes have the same shape (= the same
+    value at each `env0.value_at(x) == env1.value_at(x)` for each possible
+    `x`). Such a test is not implemented yet.
+
     **Example:**
 
     >>> from mutwo import core_events
