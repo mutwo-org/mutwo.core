@@ -548,6 +548,27 @@ class Envelope(
 
         return self
 
+    @core_utilities.add_copy_option
+    def extend_until(
+        self,
+        duration: core_parameters.abc.Duration,
+        duration_to_white_space: typing.Optional[
+            typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
+        ] = None,
+        prolong_simple_event: bool = True,
+    ) -> Envelope[T]:
+        self_duration = self.duration
+        super().extend_until(
+            duration,
+            duration_to_white_space=duration_to_white_space
+            or (
+                lambda duration: self._make_event(
+                    duration, self.parameter_at(self_duration), 0
+                )
+            ),
+            prolong_simple_event=prolong_simple_event,
+        )
+
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):
     __parent_doc_string = Envelope.__doc__.split("\n")[2:]  # type: ignore

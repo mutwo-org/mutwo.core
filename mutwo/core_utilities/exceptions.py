@@ -9,8 +9,10 @@ __all__ = (
     "InvalidAverageValueStartAndEndWarning",
     "InvalidStartValueError",
     "InvalidPointError",
+    "ImpossibleToPutInError",
     "ImpossibleToSquashInError",
     "ImpossibleToSlideInError",
+    "ImpossibleToExtendUntilError",
     "InvalidStartAndEndValueError",
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
@@ -79,6 +81,16 @@ class ImpossibleToSquashInError(ImpossibleToPutInError):
 class ImpossibleToSlideInError(TypeError):
     def __init__(self, event_to_be_slided_into, event_to_slide_in):
         super().__init__(event_to_be_slided_into, event_to_slide_in, "slide")
+
+
+class ImpossibleToExtendUntilError(TypeError):
+    def __init__(self, event_to_extend_until):
+        super().__init__(
+            f"Can't extend '{event_to_extend_until}' of type"
+            f"'{type(event_to_extend_until)}' which resides inside a "
+            "SimultaneousEvent. Set 'prolong_simple_event' to 'True' in"
+            "case you want simple events to be prolonged."
+        )
 
 
 class InvalidStartAndEndValueError(Exception):

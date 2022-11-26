@@ -232,6 +232,15 @@ class EnvelopeTest(unittest.TestCase):
             self.envelope.value_at(1.6), cut_off_envelope.value_at(0.6)
         )
 
+    def test_extend_until(self):
+        self.assertEqual(len(self.envelope), 5)
+        self.envelope.extend_until(10)
+        self.assertEqual(len(self.envelope), 6)
+        self.assertEqual(self.envelope[-1].duration, 4)
+        self.assertEqual(
+            self.envelope.parameter_tuple[-1] == self.envelope.parameter_tuple[-2]
+        )
+
 
 class RelativeEnvelopeTest(unittest.TestCase):
     def setUp(cls):

@@ -681,6 +681,29 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             ),
         )
 
+    def test_extend_until(self):
+        s, se = core_events.SimpleEvent, core_events.SequentialEvent
+
+        self.assertEqual(
+            self.sequence.extend_until(100, mutate=False), se([s(1), s(2), s(3), s(94)])
+        )
+
+        # Do nothing if already long enough
+        self.assertEqual(self.sequence.extend_until(6), se([s(1), s(2), s(3)]))
+
+        # Change in place
+        self.assertEqual(self.sequence.extend_until(7), se([s(1), s(2), s(3), s(1)]))
+        self.assertEqual(self.sequence, se([s(1), s(2), s(3), s(1)]))
+
+        # Do nothing if already longer
+        self.assertEqual(self.sequence.extend_until(4), se([s(1), s(2), s(3), s(1)]))
+
+        # Use custom event generator
+        self.assertEqual(
+            self.sequence.extend_until(8, duration_to_white_space=lambda d: se([s(d)])),
+            se([s(1), s(2), s(3), s(1), se([s(1)])]),
+        )
+
 
 class SimultaneousEventTest(unittest.TestCase, EventTest):
     class DummyParameter(object):
@@ -1003,6 +1026,40 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
             simultaneous_event_to_filter,
             core_events.SimultaneousEvent([core_events.SimpleEvent(3)]),
         )
+
+    def test_extend_until(self):
+        s, se, si = (
+            core_events.SimpleEvent,
+            core_events.SequentialEvent,
+            core_events.SimultaneousEvent,
+        )
+
+        # Extend simple events inside simultaneous event..
+        self.assertEqual(
+            self.sequence.extend_until(10, mutate=False), si([s(10), s(10), s(10)])
+        )
+
+        # ..should raise if flag is set to False
+        self.assertRaises(
+            core_utilities.ImpossibleToExtendUntilError,
+            self.sequence.extend_until,
+            10,
+            prolong_simple_event=False,
+        )
+
+        # Extend sequential events inside simultaneous event..
+        ese = se([s(1), s(2), s(3), s(4)])  # extended sequential event
+        self.assertEqual(
+            self.nested_sequence.extend_until(10, mutate=False), si([ese, ese])
+        )
+
+        # Nothing happens if already long enough
+        self.assertEqual(
+            self.nested_sequence.extend_until(4, mutate=False), self.nested_sequence
+        )
+
+        # Check default value for SimultaneousEvent
+        self.assertEqual(si([s(1), s(3)]).extend_until(), si([s(3), s(3)]))
 
 
 if __name__ == "__main__":

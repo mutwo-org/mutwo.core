@@ -1,6 +1,7 @@
 """Configurations which are shared for all event classes in :mod:`mutwo.core_events`."""
 
 import fractions
+import functools
 import typing
 
 import quicktions
@@ -68,4 +69,17 @@ DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
 """Default property parameter name for events in
 :class:`mutwo.core_events.TempoEnvelope`."""
 
-del typing
+
+# Avoid circular import problem
+@functools.cache
+def __simpleEvent():
+    return __import__("mutwo.core_events").core_events.SimpleEvent
+
+
+DEFAULT_DURATION_TO_WHITE_SPACE = lambda duration: __simpleEvent()(duration)
+"""Default conversion for parameter `duration_to_white_space` in
+:func:`mutwo.core_events.abc.ComplexEvent.extend_until`. This simply
+returns a :class:`mutwo.core_events.SimpleEvent` with the given
+duration."""
+
+del functools, typing

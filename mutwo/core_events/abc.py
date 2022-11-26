@@ -946,3 +946,47 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> sequential_event
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 2)])
         """
+
+    @abc.abstractmethod
+    def extend_until(
+        self,
+        duration: core_parameters.abc.Duration,
+        duration_to_white_space: typing.Optional[
+            typing.Callable[[core_parameters.abc.Duration], Event]
+        ] = None,
+        prolong_simple_event: bool = True,
+    ) -> ComplexEvent:
+        """Prolong event until at least `duration` by appending an empty event.
+
+        :param duration: Until which duration the event shall be extended.
+            If event is already longer than or equal to given `duration`,
+            nothing will be changed. For :class:`~mutwo.core_events.SimultaneousEvent`
+            the default value is `None` which is equal to the duration of
+            the `SimultaneousEvent`.
+        :type duration: core_parameters.abc.Duration
+        :param duration_to_white_space: A function which creates the 'rest' or
+            'white space' event from :class:`~mutwo.core_parameters.abc.Duration`.
+            If this is ``None`` `mutwo` will fall back to use the default function
+            which is `mutwo.core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE`.
+            Default to `None`.
+        :type duration_to_white_space: typing.Optional[typing.Callable[[core_parameters.abc.Duration], Event]]
+        :param prolong_simple_event: If set to ``True`` `mutwo` will prolong a single
+            :class:`~mutwo.core_events.SimpleEvent` inside a :class:`~mutwo.core_events.SimultaneousEvent`.
+            If set to ``False`` `mutwo` will raise an :class:`~mutwo.core_utilities.ImpossibleToExtendUntilError`
+            in case it finds a single `SimpleEvent` inside a `SimultaneousEvent`.
+            This doesn't effect `SimpleEvent` inside a `SequentialEvent`, here we can
+            simply append a new white space event.
+        :type prolong_simple_event: bool
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
+        :type mutate: bool
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> s = core_events.SequentialEvent([core_events.SimpleEvent(1)])
+        >>> s.extend_until(10)
+        >>> print(s)
+        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 9))])
+        """

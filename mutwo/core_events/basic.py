@@ -702,6 +702,23 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         else:
             return self[:index].copy(), self[index:].copy()
 
+    @core_utilities.add_copy_option
+    def extend_until(
+        self,
+        duration: core_parameters.abc.Duration,
+        duration_to_white_space: typing.Optional[
+            typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
+        ] = None,
+        prolong_simple_event: bool = True,
+    ) -> SequentialEvent:
+        duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+        duration_to_white_space = (
+            duration_to_white_space
+            or core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE
+        )
+        if (difference := duration - self.duration) > 0:
+            self.append(duration_to_white_space(difference))
+
 
 class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
@@ -790,6 +807,37 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             except AttributeError:
                 split_event = event.split_at(absolute_time)
                 self[event_index] = SequentialEvent(split_event)
+
+    @core_utilities.add_copy_option
+    def extend_until(
+        self,
+        duration: typing.Optional[core_parameters.abc.Duration] = None,
+        duration_to_white_space: typing.Optional[
+            typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
+        ] = None,
+        prolong_simple_event: bool = True,
+    ) -> SequentialEvent:
+        duration = (
+            self.duration
+            if duration is None
+            else core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+        )
+        duration_to_white_space = (
+            duration_to_white_space
+            or core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE
+        )
+        for event in self:
+            try:
+                event.extend_until(
+                    duration, duration_to_white_space, prolong_simple_event
+                )
+            # SimpleEvent
+            except AttributeError:
+                if prolong_simple_event:
+                    if (difference := duration - event.duration) > 0:
+                        event.duration += difference
+                else:
+                    raise core_utilities.ImpossibleToExtendUntilError(event)
 
 
 @core_utilities.add_tag_to_class
