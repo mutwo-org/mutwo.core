@@ -673,6 +673,22 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             self[event_index] = first_event
             self.insert(event_index, second_event)
 
+    def split_at(
+        self, absolute_time: core_parameters.abc.Duration
+    ) -> tuple[SequentialEvent, SequentialEvent]:
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
+        absolute_time_tuple = self.absolute_time_tuple
+        # Only run expensive 'split_at' in case we can't simply
+        # split via slice.
+        try:
+            index = absolute_time_tuple.index(absolute_time)
+        except ValueError:
+            return super().split_at(absolute_time)
+        else:
+            return self[:index].copy(), self[index:].copy()
+
 
 class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
