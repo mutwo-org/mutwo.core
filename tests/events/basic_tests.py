@@ -262,7 +262,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
     def test_setitem_tag(self):
         simple_event = core_events.SimpleEvent(100).set("unique-id", 100)
         tag0, tag1, tag2 = self.tag_sequence()
-        self.sequence[tag1] = simple_event.set('tag', tag1)
+        self.sequence[tag1] = simple_event.set("tag", tag1)
         self.assertEqual(self.sequence[tag1], simple_event)
 
     def test_duration(self):
@@ -501,6 +501,37 @@ class SequentialEventTest(unittest.TestCase, EventTest):
 
         squashed_in_sequence.squash_in(1, core_events.SimpleEvent(0).set("test", 100))
         self.assertEqual(squashed_in_sequence[1].get_parameter("test"), 100)
+
+    def test_slide_in(self):
+        s, se = core_events.SimpleEvent, core_events.SequentialEvent
+        f = fractions.Fraction
+
+        for start, event_to_slide_in, expected_sequential_event in (
+            (0, s(100), se([s(100), s(1), s(2), s(3)])),
+            (1, s(100), se([s(1), s(100), s(2), s(3)])),
+            (2, s(100), se([s(1), s(1), s(100), s(1), s(3)])),
+            (3, s(100), se([s(1), s(2), s(100), s(3)])),
+            (4, s(100), se([s(1), s(2), s(1), s(100), s(2)])),
+            (
+                f(6e-10),
+                s(100),
+                se([s(f(6e-10)), s(100), s(1 - f(6e-10)), s(2), s(3)]),
+            ),
+        ):
+            with self.subTest(start=start):
+                self.assertEqual(
+                    self.sequence.slide_in(start, event_to_slide_in, mutate=False),
+                    expected_sequential_event,
+                )
+
+    def test_slide_in_with_invalid_start(self):
+        s = core_events.SimpleEvent(1)
+        self.assertRaises(
+            core_utilities.InvalidStartAndEndValueError, self.sequence.slide_in, -1, s
+        )
+        self.assertRaises(
+            core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
+        )
 
     def test_tie_by(self):
         # Ensure empty event can be tied without error
@@ -913,6 +944,34 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 1, core_events.SimpleEvent(1.5), mutate=False
             ),
             expected_simultaneous_event,
+        )
+
+    def test_slide_in(self):
+        s, si, se = (
+            core_events.SimpleEvent,
+            core_events.SimultaneousEvent,
+            core_events.SequentialEvent,
+        )
+
+        for start, event_to_slide_in, expected_simultaneous_event in (
+            (0, s(100), si([se([s(100), s(1), s(2), s(3)])] * 2)),
+            (1, s(100), si([se([s(1), s(100), s(2), s(3)])] * 2)),
+            (2, s(100), si([se([s(1), s(1), s(100), s(1), s(3)])] * 2)),
+        ):
+            with self.subTest(start=start):
+                self.assertEqual(
+                    self.nested_sequence.slide_in(
+                        start, event_to_slide_in, mutate=False
+                    ),
+                    expected_simultaneous_event,
+                )
+
+    def test_slide_in_exception(self):
+        self.assertRaises(
+            core_utilities.ImpossibleToSlideInError,
+            self.sequence.slide_in,
+            0,
+            core_events.SimpleEvent(1),
         )
 
     def test_split_child_at(self):

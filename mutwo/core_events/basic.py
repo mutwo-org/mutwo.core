@@ -641,6 +641,19 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             self.insert(insert_index, event_to_squash_in)
 
     @core_utilities.add_copy_option
+    def slide_in(
+        self,
+        start: core_parameters.abc.Duration,
+        event_to_slide_in: core_events.abc.Event,
+    ) -> SequentialEvent[T]:
+        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        start_in_floats = start.duration_in_floats
+        self._assert_start_in_range(start_in_floats)
+        self[:], b = self.split_at(start)
+        self.extend([event_to_slide_in] + b)
+        return self
+
+    @core_utilities.add_copy_option
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> SequentialEvent[T]:
@@ -750,6 +763,21 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             # Simple events don't have a 'squash_in' method.
             except AttributeError:
                 raise core_utilities.ImpossibleToSquashInError(self, event_to_squash_in)
+
+    @core_utilities.add_copy_option
+    def slide_in(
+        self,
+        start: core_parameters.abc.Duration,
+        event_to_slide_in: core_events.abc.Event,
+    ) -> SimultaneousEvent[T]:
+        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        self._assert_start_in_range(start)
+        for event in self:
+            try:
+                event.slide_in(start, event_to_slide_in)  # type: ignore
+            # Simple events don't have a 'slide_in' method.
+            except AttributeError:
+                raise core_utilities.ImpossibleToSlideInError(self, event_to_slide_in)
 
     @core_utilities.add_copy_option
     def split_child_at(

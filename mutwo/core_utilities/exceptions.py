@@ -10,6 +10,7 @@ __all__ = (
     "InvalidStartValueError",
     "InvalidPointError",
     "ImpossibleToSquashInError",
+    "ImpossibleToSlideInError",
     "InvalidStartAndEndValueError",
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
@@ -58,15 +59,26 @@ class InvalidPointError(Exception):
         )
 
 
-class ImpossibleToSquashInError(TypeError):
-    def __init__(self, event_to_be_squashed_into, event_to_squash_in):
+class ImpossibleToPutInError(TypeError):
+    def __init__(self, event_to_be_put_into, event_to_put_in, method_name):
+        m = method_name
         super().__init__(
-            f"Can't squash '{event_to_squash_in}' in '{event_to_be_squashed_into}'. "
+            f"Can't {m} '{event_to_put_in}' in '{event_to_be_put_into}'. "
             "Does the SimultaneousEvent contain SimpleEvents or events that inherit"
-            " from SimpleEvent? For being able to squash in, the"
+            f" from SimpleEvent? For being able to {m} in, the"
             " SimultaneousEvent needs to only contain SequentialEvents or"
             " SimultaneousEvents."
         )
+
+
+class ImpossibleToSquashInError(ImpossibleToPutInError):
+    def __init__(self, event_to_be_squashed_into, event_to_squash_in):
+        super().__init__(event_to_be_squashed_into, event_to_squash_in, "squash")
+
+
+class ImpossibleToSlideInError(TypeError):
+    def __init__(self, event_to_be_slided_into, event_to_slide_in):
+        super().__init__(event_to_be_slided_into, event_to_slide_in, "slide")
 
 
 class InvalidStartAndEndValueError(Exception):

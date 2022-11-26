@@ -878,7 +878,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def squash_in(
         self, start: core_parameters.abc.Duration, event_to_squash_in: Event
     ) -> typing.Optional[ComplexEvent[T]]:
-        """Time-based insert of a new event into the present event.
+        """Time-based insert of a new event with overriding given event.
 
         :param start: Absolute time where the event shall be inserted.
         :param event_to_squash_in: the event that shall be squashed into
@@ -887,7 +887,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             If set to ``True`` the object itself will be changed and the function will
             return the changed object. Default to ``True``.
 
-        Squash in a new event to the present event.
+        Unlike `ComplexEvent.slide_in` the events duration won't change.
+        If there is already an event at `start` this event will be shortened
+        or removed.
 
         **Example:**
 
@@ -896,6 +898,33 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> sequential_event.squash_in(1, core_events.SimpleEvent(1.5))
         >>> print(sequential_event)
         SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1.5), SimpleEvent(duration = 0.5)])
+        """
+
+    @abc.abstractmethod
+    def slide_in(
+        self, start: core_parameters.abc.Duration, event_to_slide_in: Event
+    ) -> ComplexEvent[T]:
+        """Time-based insert of a new event into the present event.
+
+        :param start: Absolute time where the event shall be inserted.
+        :param event_to_slide_in: the event that shall be slide into
+            the present event.
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
+
+        Unlike `ComplexEvent.squash_in` the events duration will be prolonged
+        by the event which is added. If there is an event at `start` the
+        event will be split into two parts, but it won't be shortened or
+        processed in any other way.
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
+        >>> sequential_event.slide_in(1, core_events.SimpleEvent(1.5))
+        >>> print(sequential_event)
+        SequentialEvent([SimpleEvent(duration = 1), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2)])
         """
 
     @abc.abstractmethod
