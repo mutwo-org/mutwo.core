@@ -710,7 +710,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
         prolong_simple_event: bool = True,
-    ) -> SequentialEvent:
+    ) -> SequentialEvent[T]:
         duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         duration_to_white_space = (
             duration_to_white_space
@@ -722,6 +722,27 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
 class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
+
+    # ###################################################################### #
+    #                       private static methods                           #
+    # ###################################################################### #
+
+    @staticmethod
+    def _extend_ancestor(
+        ancestor: core_events.abc.Event, event: core_events.abc.Event
+    ):
+        match ancestor:
+            case core_events.SequentialEvent():
+                ancestor.extend(event)
+            case core_events.SimultaneousEvent():
+                try:
+                    ancestor.concatenate_by_tag(event)
+                except core_utilities.NoTagError:
+                    ancestor.concatenate_by_index(event)
+            # We can't concatenate to a simple event.
+            # We also can't concatenate to anything else.
+            case _:
+                raise core_utilities.ConcatenationError(ancestor, event)
 
     # ###################################################################### #
     #                           properties                                   #
@@ -838,6 +859,80 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                         event.duration += difference
                 else:
                     raise core_utilities.ImpossibleToExtendUntilError(event)
+
+    @core_utilities.add_copy_option
+    def concatenate_by_index(self, other: SimultaneousEvent) -> SimultaneousEvent:
+        """Concatenate with other :class:`~mutwo.core_events.SimultaneousEvent` along their indices.
+
+        :param other: The other `SimultaneousEvent` with which to concatenate.
+            The other `SimultaneousEvent` can contain more or less events.
+        :type other: SimultaneousEvent
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
+        :type mutate: bool
+        :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
+            inside a :class:`SimultaneousEvent`.
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> s = core_events.SimultaneousEvent(
+        >>>     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
+        >>> )
+        >>> s.concatenate_by_index(s)
+        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        """
+        self_duration = self.duration
+        self.extend_until(self_duration)
+        for index, event in enumerate(other.copy()):
+            try:
+                ancestor = self[index]
+            except IndexError:
+                event.slide_in(0, core_events.SimpleEvent(self_duration))
+                self.append(event)
+            else:
+                self._extend_ancestor(ancestor, event)
+
+    @core_utilities.add_copy_option
+    def concatenate_by_tag(self, other: SimultaneousEvent) -> SimultaneousEvent:
+        """Concatenate with other :class:`~mutwo.core_events.SimultaneousEvent` along their tags.
+
+        :param other: The other `SimultaneousEvent` with which to concatenate.
+            The other `SimultaneousEvent` can contain more or less events.
+        :type other: SimultaneousEvent
+        :param mutate: If ``False`` the function will return a copy of the given object.
+            If set to ``True`` the object itself will be changed and the function will
+            return the changed object. Default to ``True``.
+        :type mutate: bool
+        :return: Concatenated event.
+        :raises core_utilities.NoTagError: If any child event doesn't have a 'tag'
+            attribute.
+        :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
+            inside a :class:`SimultaneousEvent`.
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> s = core_events.SimultaneousEvent(
+        >>>     [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
+        >>> )
+        >>> s.concatenate_by_tag(s)
+        SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        """
+        self_duration = self.duration
+        self.extend_until(self_duration)
+        for tagged_event in other.copy():
+            if not hasattr(tagged_event, "tag"):
+                raise core_utilities.NoTagError(tagged_event)
+            tag = tagged_event.tag
+            try:
+                ancestor = self[tag]
+            except KeyError:
+                tagged_event.slide_in(0, core_events.SimpleEvent(self_duration))
+                self.append(tagged_event)
+            else:
+                self._extend_ancestor(ancestor, tagged_event)
 
 
 @core_utilities.add_tag_to_class

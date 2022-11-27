@@ -19,6 +19,8 @@ __all__ = (
     "NoSolutionFoundError",
     "EmptyEnvelopeError",
     "UndefinedReferenceWarning",
+    "ConcatenationError",
+    "NoTagError",
 )
 
 
@@ -135,4 +137,27 @@ class UndefinedReferenceWarning(RuntimeWarning):
             f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
             "doesn't know attribute 'reference'."
             " Therefore reference has been set to 1."
+        )
+
+
+class ConcatenationError(TypeError):
+    def __init__(self, ancestor, event):
+        super().__init__(
+            f"Can't concatenate event '{event}' to event '{ancestor}' "
+            f"of type '{type(ancestor)}'. It is only possible to"
+            " concatenate a new event to events which are instances of "
+            "SequentialEvent or SimultaneousEvent. To fix this bug you can"
+            f" put your event '{ancestor}' inside a SequentialEvent or"
+            " a SimultaneousEvent."
+        )
+
+
+class NoTagError(Exception):
+    def __init__(self, event_without_tag):
+        super().__init__(
+            "It's not possible to concatenate an event "
+            "with the 'concatenate_by_tag' method if not "
+            "all child events have tags. Here 'mutwo' detected the "
+            f"child event '{str(event_without_tag)[:50]}...' "
+            "which doesn't have any 'tag' attribute."
         )

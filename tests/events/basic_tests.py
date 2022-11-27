@@ -1061,6 +1061,102 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         # Check default value for SimultaneousEvent
         self.assertEqual(si([s(1), s(3)]).extend_until(), si([s(3), s(3)]))
 
+    def test_concatenate_by_index(self):
+        s, se, si = (
+            core_events.SimpleEvent,
+            core_events.SequentialEvent,
+            core_events.SimultaneousEvent,
+        )
+
+        # Equal size concatenation
+        self.assertEqual(
+            self.nested_sequence.concatenate_by_index(
+                self.nested_sequence, mutate=False
+            ),
+            si(
+                [
+                    se([s(1), s(2), s(3), s(1), s(2), s(3)]),
+                    se([s(1), s(2), s(3), s(1), s(2), s(3)]),
+                ]
+            ),
+        )
+
+        # Smaller self
+        si_test = si([se([s(1), s(1)])])
+        si_ok = si(
+            [
+                se([s(1), s(1), s(1), s(2), s(3)]),
+                se([s(2), s(1), s(2), s(3)]),
+            ]
+        )
+        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence), si_ok)
+        #   Mutate inplace!
+        self.assertEqual(si_test, si_ok)
+
+        # Smaller other
+        si_test = si([se([s(1), s(1)]), se([s(0.5)]), se([s(2)])])
+        si_ok = si(
+            [
+                se([s(1), s(1), s(1), s(2), s(3)]),
+                se([s(0.5), s(1.5), s(1), s(2), s(3)]),
+                se([s(2)]),
+            ]
+        )
+        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence), si_ok)
+
+    def test_concatenate_by_index_exception(self):
+        self.assertRaises(
+            core_utilities.ConcatenationError,
+            self.sequence.concatenate_by_index,
+            self.sequence,
+        )
+
+    def test_concatenate_by_tag(self):
+        s, tse, si = (
+            core_events.SimpleEvent,
+            core_events.TaggedSequentialEvent,
+            core_events.SimultaneousEvent,
+        )
+
+        s1 = si([tse([s(1), s(1)], tag="a")])
+        s2 = si([tse([s(2), s(1)], tag="a"), tse([s(0.5)], tag="b")])
+
+        # Equal size concatenation
+        self.assertEqual(
+            s1.concatenate_by_tag(s1, mutate=False),
+            si([tse([s(1), s(1), s(1), s(1)], tag="a")]),
+        )
+
+        # Smaller self
+        s2.reverse()  # verify order doesn't matter
+        self.assertEqual(
+            s1.concatenate_by_tag(s2, mutate=False),
+            si([tse([s(1), s(1), s(2), s(1)], tag="a"), tse([s(2), s(0.5)], tag="b")]),
+        )
+
+        # Smaller other
+        s2.reverse()  # reverse to original order
+        self.assertEqual(
+            s2.concatenate_by_tag(s1, mutate=False),
+            si(
+                [tse([s(2), s(1), s(1), s(1)], tag="a"), tse([s(0.5), s(2.5)], tag="b")]
+            ),
+        )
+
+    def test_concatenate_by_tag_exception(self):
+        self.assertRaises(
+            core_utilities.NoTagError,
+            self.sequence.concatenate_by_tag,
+            self.sequence,
+        )
+
+        s1 = core_events.SimultaneousEvent([core_events.TaggedSimpleEvent(1, tag="a")])
+        self.assertRaises(
+            core_utilities.ConcatenationError,
+            s1.concatenate_by_tag,
+            s1,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
