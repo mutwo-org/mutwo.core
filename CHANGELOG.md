@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-11-30
+
+### Added
+- `ComplexEvent.slide_in`, see [here](https://github.com/mutwo-org/mutwo.core/commit/f145c3fefad1a6ef37e5cdbfc02f00f3160bfdcb)
+- `ComplexEvent.extend_until`, see [here](https://github.com/mutwo-org/mutwo.core/commit/ad282e0798926d0999983448632452dae09ee5e8)
+- `SimultaneousEvent.concatenate_by_index`, see [here](https://github.com/mutwo-org/mutwo.core/commit/cf678e244acfed7eef647c5d27223e93428d5930)
+- `SimultaneousEvent.concatenate_by_tag`, see [here](https://github.com/mutwo-org/mutwo.core/commit/cf678e244acfed7eef647c5d27223e93428d5930)
+
+
 ## [1.1.0] - 2022-11-13
 
 ### Added
