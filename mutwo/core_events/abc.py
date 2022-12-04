@@ -193,7 +193,7 @@ class Event(abc.ABC):
         :param filter_undefined: If set to ``True`` all ``None`` values will be filtered
             from the returned tuple. Default to ``False``. This flag has no effect on
             :func:`get_parameter` of :class:`mutwo.core_events.SimpleEvent`.
-        :type flat: filter_undefined
+        :type flat: bool
         :return: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
             add None to the tuple for the respective event.
