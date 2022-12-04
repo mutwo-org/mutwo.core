@@ -845,6 +845,15 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             duration_to_white_space
             or core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE
         )
+        # We only append simple events to sequential events, because there
+        # are many problems with the SimultaneousEvent[SimpleEvent] construct
+        # ('extend_until' and 'squash_in' will fail on such a container).
+        # Therefore calling 'extend_until' on an empty SimultaneousEvent is
+        # in fact ineffective: The user would get a SimultaneousEvent which
+        # still has duration = 0, which is absolutely unexpected. Therefore
+        # we raise an error, to avoid confusion by the user.
+        if not self:
+            raise core_utilities.IneffectiveExtendUntilError(self)
         for event in self:
             try:
                 event.extend_until(
@@ -881,8 +890,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> s.concatenate_by_index(s)
         SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
         """
-        self_duration = self.duration
-        self.extend_until(self_duration)
+        if (self_duration := self.duration) > 0:
+            self.extend_until(self_duration)
         for index, event in enumerate(other.copy()):
             try:
                 ancestor = self[index]
@@ -919,8 +928,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> s.concatenate_by_tag(s)
         SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
         """
-        self_duration = self.duration
-        self.extend_until(self_duration)
+        if (self_duration := self.duration) > 0:
+            self.extend_until(self_duration)
         for tagged_event in other.copy():
             if not hasattr(tagged_event, "tag"):
                 raise core_utilities.NoTagError(tagged_event)

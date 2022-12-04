@@ -13,6 +13,7 @@ __all__ = (
     "ImpossibleToSquashInError",
     "ImpossibleToSlideInError",
     "ImpossibleToExtendUntilError",
+    "IneffectiveExtendUntilError",
     "InvalidStartAndEndValueError",
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
@@ -92,6 +93,16 @@ class ImpossibleToExtendUntilError(TypeError):
             f"'{type(event_to_extend_until)}' which resides inside a "
             "SimultaneousEvent. Set 'prolong_simple_event' to 'True' in"
             "case you want simple events to be prolonged."
+        )
+
+
+class IneffectiveExtendUntilError(ValueError):
+    def __init__(self, event_to_extend_until):
+        super().__init__(
+            f"Can't extend empty event '{event_to_extend_until}' of type"
+            f"'{type(event_to_extend_until)}'. If you want to extend "
+            "a SimultaneousEvent you should first append an empty "
+            "SequentialEvent to your SimultaneousEvent."
         )
 
 

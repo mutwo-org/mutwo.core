@@ -1047,6 +1047,12 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
             prolong_simple_event=False,
         )
 
+        # We can't call 'extend_until' on an empty SimultaneousEvent: this would
+        # raise an error.
+        self.assertRaises(
+            core_utilities.IneffectiveExtendUntilError, si().extend_until, 10
+        )
+
         # Extend sequential events inside simultaneous event..
         ese = se([s(1), s(2), s(3), s(4)])  # extended sequential event
         self.assertEqual(
