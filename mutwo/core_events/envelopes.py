@@ -170,6 +170,21 @@ class Envelope(
         *point: Point,
         **kwargs,
     ) -> Envelope:
+        """Create new :class:`Envelope` from points.
+
+        This is merely a convenience wrapper to write
+
+            >>> Envelope.from_points([0, 1], [1, 100])
+
+        instead of
+
+            >>> Envelope([[0, 1], [1, 100]])
+
+        to mimic the default initialization behaviour of
+        `expenvelope.Envelope`. It's recommended to initialise
+        an Envelope without this method. This method will be
+        removed sooner or later.
+        """
         return cls(point, **kwargs)
 
     # ###################################################################### #
@@ -286,20 +301,22 @@ class Envelope(
 
     @property
     def parameter_tuple(self) -> tuple[core_constants.ParameterType, ...]:
+        """Get `parameter` for each event inside :class:`Envelope`."""
         return tuple(map(self.event_to_parameter, self))
 
     @property
     def value_tuple(self) -> tuple[Value, ...]:
+        """Get `value` for each event inside :class:`Envelope`."""
         return tuple(map(self.parameter_to_value, self.parameter_tuple))
 
     @property
     def curve_shape_tuple(self) -> tuple[CurveShape, ...]:
+        """Get `curve_shape` for each event inside :class:`Envelope`."""
         return tuple(map(self.event_to_curve_shape, self))
 
     @property
     def is_static(self) -> bool:
         """Return `True` if :class:`Envelope` only has one static value."""
-
         return len(set(self.value_tuple)) <= 1
 
     # ###################################################################### #
@@ -309,6 +326,26 @@ class Envelope(
     def value_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> Value:
+        """Get `value` at `absolute_time`.
+
+        :param absolute_time: Absolute position in time at which value shall be found.
+            This is 'x' in the function notation 'f(x)'.
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
+
+        This function interpolates between the control points according to
+        their `curve_shape` property.
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> e = core_events.Envelope([[0, 0], [1, 2]])
+        >>> e.value_at(0)
+        0
+        >>> e.value_at(1)
+        2
+        >>> e.value_at(0.5)
+        1
+        """
         absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
         ).duration_in_floats
@@ -363,6 +400,12 @@ class Envelope(
     def parameter_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> core_constants.ParameterType:
+        """Get `parameter` at `absolute_time`.
+
+        :param absolute_time: Absolute position in time at which parameter shall
+            be found. This is 'x' in the function notation 'f(x)'.
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        """
         return self.value_to_parameter(self.value_at(absolute_time))
 
     @core_utilities.add_copy_option
@@ -458,6 +501,13 @@ class Envelope(
     def integrate_interval(
         self, start: core_constants.DurationType, end: core_constants.DurationType
     ) -> float:
+        """Integrate envelope above given interval.
+
+        :param start: Beginning of integration interval.
+        :type start: core_parameters.abc.Duration
+        :param end: End of integration interval.
+        :type end: core_parameters.abc.Duration
+        """
         return integrate.quad(lambda x: self.value_at(x), start, end)[0]
 
     def get_average_value(
@@ -465,6 +515,26 @@ class Envelope(
         start: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
         end: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
     ) -> Value:
+        """Find average `value` in given interval.
+
+        :param start: The beginning of the interval. If set to `None` this
+            will be 0. Default to `None`.
+        :type start: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :param end: The end of the interval. If set to `None` this
+            will be the duration of the :class:`Envelope`.. Default to `None`.
+        :type end: typing.Optional[core_parameters.abc.Duration | typing.Any]
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> e = core_events.Envelope([[0, 1], [2, 0]])
+        >>> e.get_average_value()
+        0.5
+        >>> e.get_average_value(0.5)
+        0.375
+        >>> e.get_average_value(0.5, 1)
+        0.625
+        """
         if start is None:
             start = core_parameters.DirectDuration(0)
         if end is None:
@@ -486,6 +556,26 @@ class Envelope(
         start: typing.Optional[core_constants.DurationType] = None,
         end: typing.Optional[core_constants.DurationType] = None,
     ) -> core_constants.ParameterType:
+        """Find average `parameter` in given interval.
+
+        :param start: The beginning of the interval. If set to `None` this
+            will be 0. Default to `None`.
+        :type start: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :param end: The end of the interval. If set to `None` this
+            will be the duration of the :class:`Envelope`.. Default to `None`.
+        :type end: typing.Optional[core_parameters.abc.Duration | typing.Any]
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> e = core_events.Envelope([[0, 1], [2, 0]])
+        >>> e.get_average_parameter()
+        0.5
+        >>> e.get_average_parameter(0.5)
+        0.375
+        >>> e.get_average_parameter(0.5, 1)
+        0.625
+        """
         return self.value_to_parameter(self.get_average_value(start, end))
 
     @core_utilities.add_copy_option
