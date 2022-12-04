@@ -1111,6 +1111,14 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
             self.sequence,
         )
 
+    def test_concatenate_by_index_to_empty_event(self):
+        empty_se = core_events.SimultaneousEvent([])
+        filled_se = core_events.SimultaneousEvent(
+            [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
+        )
+        empty_se.concatenate_by_index(filled_se)
+        self.assertEqual(empty_se, filled_se)
+
     def test_concatenate_by_tag(self):
         s, tse, si = (
             core_events.SimpleEvent,
@@ -1156,6 +1164,14 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
             s1.concatenate_by_tag,
             s1,
         )
+
+    def test_concatenate_by_tag_to_empty_event(self):
+        empty_se = core_events.SimultaneousEvent([])
+        filled_se = core_events.SimultaneousEvent(
+            [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="t")]
+        )
+        empty_se.concatenate_by_tag(filled_se)
+        self.assertEqual(empty_se, filled_se)
 
 
 if __name__ == "__main__":
