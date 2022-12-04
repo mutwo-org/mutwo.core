@@ -728,9 +728,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @staticmethod
-    def _extend_ancestor(
-        ancestor: core_events.abc.Event, event: core_events.abc.Event
-    ):
+    def _extend_ancestor(ancestor: core_events.abc.Event, event: core_events.abc.Event):
         match ancestor:
             case core_events.SequentialEvent():
                 ancestor.extend(event)
@@ -889,7 +887,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             try:
                 ancestor = self[index]
             except IndexError:
-                event.slide_in(0, core_events.SimpleEvent(self_duration))
+                if self_duration > 0:
+                    event.slide_in(0, core_events.SimpleEvent(self_duration))
                 self.append(event)
             else:
                 self._extend_ancestor(ancestor, event)
@@ -929,7 +928,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             try:
                 ancestor = self[tag]
             except KeyError:
-                tagged_event.slide_in(0, core_events.SimpleEvent(self_duration))
+                if self_duration > 0:
+                    tagged_event.slide_in(0, core_events.SimpleEvent(self_duration))
                 self.append(tagged_event)
             else:
                 self._extend_ancestor(ancestor, tagged_event)
