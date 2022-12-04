@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [1.2.1] - 2022-12-04
+
+### Fixed
+- `SimultaneousEvent.extend_until`: [Raise error if SimultaneousEvent is empty](https://github.com/mutwo-org/mutwo.core/commit/40b89a0af97e227ff3972b42daf29c750e090a5e) (make implicit failure explicit)
+- `SimultaneousEvent`: [`concatenate_by_tag` and `concatenate_by_index` with empty simultaneous event](https://github.com/mutwo-org/mutwo.core/commit/f591d4869547b83cf6660dbd0d7fd6b974e5aa7f) (avoid noisy simple event with 0 duration)
+
+
 ## [1.2.0] - 2022-11-30
 
 ### Added
