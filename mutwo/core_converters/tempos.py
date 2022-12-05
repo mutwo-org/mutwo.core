@@ -75,7 +75,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         >>> from mutwo import core_converters
         >>> converter = core_converters.TempoPointToBeatLengthInSeconds()
         >>> converter.convert(60)  # one beat in tempo 60 bpm takes 1 second
-        1
+        1.0
         >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
         0.5
         """
@@ -112,8 +112,8 @@ class TempoConverter(core_converters.abc.EventConverter):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.Envelope(
-    >>>     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
-    >>> )
+    ...     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
+    ... )
     >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
     """
 
@@ -220,12 +220,12 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> from mutwo import core_events
         >>> from mutwo import core_parameters
         >>> tempo_envelope = core_events.Envelope(
-        >>>     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
-        >>> )
+        ...     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
+        ... )
         >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
         >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
-        SequentialEvent([SimpleEvent(duration = 3.0), SimpleEvent(duration = 1.5), SimpleEvent(duration = 2.5)])
+        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 3)), SimpleEvent(duration = DirectDuration(duration = 7205759403792795/2251799813685248)), SimpleEvent(duration = DirectDuration(duration = 6))])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))

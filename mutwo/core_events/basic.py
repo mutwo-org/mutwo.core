@@ -44,7 +44,7 @@ class SimpleEvent(core_events.abc.Event):
     >>> from mutwo import core_events
     >>> simple_event = core_events.SimpleEvent(2)
     >>> print(simple_event)
-    SimpleEvent(duration = DirectDuration(2))
+    SimpleEvent(duration = DirectDuration(duration = 2))
     """
 
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope",)
@@ -200,21 +200,27 @@ class SimpleEvent(core_events.abc.Event):
         >>> from mutwo import core_events
         >>> simple_event = core_events.SimpleEvent(2)
         >>> simple_event.set_parameter(
-        >>>     'duration', lambda old_duration: old_duration * 2
-        >>> )
+        ...     'duration', lambda old_duration: old_duration * 2
+        ... )
+        SimpleEvent(duration = DirectDuration(duration = 4))
         >>> simple_event.duration
-        4
+        DirectDuration(4)
         >>> simple_event.set_parameter('duration', 3)
+        SimpleEvent(duration = DirectDuration(duration = 3))
         >>> simple_event.duration
-        3
+        DirectDuration(3)
         >>> simple_event.set_parameter(
-        >>>     'unknown_parameter', 10, set_unassigned_parameter=False
-        >>> )  # this will be ignored
+        ...     'unknown_parameter', 10, set_unassigned_parameter=False
+        ... )  # this will be ignored
+        SimpleEvent(duration = DirectDuration(duration = 3))
         >>> simple_event.unknown_parameter
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
         AttributeError: 'SimpleEvent' object has no attribute 'unknown_parameter'
         >>> simple_event.set_parameter(
-        >>>     'unknown_parameter', 10, set_unassigned_parameter=True
-        >>> )  # this will be written
+        ...     'unknown_parameter', 10, set_unassigned_parameter=True
+        ... )  # this will be written
+        SimpleEvent(duration = DirectDuration(duration = 3), unknown_parameter = 10)
         >>> simple_event.unknown_parameter
         10
         """
@@ -470,7 +476,6 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> sequential_event.get_event_index_at(3)
         1
         >>> sequential_event.get_event_index_at(100)
-        None
 
         **Warning:**
 
@@ -504,11 +509,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
         >>> sequential_event.get_event_at(1)
-        SimpleEvent(duration = 2)
+        SimpleEvent(duration = DirectDuration(duration = 2))
         >>> sequential_event.get_event_at(3)
-        SimpleEvent(duration = 3)
+        SimpleEvent(duration = DirectDuration(duration = 3))
         >>> sequential_event.get_event_at(100)
-        None
 
         **Warning:**
 
@@ -885,8 +889,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         >>> from mutwo import core_events
         >>> s = core_events.SimultaneousEvent(
-        >>>     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
-        >>> )
+        ...     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
+        ... )
         >>> s.concatenate_by_index(s)
         SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
         """
@@ -923,8 +927,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         >>> from mutwo import core_events
         >>> s = core_events.SimultaneousEvent(
-        >>>     [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
-        >>> )
+        ...      [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
+        ...  )
         >>> s.concatenate_by_tag(s)
         SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
         """

@@ -52,32 +52,32 @@ class EventConverter(Converter):
 
     >>> from mutwo import core_converters
     >>> class DurationPrintConverter(core_converters.abc.EventConverter):
-    >>>     def _convert_simple_event(self, event_to_convert, absolute_entry_delay):
-    >>>         return "{}: {}".format(absolute_entry_delay, event_to_convert.duration),
-    >>>     def convert(self, event_to_convert):
-    >>>         data_per_event = self._convert_event(event_to_convert, 0)
-    >>>         [print(data) for data in data_per_event]
+    ...     def _convert_simple_event(self, event_to_convert, absolute_entry_delay):
+    ...         return "{}: {}".format(absolute_entry_delay, event_to_convert.duration),
+    ...     def convert(self, event_to_convert):
+    ...         data_per_event = self._convert_event(event_to_convert, 0)
+    ...         [print(data) for data in data_per_event]
     >>> # now test with random event
     >>> import random
     >>> from mutwo import core_events
     >>> random.seed(100)
     >>> random_event = core_events.SimultaneousEvent(
-    >>>     [
-    >>>        core_events.SequentialEvent(
-    >>>             [
-    >>>                core_events.SimpleEvent(random.uniform(0.5, 2))
-    >>>                 for _ in range(random.randint(2, 5))
-    >>>             ]
-    >>>         )
-    >>>         for _ in range(random.randint(1, 3))
-    >>>     ]
-    >>> )
+    ...     [
+    ...        core_events.SequentialEvent(
+    ...             [
+    ...                core_events.SimpleEvent(random.uniform(0.5, 2))
+    ...                 for _ in range(random.randint(2, 5))
+    ...             ]
+    ...         )
+    ...         for _ in range(random.randint(1, 3))
+    ...     ]
+    ... )
     >>> DurationPrintConverter().convert(random_event)
-    0: 1.182390506771032
-    1.182390506771032: 1.6561757084885333
-    2.8385662152595654: 1.558269840401042
-    4.396836055660607: 1.5979384595498836
-    5.994774515210491: 1.1502716523431056
+    DirectDuration(duration = 0): DirectDuration(duration = 332813340356277/281474976710656)
+    DirectDuration(duration = 332813340356277/281474976710656): DirectDuration(duration = 3729376151804513/2251799813685248)
+    DirectDuration(duration = 6391882874654729/2251799813685248): DirectDuration(duration = 7017823472572815/4503599627370496)
+    DirectDuration(duration = 19801589221882273/4503599627370496): DirectDuration(duration = 449779690686865/281474976710656)
+    DirectDuration(duration = 26998064272872113/4503599627370496): DirectDuration(duration = 5180362984867255/4503599627370496)
     """
 
     @abc.abstractmethod

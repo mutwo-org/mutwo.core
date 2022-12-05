@@ -18,7 +18,7 @@ class DirectDuration(core_parameters.abc.Duration):
     >>> # create duration with duration = 10 beats
     >>> my_duration = core_parameters.DirectDuration(10)
     >>> my_duration.duration
-    10
+    Fraction(10, 1)
     """
 
     def __init__(self, duration: float):

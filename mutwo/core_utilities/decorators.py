@@ -94,19 +94,19 @@ def compute_lazy(
 
     **Example:**
 
-    >>> from mutwo.utilities import decorators
-    >>> @decorators.compute_lazy("magic_output", False)
-        def my_super_complex_calculation(n_numbers):
-            return sum(number for number in range(n_numbers))
-    >>> N_NUMBERS = 100000000
+    >>> from mutwo import core_utilities
+    >>> @core_utilities.compute_lazy("magic_output", False)
+    ... def my_super_complex_calculation(n_numbers):
+    ...     return sum(number for number in range(n_numbers))
+    >>> N_NUMBERS = 10000000
     >>> my_super_complex_calculation(N_NUMBERS)
-    4999999950000000
+    49999995000000
     >>> # takes very little time when calling the function the second time
     >>> my_super_complex_calculation(N_NUMBERS)
-    4999999950000000
+    49999995000000
     >>> # takes long again, because the input changed
     >>> my_super_complex_calculation(N_NUMBERS + 10)
-    4999999950000000
+    50000095000045
     """
 
     if pickle_module is None:

@@ -88,7 +88,7 @@ class Envelope(
 
     >>> from mutwo import core_events
     >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
-    Envelope([SimpleEvent(curve_shape = 1, duration = 0.5, value = 0), SimpleEvent(curve_shape = 0, duration = 0.0, value = 1)])
+    Envelope([SimpleEvent(curve_shape = 1, duration = DirectDuration(duration = 1/2), value = 0), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 1)])
     """
 
     # Type definitions
@@ -175,10 +175,12 @@ class Envelope(
         This is merely a convenience wrapper to write
 
             >>> Envelope.from_points([0, 1], [1, 100])
+            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
 
         instead of
 
             >>> Envelope([[0, 1], [1, 100]])
+            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
 
         to mimic the default initialization behaviour of
         `expenvelope.Envelope`. It's recommended to initialise
@@ -344,7 +346,7 @@ class Envelope(
         >>> e.value_at(1)
         2
         >>> e.value_at(0.5)
-        1
+        1.0
         """
         absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
@@ -749,16 +751,16 @@ class TempoEnvelope(Envelope):
     >>> #     So we have an envelope which moves from tempo 60 to 30
     >>> #     and back to 60.
     >>> tempo_envelope_with_float = core_events.TempoEnvelope(
-    >>>     [[0, 60], [1, 30], [2, 60]]
-    >>> )
+    ...     [[0, 60], [1, 30], [2, 60]]
+    ... )
     >>> # (2) define with tempo points
     >>> tempo_envelope_with_tempo_points = core_events.TempoEnvelope(
-    >>>     [
-    >>>         [0, core_parameters.DirectTempoPoint(60)],
-    >>>         [1, core_parameters.DirectTempoPoint(30)],
-    >>>         [2, core_parameters.DirectTempoPoint(30, reference=2)],
-    >>>     ]
-    >>> )
+    ...     [
+    ...         [0, core_parameters.DirectTempoPoint(60)],
+    ...         [1, core_parameters.DirectTempoPoint(30)],
+    ...         [2, core_parameters.DirectTempoPoint(30, reference=2)],
+    ...     ]
+    ... )
     """
 
     def __init__(

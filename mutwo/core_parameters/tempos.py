@@ -32,8 +32,8 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.TempoEnvelope([
-    >>>     [0, core_parameters.DirectTempoPoint(60, reference=2)]
-    >>> ])
+    ...     [0, core_parameters.DirectTempoPoint(60, reference=2)]
+    ... ])
     """
 
     def __init__(

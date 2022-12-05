@@ -50,13 +50,13 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
         >>> from mutwo import core_events
         >>> simple_event = core_events.SimpleEvent(duration=10)
         >>> simple_event_to_duration = core_converters.SimpleEventToAttribute(
-                'duration', 0
-            )
+        ...     'duration', 0
+        ... )
         >>> simple_event_to_duration.convert(simple_event)
-        10
+        DirectDuration(10)
         >>> simple_event_to_pasta = core_converters.SimpleEventToAttribute(
-                'pasta', 'spaghetti'
-            )
+        ...     'pasta', 'spaghetti'
+        ... )
         >>> simple_event_to_pasta.convert(simple_event)
         'spaghetti'
         >>> simple_event.pasta = 'tagliatelle'
@@ -87,12 +87,12 @@ class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
     **Example:**
 
     >>> from mutwo import core_converters
-    >>> from mutwo import music_parameters
-    >>> mutwo_parameter_dict_to_keyword_argument = core_converters.MutwoParameterDictToKeywordArgument('pitch')
+    >>> from mutwo import core_parameters
+    >>> mutwo_parameter_dict_to_keyword_argument = core_converters.MutwoParameterDictToKeywordArgument('duration')
     >>> mutwo_parameter_dict_to_keyword_argument.convert(
-        {'pitch': music_parameters.WesternPitch('c')}
-    )
-    ('pitch', music_parameters.WesternPitch(c4))
+    ...     {'duration': core_parameters.DirectDuration(1)}
+    ... )
+    ('duration', DirectDuration(1))
     """
 
     def __init__(
@@ -207,22 +207,22 @@ class UnknownObjectToObject(core_converters.abc.Converter, typing.Generic[T]):
 
     **Example:**
 
-    >>> from mutwo impot core_converters
+    >>> from mutwo import core_converters
     >>> anything_to_string = core_converters.UnknownObjectToObject[str](
-    >>>     (
-    >>>         ((float, int, list), str),
-    >>>         ((tuple,), lambda t: str(len(t))),
-    >>>         ([], lambda _: "..."),
-    >>>     )
-    >>> )
+    ...     (
+    ...         ((float, int, list), str),
+    ...         ((tuple,), lambda t: str(len(t))),
+    ...         ([], lambda _: "..."),
+    ...     )
+    ... )
     >>> anything_to_string.convert(100)
-    "100"
+    '100'
     >>> anything_to_string.convert(7.32)
-    "7.32"
+    '7.32'
     >>> anything_to_string.convert((1, 2, 3))
-    "3"
+    '3'
     >>> anything_to_string.convert(b'')
-    "..."
+    '...'
     """
 
     def __init__(

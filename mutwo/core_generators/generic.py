@@ -26,13 +26,13 @@ class DynamicChoice(object):
     >>> from mutwo import core_events
     >>> from mutwo import core_generators
     >>> dynamic_choice = core_generators.DynamicChoice(
-    >>>    [0, 1, 2],
-    >>>    [
-    >>>        core_events.Envelope([(0, 0), (0.5, 1), (1, 0)]),
-    >>>        core_events.Envelope([(0, 0.5), (0.5, 0), (1, 0.5)]),
-    >>>        core_events.Envelope([(0, 0.5), (1, 1)]),
-    >>>    ],
-    >>> )
+    ...    [0, 1, 2],
+    ...    [
+    ...        core_events.Envelope([(0, 0), (0.5, 1), (1, 0)]),
+    ...        core_events.Envelope([(0, 0.5), (0.5, 0), (1, 0.5)]),
+    ...        core_events.Envelope([(0, 0.5), (1, 1)]),
+    ...    ],
+    ... )
     >>> dynamic_choice.gamble_at(0.3)
     2
     >>> dynamic_choice.gamble_at(0.3)

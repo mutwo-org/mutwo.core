@@ -82,15 +82,15 @@ class SingleValueParameter(abc.ABC):
 
     >>> from mutwo import core_parameters
     >>> class Color(
-            core_parameters.abc.SingleValueParameter,
-            value_name="color",
-            value_return_type=str
-        ):
-            def __init__(self, color: str):
-                self._color = color
-            @property
-            def color(self) -> str:
-                return self._color
+    ...     core_parameters.abc.SingleValueParameter,
+    ...     value_name="color",
+    ...     value_return_type=str
+    ... ):
+    ...     def __init__(self, color: str):
+    ...         self._color = color
+    ...     @property
+    ...     def color(self) -> str:
+    ...         return self._color
     >>> red = Color('red')
     >>> red.color
     'red'
@@ -173,15 +173,15 @@ class SingleNumberParameter(SingleValueParameter):
 
     >>> from mutwo import core_parameters
     >>> class Speed(
-            core_parameters.abc.SingleNumberParameter,
-            value_name="meter_per_seconds",
-            value_return_type=float
-        ):
-            def __init__(self, meter_per_seconds: float):
-                self._meter_per_seconds = meter_per_seconds
-            @property
-            def meter_per_seconds(self) -> float:
-                return self._meter_per_seconds
+    ...     core_parameters.abc.SingleNumberParameter,
+    ...     value_name="meter_per_seconds",
+    ...     value_return_type=float
+    ... ):
+    ...     def __init__(self, meter_per_seconds: float):
+    ...         self._meter_per_seconds = meter_per_seconds
+    ...     @property
+    ...     def meter_per_seconds(self) -> float:
+    ...         return self._meter_per_seconds
     >>> light_speed = Speed(299792458)
     >>> sound_speed = Speed(343)
     >>> light_speed > sound_speed

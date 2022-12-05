@@ -59,16 +59,16 @@ def scale(
 
     **Example:**
 
-    >>> from mutwo.core.utilities import tools
-    >>> tools.scale(1, 0, 1, 0, 100)
-    100
-    >>> tools.scale(0.5, 0, 1, 0, 100)
-    50
-    >>> tools.scale(0.2, 0, 1, 0, 100)
-    20
-    >>> tools.scale(0.2, 0, 1, 0, 100, 1)
+    >>> from mutwo import core_utilities
+    >>> core_utilities.scale(1, 0, 1, 0, 100)
+    100.0
+    >>> core_utilities.scale(0.5, 0, 1, 0, 100)
+    50.0
+    >>> core_utilities.scale(0.2, 0, 1, 0, 100)
+    20.0
+    >>> core_utilities.scale(0.2, 0, 1, 0, 100, 1)
     12.885124808584155
-    >>> tools.scale(0.2, 0, 1, 0, 100, -1)
+    >>> core_utilities.scale(0.2, 0, 1, 0, 100, -1)
     28.67637263023771
     """
 
@@ -105,10 +105,10 @@ def scale_sequence_to_sum(
 
     **Example:**
 
-    >>> from mutwo import utilities
+    >>> from mutwo import core_utilities
     >>> sequence_to_scale = [1, 3, 2]
-    >>> utilities.tools.scale_sequence_to_sum(sequence_to_scale, 3)
-    [0.5, 1.5, 1]
+    >>> core_utilities.scale_sequence_to_sum(sequence_to_scale, 3)
+    [0.5, 1.5, 1.0]
     """
 
     if sequence_to_scale:
@@ -135,10 +135,10 @@ def accumulate_from_n(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> tools.accumulate_from_n((4, 2, 3), 0)
+    >>> from mutwo import core_utilities
+    >>> tuple(core_utilities.accumulate_from_n((4, 2, 3), 0))
     (0, 4, 6, 9)
-    >>> tools.accumulate_from_n((4, 2, 3), 2)
+    >>> tuple(core_utilities.accumulate_from_n((4, 2, 3), 2))
     (2, 6, 8, 11)
     """
     return itertools.accumulate(itertools.chain((n,), iterable))
@@ -153,8 +153,8 @@ def accumulate_from_zero(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> tools.accumulate_from_zero((4, 2, 3), 0)
+    >>> from mutwo import core_utilities
+    >>> tuple(core_utilities.accumulate_from_zero((4, 2, 3)))
     (0, 4, 6, 9)
     """
     return accumulate_from_n(iterable, 0)
@@ -191,12 +191,12 @@ def find_closest_index(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> tools.find_closest_index(2, (1, 4, 5))
+    >>> from mutwo import core_utilities
+    >>> core_utilities.find_closest_index(2, (1, 4, 5))
     0
-    >>> tools.find_closest_index(127, (100, 4, 300, 53, 129))
+    >>> core_utilities.find_closest_index(127, (100, 4, 300, 53, 129))
     4
-    >>> tools.find_closest_index(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
+    >>> core_utilities.find_closest_index(127, (('hi', 100), ('hey', 4), ('hello', 300)), key=lambda item: item[1])
     0
     """
 
@@ -234,16 +234,16 @@ def find_closest_item(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> tools.find_closest_item(2, (1, 4, 5))
+    >>> from mutwo import core_utilities
+    >>> core_utilities.find_closest_item(2, (1, 4, 5))
     1
-    >>> tools.find_closest_item(127, (100, 4, 300, 53, 129))
+    >>> core_utilities.find_closest_item(127, (100, 4, 300, 53, 129))
     129
-    >>> tools.find_closest_item(
-    >>>     127,
-    >>>     (('hi', 100), ('hey', 4), ('hello', 300)),
-    >>>     key=lambda item: item[1]
-    >>> )
+    >>> core_utilities.find_closest_item(
+    ...     127,
+    ...     (('hi', 100), ('hey', 4), ('hello', 300)),
+    ...     key=lambda item: item[1]
+    ... )
     ('hi', 100)
     """
     return sequence[find_closest_index(item, sequence, key=key)]
@@ -265,14 +265,9 @@ def uniqify_sequence(
 
     **Example:**
 
-    >>> from mutwo.parameters import pitches
-    >>> from mutwo.utilities import tools
-    >>> tools.uniqify_sequence([pitches.WesternPitch(pitch_name) for pitch_name in 'c d e c d e e f a c a'.split(' ')])
-    [WesternPitch(c4),
-    WesternPitch(d4),
-    WesternPitch(e4),
-    WesternPitch(f4),
-    WesternPitch(a4)]
+    >>> from mutwo import core_utilities
+    >>> core_utilities.uniqify_sequence([[1, 2], [1], [1]])
+    [[1], [1, 2]]
     """
 
     sorted_iterable = sorted(sequence, key=sort_key)
@@ -292,12 +287,12 @@ def cyclic_permutations(sequence: typing.Sequence[typing.Any]) -> typing.Generat
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> permutations = tools.cyclic_permutations((1, 2, 3, 4))
+    >>> from mutwo import core_utilities
+    >>> permutations = core_utilities.cyclic_permutations((1, 2, 3, 4))
+    >>> next(permutations)
+    (1, 2, 3, 4)
     >>> next(permutations)
     (2, 3, 4, 1)
-    >>> next(permutations)
-    (3, 4, 1, 2)
 
     `Adapted function from the reply of Paritosh Singh
     <https://stackoverflow.com/questions/56171246/cyclic-permutation-operators-in-python/56171531>`_
@@ -352,9 +347,9 @@ def get_nested_item_from_index_sequence(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
+    >>> from mutwo import core_utilities
     >>> nested_sequence = (1, 2, (4, (5, 1), (9, (3,))))
-    >>> tools.get_nested_item_from_index_sequence((2, 2, 0), nested_sequence)
+    >>> core_utilities.get_nested_item_from_index_sequence((2, 2, 0), nested_sequence)
     9
     >>> nested_sequence[2][2][0]  # is equal
     9
@@ -381,9 +376,9 @@ def set_nested_item_from_index_sequence(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]]
-    >>> tools.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
+    >>> from mutwo import core_utilities
+    >>> nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]
+    >>> core_utilities.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
     >>> nested_sequence[2][2][0] = 100  # is equal
     """
 
@@ -435,8 +430,8 @@ def find_numbers_which_sums_up_to(
 
     **Example:**
 
-    >>> from mutwo.utilities import tools
-    >>> tools.find_numbers_which_sums_up_to(4)
+    >>> from mutwo import core_utilities
+    >>> core_utilities.find_numbers_which_sums_up_to(4)
     ((4,), (1, 3), (2, 2), (1, 1, 2), (1, 1, 1, 1))
     """
 
@@ -499,7 +494,7 @@ def test_if_objects_are_equal_by_parameter_tuple(
 
     **Example:**
 
-    >>> from mutwo import core_utilites
+    >>> from mutwo import core_utilities
     >>> class A: pass
     >>> first_object = A()
     >>> first_object.a = 100
@@ -507,13 +502,13 @@ def test_if_objects_are_equal_by_parameter_tuple(
     >>> second_object.a = 100
     >>> third_object = A()
     >>> third_object.a = 200
-    >>> core_utilites.test_if_objects_are_equal_by_parameter_tuple(
-    >>>     first_object, second_object, ("a",)
-    >>> )
+    >>> core_utilities.test_if_objects_are_equal_by_parameter_tuple(
+    ...     first_object, second_object, ("a",)
+    ... )
     True
-    >>> core_utilites.test_if_objects_are_equal_by_parameter_tuple(
-    >>>     first_object, third_object, ("a",)
-    >>> )
+    >>> core_utilities.test_if_objects_are_equal_by_parameter_tuple(
+    ...     first_object, third_object, ("a",)
+    ... )
     False
     """
 
