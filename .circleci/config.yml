@@ -17,6 +17,7 @@ jobs:
             source mutwo_test/mutwo_test/bin/activate
             pip3 install .[testing]
             pytest
+            pytest --doctest-modules mutwo
             deactivate
   pypi_publish:
     docker:
