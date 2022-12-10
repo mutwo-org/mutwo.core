@@ -65,8 +65,7 @@ class ParameterWithEnvelope(abc.ABC):
         #  because we need core_parameters.Duration in core_events).
         resolve_envelope_class: typing.Optional[type[core_events.Envelope]] = None,
     ) -> core_events.Envelope:
-        if resolve_envelope_class is None:
-            resolve_envelope_class = core_events.Envelope
+        resolve_envelope_class = resolve_envelope_class or core_events.Envelope
         return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
