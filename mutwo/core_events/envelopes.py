@@ -414,8 +414,7 @@ class Envelope(
     def sample_at(
         self,
         absolute_time: core_parameters.abc.Duration | typing.Any,
-        append_duration: core_parameters.abc.Duration
-        | typing.Any = core_parameters.DirectDuration(0),
+        append_duration: core_parameters.abc.Duration | typing.Any = 0,
     ) -> Envelope:
         """Discretize envelope at given time
 
@@ -723,7 +722,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         return resolve_envelope_class(point_list)
 
 
-TempoPoint = core_parameters.abc.TempoPoint | core_constants.Real
+TempoPoint: typing.TypeAlias = "core_parameters.abc.TempoPoint | core_constants.Real"
 
 
 class TempoEnvelope(Envelope):
