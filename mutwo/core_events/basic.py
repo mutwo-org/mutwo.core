@@ -616,14 +616,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # floating point rounding error. To avoid odd bugs
         # we therefore have to define the bigger-equal
         # relationship.
-        if start >= self.duration:
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
+        if start_in_floats >= duration_in_floats:
             self.append(event_to_squash_in)
-
         else:
-            (
-                absolute_time_in_floats_tuple,
-                duration_in_floats,
-            ) = self._absolute_time_in_floats_tuple_and_duration
             try:
                 insert_index = absolute_time_in_floats_tuple.index(start)
             # There is an event on the given point which need to be
