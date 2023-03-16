@@ -558,6 +558,29 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             # original exception.
             raise error
 
+    # We write custom __delitem__ to support deletion via tag.
+    @typing.overload
+    def __delitem__(self, index_or_slice_or_tag: int):
+        ...
+
+    @typing.overload
+    def __delitem__(self, index_or_slice_or_tag: slice):
+        ...
+
+    @typing.overload
+    def __delitem__(self, index_or_slice_or_tag: str):
+        ...
+
+    def __delitem__(self, index_or_slice_or_tag: int | slice | str):
+        try:
+            super().__delitem__(index_or_slice_or_tag)
+        except TypeError as error:
+            if isinstance(index_or_slice_or_tag, str):
+                return self.__delitem__(self._tag_to_index(index_or_slice_or_tag))
+            # It can't be a tag, therefore simply raise
+            # original exception.
+            raise error
+
     def __eq__(self, other: typing.Any) -> bool:
         """Test for checking if two objects are equal."""
         try:

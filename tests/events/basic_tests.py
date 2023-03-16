@@ -363,6 +363,11 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             type(core_events.SequentialEvent([]) * 5), core_events.SequentialEvent
         )
 
+    def test_magic_method_del_by_tag(self):
+        s = core_events.SequentialEvent([core_events.TaggedSimpleEvent(1, tag="a")])
+        del s["a"]
+        self.assertEqual(s, core_events.SequentialEvent([]))
+
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(6))
 
@@ -1130,7 +1135,9 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 se([s(2), s(1), s(2), s(3)]),
             ]
         )
-        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok)
+        self.assertEqual(
+            si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok
+        )
         #   Mutate inplace!
         self.assertEqual(si_test, si_ok)
 
@@ -1143,7 +1150,9 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 se([s(2)]),
             ]
         )
-        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok)
+        self.assertEqual(
+            si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok
+        )
 
     def test_concatenate_by_index_exception(self):
         self.assertRaises(
