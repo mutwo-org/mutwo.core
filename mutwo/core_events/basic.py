@@ -296,6 +296,16 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     """Event-Object which contains other Events which happen in a linear order."""
 
     # ###################################################################### #
+    #                           magic methods                                #
+    # ###################################################################### #
+
+    def __add__(self, event: list[T]) -> SequentialEvent[T]:
+        e = self.copy()
+        e._concatenate_tempo_envelope(event)
+        e.extend(event)
+        return e
+
+    # ###################################################################### #
     #                    private static methods                              #
     # ###################################################################### #
 
@@ -733,6 +743,12 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @staticmethod
     def _extend_ancestor(ancestor: core_events.abc.Event, event: core_events.abc.Event):
+        try:
+            ancestor._concatenate_tempo_envelope(event)
+        # We can't concatenate to a simple event.
+        # We also can't concatenate to anything else.
+        except AttributeError:
+            raise core_utilities.ConcatenationError(ancestor, event)
         match ancestor:
             case core_events.SequentialEvent():
                 ancestor.extend(event)
@@ -741,8 +757,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     ancestor.concatenate_by_tag(event)
                 except core_utilities.NoTagError:
                     ancestor.concatenate_by_index(event)
-            # We can't concatenate to a simple event.
-            # We also can't concatenate to anything else.
+            # This should already fail above, but if this strange object
+            # somehow owned '_concatenate_tempo_envelope', it should
+            # fail here.
             case _:
                 raise core_utilities.ConcatenationError(ancestor, event)
 

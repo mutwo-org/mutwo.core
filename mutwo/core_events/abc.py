@@ -663,6 +663,29 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             id_set=id_set,
         )
 
+    def _concatenate_tempo_envelope(self, other: ComplexEvent):
+        """Concatenate the tempo of event with tempo of other event.
+
+        If we concatenate events on the time axis, we also want to
+        ensure that the tempo information is not lost.
+        This includes the `+` magic method of ``SequentialEvent``,
+        but also the `concatenate_by...` methods of ``SimultaneousEvent``.
+
+        It's important to first call this method before appending the
+        child events of the other container, because we still need
+        to know the original duration of the target event. Due to this
+        difficulty this method is private.
+        """
+        other_tempo_envelope = other.tempo_envelope.copy()
+        # We first set the duration of the tempo envelopes to the
+        # duration of the given event. This is necessary, because the
+        # tempo envelope duration is always relative to the events duration.
+        # If we don't set them to this absolute value, the inner
+        # relationships may be distorted after concatenation.
+        self.tempo_envelope.duration = self.duration
+        other_tempo_envelope.duration = other.duration
+        self.tempo_envelope.extend(other_tempo_envelope)
+
     # ###################################################################### #
     #                           public methods                               #
     # ###################################################################### #

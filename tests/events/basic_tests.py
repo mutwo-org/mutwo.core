@@ -325,11 +325,38 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             core_converters.EventToMetrizedEvent().convert(sequential_event),
         )
 
+    def test_concatenate_tempo_envelope(self):
+        seq0 = self.get_event_class()(
+            [core_events.SimpleEvent(1)],
+            tempo_envelope=core_events.TempoEnvelope([[0, 20], [100, 30]]),
+        )
+        seq1 = self.get_event_class()(
+            [core_events.SimpleEvent(2)],
+            tempo_envelope=core_events.TempoEnvelope([[0, 50], [1, 10]]),
+        )
+        seq0._concatenate_tempo_envelope(seq1)
+        self.assertEqual(seq0.tempo_envelope.value_tuple, (20, 30, 50, 10))
+        self.assertEqual(
+            seq0.tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 3)
+        )
+
     def test_magic_method_add(self):
         self.assertEqual(
             type(core_events.SequentialEvent([]) + core_events.SequentialEvent([])),
             core_events.SequentialEvent,
         )
+
+    def test_magic_method_add_children(self):
+        """Ensure children and tempo envelope are concatenated"""
+        seq, s = core_events.SequentialEvent, core_events.SimpleEvent
+        seq0, seq1 = seq([s(1)]), seq([s(1), s(2)])
+        seq_ok = seq(
+            [s(1), s(1), s(2)],
+            tempo_envelope=core_events.TempoEnvelope(
+                [[0, 60], [1, 60], [1, 60], [4, 60]]
+            ),
+        )
+        self.assertEqual(seq0 + seq1, seq_ok)
 
     def test_magic_method_mul(self):
         self.assertEqual(
@@ -1068,6 +1095,14 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         self.assertEqual(si([s(1), s(3)]).extend_until(), si([s(3), s(3)]))
 
     def test_concatenate_by_index(self):
+        # In this test we call 'metrize()' on each concatenated
+        # event, so for each layer 'reset_tempo_envelope' is called
+        # and we don't have to provide the concatenated tempo envelope
+        # (which is != the default tempo envelope when constructing events).
+        #
+        # We already carefully test the tempo_envelope concatenation
+        # feature of 'conatenate_by_tag' in
+        # 'test_concatenate_by_index_persists_tempo_envelope'.
         s, se, si = (
             core_events.SimpleEvent,
             core_events.SequentialEvent,
@@ -1078,7 +1113,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         self.assertEqual(
             self.nested_sequence.concatenate_by_index(
                 self.nested_sequence, mutate=False
-            ),
+            ).metrize(),
             si(
                 [
                     se([s(1), s(2), s(3), s(1), s(2), s(3)]),
@@ -1095,7 +1130,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 se([s(2), s(1), s(2), s(3)]),
             ]
         )
-        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence), si_ok)
+        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok)
         #   Mutate inplace!
         self.assertEqual(si_test, si_ok)
 
@@ -1108,7 +1143,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 se([s(2)]),
             ]
         )
-        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence), si_ok)
+        self.assertEqual(si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok)
 
     def test_concatenate_by_index_exception(self):
         self.assertRaises(
@@ -1125,27 +1160,64 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         empty_se.concatenate_by_index(filled_se)
         self.assertEqual(empty_se, filled_se)
 
+    def test_concatenate_by_index_persists_tempo_envelope(self):
+        """Verify that concatenation also concatenates the tempos"""
+        sim0 = core_events.SimultaneousEvent(
+            [
+                core_events.SequentialEvent(
+                    [core_events.SimpleEvent(1)],
+                    tempo_envelope=core_events.TempoEnvelope([[0, 1], [10, 100]]),
+                )
+            ]
+        )
+        sim1 = core_events.SimultaneousEvent(
+            [
+                core_events.SequentialEvent(
+                    [core_events.SimpleEvent(1)],
+                    tempo_envelope=core_events.TempoEnvelope([[0, 1000], [1, 10]]),
+                )
+            ]
+        )
+        sim0.concatenate_by_index(sim1)
+        self.assertEqual(sim0[0].tempo_envelope.value_tuple, (1, 100, 1000, 10))
+        self.assertEqual(
+            sim0[0].tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 2)
+        )
+
     def test_concatenate_by_tag(self):
-        s, tse, si = (
+        s, tse, si, t = (
             core_events.SimpleEvent,
             core_events.TaggedSequentialEvent,
             core_events.SimultaneousEvent,
+            core_events.TempoEnvelope,
         )
 
         s1 = si([tse([s(1), s(1)], tag="a")])
         s2 = si([tse([s(2), s(1)], tag="a"), tse([s(0.5)], tag="b")])
 
+        # Concatenation tempo envelopes
+        t0 = t([[0, 60], [2, 60], [2, 60], [4, 60]])
+        t1 = t([[0, 60], [2, 60], [2, 60], [5, 60]])
+        t2 = t([[0, 60], [3, 60], [3, 60], [5, 60]])
+
         # Equal size concatenation
         self.assertEqual(
             s1.concatenate_by_tag(s1, mutate=False),
-            si([tse([s(1), s(1), s(1), s(1)], tag="a")]),
+            si([tse([s(1), s(1), s(1), s(1)], tag="a", tempo_envelope=t0)]),
         )
 
         # Smaller self
         s2.reverse()  # verify order doesn't matter
         self.assertEqual(
             s1.concatenate_by_tag(s2, mutate=False),
-            si([tse([s(1), s(1), s(2), s(1)], tag="a"), tse([s(2), s(0.5)], tag="b")]),
+            si(
+                [
+                    tse([s(1), s(1), s(2), s(1)], tag="a", tempo_envelope=t1),
+                    # Tempo envelope is default, because no ancestor existed
+                    # (so '_concatenate_tempo_envelope' wasn't called)
+                    tse([s(2), s(0.5)], tag="b"),
+                ]
+            ),
         )
 
         # Smaller other
@@ -1153,7 +1225,12 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         self.assertEqual(
             s2.concatenate_by_tag(s1, mutate=False),
             si(
-                [tse([s(2), s(1), s(1), s(1)], tag="a"), tse([s(0.5), s(2.5)], tag="b")]
+                [
+                    tse([s(2), s(1), s(1), s(1)], tag="a", tempo_envelope=t2),
+                    # Tempo envelope is default, because no successor existed
+                    # (so '_concatenate_tempo_envelope' wasn't called)
+                    tse([s(0.5), s(2.5)], tag="b"),
+                ]
             ),
         )
 
