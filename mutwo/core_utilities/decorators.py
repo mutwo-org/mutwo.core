@@ -2,7 +2,6 @@
 
 import copy
 import functools
-import inspect
 import os
 import types
 import typing
