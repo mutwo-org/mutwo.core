@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2023-03-16
+
+### Fixed
+- deletion of child events via tags (see https://github.com/mutwo-org/mutwo.core/commit/c65f59cb831cc4945e57e57cebecbfcf777c2835)
+- tempo envelope persistence in time-axis based event concatenations (see https://github.com/mutwo-org/mutwo.core/commit/881b7e950518c9aa3342f446143401d2f688af1d)
+- error when importing `mutwo.core_parameters` before `mutwo.core_events` (see https://github.com/mutwo-org/mutwo.core/commit/c0147defcfa0f7fdbde91e87d988cbb1ec8d4cb0)
+
 
 ## [1.2.1] - 2022-12-04
 
