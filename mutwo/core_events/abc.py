@@ -606,13 +606,17 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @Event.duration.setter  # type: ignore
     def duration(self, duration: core_parameters.abc.Duration):
         duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
-        old_duration = self.duration
-        self.set_parameter(
-            "duration",
-            lambda event_duration: core_utilities.scale(
-                event_duration, 0, old_duration, 0, duration
-            ),
-        )
+        if (old_duration := self.duration) != 0:
+
+            def f(event_duration: core_parameters.abc.Duration):
+                return core_utilities.scale(
+                    event_duration, 0, old_duration, 0, duration
+                )
+
+        else:
+            f = duration / len(self)
+
+        self.set_parameter("duration", f)
 
     # ###################################################################### #
     #                           private methods                              #
