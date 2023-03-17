@@ -2,6 +2,7 @@
 
 """
 
+import functools
 import typing
 import warnings
 
@@ -119,6 +120,24 @@ class TempoConverter(core_converters.abc.EventConverter):
 
     _tempo_point_to_beat_length_in_seconds = TempoPointToBeatLengthInSeconds().convert
 
+    # Define private tempo envelope class which catches its
+    # '_absolute_time_in_floats_tuple_and_duration'. With this we can
+    # improve the performance of the 'value_at' method and with this
+    # improvment we can have a faster converter.
+    #
+    # This is actually not safe, because the envelope is still mutable.
+    # But we trust that no one changes anything with our internal envelope
+    # and hope everything goes well. The long term solution is to implement
+    # a 'freeze' method for all mutwo objects, which auto-converts all
+    # properties to catched properties. But this may still takes some time
+    # and we already want to have faster converters now.
+    class _CatchedTempoEnvelope(core_events.TempoEnvelope):
+        @functools.cached_property
+        def _absolute_time_in_floats_tuple_and_duration(
+            self,
+        ) -> tuple[tuple[float, ...], float]:
+            return super()._absolute_time_in_floats_tuple_and_duration
+
     def __init__(
         self,
         tempo_envelope: core_events.TempoEnvelope,
@@ -154,7 +173,7 @@ class TempoConverter(core_converters.abc.EventConverter):
             )
             level_list.append(beat_length_in_seconds)
 
-        return core_events.Envelope(
+        return TempoConverter._CatchedTempoEnvelope(
             [
                 [absolute_time, value, curve_shape]
                 for absolute_time, value, curve_shape in zip(
@@ -184,14 +203,16 @@ class TempoConverter(core_converters.abc.EventConverter):
             )
         return t
 
-    def _integrate(self, start: core_parameters.abc.Duration, end: core_parameters.abc.Duration):
+    def _integrate(
+        self, start: core_parameters.abc.Duration, end: core_parameters.abc.Duration
+    ):
         key = (start.duration, end.duration)
         try:
             i = self._start_and_end_to_integration[key]
         except KeyError:
-            i = self._start_and_end_to_integration[key] = self._beat_length_in_seconds_envelope.integrate_interval(
-                start, end
-            )
+            i = self._start_and_end_to_integration[
+                key
+            ] = self._beat_length_in_seconds_envelope.integrate_interval(start, end)
         return i
 
     def _convert_simple_event(
@@ -200,7 +221,9 @@ class TempoConverter(core_converters.abc.EventConverter):
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
-        simple_event.duration = self._integrate(absolute_entry_delay, absolute_entry_delay + simple_event.duration)
+        simple_event.duration = self._integrate(
+            absolute_entry_delay, absolute_entry_delay + simple_event.duration
+        )
         return tuple([])
 
     def _convert_event(
