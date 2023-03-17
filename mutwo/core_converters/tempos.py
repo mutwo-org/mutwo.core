@@ -133,7 +133,9 @@ class TempoConverter(core_converters.abc.EventConverter):
         self._apply_converter_on_events_tempo_envelope = (
             apply_converter_on_events_tempo_envelope
         )
+        # Catches for better performance
         self._start_and_end_to_tempo_converter_dict = {}
+        self._start_and_end_to_integration = {}
 
     # ###################################################################### #
     #                          static methods                                #
@@ -182,17 +184,23 @@ class TempoConverter(core_converters.abc.EventConverter):
             )
         return t
 
+    def _integrate(self, start: core_parameters.abc.Duration, end: core_parameters.abc.Duration):
+        key = (start.duration, end.duration)
+        try:
+            i = self._start_and_end_to_integration[key]
+        except KeyError:
+            i = self._start_and_end_to_integration[key] = self._beat_length_in_seconds_envelope.integrate_interval(
+                start, end
+            )
+        return i
+
     def _convert_simple_event(
         self,
         simple_event: core_events.SimpleEvent,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
-        simple_event.duration = (
-            self._beat_length_in_seconds_envelope.integrate_interval(
-                absolute_entry_delay, simple_event.duration + absolute_entry_delay
-            )
-        )
+        simple_event.duration = self._integrate(absolute_entry_delay, absolute_entry_delay + simple_event.duration)
         return tuple([])
 
     def _convert_event(
