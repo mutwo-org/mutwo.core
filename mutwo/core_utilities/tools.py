@@ -80,7 +80,10 @@ def scale(
             f"(old_min = {old_min}, old_max = {old_max})."
         )
 
-    percentage = (value - old_min) / (old_max - old_min)
+    old_span = old_max - old_min
+    assert old_span != 0, "Can't scale if old span == 0"
+
+    percentage = (value - old_min) / old_span
     new_range = new_max - new_min
     if translation_shape:
         value = (new_range / ((math.exp(translation_shape)) - 1)) * (
