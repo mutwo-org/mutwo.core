@@ -4,6 +4,7 @@ from . import configurations
 
 from .decorators import *
 from .exceptions import *
+from ._tools import *
 from .tools import *
 from .tests import *
 

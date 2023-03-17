@@ -10,6 +10,7 @@ import types
 import typing
 
 from mutwo import core_constants
+from mutwo import core_utilities
 
 
 __all__ = (
@@ -82,6 +83,7 @@ def scale(
 
     old_span = old_max - old_min
     assert old_span != 0, "Can't scale if old span == 0"
+    return core_utilities.scalex(value, old_min, old_max, new_min, new_max)
 
     percentage = (value - old_min) / old_span
     new_range = new_max - new_min

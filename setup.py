@@ -1,5 +1,7 @@
 import setuptools  # type: ignore
+from Cython.Build import cythonize
 
+ext_modules = cythonize("mutwo/core_utilities/_tools.pyx", annotate=True)
 
 version = {}
 with open("mutwo/core_version/__init__.py") as fp:
@@ -47,4 +49,5 @@ setuptools.setup(
         "Topic :: Artistic Software",
     ],
     python_requires=">=3.10, <4",
+    ext_modules=ext_modules,
 )

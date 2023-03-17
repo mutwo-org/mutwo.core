@@ -34,16 +34,18 @@ in
 
   buildPythonPackage rec {
     name = "mutwo.core";
-    src = fetchFromGitHub {
-      owner = "mutwo-org";
-      repo = name;
-      rev = "4ec3e2ecfa784208830c2e3d0ee965407c714ae0";
-      sha256 = "sha256-FxKWpzZvrdnsg9Ug6OxP0HeoBgAEHNdGZ8my5igjeIs=";
-    };
+    src = ./.;
+    # src = fetchFromGitHub {
+    #   owner = "mutwo-org";
+    #   repo = name;
+    #   rev = "4ec3e2ecfa784208830c2e3d0ee965407c714ae0";
+    #   sha256 = "sha256-FxKWpzZvrdnsg9Ug6OxP0HeoBgAEHNdGZ8my5igjeIs=";
+    # };
     checkInputs = [
       python310Packages.pytest
     ];
     propagatedBuildInputs = [ 
+      python310Packages.cython_3
       python310Packages.numpy
       python310Packages.scipy
       python-ranges
