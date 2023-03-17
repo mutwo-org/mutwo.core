@@ -133,6 +133,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         self._apply_converter_on_events_tempo_envelope = (
             apply_converter_on_events_tempo_envelope
         )
+        self._start_and_end_to_tempo_converter_dict = {}
 
     # ###################################################################### #
     #                          static methods                                #
@@ -166,6 +167,21 @@ class TempoConverter(core_converters.abc.EventConverter):
     #                         private methods                                #
     # ###################################################################### #
 
+    def _start_and_end_to_tempo_converter(self, start, end):
+        key = (start.duration, end.duration)
+        try:
+            t = self._start_and_end_to_tempo_converter_dict[key]
+        except KeyError:
+            t = self._start_and_end_to_tempo_converter_dict[key] = TempoConverter(
+                self._tempo_envelope.cut_out(
+                    start,
+                    end,
+                    mutate=False,
+                ),
+                apply_converter_on_events_tempo_envelope=False,
+            )
+        return t
+
     def _convert_simple_event(
         self,
         simple_event: core_events.SimpleEvent,
@@ -186,14 +202,14 @@ class TempoConverter(core_converters.abc.EventConverter):
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
         if self._apply_converter_on_events_tempo_envelope:
-            event_to_convert.tempo_envelope = TempoConverter(
-                self._tempo_envelope.cut_out(
-                    absolute_entry_delay,
-                    absolute_entry_delay + event_to_convert.duration,
-                    mutate=False,
-                ),
-                apply_converter_on_events_tempo_envelope=False,
-            ).convert(event_to_convert.tempo_envelope)
+            start, end = (
+                absolute_entry_delay,
+                absolute_entry_delay + event_to_convert.duration,
+            )
+            local_tempo_converter = self._start_and_end_to_tempo_converter(start, end)
+            event_to_convert.tempo_envelope = local_tempo_converter(
+                event_to_convert.tempo_envelope
+            )
         return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
 
     # ###################################################################### #
