@@ -201,16 +201,28 @@ class TempoConverter(core_converters.abc.EventConverter):
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
-        if self._apply_converter_on_events_tempo_envelope:
+        tempo_envelope = event_to_convert.tempo_envelope
+        is_tempo_envelope_effectless = (
+            tempo_envelope.is_static and tempo_envelope.value_tuple[0] == 60
+        )
+        if (
+            self._apply_converter_on_events_tempo_envelope
+            and not is_tempo_envelope_effectless
+        ):
             start, end = (
                 absolute_entry_delay,
                 absolute_entry_delay + event_to_convert.duration,
             )
             local_tempo_converter = self._start_and_end_to_tempo_converter(start, end)
-            event_to_convert.tempo_envelope = local_tempo_converter(
-                event_to_convert.tempo_envelope
-            )
-        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+            event_to_convert.tempo_envelope = local_tempo_converter(tempo_envelope)
+        rvalue = super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+        if is_tempo_envelope_effectless:
+            # Yes we simply override the tempo_envelope of the event which we
+            # just converted. This is because the TempoConverter copies the
+            # event at the start of the algorithm and simply mutates this
+            # copied event.
+            event_to_convert.tempo_envelope.duration = event_to_convert.duration
+        return rvalue
 
     # ###################################################################### #
     #               public methods for interaction with the user             #
