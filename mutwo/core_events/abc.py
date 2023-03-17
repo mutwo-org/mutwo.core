@@ -605,6 +605,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     @Event.duration.setter  # type: ignore
     def duration(self, duration: core_parameters.abc.Duration):
+        if not self:  # If empty and duration == 0, we'd run into ZeroDivision
+            raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
+
         duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         if (old_duration := self.duration) != 0:
 
