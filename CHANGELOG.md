@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.3] - 2023-03-17
+
+### Changed
+- improve performance of `TempoConverter` by 500%
+
+
 ## [1.2.2] - 2023-03-16
 
 ### Fixed
