@@ -1265,6 +1265,66 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         empty_se.concatenate_by_tag(filled_se)
         self.assertEqual(empty_se, filled_se)
 
+    def test_sequentialize_empty_event(self):
+        self.assertEqual(
+            core_events.SimultaneousEvent([]).sequentialize(),
+            core_events.SequentialEvent([]),
+        )
+
+    def test_sequentialize_simple_event(self):
+        e = core_events.SimultaneousEvent(
+            [core_events.SimpleEvent(3), core_events.SimpleEvent(1)]
+        )
+        e_sequentialized = core_events.SequentialEvent(
+            [
+                core_events.SimultaneousEvent(
+                    [core_events.SimpleEvent(1), core_events.SimpleEvent(1)]
+                ),
+                core_events.SimultaneousEvent([core_events.SimpleEvent(2)]),
+            ]
+        )
+        self.assertEqual(e.sequentialize(), e_sequentialized)
+
+    def test_sequentialize_sequential_event(self):
+        seq, sim, s = (
+            core_events.SequentialEvent,
+            core_events.SimultaneousEvent,
+            core_events.SimpleEvent,
+        )
+        e = sim(
+            [
+                seq([s(2), s(1)]),
+                seq([s(3)]),
+            ]
+        )
+        e_sequentialized = seq(
+            [
+                sim([seq([s(2)]), seq([s(2)])]),
+                sim([seq([s(1)]), seq([s(1)])]),
+            ]
+        )
+        self.assertEqual(e.sequentialize(), e_sequentialized)
+
+    def test_sequentialize_simultaneous_event(self):
+        seq, sim, s = (
+            core_events.SequentialEvent,
+            core_events.SimultaneousEvent,
+            core_events.SimpleEvent,
+        )
+        e = sim(
+            [
+                sim([s(3)]),
+                sim([s(1)]),
+            ]
+        )
+        e_sequentialized = seq(
+            [
+                sim([sim([s(1)]), sim([s(1)])]),
+                sim([sim([s(2)])]),
+            ]
+        )
+        self.assertEqual(e.sequentialize(), e_sequentialized)
+
 
 if __name__ == "__main__":
     unittest.main()

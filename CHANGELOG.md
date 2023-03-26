@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent`
+
+
 ## [1.2.3] - 2023-03-17
 
 ### Changed

@@ -963,6 +963,107 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             else:
                 self._extend_ancestor(ancestor, tagged_event)
 
+    # NOTE: 'sequentalize' is very generic, it works for all type of child
+    # event structure. This is good, but in it's current form it's mostly
+    # only useful with rather long and complex user defined 'slice_tuple_to_event'
+    # definitions. For instance when sequentializing
+    # SimultaneousEvent[SequentialEvent[SimpleEvent]] the returned event will be
+    # SequentialEvent[SimultaneousEvent[SequentialEvent[SimpleEvent]]]. Here the
+    # inner sequential events are always pointless, since they will always only
+    # contain one simple event.
+    def sequentialize(
+        self,
+        slice_tuple_to_event: typing.Optional[
+            typing.Callable[
+                [tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event
+            ]
+        ] = None,
+    ) -> core_events.SequentialEvent:
+        """Convert parallel structure to a sequential structure.
+
+        :param slice_tuple_to_event: In order to sequentialize the event
+            `mutwo` splits each child event into small 'event slices'. These
+            'event slices' are simply events created by the `split_at` method.
+            Each of those parallel slice groups need to be bound together to
+            one new event. These new events are sequentially ordered to result
+            in a new sequential structure. The simplest and default way to
+            archive this is by simply putting all event parts into a new
+            :class:`SimultaneousEvent`, so the resulting :class:`SequentialEvent`
+            will be a sequence of `SimultaneousEvent`. This parameter is
+            available so that users can convert her/his parallel structure in
+            meaningful ways (for instance to imitate the ``.chordify``
+            `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`
+            which transforms polyphonic music to a chord structure).
+            If ``None`` `slice_tuple_to_event` is set to
+            :class:`SimultaneousEvent`. Default to ``None``.
+        :type slice_tuple_to_event: typing.Optional[typing.Callable[[tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event]]
+
+        **Example:**
+
+        >>> from mutwo import core_events
+        >>> e = core_events.SimultaneousEvent(
+        ...     [
+        ...         core_events.SequentialEvent(
+        ...             [core_events.SimpleEvent(2), core_events.SimpleEvent(1)]
+        ...         ),
+        ...         core_events.SequentialEvent(
+        ...             [core_events.SimpleEvent(3)]
+        ...         ),
+        ...     ]
+        ... )
+        >>> e.sequentialize()
+        SequentialEvent([SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))])]), SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))])])])
+        """
+        if slice_tuple_to_event is None:
+            slice_tuple_to_event = SimultaneousEvent
+
+        # Find all start/end times
+        absolute_time_set = set([])
+        for e in self:
+            try:  # SequentialEvent
+                (
+                    absolute_time_tuple,
+                    duration,
+                ) = e._absolute_time_in_floats_tuple_and_duration
+            except AttributeError:  # SimpleEvent or SimultaneousEvent
+                absolute_time_tuple, duration = (0,), e.duration.duration_in_floats
+            for t in absolute_time_tuple + (duration,):
+                absolute_time_set.add(t)
+
+        # Sort, but also remove the last entry: we don't need
+        # to split at complete duration, because after duration
+        # there isn't any event left in any child.
+        absolute_time_list = sorted(absolute_time_set)[:-1]
+
+        # Slice all child events
+        slices = []
+        for e in self:
+            eslice_list = []
+            for split_t in reversed(absolute_time_list):
+                if split_t == 0:  # We reached the end
+                    eslice = e
+                else:
+                    try:
+                        e, eslice = e.split_at(split_t)
+                    # Event is shorter etc.
+                    except core_utilities.InvalidStartAndEndValueError:
+                        # We still need to append an event slice,
+                        # because otherwise this slice group will be
+                        # omitted (because we use 'zip').
+                        eslice = None
+                eslice_list.append(eslice)
+            eslice_list.reverse()
+            slices.append(eslice_list)
+
+        # Finally, build new sequence from event slices
+        sequential_event = core_events.SequentialEvent([])
+        for slice_tuple in zip(*slices):
+            if slice_tuple := tuple(filter(bool, slice_tuple)):
+                e = slice_tuple_to_event(slice_tuple)
+                sequential_event.append(e)
+
+        return sequential_event
+
 
 @core_utilities.add_tag_to_class
 class TaggedSimpleEvent(SimpleEvent):
@@ -981,3 +1082,7 @@ class TaggedSimultaneousEvent(
     SimultaneousEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
 ):
     """:class:`SimultaneousEvent` with tag."""
+
+    def sequentialize(self, *args, **kwargs):
+        sequential_event = super().sequentialize(*args, **kwargs)
+        return TaggedSequentialEvent(sequential_event, tag=self.tag)
