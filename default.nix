@@ -1,59 +1,11 @@
-with import <nixpkgs> {};
-with pkgs.python310Packages;
-
 let
-
-  python-ranges = pkgs.python310Packages.buildPythonPackage rec {
-    name = "python-ranges";
-    src = fetchFromGitHub {
-      owner = "Superbird11";
-      repo = "ranges";
-      rev = "38ac789b61e1e33d1a8be999ca969f909bb652c0";
-      sha256 = "sha256-oRQCtDBQnViNP6sJZU0NqFWkn2YpcIeGWmfx3Ne/n2c=";
-    };
-    # TypeError: calling <class 'ranges.RangeDict.RangeDict'> returned {}, not a test
-    doCheck = false;
-    checkInputs = [ python310Packages.pytest ];
-  };
-
-  quicktions = pkgs.python310Packages.buildPythonPackage rec {
-    name = "quicktions";
-    src = fetchPypi {
-      pname = name;
-      version = "1.13";
-      sha256 = "sha256-HzmMN1sAUjsSgy7vNvX/hq49LZmSnTQYbamjRoXeaL0=";
-    };
-    doCheck = true;
-    propagatedBuildInputs = [
-      python310Packages.cython_3
-      python310Packages.codecov
-    ];
-  };
-
+  sourcesTarball = fetchTarball "https://github.com/mutwo-org/mutwo-nix/archive/refs/heads/main.tar.gz";
+  mutwo-core = import (sourcesTarball + "/mutwo.core/default.nix") {};
+  mutwo-core-local = mutwo-core.overrideAttrs (
+    finalAttrs: previousAttrs: {
+       src = ./.;
+    }
+  );
 in
+  mutwo-core-local
 
-  buildPythonPackage rec {
-    name = "mutwo.core";
-    src = fetchFromGitHub {
-      owner = "mutwo-org";
-      repo = name;
-      rev = "4ec3e2ecfa784208830c2e3d0ee965407c714ae0";
-      sha256 = "sha256-FxKWpzZvrdnsg9Ug6OxP0HeoBgAEHNdGZ8my5igjeIs=";
-    };
-    checkInputs = [
-      python310Packages.pytest
-    ];
-    propagatedBuildInputs = [ 
-      python310Packages.numpy
-      python310Packages.scipy
-      python-ranges
-      quicktions
-    ];
-    checkPhase = ''
-      runHook preCheck
-      pytest
-      pytest --doctest-modules mutwo
-      runHook postCheck
-    '';
-    doCheck = true;
-  }
