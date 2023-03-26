@@ -855,7 +855,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
         prolong_simple_event: bool = True,
-    ) -> SequentialEvent:
+    ) -> SimultaneousEvent[T]:
         duration = (
             self.duration
             if duration is None
