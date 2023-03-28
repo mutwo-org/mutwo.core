@@ -8,7 +8,8 @@ import quicktions
 
 # We can't set core_converters.UnknownObjectToObject
 # directly because it would raise a circular import error.
-def __unknown_object_to_duration(unknown_object):
+@functools.cache
+def __unknown_object_to_duration():
     from mutwo import core_converters
     from mutwo import core_parameters
 
@@ -19,13 +20,13 @@ def __unknown_object_to_duration(unknown_object):
                 core_parameters.DirectDuration,
             ),
         )
-    )(unknown_object)
+    )
 
 
 # We don't define the function with `def UNKNOWN_OBJECT_TO_DURATION`
 # because this is and should look like a global variable and not like
 # a function.
-UNKNOWN_OBJECT_TO_DURATION = __unknown_object_to_duration
+UNKNOWN_OBJECT_TO_DURATION = lambda o: __unknown_object_to_duration()(o)
 """Global definition of callable to parse objects to :class:`mutwo.core_parameters.abc.Duration`.
 
 This function is used in almost all objects which inherit from
