@@ -412,11 +412,11 @@ class Event(abc.ABC):
         """
 
     def split_at(
-        self, absolute_time: core_parameters.abc.Duration
-    ) -> tuple[Event, Event]:
+        self, *absolute_time: core_parameters.abc.Duration
+    ) -> tuple[Event, ...]:
         """Split event in two events at :attr:`absolute_time`.
 
-        :param absolute_time: where event shall be split
+        :param *absolute_time: where event shall be split
         :return: Two events that result from splitting the present event.
 
         **Example:**
@@ -429,13 +429,16 @@ class Event(abc.ABC):
         (SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 2)))
         """
 
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
+        absolute_time_list = list(sorted(absolute_time))
+        if 0 not in absolute_time_list:
+            absolute_time_list.insert(0, core_parameters.DirectDuration(0))
 
-        return (
-            self.cut_out(0, absolute_time, mutate=False),  # type: ignore
-            self.cut_out(absolute_time, self.duration, mutate=False),  # type: ignore
+        if (duration := self.duration) > absolute_time_list[-1]:
+            absolute_time_list.append(duration)
+
+        return tuple(
+            self.cut_out(t0, t1, mutate=False)
+            for t0, t1 in zip(absolute_time_list, absolute_time_list[1:])
         )
 
 

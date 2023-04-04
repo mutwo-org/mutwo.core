@@ -374,6 +374,47 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         return self
 
+    def _split_child_at(
+        self,
+        absolute_time: core_parameters.abc.Duration | typing.Any,
+        absolute_time_in_floats_tuple: tuple[float, ...],
+        duration_in_floats: float,
+    ) -> int:
+        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        ).duration_in_floats
+
+        event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
+            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
+        )
+
+        # If there is no event at the requested time, raise error
+        if event_index is None:
+            raise core_utilities.SplitUnavailableChildError(absolute_time)
+
+        # Only try to split child event at the requested time if there isn't
+        # a segregation already anyway
+        elif absolute_time_in_floats != absolute_time_in_floats_tuple[event_index]:
+            try:
+                end = absolute_time_in_floats_tuple[event_index + 1]
+            except IndexError:
+                end = duration_in_floats
+
+            difference = end - absolute_time_in_floats
+            split_event = self[event_index].split_at(difference)
+            split_event_count = len(split_event)
+            match split_event_count:
+                case 1:
+                    pass
+                case 2:
+                    self[event_index] = split_event[0]
+                    self.insert(event_index, split_event[1])
+                case _:
+                    raise RuntimeError("Unexpected event count!")
+
+            return event_index + 1
+        return event_index
+
     # ###################################################################### #
     #                        private   properties                            #
     # ###################################################################### #
@@ -661,59 +702,58 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         start_in_floats = start.duration_in_floats
+        if start_in_floats == 0:
+            self.insert(0, event_to_slide_in)
+            return self
         self._assert_start_in_range(start_in_floats)
-        self[:], b = self.split_at(start)
-        self.extend([event_to_slide_in] + b)
+        try:
+            self[:], b = self.split_at(start)
+        except ValueError:  # Only one event => start == duration.
+            self.append(event_to_slide_in)
+        else:
+            self.extend([event_to_slide_in] + b)
         return self
 
     @core_utilities.add_copy_option
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> SequentialEvent[T]:
-        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        ).duration_in_floats
         (
             absolute_time_in_floats_tuple,
             duration_in_floats,
         ) = self._absolute_time_in_floats_tuple_and_duration
 
-        event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
-            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
+        return self._split_child_at(
+            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
         )
-
-        # If there is no event at the requested time, raise error
-        if event_index is None:
-            raise core_utilities.SplitUnavailableChildError(absolute_time)
-
-        # Only try to split child event at the requested time if there isn't
-        # a segregation already anyway
-        elif absolute_time_in_floats != absolute_time_in_floats_tuple[event_index]:
-            try:
-                end = absolute_time_in_floats_tuple[event_index + 1]
-            except IndexError:
-                end = duration_in_floats
-
-            difference = end - absolute_time_in_floats
-            first_event, second_event = self[event_index].split_at(difference)
-            self[event_index] = first_event
-            self.insert(event_index, second_event)
 
     def split_at(
-        self, absolute_time: core_parameters.abc.Duration
-    ) -> tuple[SequentialEvent, SequentialEvent]:
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
-        absolute_time_tuple = self.absolute_time_tuple
-        # Only run expensive 'split_at' in case we can't simply
-        # split via slice.
-        try:
-            index = absolute_time_tuple.index(absolute_time)
-        except ValueError:
-            return super().split_at(absolute_time)
-        else:
-            return self[:index].copy(), self[index:].copy()
+        self, *absolute_time: core_parameters.abc.Duration
+    ) -> tuple[SequentialEvent, ...]:
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
+
+        c = self.copy()
+
+        index_list = []
+        for t in sorted(absolute_time):
+            try:
+                i = c._split_child_at(
+                    t, absolute_time_in_floats_tuple, duration_in_floats
+                )
+            except core_utilities.SplitUnavailableChildError:
+                raise core_utilities.InvalidStartValueError(t, duration_in_floats)
+            index_list.append(i)
+
+        if 0 not in index_list:
+            index_list.insert(0, 0)
+
+        if (event_count := len(c)) not in index_list:
+            index_list.append(event_count)
+
+        return tuple(c[i0:i1] for i0, i1 in zip(index_list, index_list[1:]))
 
     @core_utilities.add_copy_option
     def extend_until(
@@ -1038,22 +1078,17 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # Slice all child events
         slices = []
         for e in self:
-            eslice_list = []
-            for split_t in reversed(absolute_time_list):
-                if split_t == 0:  # We reached the end
-                    eslice = e
-                else:
-                    try:
-                        e, eslice = e.split_at(split_t)
-                    # Event is shorter etc.
-                    except core_utilities.InvalidStartAndEndValueError:
-                        # We still need to append an event slice,
-                        # because otherwise this slice group will be
-                        # omitted (because we use 'zip').
-                        eslice = None
-                eslice_list.append(eslice)
-            eslice_list.reverse()
-            slices.append(eslice_list)
+            slices.append(list(e.split_at(*absolute_time_list)))
+
+        # Ensure all slices have the same amount of entries,
+        # because we use 'zip' later and if one of them is
+        # shorter we loose some parts of our event.
+        if slices:
+            slices_count_tuple = tuple(len(s) for s in slices)
+            max_slice_count = max(slices_count_tuple)
+            for s, c in zip(slices, slices_count_tuple):
+                if delta := max_slice_count - c:
+                    s.extend([None] * delta)
 
         # Finally, build new sequence from event slices
         sequential_event = core_events.SequentialEvent([])

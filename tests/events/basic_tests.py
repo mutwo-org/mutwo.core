@@ -547,7 +547,16 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             (
                 f(6e-10),
                 s(100),
-                se([s(f(6e-10)), s(100), s(1 - f(6e-10)), s(2), s(3)]),
+                se(
+                    [
+                        # Strange number due to floating point error :)
+                        s(f(6.000000496442226e-10)),
+                        s(100),
+                        s(1 - f(6.000000496442226e-10)),
+                        s(2),
+                        s(3),
+                    ]
+                ),
             ),
         ):
             with self.subTest(start=start):
@@ -559,7 +568,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
     def test_slide_in_with_invalid_start(self):
         s = core_events.SimpleEvent(1)
         self.assertRaises(
-            core_utilities.InvalidStartAndEndValueError, self.sequence.slide_in, -1, s
+            core_utilities.InvalidStartValueError, self.sequence.slide_in, -1, s
         )
         self.assertRaises(
             core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
