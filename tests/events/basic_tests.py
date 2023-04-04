@@ -632,9 +632,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
 
     def test_slide_in_with_invalid_start(self):
         s = core_events.SimpleEvent(1)
-        self.assertRaises(
-            core_utilities.SplitError, self.sequence.slide_in, -1, s
-        )
+        self.assertRaises(core_utilities.SplitError, self.sequence.slide_in, -1, s)
         self.assertRaises(
             core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
         )
@@ -769,6 +767,39 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         self.assertRaises(
             core_utilities.SplitUnavailableChildError,
             lambda: self.sequence.split_child_at(1000),
+        )
+
+    def test_split_at_start(self):
+        self.assertEqual(self.sequence.split_at(0), (self.sequence,))
+
+    def test_split_at_end(self):
+        self.assertEqual(self.sequence.split_at(6), (self.sequence,))
+
+    def test_split_at_bad_time(self):
+        self.assertRaises(core_utilities.SplitError, self.sequence.split_at, -1)
+        self.assertRaises(core_utilities.SplitError, self.sequence.split_at, 100)
+
+    def test_split_at_bad_time_ignored(self):
+        self.assertEqual(
+            self.sequence.split_at(-1, ignore_invalid_split_point=True),
+            (self.sequence,),
+        )
+
+    def test_split_at_multi(self):
+        seq, s = core_events.SequentialEvent, core_events.SimpleEvent
+        # Only at already pre-defined split times.
+        self.assertEqual(
+            self.sequence.split_at(1, 3),
+            (seq([s(1)]), seq([s(2)]), seq([s(3)])),
+        )
+        # Here mutwo really needs to split.
+        self.assertEqual(
+            self.sequence.split_at(2, 3),
+            (seq([s(1), s(1)]), seq([s(1)]), seq([s(3)])),
+        )
+        self.assertEqual(
+            self.sequence.split_at(2, 3, 5, 5.5),
+            (seq([s(1), s(1)]), seq([s(1)]), seq([s(2)]), seq([s(0.5)]), seq([s(0.5)])),
         )
 
     def test_start_and_end_time_per_event(self):
