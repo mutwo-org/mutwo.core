@@ -1081,7 +1081,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # Slice all child events
         slices = []
         for e in self:
-            slices.append(list(e.split_at(*absolute_time_list)))
+            slices.append(
+                list(e.split_at(*absolute_time_list, ignore_invalid_split_point=True))
+            )
 
         # Ensure all slices have the same amount of entries,
         # because we use 'zip' later and if one of them is
