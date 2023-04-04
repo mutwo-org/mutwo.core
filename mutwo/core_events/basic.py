@@ -737,19 +737,40 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             duration_in_floats,
         ) = self._absolute_time_in_floats_tuple_and_duration
 
+        absolute_time_list = list(absolute_time_in_floats_tuple)
+
+        # NOTE: maybe we can add a 'mutate=False' keyword in case
+        # someone doesn't care about keeping the old event and wants
+        # to save some seconds of expensive copy-operation?
         c = self.copy()
 
         index_list = []
         for t in sorted(absolute_time):
+            # Improve performance: don't try to split if we know it is
+            # already split here. We also need to be sure to not
+            # add any duplicates to 'absolute_time_list', so we need
+            # to check anyway.
+            if t in absolute_time_list:
+                index_list.append(absolute_time_list.index(t))
+                continue
+            # It's okay to ignore, this is still within the given event
+            # (if we don't continue 'split_child_at' raises an error).
+            if t == duration_in_floats:
+                continue
             try:
-                i = c._split_child_at(
-                    t, absolute_time_in_floats_tuple, duration_in_floats
-                )
+                i = c._split_child_at(t, tuple(absolute_time_list), duration_in_floats)
             except core_utilities.SplitUnavailableChildError:
                 if not ignore_invalid_split_point:
                     raise core_utilities.SplitError(t)
+                # We can stop, because if there isn't any child at this time
+                # there won't be any child at a later time (remember: our
+                # absolute times are sorted).
+                break
             index_list.append(i)
+            absolute_time_list.append(t)
+            absolute_time_list.sort()
 
+        # Add frame indices (if not already present)
         if 0 not in index_list:
             index_list.insert(0, 0)
 
