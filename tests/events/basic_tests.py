@@ -53,6 +53,14 @@ class EventTest(abc.ABC):
             core_utilities.SplitError, self.event.split_at, self.event.duration + 1
         )
 
+    def test_split_at_out_of_range_time_ignored(self):
+        # Error shouldn't be raised if 'ignore_invalid_split_point' is set.
+        self.assertTrue(
+            self.event.split_at(
+                self.event.duration + 1, ignore_invalid_split_point=True
+            )
+        )
+
     def test_cut_off_invalid_absolute_time(self):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime,

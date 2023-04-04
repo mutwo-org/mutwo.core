@@ -728,7 +728,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
 
     def split_at(
-        self, *absolute_time: core_parameters.abc.Duration
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
     ) -> tuple[SequentialEvent, ...]:
         (
             absolute_time_in_floats_tuple,
@@ -758,7 +760,12 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             try:
                 i = c._split_child_at(t, tuple(absolute_time_list), duration_in_floats)
             except core_utilities.SplitUnavailableChildError:
-                raise core_utilities.SplitError(t)
+                if not ignore_invalid_split_point:
+                    raise core_utilities.SplitError(t)
+                # We can stop, because if there isn't any child at this time
+                # there won't be any child at a later time (remember: our
+                # absolute times are sorted).
+                break
             index_list.append(i)
             absolute_time_list.append(t)
             absolute_time_list.sort()
@@ -1138,10 +1145,13 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def split_at(
         self,
         *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
     ) -> tuple[SimultaneousEvent, ...]:
         absolute_time = sorted(absolute_time)
-        if absolute_time[-1] > self.duration:
-            raise core_utilities.SplitError(absolute_time[-1])
+        if absolute_time:
+            self._assert_valid_absolute_time(absolute_time[0])
+            if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
+                raise core_utilities.SplitError(absolute_time[-1])
 
         def slice_tuple_to_event(slice_tuple):
             e = self.empty_copy()

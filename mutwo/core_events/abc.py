@@ -412,11 +412,17 @@ class Event(abc.ABC):
         """
 
     def split_at(
-        self, *absolute_time: core_parameters.abc.Duration
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
     ) -> tuple[Event, ...]:
         """Split event into *n* events at :attr:`absolute_time`.
 
         :param *absolute_time: where event shall be split
+        :param ignore_invalid_split_point: If set to `True` `split_at` won't raise
+            :class:`mutwo.core_utilities.SplitError` in case a split time isn't
+            inside the duration range of the event. Otherwise the exception is raised.
+            Default to ``False``.
         :return:  Tuple of events that result from splitting the present event.
 
         **Hint:**
@@ -441,7 +447,7 @@ class Event(abc.ABC):
 
         if (duration := self.duration) > absolute_time_list[-1]:
             absolute_time_list.append(duration)
-        elif duration < absolute_time_list[-1]:
+        elif duration < absolute_time_list[-1] and not ignore_invalid_split_point:
             raise core_utilities.SplitError(absolute_time_list[-1])
 
         split_event_list = []
@@ -452,7 +458,8 @@ class Event(abc.ABC):
                 core_utilities.InvalidStartAndEndValueError,
                 core_utilities.InvalidCutOutStartAndEndValuesError,
             ):
-                raise core_utilities.SplitError(t0)
+                if not ignore_invalid_split_point:
+                    raise core_utilities.SplitError(t0)
 
         return tuple(split_event_list)
 

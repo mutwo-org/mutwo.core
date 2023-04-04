@@ -661,11 +661,12 @@ class Envelope(
         )
 
     def split_at(
-        self, *absolute_time: core_parameters.abc.Duration, **kwargs
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
     ) -> tuple[Envelope, ...]:
         absolute_time = sorted(absolute_time)
-
-        if absolute_time[-1] > self.duration:
+        if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
             raise core_utilities.SplitError(absolute_time[-1])
 
         # We copy, because the 'sample_at' calls would change our envelope.
@@ -675,13 +676,11 @@ class Envelope(
             self.sample_at(t)
 
         def add(s, value):
-            s.append(
-                s._make_event(
-                    0, s.value_to_parameter(value), 0
-                )
-            )
+            s.append(s._make_event(0, s.value_to_parameter(value), 0))
 
-        segment_tuple = super().split_at(*absolute_time, **kwargs)
+        segment_tuple = super().split_at(
+            *absolute_time, ignore_invalid_split_point=ignore_invalid_split_point
+        )
 
         # We already added the interpolation points with 'self.sample_at(*t)',
         # but they are always only available in the segments after the split
