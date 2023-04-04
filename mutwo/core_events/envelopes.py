@@ -722,10 +722,10 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         return resolve_envelope_class(point_list)
 
     def split_at(
-        self, *absolute_time: core_parameters.abc.Duration
+        self, *absolute_time: core_parameters.abc.Duration, **kwargs
     ) -> tuple[Envelope, ...]:
         self.sample_at(absolute_time)
-        return self.split_at(*absolute_time)
+        return self.split_at(*absolute_time, **kwargs)
 
 
 TempoPoint: typing.TypeAlias = "core_parameters.abc.TempoPoint | core_constants.Real"

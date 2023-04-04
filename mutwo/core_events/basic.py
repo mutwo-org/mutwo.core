@@ -728,7 +728,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         )
 
     def split_at(
-        self, *absolute_time: core_parameters.abc.Duration
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
     ) -> tuple[SequentialEvent, ...]:
         (
             absolute_time_in_floats_tuple,
@@ -744,7 +746,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     t, absolute_time_in_floats_tuple, duration_in_floats
                 )
             except core_utilities.SplitUnavailableChildError:
-                raise core_utilities.SplitError(t)
+                if not ignore_invalid_split_point:
+                    raise core_utilities.SplitError(t)
             index_list.append(i)
 
         if 0 not in index_list:
