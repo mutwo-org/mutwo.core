@@ -758,7 +758,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             try:
                 i = c._split_child_at(t, tuple(absolute_time_list), duration_in_floats)
             except core_utilities.SplitUnavailableChildError:
-                raise core_utilities.InvalidStartValueError(t, duration_in_floats)
+                raise core_utilities.SplitError(t)
             index_list.append(i)
             absolute_time_list.append(t)
             absolute_time_list.sort()
@@ -1140,6 +1140,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         *absolute_time: core_parameters.abc.Duration,
     ) -> tuple[SimultaneousEvent, ...]:
         absolute_time = sorted(absolute_time)
+        if absolute_time[-1] > self.duration:
+            raise core_utilities.SplitError(absolute_time[-1])
 
         def slice_tuple_to_event(slice_tuple):
             e = self.empty_copy()

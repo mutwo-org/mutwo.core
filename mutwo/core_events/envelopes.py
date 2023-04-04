@@ -665,6 +665,9 @@ class Envelope(
     ) -> tuple[Envelope, ...]:
         absolute_time = sorted(absolute_time)
 
+        if absolute_time[-1] > self.duration:
+            raise core_utilities.SplitError(absolute_time[-1])
+
         # We copy, because the 'sample_at' calls would change our envelope.
         self = self.copy()
 

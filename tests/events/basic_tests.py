@@ -32,9 +32,66 @@ class EventTest(abc.ABC):
         self.assertTrue(isinstance(event.tempo_envelope, core_events.TempoEnvelope))
 
     def test_tempo_envelope_auto_initialization_and_settable(self):
-        event = self.get_event_instance()
-        event.tempo_envelope[0].duration = 100
-        self.assertEqual(event.tempo_envelope[0].duration, 100)
+        self.event.tempo_envelope[0].duration = 100
+        self.assertEqual(self.event.tempo_envelope[0].duration, 100)
+
+    def test_split_at_start(self):
+        self.assertEqual(self.event.split_at(0), (self.event,))
+
+    def test_split_at_end(self):
+        self.assertEqual(self.event.split_at(self.event.duration), (self.event,))
+
+    def test_split_at_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            self.event.split_at,
+            -1,
+        )
+
+    def test_split_at_out_of_range_time(self):
+        self.assertRaises(
+            core_utilities.SplitError, self.event.split_at, self.event.duration + 1
+        )
+
+    def test_cut_off_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            self.event.cut_off,
+            -1,
+            self.event.duration,
+        )
+
+    def test_cut_out_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            self.event.cut_out,
+            -1,
+            self.event.duration,
+        )
+
+
+class ComplexEventTest(EventTest):
+    def test_slide_in_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            self.event.slide_in,
+            -1,
+            core_events.SimpleEvent(1),
+        )
+
+    def test_squash_in_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            self.event.squash_in,
+            -1,
+            core_events.SimpleEvent(1),
+        )
+
+    def test_split_child_at(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime, self.event.split_child_at, -1
+        )
+>>>>>>> 3c74e35 (fixup! events/E.split_at: standardize exception)
 
 
 class SimpleEventTest(unittest.TestCase, EventTest):
@@ -568,7 +625,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
     def test_slide_in_with_invalid_start(self):
         s = core_events.SimpleEvent(1)
         self.assertRaises(
-            core_utilities.InvalidStartValueError, self.sequence.slide_in, -1, s
+            core_utilities.SplitError, self.sequence.slide_in, -1, s
         )
         self.assertRaises(
             core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
