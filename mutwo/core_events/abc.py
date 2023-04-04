@@ -436,10 +436,14 @@ class Event(abc.ABC):
         if (duration := self.duration) > absolute_time_list[-1]:
             absolute_time_list.append(duration)
 
-        return tuple(
-            self.cut_out(t0, t1, mutate=False)
-            for t0, t1 in zip(absolute_time_list, absolute_time_list[1:])
-        )
+        split_event_list = []
+        for t0, t1 in zip(absolute_time_list, absolute_time_list[1:]):
+            try:
+                split_event_list.append(self.cut_out(t0, t1, mutate=False))
+            except core_utilities.InvalidStartAndEndValueError:
+                raise core_utilities.SplitError(t0)
+
+        return tuple(split_event_list)
 
 
 T = typing.TypeVar("T", bound=Event)

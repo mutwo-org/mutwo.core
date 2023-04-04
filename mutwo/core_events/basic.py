@@ -744,7 +744,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     t, absolute_time_in_floats_tuple, duration_in_floats
                 )
             except core_utilities.SplitUnavailableChildError:
-                raise core_utilities.InvalidStartValueError(t, duration_in_floats)
+                raise core_utilities.SplitError(t)
             index_list.append(i)
 
         if 0 not in index_list:

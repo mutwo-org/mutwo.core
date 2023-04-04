@@ -23,6 +23,7 @@ __all__ = (
     "UndefinedReferenceWarning",
     "ConcatenationError",
     "NoTagError",
+    "SplitError",
 )
 
 
@@ -135,6 +136,11 @@ class InvalidCutOutStartAndEndValuesError(Exception):
             f" (start = {start} to end = {end})."
         )
 
+class SplitError(Exception):
+    def __init__(self, absolute_time: core_constants.DurationType):
+        super().__init__(
+            f"Can't split event at absolute time '{absolute_time}'."
+        )
 
 class SplitUnavailableChildError(Exception):
     def __init__(self, absolute_time: core_constants.DurationType):

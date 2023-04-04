@@ -568,7 +568,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
     def test_slide_in_with_invalid_start(self):
         s = core_events.SimpleEvent(1)
         self.assertRaises(
-            core_utilities.InvalidStartValueError, self.sequence.slide_in, -1, s
+            core_utilities.SplitError, self.sequence.slide_in, -1, s
         )
         self.assertRaises(
             core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
