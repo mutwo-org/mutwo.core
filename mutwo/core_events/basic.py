@@ -1125,6 +1125,39 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         return sequential_event
 
+    def split_at(
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+        ignore_invalid_split_point: bool = False,
+    ) -> tuple[SimultaneousEvent, ...]:
+        # <<<<< DUPLICATE FROM 'sequentialize'
+        slices = []
+        for e in self:
+            slices.append(
+                list(e.split_at(*absolute_time, ignore_invalid_split_point=True))
+            )
+
+        # Ensure all slices have the same amount of entries,
+        # because we use 'zip' later and if one of them is
+        # shorter we loose some parts of our event.
+        if slices:
+            slices_count_tuple = tuple(len(s) for s in slices)
+            max_slice_count = max(slices_count_tuple)
+            for s, c in zip(slices, slices_count_tuple):
+                if delta := max_slice_count - c:
+                    s.extend([None] * delta)
+
+        # Finally, build new sequence from event slices
+        event_list = []
+        for slice_tuple in zip(*slices):
+            if slice_tuple := tuple(filter(bool, slice_tuple)):
+                e = self.empty_copy()
+                e[:] = slice_tuple
+                event_list.append(e)
+        # END DUPLICATE FROM 'sequentialize' >>>>>>>>
+
+        return tuple(event_list)
+
 
 @core_utilities.add_tag_to_class
 class TaggedSimpleEvent(SimpleEvent):

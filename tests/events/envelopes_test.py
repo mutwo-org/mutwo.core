@@ -224,6 +224,11 @@ class EnvelopeTest(unittest.TestCase):
             split_envelope_left.value_at(1.5), split_envelope_right.value_at(0)
         )
 
+    def test_split_at_multi(self):
+        split_envelope0, split_envelope1, split_envelope2 = self.envelope.split_at(
+            1.5, 3
+        )
+
     def test_cut_off(self):
         cut_off_envelope = self.envelope.cut_off(0.5, 1.5, mutate=False)
         self.assertEqual(self.envelope.value_at(0.4), cut_off_envelope.value_at(0.4))
