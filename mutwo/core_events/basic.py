@@ -820,6 +820,45 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 raise core_utilities.ConcatenationError(ancestor, event)
 
     # ###################################################################### #
+    #                           private methods                              #
+    # ###################################################################### #
+
+    def _make_event_slice_tuple(
+        self,
+        absolute_time_list: list[core_parameters.abc.Duration],
+        slice_tuple_to_event: typing.Callable[
+            [tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event
+        ],
+    ) -> tuple[core_events.abc.Event, ...]:
+        """Split at given times and cast split events into new events."""
+
+        # Slice all child events
+        slices = []
+        for e in self:
+            slices.append(
+                list(e.split_at(*absolute_time_list, ignore_invalid_split_point=True))
+            )
+
+        # Ensure all slices have the same amount of entries,
+        # because we use 'zip' later and if one of them is
+        # shorter we loose some parts of our event.
+        if slices:
+            slices_count_tuple = tuple(len(s) for s in slices)
+            max_slice_count = max(slices_count_tuple)
+            for s, c in zip(slices, slices_count_tuple):
+                if delta := max_slice_count - c:
+                    s.extend([None] * delta)
+
+        # Finally, build new sequence from event slices
+        event_list = []
+        for slice_tuple in zip(*slices):
+            if slice_tuple := tuple(filter(bool, slice_tuple)):
+                e = slice_tuple_to_event(slice_tuple)
+                event_list.append(e)
+
+        return tuple(event_list)
+
+    # ###################################################################### #
     #                           properties                                   #
     # ###################################################################### #
 
@@ -1092,29 +1131,22 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # there isn't any event left in any child.
         absolute_time_list = sorted(absolute_time_set)[:-1]
 
-        # Slice all child events
-        slices = []
-        for e in self:
-            slices.append(list(e.split_at(*absolute_time_list)))
+        return core_events.SequentialEvent(
+            self._make_event_slice_tuple(absolute_time_list, slice_tuple_to_event)
+        )
 
-        # Ensure all slices have the same amount of entries,
-        # because we use 'zip' later and if one of them is
-        # shorter we loose some parts of our event.
-        if slices:
-            slices_count_tuple = tuple(len(s) for s in slices)
-            max_slice_count = max(slices_count_tuple)
-            for s, c in zip(slices, slices_count_tuple):
-                if delta := max_slice_count - c:
-                    s.extend([None] * delta)
+    def split_at(
+        self,
+        *absolute_time: core_parameters.abc.Duration,
+    ) -> tuple[SimultaneousEvent, ...]:
+        absolute_time = sorted(absolute_time)
 
-        # Finally, build new sequence from event slices
-        sequential_event = core_events.SequentialEvent([])
-        for slice_tuple in zip(*slices):
-            if slice_tuple := tuple(filter(bool, slice_tuple)):
-                e = slice_tuple_to_event(slice_tuple)
-                sequential_event.append(e)
+        def slice_tuple_to_event(slice_tuple):
+            e = self.empty_copy()
+            e[:] = slice_tuple
+            return e
 
-        return sequential_event
+        return self._make_event_slice_tuple(absolute_time, slice_tuple_to_event)
 
 
 @core_utilities.add_tag_to_class
