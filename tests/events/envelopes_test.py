@@ -224,6 +224,23 @@ class EnvelopeTest(unittest.TestCase):
             split_envelope_left.value_at(1.5), split_envelope_right.value_at(0)
         )
 
+    def test_split_at_multi(self):
+        for splitt in ((1.5, 3), (0, 1.5, 3)):
+            split_envelope0, split_envelope1, split_envelope2 = self.envelope.split_at(
+                *splitt
+            )
+            # Check if all split points have expected values
+            self.assertEqual(split_envelope0.value_at(0), 0)
+            self.assertEqual(split_envelope0.value_at(1.5), 0.6224593312018545)
+            self.assertEqual(split_envelope1.value_at(0), 0.6224593312018545)
+            self.assertEqual(split_envelope1.value_at(1.5), 1)
+            self.assertEqual(split_envelope2.value_at(0), 1)
+            self.assertEqual(split_envelope2.value_at(3), 0.5)
+            # Check if their duration is correct
+            self.assertEqual(split_envelope0.duration, 1.5)
+            self.assertEqual(split_envelope1.duration, 1.5)
+            self.assertEqual(split_envelope2.duration, 3)
+
     def test_cut_off(self):
         cut_off_envelope = self.envelope.cut_off(0.5, 1.5, mutate=False)
         self.assertEqual(self.envelope.value_at(0.4), cut_off_envelope.value_at(0.4))
