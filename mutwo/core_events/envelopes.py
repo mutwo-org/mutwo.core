@@ -660,6 +660,12 @@ class Envelope(
             prolong_simple_event=prolong_simple_event,
         )
 
+    def split_at(
+        self, absolute_time: core_parameters.abc.Duration
+    ) -> tuple[Envelope, Envelope]:
+        self.sample_at(absolute_time)
+        return super().split_at(absolute_time)
+
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):
     __parent_doc_string = Envelope.__doc__.split("\n")[2:]  # type: ignore
