@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - allow multiple split times in `Event.split_at`
+- improve performance of `SequentialEvent.split_at`
 
 
 ## [1.2.3] - 2023-03-17

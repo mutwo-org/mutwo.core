@@ -419,6 +419,12 @@ class Event(abc.ABC):
         :param *absolute_time: where event shall be split
         :return:  Tuple of events that result from splitting the present event.
 
+        **Hint:**
+
+        Calling ``split_at`` once with multiple split time arguments is much more efficient
+        than calling ``split_at`` multiple times with only one split time for
+        :class:`mutwo.core_events.SequentialEvent`.
+
         **Example:**
 
         >>> from mutwo import core_events
