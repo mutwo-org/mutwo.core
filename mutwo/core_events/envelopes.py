@@ -661,10 +661,45 @@ class Envelope(
         )
 
     def split_at(
-        self, absolute_time: core_parameters.abc.Duration
-    ) -> tuple[Envelope, Envelope]:
-        self.sample_at(absolute_time)
-        return super().split_at(absolute_time)
+        self, *absolute_time: core_parameters.abc.Duration, **kwargs
+    ) -> tuple[Envelope, ...]:
+        absolute_time = sorted(absolute_time)
+
+        # We copy, because the 'sample_at' calls would change our envelope.
+        self = self.copy()
+
+        for t in absolute_time:
+            self.sample_at(t)
+
+        def add(s, value):
+            s.append(
+                s._make_event(
+                    0, s.value_to_parameter(value), 0
+                )
+            )
+
+        segment_tuple = super().split_at(*absolute_time, **kwargs)
+
+        # We already added the interpolation points with 'self.sample_at(*t)',
+        # but they are always only available in the segments after the split
+        # point (because for each segment the start is included, but the end
+        # duration isn't included anymore). So we need to add them to the
+        # segments before the split points, otherwise 'value_at' returns wrong
+        # values.
+        for segment0, segment1 in zip(segment_tuple, segment_tuple[1:]):
+            add(segment0, segment1.value_at(0))
+
+        if segment_tuple:
+            s = segment_tuple[-1]
+            v = self.value_at(self.duration)
+            # Only add control point, if it isn't present
+            # yet anyway (minimal changes).
+            # This condition is 'true' if we only split at
+            # start time ('env.split_at(0)').
+            if s.value_at(s.duration) != v:
+                add(s, v)
+
+        return segment_tuple
 
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):

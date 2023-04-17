@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent`
 
+### Changed
+- allow multiple split times in `Event.split_at`
+
 
 ## [1.2.3] - 2023-03-17
 
