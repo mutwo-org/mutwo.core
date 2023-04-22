@@ -731,6 +731,20 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
+    def copy(self) -> ComplexEvent[T]:
+        # Improve performance: Don't use 'deepcopy', but use our own
+        # copy techniques.
+        complex_event = self.empty_copy()
+        id_to_object_dict = {}
+        for e in self:
+            e_id = id(e)
+            try:
+                o = id_to_object_dict[e_id]
+            except KeyError:
+                o = id_to_object_dict[e_id] = e.copy()
+            complex_event.append(o)
+        return complex_event
+
     def destructive_copy(self) -> ComplexEvent[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend([event.destructive_copy() for event in self])

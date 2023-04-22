@@ -7,9 +7,9 @@ are nested or not:
 from __future__ import annotations
 
 import bisect
-import copy
 import functools
 import operator
+import pickle
 import types
 import typing
 
@@ -165,8 +165,14 @@ class SimpleEvent(core_events.abc.Event):
     #                           public methods                               #
     # ###################################################################### #
 
+    def copy(self) -> SimpleEvent:
+        try:
+            return pickle.loads(pickle.dumps(self))
+        except pickle.PicklingError:
+            return super().copy()
+
     def destructive_copy(self) -> SimpleEvent:
-        return copy.deepcopy(self)
+        return self.copy()
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
