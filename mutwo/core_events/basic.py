@@ -965,6 +965,14 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
             inside a :class:`SimultaneousEvent`.
 
+        **Hint:**
+
+        Similarly to Pythons ``list.extend`` the concatenation simply appends
+        the children of the other event to the sequence without copying them.
+        This means when changing the children in the new event, it also changes
+        the child event in the original sequence. If you want to avoid this,
+        call ``event.copy()`` before concatenating it to the host event.
+
         **Example:**
 
         >>> from mutwo import core_events
@@ -976,12 +984,16 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
-        for index, event in enumerate(other.copy()):
+        for index, event in enumerate(other):
             try:
                 ancestor = self[index]
             except IndexError:
                 if self_duration > 0:
-                    event.slide_in(0, core_events.SimpleEvent(self_duration))
+                    # Shallow copy before 'slide_in': We use the same
+                    # events, but we don't want to change the other sequence.
+                    event_new = event.empty_copy()
+                    event_new.extend(event[:])
+                    event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
                 self.append(event)
             else:
                 self._extend_ancestor(ancestor, event)
@@ -1003,6 +1015,14 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
             inside a :class:`SimultaneousEvent`.
 
+        **Hint:**
+
+        Similarly to Pythons ``list.extend`` the concatenation simply appends
+        the children of the other event to the sequence without copying them.
+        This means when changing the children in the new event, it also changes
+        the child event in the original sequence. If you want to avoid this,
+        call ``event.copy()`` before concatenating it to the host event.
+
         **Example:**
 
         >>> from mutwo import core_events
@@ -1014,7 +1034,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
-        for tagged_event in other.copy():
+        for tagged_event in other:
             if not hasattr(tagged_event, "tag"):
                 raise core_utilities.NoTagError(tagged_event)
             tag = tagged_event.tag
@@ -1022,7 +1042,11 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 ancestor = self[tag]
             except KeyError:
                 if self_duration > 0:
-                    tagged_event.slide_in(0, core_events.SimpleEvent(self_duration))
+                    # Shallow copy before 'slide_in': We use the same
+                    # events, but we don't want to change the other sequence.
+                    event_new = tagged_event.empty_copy()
+                    event_new.extend(tagged_event[:])
+                    tagged_event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
                 self.append(tagged_event)
             else:
                 self._extend_ancestor(ancestor, tagged_event)

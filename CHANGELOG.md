@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent`
 
+### Changed
+- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying.
+
 
 ## [1.2.3] - 2023-03-17
 
