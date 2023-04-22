@@ -168,7 +168,7 @@ class SimpleEvent(core_events.abc.Event):
     def copy(self) -> SimpleEvent:
         try:
             return pickle.loads(pickle.dumps(self))
-        except pickle.PicklingError:
+        except (pickle.PicklingError, AttributeError):
             return super().copy()
 
     def destructive_copy(self) -> SimpleEvent:
