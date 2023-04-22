@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - allow multiple split times in `Event.split_at`
 - improve performance of `SequentialEvent.split_at`
+- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying.
 
 
 ## [1.2.3] - 2023-03-17
