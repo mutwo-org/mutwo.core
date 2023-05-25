@@ -385,6 +385,15 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         self.assertEqual(sequential_event[0].duration, 2.5)
         self.assertEqual(sequential_event[1].duration, 2.5)
 
+    def test_set_duration_of_empty_event(self):
+        sequential_event = core_events.SequentialEvent([])
+        self.assertRaises(
+            core_utilities.CannotSetDurationOfEmptyComplexEvent,
+            sequential_event.set,
+            "duration",
+            1,
+        )
+
     def test_get_absolute_time_tuple(self):
         result = tuple(self.sequence.absolute_time_tuple)
         self.assertEqual(
@@ -1190,6 +1199,7 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
                 se([s(2)]),
             ]
         )
+
         self.assertEqual(
             si_test.concatenate_by_index(self.nested_sequence).metrize(), si_ok
         )
