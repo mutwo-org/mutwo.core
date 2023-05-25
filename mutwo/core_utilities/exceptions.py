@@ -28,7 +28,7 @@ __all__ = (
 
 
 class CannotSetDurationOfEmptyComplexEvent(Exception):
-    def __init__(self, cls):
+    def __init__(self):
         super().__init__(
             "You tried to set the duration of a complex "
             "event (e.g. 'SequentialEvent' or 'SimultaneousEvent') "
