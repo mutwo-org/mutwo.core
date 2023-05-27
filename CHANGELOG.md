@@ -8,10 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Added
-- the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent`
+- the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/a53952a5bf2ff9151117c250d542704b47b28dd0))
 
 ### Changed
-- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying.
+- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying. (see [here](https://github.com/mutwo-org/mutwo.core/commit/470a5dcae026062c638c1079e0a0b1396c602344))
+
+### Fixed
+- the initialization of the exception `CannotSetDurationOfEmptyComplexEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/4d9d26fdc6fb3b39ecf7e2b47231897a216b16df))
 
 
 ## [1.2.3] - 2023-03-17
