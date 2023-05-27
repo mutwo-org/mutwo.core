@@ -6,23 +6,20 @@ from mutwo import core_parameters
 
 
 class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
+    def setUp(self):
+        self.converter = core_converters.TempoPointToBeatLengthInSeconds()
+
     def test_convert_beats_per_minute_to_seconds_per_beat(self):
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(
-                60
-            ),
+            self.converter._beats_per_minute_to_seconds_per_beat(60),
             1,
         )
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(
-                30
-            ),
+            self.converter._beats_per_minute_to_seconds_per_beat(30),
             2,
         )
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(
-                120
-            ),
+            self.converter._beats_per_minute_to_seconds_per_beat(120),
             0.5,
         )
 
@@ -31,7 +28,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     ):
         tempo_point = core_parameters.DirectTempoPoint(40, 2)
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._extract_beats_per_minute_and_reference_from_tempo_point(
+            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, tempo_point.reference),
@@ -42,7 +39,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     ):
         tempo_point = core_parameters.DirectTempoPoint(40)
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._extract_beats_per_minute_and_reference_from_tempo_point(
+            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (tempo_point.tempo_in_beats_per_minute, 1),
@@ -51,7 +48,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     def test_extract_beats_per_minute_and_reference_from_number(self):
         tempo_point = 60
         self.assertEqual(
-            core_converters.TempoPointToBeatLengthInSeconds._extract_beats_per_minute_and_reference_from_tempo_point(
+            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
             (60, 1),

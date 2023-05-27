@@ -4,7 +4,6 @@
 
 import functools
 import typing
-import warnings
 
 from mutwo import core_constants
 from mutwo import core_converters
@@ -39,15 +38,17 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
 
     TempoPoint = core_parameters.abc.TempoPoint | core_constants.Real
 
+    def __init__(self):
+        self._logger = core_utilities.get_cls_logger(type(self))
+
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(
         beats_per_minute: core_constants.Real,
     ) -> float:
         return float(60 / beats_per_minute)
 
-    @staticmethod
     def _extract_beats_per_minute_and_reference_from_tempo_point(
-        tempo_point: TempoPoint,
+        self, tempo_point: TempoPoint
     ) -> tuple[core_constants.Real, core_constants.Real]:
         try:
             beats_per_minute = tempo_point.tempo_in_beats_per_minute  # type: ignore
@@ -57,7 +58,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         try:
             reference = tempo_point.reference  # type: ignore
         except AttributeError:
-            warnings.warn(core_utilities.UndefinedReferenceWarning(tempo_point))
+            self._logger.warn(core_utilities.UndefinedReferenceWarning(tempo_point))
             reference = 1
 
         return beats_per_minute, reference

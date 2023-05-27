@@ -1,4 +1,4 @@
-"""Definition of global variables which are used all over mutwo.
+"""Definition of global constants which are used all over mutwo.
 """
 
 import fractions

@@ -4,11 +4,13 @@ import bisect
 import copy
 import functools
 import itertools
-import operator
+import logging
 import math
+import operator
 import types
 import typing
 
+from mutwo import core_configurations
 from mutwo import core_constants
 
 
@@ -30,6 +32,7 @@ __all__ = (
     "camel_case_to_snake_case",
     "test_if_objects_are_equal_by_parameter_tuple",
     "get_all",
+    "get_cls_logger",
 )
 
 
@@ -546,3 +549,24 @@ def get_all(*submodule_tuple: types.ModuleType) -> tuple[str, ...]:
             lambda submodule: getattr(submodule, "__all__", tuple([])), submodule_tuple
         ),
     )
+
+
+def get_cls_logger(
+    cls: typing.Type, level: typing.Optional[int] = None
+) -> logging.Logger:
+    """Get the local logger of your class.
+
+    :param cls: The class for which the logger should be returned. Simply call
+        `type(o)` if you only have the instance.
+    :type cls: typing.Type
+    :param level: The logging level of the logger. If ``None`` the level
+        defined in `mutwo.core_configurations.LOGGING_LEVEL` is used. Default
+        to ``None``.
+    :type level: int
+    :return: A :class:`logging.Logger`.
+    """
+    if level is None:
+        level = core_configurations.LOGGING_LEVEL
+    logger = logging.getLogger(f"{cls.__module__}.{cls.__name__}")
+    logger.setLevel(level)
+    return logger

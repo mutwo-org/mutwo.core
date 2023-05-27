@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import bisect
 import typing
-import warnings
 
 from scipy import integrate
 
@@ -146,6 +145,8 @@ class Envelope(
             duration
         ),  # type: ignore
     ):
+        self._logger = core_utilities.get_cls_logger(type(self))
+
         self.event_to_parameter = event_to_parameter
         self.event_to_curve_shape = event_to_curve_shape
         self.value_to_parameter = value_to_parameter
@@ -551,7 +552,7 @@ class Envelope(
 
         duration = end - start
         if duration == 0:
-            warnings.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
+            self._logger.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
             return self.value_at(start)
         return self.integrate_interval(start, end) / duration.duration
 

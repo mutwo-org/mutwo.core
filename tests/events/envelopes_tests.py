@@ -161,9 +161,6 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     def test_get_average_value_with_zero_duration(self):
         self.assertEqual(self.envelope.get_average_value(0, 0), 0)
 
-        with self.assertWarns(core_utilities.InvalidAverageValueStartAndEndWarning):
-            self.envelope.get_average_value(0, 0)
-
     def test_get_average_parameter(self):
         self.assertAlmostEqual(
             self.envelope.get_average_parameter(0, 5), 0.6327906827477305
