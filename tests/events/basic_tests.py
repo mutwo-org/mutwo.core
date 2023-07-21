@@ -1439,6 +1439,24 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         )
         self.assertEqual(e.sequentialize(), e_sequentialized)
 
+    def test_split_at_multi(self):
+        sim, s = (core_events.SimultaneousEvent, core_events.SimpleEvent)
+        s0, s1, s2 = self.sequence.split_at(1, 2)
+        self.assertEqual(s0, sim([s(1), s(1), s(1)]))
+        self.assertEqual(s1, sim([s(1), s(1)]))
+        self.assertEqual(s2, sim([s(1)]))
+
+    def test_split_at_multi_nested(self):
+        seq, sim, s = (
+            core_events.SequentialEvent,
+            core_events.SimultaneousEvent,
+            core_events.SimpleEvent,
+        )
+        s0, s1, s2 = self.nested_sequence.split_at(1, 4)
+        self.assertEqual(s0, sim([seq([s(1)]), seq([s(1)])]))
+        self.assertEqual(s1, sim([seq([s(2), s(1)]), seq([s(2), s(1)])]))
+        self.assertEqual(s2, sim([seq([s(2)]), seq([s(2)])]))
+
 
 if __name__ == "__main__":
     unittest.main()
