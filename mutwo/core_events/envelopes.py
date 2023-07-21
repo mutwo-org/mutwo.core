@@ -589,6 +589,8 @@ class Envelope(
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        # _assert_correct_start_and_end_values is called when super().cut_out
+        # is called later.
 
         self.sample_at(start, append_duration=end - start)
         self.sample_at(end)
@@ -619,6 +621,9 @@ class Envelope(
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
+        )
+        self._assert_correct_start_and_end_values(
+            start, end, condition=lambda start, end: start < end
         )
 
         if (cut_off_duration := end - start) > 0:
