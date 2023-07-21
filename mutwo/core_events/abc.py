@@ -445,10 +445,12 @@ class Event(abc.ABC):
         >>> sequential_event[0].split_at(1)
         (SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 2)))
         """
+        if not absolute_time:
+            raise core_utilities.NoSplitTimeError()
 
         absolute_time_list = list(sorted(absolute_time))
-        if absolute_time_list:  # Already sorted => check if smallest t < 0
-            self._assert_valid_absolute_time(absolute_time_list[0])
+        # Already sorted => check if smallest t < 0
+        self._assert_valid_absolute_time(absolute_time_list[0])
         if 0 not in absolute_time_list:
             absolute_time_list.insert(0, core_parameters.DirectDuration(0))
 

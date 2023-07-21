@@ -674,6 +674,9 @@ class Envelope(
         *absolute_time: core_parameters.abc.Duration,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[Envelope, ...]:
+        if not absolute_time:
+            raise core_utilities.NoSplitTimeError()
+
         absolute_time = sorted(absolute_time)
         if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
             raise core_utilities.SplitError(absolute_time[-1])

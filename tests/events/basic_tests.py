@@ -70,6 +70,9 @@ class EventTest(abc.ABC):
         s0, s1 = d / 3, d / 2
         self.assertEqual(self.event.split_at(s0, s1), self.event.split_at(s1, s0))
 
+    def test_split_at_empty(self):
+        self.assertRaises(core_utilities.NoSplitTimeError, self.event.split_at)
+
     def test_cut_off_invalid_absolute_time(self):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime,

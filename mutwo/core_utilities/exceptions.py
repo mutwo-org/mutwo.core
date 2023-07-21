@@ -25,6 +25,7 @@ __all__ = (
     "NoTagError",
     "SplitError",
     "InvalidAbsoluteTime",
+    "NoSplitTimeError",
 )
 
 
@@ -200,3 +201,8 @@ class InvalidAbsoluteTime(Exception):
             "represent an absolute time. The absolute time line starts "
             "from 0 until +inf and therefore the smallest absolute time is 0."
         )
+
+
+class NoSplitTimeError(Exception):
+    def __init__(self):
+        super().__init__("Nothing to split (no split time given)!")

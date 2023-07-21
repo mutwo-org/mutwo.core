@@ -740,6 +740,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         *absolute_time: core_parameters.abc.Duration,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[SequentialEvent, ...]:
+        if not absolute_time:
+            raise core_utilities.NoSplitTimeError()
+
         (
             absolute_time_in_floats_tuple,
             duration_in_floats,
@@ -1163,11 +1166,13 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         *absolute_time: core_parameters.abc.Duration,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[SimultaneousEvent, ...]:
+        if not absolute_time:
+            raise core_utilities.NoSplitTimeError()
+
         absolute_time = sorted(absolute_time)
-        if absolute_time:
-            self._assert_valid_absolute_time(absolute_time[0])
-            if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
-                raise core_utilities.SplitError(absolute_time[-1])
+        self._assert_valid_absolute_time(absolute_time[0])
+        if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
+            raise core_utilities.SplitError(absolute_time[-1])
 
         def slice_tuple_to_event(slice_tuple):
             e = self.empty_copy()
