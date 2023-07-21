@@ -428,6 +428,11 @@ class Event(abc.ABC):
             :class:`mutwo.core_utilities.SplitError` in case a split time isn't
             inside the duration range of the event. Otherwise the exception is raised.
             Default to ``False``.
+        :raises: :class:`mutwo.core_utilities.NoSplitTimeError` if no `absolute_time`
+            is given. Raises :class:`mutwo.core_utilities.InvalidAbsoluteTime` if any
+            absolute_time is smaller than 0. Raises :class:`mutwo.core_utilities.SplitError`
+            if any absolute_time is bigger than the events duration and
+            `ignore_invalid_split_point` is not set.
         :return:  Tuple of events that result from splitting the present event.
 
         **Hint:**
