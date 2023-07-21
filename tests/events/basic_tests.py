@@ -65,6 +65,11 @@ class EventTest(abc.ABC):
             )
         )
 
+    def test_split_at_split_time_order_does_not_matter(self):
+        d = self.event.duration
+        s0, s1 = d / 3, d / 2
+        self.assertEqual(self.event.split_at(s0, s1), self.event.split_at(s1, s0))
+
     def test_cut_off_invalid_absolute_time(self):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime,
