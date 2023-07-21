@@ -410,16 +410,16 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
     def test_concatenate_tempo_envelope(self):
         seq0 = self.get_event_class()(
             [core_events.SimpleEvent(1)],
-            tempo_envelope=core_events.TempoEnvelope([[0, 20], [100, 30]]),
+            tempo_envelope=core_events.TempoEnvelope([[0, 20], [1, 20], [3, 100]]),
         )
         seq1 = self.get_event_class()(
             [core_events.SimpleEvent(2)],
             tempo_envelope=core_events.TempoEnvelope([[0, 50], [1, 10]]),
         )
         seq0._concatenate_tempo_envelope(seq1)
-        self.assertEqual(seq0.tempo_envelope.value_tuple, (20, 30, 50, 10))
+        self.assertEqual(seq0.tempo_envelope.value_tuple, (20, 20, 50, 10))
         self.assertEqual(
-            seq0.tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 3)
+            seq0.tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 2)
         )
 
     def test_magic_method_add(self):
@@ -431,11 +431,12 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
     def test_magic_method_add_children(self):
         """Ensure children and tempo envelope are concatenated"""
         seq, s = core_events.SequentialEvent, core_events.SimpleEvent
-        seq0, seq1 = seq([s(1)]), seq([s(1), s(2)])
+        seq0 = seq([s(1)], tempo_envelope=core_events.TempoEnvelope([[0, 50], [1, 50]]))
+        seq1 = seq([s(1), s(2)])
         seq_ok = seq(
             [s(1), s(1), s(2)],
             tempo_envelope=core_events.TempoEnvelope(
-                [[0, 60], [1, 60], [1, 60], [4, 60]]
+                [[0, 50], [1, 50], [1, 60], [2, 60]]
             ),
         )
         self.assertEqual(seq0 + seq1, seq_ok)
@@ -1299,7 +1300,9 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
             [
                 core_events.SequentialEvent(
                     [core_events.SimpleEvent(1)],
-                    tempo_envelope=core_events.TempoEnvelope([[0, 1], [10, 100]]),
+                    tempo_envelope=core_events.TempoEnvelope(
+                        [[0, 1], [1, 20], [10, 100]]
+                    ),
                 )
             ]
         )
@@ -1312,7 +1315,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
             ]
         )
         sim0.concatenate_by_index(sim1)
-        self.assertEqual(sim0[0].tempo_envelope.value_tuple, (1, 100, 1000, 10))
+        self.assertEqual(sim0[0].tempo_envelope.value_tuple, (1, 20, 1000, 10))
         self.assertEqual(
             sim0[0].tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 2)
         )
@@ -1325,13 +1328,13 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
             core_events.TempoEnvelope,
         )
 
-        s1 = si([tse([s(1), s(1)], tag="a")])
+        s1 = si([tse([s(1), s(1)], tag="a", tempo_envelope=t([[0, 50], [1, 50]]))])
         s2 = si([tse([s(2), s(1)], tag="a"), tse([s(0.5)], tag="b")])
 
         # Concatenation tempo envelopes
-        t0 = t([[0, 60], [2, 60], [2, 60], [4, 60]])
-        t1 = t([[0, 60], [2, 60], [2, 60], [5, 60]])
-        t2 = t([[0, 60], [3, 60], [3, 60], [5, 60]])
+        t0 = t([[0, 50], [1, 50], [2, 50], [2, 50], [3, 50]])
+        t1 = t([[0, 50], [1, 50], [2, 50], [2, 60], [3, 60]])
+        t2 = t([[0, 60], [1, 60], [3, 60], [3, 50], [4, 50]])
 
         # Equal size concatenation
         self.assertEqual(

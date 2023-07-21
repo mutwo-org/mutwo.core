@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - the initialization of the exception `CannotSetDurationOfEmptyComplexEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/4d9d26fdc6fb3b39ecf7e2b47231897a216b16df))
+- tempo envelope concatenation (before this there was an inconsistency how tempo envelopes were treated in the package. Now it's consistent.)
 
 
 ## [1.2.3] - 2023-03-17

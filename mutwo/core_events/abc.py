@@ -494,6 +494,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     ):
         Event.__init__(self, tempo_envelope)
         list.__init__(self, iterable)
+        self._logger = core_utilities.get_cls_logger(type(self))
 
     def __init_subclass__(
         cls, class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
@@ -745,15 +746,24 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         to know the original duration of the target event. Due to this
         difficulty this method is private.
         """
-        other_tempo_envelope = other.tempo_envelope.copy()
-        # We first set the duration of the tempo envelopes to the
-        # duration of the given event. This is necessary, because the
-        # tempo envelope duration is always relative to the events duration.
-        # If we don't set them to this absolute value, the inner
-        # relationships may be distorted after concatenation.
-        self.tempo_envelope.duration = self.duration
-        other_tempo_envelope.duration = other.duration
-        self.tempo_envelope.extend(other_tempo_envelope)
+        # We need to ensure the tempo envelope of the event
+        # is as long as it's duration, otherwise the others tempo
+        # envelope may be postponed (if our envelope is longer
+        # than the event) or may be too early (if our envelope
+        # is shorted than the event).
+        # We don't care here if the others event envelope is too
+        # short or too long, because the relationships are still
+        # the same.
+        if (d := self.duration) < (d_env := self.tempo_envelope.duration):
+            self._logger.warning(
+                f"Tempo envelope of '{str(self)[:35]}...' needed "
+                "to be truncated because the envelope was "
+                "longer than the actual event."
+            )
+            self.tempo_envelope.cut_out(0, d)
+        elif d > d_env:
+            self.tempo_envelope.extend_until(d)
+        self.tempo_envelope.extend(other.tempo_envelope.copy())
 
     # ###################################################################### #
     #                           public methods                               #

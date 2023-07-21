@@ -145,8 +145,6 @@ class Envelope(
             duration
         ),  # type: ignore
     ):
-        self._logger = core_utilities.get_cls_logger(type(self))
-
         self.event_to_parameter = event_to_parameter
         self.event_to_curve_shape = event_to_curve_shape
         self.value_to_parameter = value_to_parameter
