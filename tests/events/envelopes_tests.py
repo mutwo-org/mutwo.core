@@ -1,3 +1,4 @@
+import typing
 import unittest
 
 from mutwo import core_constants
@@ -5,8 +6,10 @@ from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
+from .basic_tests import ComplexEventTest
 
-class EnvelopeTest(unittest.TestCase):
+
+class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     class EnvelopeEvent(core_events.SimpleEvent):
         def __init__(
             self,
@@ -19,6 +22,7 @@ class EnvelopeTest(unittest.TestCase):
             self.curve_shape = curve_shape
 
     def setUp(self):
+        ComplexEventTest.setUp(self)
         self.envelope = core_events.Envelope(
             [
                 self.EnvelopeEvent(1, 0),
@@ -38,6 +42,20 @@ class EnvelopeTest(unittest.TestCase):
             ],
             value_to_parameter=lambda value: value / 2,
             parameter_to_value=lambda parameter: parameter * 2,
+        )
+
+    def get_event_class(self) -> typing.Type:
+        return core_events.Envelope
+
+    def get_event_instance(self) -> core_events.SimpleEvent:
+        return self.get_event_class()([[0, 1], [4, 10]])
+
+    def test_split_at_end(self):
+        # XXX: Tempo envelopes slightly differ, but not in their
+        # actual content. So let's just metrize before comparing.
+        self.assertEqual(
+            (self.event.split_at(self.event.duration)[0].metrize(),),
+            (self.event.metrize(),),
         )
 
     def test_parameter_tuple(self):
