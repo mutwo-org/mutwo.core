@@ -18,6 +18,9 @@ from mutwo import core_utilities
 class EventTest(abc.ABC):
     """Define tests which should pass on various event classes"""
 
+    def setUp(self):
+        self.event = self.get_event_instance()
+
     @abc.abstractmethod
     def get_event_class(self) -> typing.Type:
         ...
@@ -27,9 +30,10 @@ class EventTest(abc.ABC):
         ...
 
     def test_tempo_envelope_auto_initialization(self):
-        event = self.get_event_instance()
-        self.assertTrue(bool(event.tempo_envelope))
-        self.assertTrue(isinstance(event.tempo_envelope, core_events.TempoEnvelope))
+        self.assertTrue(bool(self.event.tempo_envelope))
+        self.assertTrue(
+            isinstance(self.event.tempo_envelope, core_events.TempoEnvelope)
+        )
 
     def test_tempo_envelope_auto_initialization_and_settable(self):
         self.event.tempo_envelope[0].duration = 100
@@ -99,10 +103,12 @@ class ComplexEventTest(EventTest):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime, self.event.split_child_at, -1
         )
->>>>>>> 3c74e35 (fixup! events/E.split_at: standardize exception)
 
 
 class SimpleEventTest(unittest.TestCase, EventTest):
+    def setUp(self) -> None:
+        EventTest.setUp(self)
+
     def get_event_class(self) -> typing.Type:
         return core_events.SimpleEvent
 
@@ -275,6 +281,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
 class SequentialEventTest(unittest.TestCase, EventTest):
     def setUp(self):
+        EventTest.setUp(self)
         self.simple_event0 = core_events.SimpleEvent(1)
         self.simple_event1 = core_events.SimpleEvent(2)
         self.simple_event2 = core_events.SimpleEvent(3)
@@ -299,7 +306,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         return core_events.SequentialEvent
 
     def get_event_instance(self) -> core_events.SimpleEvent:
-        return self.get_event_class()([])
+        return self.get_event_class()([core_events.SimpleEvent(3)])
 
     def test_getitem_index(self):
         self.assertEqual(self.simple_event0, self.sequence[0])
@@ -769,22 +776,6 @@ class SequentialEventTest(unittest.TestCase, EventTest):
             lambda: self.sequence.split_child_at(1000),
         )
 
-    def test_split_at_start(self):
-        self.assertEqual(self.sequence.split_at(0), (self.sequence,))
-
-    def test_split_at_end(self):
-        self.assertEqual(self.sequence.split_at(6), (self.sequence,))
-
-    def test_split_at_bad_time(self):
-        self.assertRaises(core_utilities.SplitError, self.sequence.split_at, -1)
-        self.assertRaises(core_utilities.SplitError, self.sequence.split_at, 100)
-
-    def test_split_at_bad_time_ignored(self):
-        self.assertEqual(
-            self.sequence.split_at(-1, ignore_invalid_split_point=True),
-            (self.sequence,),
-        )
-
     def test_split_at_multi(self):
         seq, s = core_events.SequentialEvent, core_events.SimpleEvent
         # Only at already pre-defined split times.
@@ -860,9 +851,15 @@ class SimultaneousEventTest(unittest.TestCase, EventTest):
         return core_events.SimultaneousEvent
 
     def get_event_instance(self) -> core_events.SimpleEvent:
-        return self.get_event_class()([])
+        return self.get_event_class()(
+            [
+                core_events.SimpleEvent(3),
+                core_events.SequentialEvent([core_events.SimpleEvent(2)]),
+            ]
+        )
 
     def setUp(self) -> None:
+        EventTest.setUp(self)
         self.sequence: core_events.SimultaneousEvent[
             core_events.SimpleEvent
         ] = core_events.SimultaneousEvent(
