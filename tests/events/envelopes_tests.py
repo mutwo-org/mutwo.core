@@ -262,7 +262,7 @@ class EnvelopeTest(unittest.TestCase):
         self.assertEqual(len(self.envelope), 6)
         self.assertEqual(self.envelope[-1].duration, 4)
         self.assertEqual(
-            self.envelope.parameter_tuple[-1] == self.envelope.parameter_tuple[-2]
+            self.envelope.parameter_tuple[-1], self.envelope.parameter_tuple[-2]
         )
 
 
