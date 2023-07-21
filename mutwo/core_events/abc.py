@@ -60,6 +60,11 @@ class Event(abc.ABC):
         if not condition(start, end):
             raise core_utilities.InvalidStartAndEndValueError(start, end)
 
+    @staticmethod
+    def _assert_valid_absolute_time(t: core_parameters.abc.Duration):
+        if t < 0:
+            raise core_utilities.InvalidAbsoluteTime(t)
+
     @functools.cached_property
     def _event_to_metrized_event(self):
         # Import in method to avoid circular import error
@@ -442,6 +447,8 @@ class Event(abc.ABC):
         """
 
         absolute_time_list = list(sorted(absolute_time))
+        if absolute_time_list:  # Already sorted => check if smallest t < 0
+            self._assert_valid_absolute_time(absolute_time_list[0])
         if 0 not in absolute_time_list:
             absolute_time_list.insert(0, core_parameters.DirectDuration(0))
 

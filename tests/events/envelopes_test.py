@@ -210,6 +210,13 @@ class EnvelopeTest(unittest.TestCase):
             core_utilities.EmptyEnvelopeError, core_events.Envelope([]).sample_at, 0
         )
 
+    def test_sample_at_invalid_absolute_time(self):
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime,
+            core_events.Envelope([[0, 10], [1, 10]]).sample_at,
+            -1,
+        )
+
     def test_cut_out(self):
         # Envelope needs extra test for customized cut out method.
         cut_out_envelope = self.envelope.cut_out(0.5, 1.5, mutate=False)

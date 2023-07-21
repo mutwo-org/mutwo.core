@@ -246,6 +246,7 @@ class SimpleEvent(core_events.abc.Event):
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )
@@ -279,6 +280,7 @@ class SimpleEvent(core_events.abc.Event):
             for unknown_object in (start, end)
         )
 
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
 
         duration = self.duration
@@ -380,9 +382,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         absolute_time_in_floats_tuple: tuple[float, ...],
         duration_in_floats: float,
     ) -> int:
-        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
-        ).duration_in_floats
+        )
+        self._assert_valid_absolute_time(absolute_time)
+        absolute_time_in_floats = absolute_time.duration_in_floats
 
         event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
             absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
@@ -586,6 +590,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
 
         event_to_remove_index_list = []
@@ -629,6 +634,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
+
         cut_off_duration = end - start
 
         # Avoid unnecessary iterations
@@ -642,8 +649,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         event_to_squash_in: core_events.abc.Event,
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        self._assert_valid_absolute_time(start)
         start_in_floats = start.duration_in_floats
-
         self._assert_start_in_range(start_in_floats)
 
         # Only run cut_off if necessary -> Improve performance
@@ -701,6 +708,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         event_to_slide_in: core_events.abc.Event,
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        self._assert_valid_absolute_time(start)
         start_in_floats = start.duration_in_floats
         if start_in_floats == 0:
             self.insert(0, event_to_slide_in)
@@ -745,7 +753,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         c = self.copy()
 
         index_list = []
+        is_first = True
         for t in sorted(absolute_time):
+            if is_first:  # First is smallest, check if t < 0
+                self._assert_valid_absolute_time(t)
+                is_first = False
             # Improve performance: don't try to split if we know it is
             # already split here. We also need to be sure to not
             # add any duplicates to 'absolute_time_list', so we need
@@ -891,6 +903,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_out(start, end) for event in self]
 
@@ -904,6 +917,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
         [event.cut_off(start, end) for event in self]
 
@@ -914,6 +928,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         event_to_squash_in: core_events.abc.Event,
     ) -> SimultaneousEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
 
         for event in self:
@@ -930,6 +945,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         event_to_slide_in: core_events.abc.Event,
     ) -> SimultaneousEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
         for event in self:
             try:

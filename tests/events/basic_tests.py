@@ -250,7 +250,9 @@ class SimpleEventTest(unittest.TestCase, EventTest):
             lambda: event0.cut_out(4, 5),
         )
         self.assertRaises(
-            core_utilities.InvalidCutOutStartAndEndValuesError,
+            # -2 is smaller than 0, so this isn't a valid absolute time =>
+            # error is raised.
+            core_utilities.InvalidAbsoluteTime,
             lambda: event0.cut_out(-2, -1),
         )
 
@@ -279,7 +281,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
         self.assertEqual(event.split_at(3), split2)
 
 
-class SequentialEventTest(unittest.TestCase, EventTest):
+class SequentialEventTest(unittest.TestCase, ComplexEventTest):
     def setUp(self):
         EventTest.setUp(self)
         self.simple_event0 = core_events.SimpleEvent(1)
@@ -639,7 +641,9 @@ class SequentialEventTest(unittest.TestCase, EventTest):
 
     def test_slide_in_with_invalid_start(self):
         s = core_events.SimpleEvent(1)
-        self.assertRaises(core_utilities.SplitError, self.sequence.slide_in, -1, s)
+        self.assertRaises(
+            core_utilities.InvalidAbsoluteTime, self.sequence.slide_in, -1, s
+        )
         self.assertRaises(
             core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, s
         )
@@ -833,7 +837,7 @@ class SequentialEventTest(unittest.TestCase, EventTest):
         )
 
 
-class SimultaneousEventTest(unittest.TestCase, EventTest):
+class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
     class DummyParameter(object):
         def __init__(self, value: float):
             self.value = value

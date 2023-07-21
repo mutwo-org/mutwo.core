@@ -348,9 +348,10 @@ class Envelope(
         >>> e.value_at(0.5)
         1.0
         """
-        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
-        ).duration_in_floats
+        )
+        absolute_time_in_floats = absolute_time.duration_in_floats
 
         (
             absolute_time_in_floats_tuple,
@@ -478,6 +479,8 @@ class Envelope(
             for unknown_object in (absolute_time, append_duration)
         )
 
+        self._assert_valid_absolute_time(absolute_time)
+
         # We only add a new event in case there isn't any event yet at
         # given point in time.
         if absolute_time not in (absolute_time_tuple := self.absolute_time_tuple):
@@ -589,8 +592,8 @@ class Envelope(
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
-        # _assert_correct_start_and_end_values is called when super().cut_out
-        # is called later.
+        # _assert_correct_start_and_end_values and _assert_valid_absolute_time
+        # is called when super().cut_out is called later.
 
         self.sample_at(start, append_duration=end - start)
         self.sample_at(end)
@@ -622,6 +625,7 @@ class Envelope(
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
         )
+        self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )

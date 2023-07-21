@@ -24,6 +24,7 @@ __all__ = (
     "ConcatenationError",
     "NoTagError",
     "SplitError",
+    "InvalidAbsoluteTime",
 )
 
 
@@ -136,11 +137,11 @@ class InvalidCutOutStartAndEndValuesError(Exception):
             f" (start = {start} to end = {end})."
         )
 
+
 class SplitError(Exception):
     def __init__(self, absolute_time: core_constants.DurationType):
-        super().__init__(
-            f"Can't split event at absolute time '{absolute_time}'."
-        )
+        super().__init__(f"Can't split event at absolute time '{absolute_time}'.")
+
 
 class SplitUnavailableChildError(Exception):
     def __init__(self, absolute_time: core_constants.DurationType):
@@ -189,4 +190,13 @@ class NoTagError(Exception):
             "all child events have tags. Here 'mutwo' detected the "
             f"child event '{str(event_without_tag)[:50]}...' "
             "which doesn't have any 'tag' attribute."
+        )
+
+
+class InvalidAbsoluteTime(Exception):
+    def __init__(self, t):
+        super().__init__(
+            f"Duration '{t}' is smaller than 0 and can therefore not "
+            "represent an absolute time. The absolute time line starts "
+            "from 0 until +inf and therefore the smallest absolute time is 0."
         )
