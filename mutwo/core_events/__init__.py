@@ -17,6 +17,7 @@ from . import configurations
 from . import abc
 
 from .basic import *
+from .tempos import *
 from .envelopes import *
 
 from . import basic, envelopes

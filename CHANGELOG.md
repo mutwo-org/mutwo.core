@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/a53952a5bf2ff9151117c250d542704b47b28dd0))
 - standardized logging utilities with `core_utilities.get_cls_logger` and `core_configurations.LOGGING_LEVEL`
+- 'core_events.TempoEvent' class to be used in 'core_events.TempoEnvelope'
 
 ### Changed
 - allow multiple split times in `Event.split_at`
