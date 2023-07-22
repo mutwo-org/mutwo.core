@@ -275,10 +275,12 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
         self.assertEqual(len(self.envelope), 5)
         self.envelope.extend_until(10)
         self.assertEqual(len(self.envelope), 6)
-        self.assertEqual(self.envelope[-1].duration, 4)
+        self.assertEqual(self.envelope.duration, 10)
+        self.assertEqual(self.envelope[-1].duration, 0)
         self.assertEqual(
             self.envelope.parameter_tuple[-1], self.envelope.parameter_tuple[-2]
         )
+        self.assertRaises(core_utilities.EmptyEnvelopeError, core_events.Envelope([]).extend_until, 1)
 
 
 class RelativeEnvelopeTest(unittest.TestCase):

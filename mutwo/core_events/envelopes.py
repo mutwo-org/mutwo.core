@@ -658,17 +658,9 @@ class Envelope(
         ] = None,
         prolong_simple_event: bool = True,
     ) -> Envelope[T]:
-        self_duration = self.duration
-        super().extend_until(
-            duration,
-            duration_to_white_space=duration_to_white_space
-            or (
-                lambda duration: self._make_event(
-                    duration, self.parameter_at(self_duration), 0
-                )
-            ),
-            prolong_simple_event=prolong_simple_event,
-        )
+        if not self:
+            raise core_utilities.EmptyEnvelopeError(self, "extend_until")
+        self.sample_at(duration)
 
     def split_at(
         self,
