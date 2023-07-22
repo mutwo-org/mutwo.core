@@ -348,11 +348,11 @@ class Event(abc.ABC):
         >>> simple_event = core_events.SimpleEvent(duration = 1)
         >>> simple_event.tempo_envelope[0].value = 100
         >>> simple_event.tempo_envelope
-        TempoEnvelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = 60, value = 100), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = 60)])
+        TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = DirectTempoPoint(BPM = 60, reference = 1), value = 100), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
         >>> simple_event.reset_tempo_envelope()
         SimpleEvent(duration = DirectDuration(duration = 1))
         >>> simple_event.tempo_envelope
-        TempoEnvelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = 60), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = 60)])
+        TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = DirectTempoPoint(BPM = 60, reference = 1)), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
         """
 
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])

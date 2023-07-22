@@ -833,6 +833,13 @@ class TempoEnvelope(Envelope):
         apply_parameter_on_event: typing.Optional[
             typing.Callable[[core_events.abc.Event, core_constants.ParameterType], None]
         ] = None,
+        default_event_class: type[core_events.abc.Event] = core_events.TempoEvent,
+        initialise_default_event_class: typing.Callable[
+            [type[core_events.abc.Event], core_constants.DurationType],
+            core_events.abc.Event,
+        ] = lambda simple_event_class, duration: simple_event_class(
+            tempo_point=1, duration=duration
+        ),
         **kwargs,
     ):
         def default_event_to_parameter(event: core_events.abc.Event) -> TempoPoint:
@@ -870,6 +877,8 @@ class TempoEnvelope(Envelope):
             parameter_to_value=parameter_to_value or default_parameter_to_value,
             apply_parameter_on_event=apply_parameter_on_event
             or default_apply_parameter_on_event,
+            default_event_class=default_event_class,
+            initialise_default_event_class=initialise_default_event_class,
             **kwargs,
         )
 
