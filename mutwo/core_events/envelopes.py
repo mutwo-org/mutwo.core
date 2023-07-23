@@ -550,7 +550,7 @@ class Envelope(
 
         duration = end - start
         if duration == 0:
-            self._logger.warn(core_utilities.InvalidAverageValueStartAndEndWarning())
+            self._logger.warning(core_utilities.InvalidAverageValueStartAndEndWarning())
             return self.value_at(start)
         return self.integrate_interval(start, end) / duration.duration
 
