@@ -21,7 +21,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     author="Tim Pauli, Levin Eric Zimmermann",
     author_email="tim.pauli@folkwang-uni.de, levin.eric.zimmermann@posteo.eu",
-    url="https://github.com/mutwo-org/mutwo",
+    url="https://github.com/mutwo-org/mutwo.core",
     project_urls={"Documentation": "https://mutwo.readthedocs.io/en/latest/"},
     packages=[
         package
