@@ -1,13 +1,13 @@
 from mutwo import core_events
 
-__all__ = ("TempoEvent",)
+__all__ = ("Tempo",)
 
 
 # XXX: Currently type hints are deactivated here, because otherwise we get
 # problems with circular imports (because 'TempoEvent' is needed by envelopes
 # and because envelopes are needed by parameters). Because this code is very
 # short, it may not matter so much.
-class TempoEvent(core_events.SimpleEvent):
+class Tempo(core_events.Simple):
     def __init__(self, tempo_point, *args, **kwargs):
         self.tempo_point = tempo_point
         super().__init__(*args, **kwargs)

@@ -73,15 +73,15 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
 class TempoConverterTest(unittest.TestCase):
     def test_convert_simple_event(self):
         tempo_envelope = core_events.Envelope([[0, 30], [4, 60]])
-        simple_event = core_events.SimpleEvent(4)
+        simple_event = core_events.Simple(4)
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_simple_event = converter.convert(simple_event)
         expected_duration = 6
         self.assertEqual(converted_simple_event.duration, expected_duration)
 
     def test_convert_sequential_event(self):
-        sequential_event = core_events.SequentialEvent(
-            [core_events.SimpleEvent(2) for _ in range(5)]
+        sequential_event = core_events.Sequential(
+            [core_events.Simple(2) for _ in range(5)]
         )
         tempo_point_list = [
             # Event 0
@@ -114,9 +114,9 @@ class TempoConverterTest(unittest.TestCase):
 
     def test_convert_simultaneous_event(self):
         tempo_envelope = core_events.Envelope([[0, 30], [4, 60]])
-        simple_event0 = core_events.SimpleEvent(4)
-        simple_event1 = core_events.SimpleEvent(8)
-        simultaneous_event = core_events.SimultaneousEvent(
+        simple_event0 = core_events.Simple(4)
+        simple_event1 = core_events.Simple(8)
+        simultaneous_event = core_events.Simultaneous(
             [simple_event0, simple_event0, simple_event1]
         )
         converter = core_converters.TempoConverter(tempo_envelope)
@@ -129,7 +129,7 @@ class TempoConverterTest(unittest.TestCase):
 
     def test_convert_tempo_envelope(self):
         tempo_envelope = core_events.Envelope([[0, 30], [4, 60]])
-        simple_event = core_events.SimpleEvent(4)
+        simple_event = core_events.Simple(4)
         simple_event.tempo_envelope = tempo_envelope.copy()
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_simple_event = converter.convert(simple_event)
@@ -137,8 +137,8 @@ class TempoConverterTest(unittest.TestCase):
 
     def test_convert_tempo_envelope_with_too_short_global_tempo_envelope(self):
         tempo_envelope = core_events.Envelope([[0, 30], [0.5, 30]])
-        sequential_event = core_events.SequentialEvent(
-            [core_events.SimpleEvent(1), core_events.SimpleEvent(1)]
+        sequential_event = core_events.Sequential(
+            [core_events.Simple(1), core_events.Simple(1)]
         )
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_sequential_event = converter.convert(sequential_event)
@@ -150,10 +150,10 @@ class TempoConverterTest(unittest.TestCase):
 
 class EventToMetrizedEventTest(unittest.TestCase):
     def test_convert_simple_event(self):
-        simple_event = core_events.SimpleEvent(
+        simple_event = core_events.Simple(
             2, tempo_envelope=core_events.TempoEnvelope([[0, 30], [2, 30]])
         )
-        expected_simple_event = core_events.SimpleEvent(4)
+        expected_simple_event = core_events.Simple(4)
         event_to_metrized_event = core_converters.EventToMetrizedEvent()
         self.assertEqual(
             event_to_metrized_event.convert(simple_event), expected_simple_event
@@ -163,27 +163,27 @@ class EventToMetrizedEventTest(unittest.TestCase):
         """
         Test that tempo envelopes are propagated to all children events.
         """
-        sequential_event = core_events.SequentialEvent(
+        sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
+                core_events.Sequential(
                     [
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             1,
                             tempo_envelope=core_events.TempoEnvelope(
                                 [[0, 30], [1, 30]]
                             ),
                         ),
-                        core_events.SimpleEvent(1),
+                        core_events.Simple(1),
                     ],
                     tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
                 )
             ],
             tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
         )
-        expected_sequential_event = core_events.SequentialEvent(
+        expected_sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
-                    [core_events.SimpleEvent(8), core_events.SimpleEvent(4)]
+                core_events.Sequential(
+                    [core_events.Simple(8), core_events.Simple(4)]
                 )
             ]
         )
@@ -198,11 +198,11 @@ class EventToMetrizedEventTest(unittest.TestCase):
         and no events on the same level.
         """
 
-        sequential_event = core_events.SequentialEvent(
+        sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
+                core_events.Sequential(
                     [
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             1,
                             tempo_envelope=core_events.TempoEnvelope(
                                 [[0, 30], [1, 30]]
@@ -211,13 +211,13 @@ class EventToMetrizedEventTest(unittest.TestCase):
                     ],
                     tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
                 ),
-                core_events.SimpleEvent(1),
+                core_events.Simple(1),
             ],
         )
-        expected_sequential_event = core_events.SequentialEvent(
+        expected_sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent([core_events.SimpleEvent(4)]),
-                core_events.SimpleEvent(1),
+                core_events.Sequential([core_events.Simple(4)]),
+                core_events.Simple(1),
             ]
         )
         event_to_metrized_event = core_converters.EventToMetrizedEvent()
@@ -229,27 +229,27 @@ class EventToMetrizedEventTest(unittest.TestCase):
         """
         Ensure skip_level_count takes effect
         """
-        sequential_event = core_events.SequentialEvent(
+        sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
+                core_events.Sequential(
                     [
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             1,
                             tempo_envelope=core_events.TempoEnvelope(
                                 [[0, 30], [1, 30]]
                             ),
                         ),
-                        core_events.SimpleEvent(1),
+                        core_events.Simple(1),
                     ],
                     tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
                 )
             ],
             tempo_envelope=core_events.TempoEnvelope([[0, 11], [1, 11]]),
         )
-        expected_sequential_event = core_events.SequentialEvent(
+        expected_sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
-                    [core_events.SimpleEvent(4), core_events.SimpleEvent(2)]
+                core_events.Sequential(
+                    [core_events.Simple(4), core_events.Simple(2)]
                 )
             ],
             tempo_envelope=core_events.TempoEnvelope([[0, 11], [1, 11]]),
@@ -265,30 +265,30 @@ class EventToMetrizedEventTest(unittest.TestCase):
         """
         Ensure maxima_depth_count takes effect
         """
-        sequential_event = core_events.SequentialEvent(
+        sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
+                core_events.Sequential(
                     [
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             1,
                             tempo_envelope=core_events.TempoEnvelope([[0, 4], [1, 4]]),
                         ),
-                        core_events.SimpleEvent(1),
+                        core_events.Simple(1),
                     ],
                     tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
                 )
             ],
             tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
         )
-        expected_sequential_event = core_events.SequentialEvent(
+        expected_sequential_event = core_events.Sequential(
             [
-                core_events.SequentialEvent(
+                core_events.Sequential(
                     [
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             4,
                             tempo_envelope=core_events.TempoEnvelope([[0, 4], [4, 4]]),
                         ),
-                        core_events.SimpleEvent(
+                        core_events.Simple(
                             4,
                             tempo_envelope=core_events.TempoEnvelope(
                                 [[0, 60], [4, 60]]

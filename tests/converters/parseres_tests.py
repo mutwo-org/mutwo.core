@@ -41,13 +41,13 @@ class SimpleEventToAttributeTest(unittest.TestCase):
         )
 
     def test_convert_with_attribute(self):
-        simple_event = core_events.SimpleEvent(10)
+        simple_event = core_events.Simple(10)
         simple_event.dummy_attribute = 100  # type: ignore
         self.assertEqual(self.simple_event_to_attribute.convert(simple_event), 100)
 
     def test_convert_without_attribute(self):
         self.assertEqual(
-            self.simple_event_to_attribute.convert(core_events.SimpleEvent(10)),
+            self.simple_event_to_attribute.convert(core_events.Simple(10)),
             float("inf"),
         )
 
@@ -115,7 +115,7 @@ class MutwoParameterDictToSimpleEventTest(unittest.TestCase):
     def test_convert(self):
         self.assertEqual(
             self.mutwo_parameter_dict_to_simple_event.convert({"duration": 10}),
-            core_events.SimpleEvent(10),
+            core_events.Simple(10),
         )
 
 

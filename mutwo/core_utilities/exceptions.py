@@ -5,6 +5,7 @@ import typing
 from mutwo import core_constants
 
 __all__ = (
+    "CannotSetDurationOfEmptyComplex",
     "CannotSetDurationOfEmptyComplexEvent",
     "AlreadyDefinedValueNameError",
     "InvalidAverageValueStartAndEndWarning",
@@ -29,15 +30,19 @@ __all__ = (
 )
 
 
-class CannotSetDurationOfEmptyComplexEvent(Exception):
+class CannotSetDurationOfEmptyComplex(Exception):
     def __init__(self):
         super().__init__(
             "You tried to set the duration of a complex "
             "event (e.g. 'SequentialEvent' or 'SimultaneousEvent') "
             "which doesn't have any child events. This"
-            " is impossible, because the duration of a 'ComplexEvent'"
+            " is impossible, because the duration of a 'Complex'"
             " is simply the sum of its sequentially ordered child events."
         )
+
+
+# BBB
+CannotSetDurationOfEmptyComplexEvent = CannotSetDurationOfEmptyComplex
 
 
 class AlreadyDefinedValueNameError(Exception):

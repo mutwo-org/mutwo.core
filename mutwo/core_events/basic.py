@@ -22,6 +22,13 @@ from mutwo import core_utilities
 
 
 __all__ = (
+    "Simple",
+    "Sequential",
+    "Simultaneous",
+    "TaggedSimple",
+    "TaggedSequential",
+    "TaggedSimultaneous",
+    # BBB
     "SimpleEvent",
     "SequentialEvent",
     "SimultaneousEvent",
@@ -31,10 +38,10 @@ __all__ = (
 )
 
 
-class SimpleEvent(core_events.abc.Event):
+class Simple(core_events.abc.Event):
     """Event-Object which doesn't contain other Event-Objects (the node or leaf).
 
-    :param duration: The duration of the ``SimpleEvent``. Mutwo will convert
+    :param duration: The duration of the ``Simple``. Mutwo will convert
         the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
         with the global `core_events.configurations.UNKNOWN_OBJECT_TO_DURATION`
         callable.
@@ -42,9 +49,9 @@ class SimpleEvent(core_events.abc.Event):
     **Example:**
 
     >>> from mutwo import core_events
-    >>> simple_event = core_events.SimpleEvent(2)
-    >>> print(simple_event)
-    SimpleEvent(duration = DirectDuration(duration = 2))
+    >>> simple = core_events.Simple(2)
+    >>> print(simple)
+    Simple(duration = DirectDuration(duration = 2))
     """
 
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope",)
@@ -95,7 +102,7 @@ class SimpleEvent(core_events.abc.Event):
         | core_constants.ParameterType,
         set_unassigned_parameter: bool,
         id_set: set[int],
-    ) -> SimpleEvent:
+    ) -> Simple:
         old_parameter = self.get_parameter(parameter_name)
         if set_unassigned_parameter or old_parameter is not None:
             if hasattr(object_or_function, "__call__"):
@@ -110,7 +117,7 @@ class SimpleEvent(core_events.abc.Event):
         parameter_name: str,
         function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
-    ) -> SimpleEvent:
+    ) -> Simple:
         parameter = self.get_parameter(parameter_name)
         if parameter is not None:
             function(parameter)
@@ -134,10 +141,10 @@ class SimpleEvent(core_events.abc.Event):
 
     @property
     def _parameter_to_compare_tuple(self) -> tuple[str, ...]:
-        """Return tuple of attribute names which values define the :class:`SimpleEvent`.
+        """Return tuple of attribute names which values define the :class:`Simple`.
 
         The returned attribute names are used for equality check between two
-        :class:`SimpleEvent` objects.
+        :class:`Simple` objects.
         """
         return tuple(
             attribute
@@ -165,7 +172,7 @@ class SimpleEvent(core_events.abc.Event):
     #                           public methods                               #
     # ###################################################################### #
 
-    def destructive_copy(self) -> SimpleEvent:
+    def destructive_copy(self) -> Simple:
         return copy.deepcopy(self)
 
     def get_parameter(
@@ -178,7 +185,7 @@ class SimpleEvent(core_events.abc.Event):
         self,
         *args,
         **kwargs,
-    ) -> SimpleEvent:
+    ) -> Simple:
         """Sets event parameter to new value.
 
         :param parameter_name: The name of the parameter which values shall be changed.
@@ -198,36 +205,36 @@ class SimpleEvent(core_events.abc.Event):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(2)
-        >>> simple_event.set_parameter(
+        >>> simple = core_events.Simple(2)
+        >>> simple.set_parameter(
         ...     'duration', lambda old_duration: old_duration * 2
         ... )
-        SimpleEvent(duration = DirectDuration(duration = 4))
-        >>> simple_event.duration
+        Simple(duration = DirectDuration(duration = 4))
+        >>> simple.duration
         DirectDuration(4)
-        >>> simple_event.set_parameter('duration', 3)
-        SimpleEvent(duration = DirectDuration(duration = 3))
-        >>> simple_event.duration
+        >>> simple.set_parameter('duration', 3)
+        Simple(duration = DirectDuration(duration = 3))
+        >>> simple.duration
         DirectDuration(3)
-        >>> simple_event.set_parameter(
+        >>> simple.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=False
         ... )  # this will be ignored
-        SimpleEvent(duration = DirectDuration(duration = 3))
-        >>> simple_event.unknown_parameter
+        Simple(duration = DirectDuration(duration = 3))
+        >>> simple.unknown_parameter
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
-        AttributeError: 'SimpleEvent' object has no attribute 'unknown_parameter'
-        >>> simple_event.set_parameter(
+        AttributeError: 'Simple' object has no attribute 'unknown_parameter'
+        >>> simple.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=True
         ... )  # this will be written
-        SimpleEvent(duration = DirectDuration(duration = 3), unknown_parameter = 10)
-        >>> simple_event.unknown_parameter
+        Simple(duration = DirectDuration(duration = 3), unknown_parameter = 10)
+        >>> simple.unknown_parameter
         10
         """
 
         return super().set_parameter(*args, **kwargs)
 
-    def metrize(self, mutate: bool = True) -> SimpleEvent:
+    def metrize(self, mutate: bool = True) -> Simple:
         metrized_event = self._event_to_metrized_event(self)
         if mutate:
             self.duration = metrized_event.duration
@@ -241,7 +248,7 @@ class SimpleEvent(core_events.abc.Event):
         self,
         start: core_parameters.abc.Duration,
         end: core_parameters.abc.Duration,
-    ) -> SimpleEvent:
+    ) -> Simple:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -274,7 +281,7 @@ class SimpleEvent(core_events.abc.Event):
         self,
         start: core_parameters.abc.Duration,
         end: core_parameters.abc.Duration,
-    ) -> SimpleEvent:
+    ) -> Simple:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -294,14 +301,14 @@ class SimpleEvent(core_events.abc.Event):
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
-class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
+class Sequential(core_events.abc.Complex, typing.Generic[T]):
     """Event-Object which contains other Events which happen in a linear order."""
 
     # ###################################################################### #
     #                           magic methods                                #
     # ###################################################################### #
 
-    def __add__(self, event: list[T]) -> SequentialEvent[T]:
+    def __add__(self, event: list[T]) -> Sequential[T]:
         e = self.copy()
         e._concatenate_tempo_envelope(event)
         e.extend(event)
@@ -328,7 +335,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     # We need to have a private "_cut_off" method to simplify
     # overriding the public "cut_off" method in children classes
-    # of SequentialEvent. This is necessary, because the implementation
+    # of Sequential. This is necessary, because the implementation
     # of "squash_in" makes use of "_cut_off". In this way it is possible
     # to adjust the meaning of the public "cut_off" method, without
     # having to change the meaning of "squash_in" (this happens for instance
@@ -338,7 +345,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_parameters.abc.Duration,
         end: core_parameters.abc.Duration,
         cut_off_duration: typing.Optional[core_parameters.abc.Duration] = None,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         if cut_off_duration is None:
             cut_off_duration = end - start
 
@@ -388,7 +395,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self._assert_valid_absolute_time(absolute_time)
         absolute_time_in_floats = absolute_time.duration_in_floats
 
-        event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
+        event_index = Sequential._get_index_at_from_absolute_time_tuple(
             absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
         )
 
@@ -472,11 +479,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     #                           properties                                   #
     # ###################################################################### #
 
-    @core_events.abc.ComplexEvent.duration.getter
+    @core_events.abc.Complex.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
         try:
             return functools.reduce(operator.add, (event.duration for event in self))
-        # If SequentialEvent is empty
+        # If Sequential is empty
         except TypeError:
             return core_parameters.DirectDuration(0)
 
@@ -525,12 +532,12 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
-        >>> sequential_event.get_event_index_at(1)
+        >>> sequential = core_events.Sequential([core_events.Simple(2), core_events.Simple(3)])
+        >>> sequential.get_event_index_at(1)
         0
-        >>> sequential_event.get_event_index_at(3)
+        >>> sequential.get_event_index_at(3)
         1
-        >>> sequential_event.get_event_index_at(100)
+        >>> sequential.get_event_index_at(100)
 
         **Warning:**
 
@@ -544,7 +551,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             absolute_time_in_floats_tuple,
             duration_in_floats,
         ) = self._absolute_time_in_floats_tuple_and_duration
-        return SequentialEvent._get_index_at_from_absolute_time_tuple(
+        return Sequential._get_index_at_from_absolute_time_tuple(
             absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
         )
 
@@ -562,12 +569,12 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
-        >>> sequential_event.get_event_at(1)
-        SimpleEvent(duration = DirectDuration(duration = 2))
-        >>> sequential_event.get_event_at(3)
-        SimpleEvent(duration = DirectDuration(duration = 3))
-        >>> sequential_event.get_event_at(100)
+        >>> sequential = core_events.Sequential([core_events.Simple(2), core_events.Simple(3)])
+        >>> sequential.get_event_at(1)
+        Simple(duration = DirectDuration(duration = 2))
+        >>> sequential.get_event_at(3)
+        Simple(duration = DirectDuration(duration = 3))
+        >>> sequential.get_event_at(100)
 
         **Warning:**
 
@@ -585,7 +592,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_constants.DurationType,
         end: core_constants.DurationType,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -629,7 +636,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_constants.DurationType,
         end: core_constants.DurationType,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -647,7 +654,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_parameters.abc.Duration | typing.Any,
         event_to_squash_in: core_events.abc.Event,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
         start_in_floats = start.duration_in_floats
@@ -677,7 +684,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             # split.
             except ValueError:
                 active_event_index = (
-                    SequentialEvent._get_index_at_from_absolute_time_tuple(
+                    Sequential._get_index_at_from_absolute_time_tuple(
                         start_in_floats,
                         absolute_time_in_floats_tuple,
                         duration_in_floats,
@@ -706,7 +713,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_parameters.abc.Duration,
         event_to_slide_in: core_events.abc.Event,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
         start_in_floats = start.duration_in_floats
@@ -725,7 +732,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         (
             absolute_time_in_floats_tuple,
             duration_in_floats,
@@ -739,7 +746,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         *absolute_time: core_parameters.abc.Duration,
         ignore_invalid_split_point: bool = False,
-    ) -> tuple[SequentialEvent, ...]:
+    ) -> tuple[Sequential, ...]:
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
@@ -802,7 +809,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
         prolong_simple_event: bool = True,
-    ) -> SequentialEvent[T]:
+    ) -> Sequential[T]:
         duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         duration_to_white_space = (
             duration_to_white_space
@@ -812,7 +819,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             self.append(duration_to_white_space(difference))
 
 
-class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
+class Simultaneous(core_events.abc.Complex, typing.Generic[T]):
     """Event-Object which contains other Event-Objects which happen at the same time."""
 
     # ###################################################################### #
@@ -828,9 +835,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         except AttributeError:
             raise core_utilities.ConcatenationError(ancestor, event)
         match ancestor:
-            case core_events.SequentialEvent():
+            case core_events.Sequential():
                 ancestor.extend(event)
-            case core_events.SimultaneousEvent():
+            case core_events.Simultaneous():
                 try:
                     ancestor.concatenate_by_tag(event)
                 except core_utilities.NoTagError:
@@ -884,11 +891,11 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     #                           properties                                   #
     # ###################################################################### #
 
-    @core_events.abc.ComplexEvent.duration.getter
+    @core_events.abc.Complex.duration.getter
     def duration(self) -> core_constants.DurationType:
         try:
             return max(event.duration for event in self)
-        # If SimultaneousEvent is empty
+        # If Simultaneous is empty
         except ValueError:
             return core_parameters.DirectDuration(0)
 
@@ -901,7 +908,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_parameters.abc.Duration | typing.Any,
         end: core_parameters.abc.Duration | typing.Any,
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -915,7 +922,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_constants.DurationType,
         end: core_constants.DurationType,
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
             for unknown_object in (start, end)
@@ -929,7 +936,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_parameters.abc.Duration | typing.Any,
         event_to_squash_in: core_events.abc.Event,
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
@@ -946,7 +953,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         start: core_parameters.abc.Duration,
         event_to_slide_in: core_events.abc.Event,
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
@@ -960,14 +967,14 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_utilities.add_copy_option
     def split_child_at(
         self, absolute_time: core_constants.DurationType
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         for event_index, event in enumerate(self):
             try:
                 event.split_child_at(absolute_time)
             # simple events don't have a 'split_child_at' method
             except AttributeError:
                 split_event = event.split_at(absolute_time)
-                self[event_index] = SequentialEvent(split_event)
+                self[event_index] = Sequential(split_event)
 
     @core_utilities.add_copy_option
     def extend_until(
@@ -977,7 +984,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
         prolong_simple_event: bool = True,
-    ) -> SimultaneousEvent[T]:
+    ) -> Simultaneous[T]:
         duration = (
             self.duration
             if duration is None
@@ -988,10 +995,10 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             or core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE
         )
         # We only append simple events to sequential events, because there
-        # are many problems with the SimultaneousEvent[SimpleEvent] construct
+        # are many problems with the Simultaneous[Simple] construct
         # ('extend_until' and 'squash_in' will fail on such a container).
-        # Therefore calling 'extend_until' on an empty SimultaneousEvent is
-        # in fact ineffective: The user would get a SimultaneousEvent which
+        # Therefore calling 'extend_until' on an empty Simultaneous is
+        # in fact ineffective: The user would get a Simultaneous which
         # still has duration = 0, which is absolutely unexpected. Therefore
         # we raise an error, to avoid confusion by the user.
         if not self:
@@ -1001,7 +1008,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 event.extend_until(
                     duration, duration_to_white_space, prolong_simple_event
                 )
-            # SimpleEvent
+            # Simple
             except AttributeError:
                 if prolong_simple_event:
                     if (difference := duration - event.duration) > 0:
@@ -1010,18 +1017,18 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     raise core_utilities.ImpossibleToExtendUntilError(event)
 
     @core_utilities.add_copy_option
-    def concatenate_by_index(self, other: SimultaneousEvent) -> SimultaneousEvent:
-        """Concatenate with other :class:`~mutwo.core_events.SimultaneousEvent` along their indices.
+    def concatenate_by_index(self, other: Simultaneous) -> Simultaneous:
+        """Concatenate with other :class:`~mutwo.core_events.Simultaneous` along their indices.
 
-        :param other: The other `SimultaneousEvent` with which to concatenate.
-            The other `SimultaneousEvent` can contain more or less events.
-        :type other: SimultaneousEvent
+        :param other: The other `Simultaneous` with which to concatenate.
+            The other `Simultaneous` can contain more or less events.
+        :type other: Simultaneous
         :param mutate: If ``False`` the function will return a copy of the given object.
             If set to ``True`` the object itself will be changed and the function will
             return the changed object. Default to ``True``.
         :type mutate: bool
-        :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
-            inside a :class:`SimultaneousEvent`.
+        :raises core_utilities.ConcatenationError: If there are any :class:`Simple`
+            inside a :class:`Simultaneous`.
 
         **Hint:**
 
@@ -1034,11 +1041,11 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s = core_events.SimultaneousEvent(
-        ...     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
+        >>> s = core_events.Simultaneous(
+        ...     [core_events.Sequential([core_events.Simple(1)])]
         ... )
         >>> s.concatenate_by_index(s)
-        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        Simultaneous([Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 1))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1051,18 +1058,18 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     # events, but we don't want to change the other sequence.
                     event_new = event.empty_copy()
                     event_new.extend(event[:])
-                    event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
+                    event = event_new.slide_in(0, core_events.Simple(self_duration))
                 self.append(event)
             else:
                 self._extend_ancestor(ancestor, event)
 
     @core_utilities.add_copy_option
-    def concatenate_by_tag(self, other: SimultaneousEvent) -> SimultaneousEvent:
-        """Concatenate with other :class:`~mutwo.core_events.SimultaneousEvent` along their tags.
+    def concatenate_by_tag(self, other: Simultaneous) -> Simultaneous:
+        """Concatenate with other :class:`~mutwo.core_events.Simultaneous` along their tags.
 
-        :param other: The other `SimultaneousEvent` with which to concatenate.
-            The other `SimultaneousEvent` can contain more or less events.
-        :type other: SimultaneousEvent
+        :param other: The other `Simultaneous` with which to concatenate.
+            The other `Simultaneous` can contain more or less events.
+        :type other: Simultaneous
         :param mutate: If ``False`` the function will return a copy of the given object.
             If set to ``True`` the object itself will be changed and the function will
             return the changed object. Default to ``True``.
@@ -1070,8 +1077,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         :return: Concatenated event.
         :raises core_utilities.NoTagError: If any child event doesn't have a 'tag'
             attribute.
-        :raises core_utilities.ConcatenationError: If there are any :class:`SimpleEvent`
-            inside a :class:`SimultaneousEvent`.
+        :raises core_utilities.ConcatenationError: If there are any :class:`Simple`
+            inside a :class:`Simultaneous`.
 
         **Hint:**
 
@@ -1084,11 +1091,11 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s = core_events.SimultaneousEvent(
-        ...      [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
+        >>> s = core_events.Simultaneous(
+        ...      [core_events.TaggedSequential([core_events.Simple(1)], tag="test")]
         ...  )
         >>> s.concatenate_by_tag(s)
-        SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        Simultaneous([TaggedSequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 1))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1104,7 +1111,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     # events, but we don't want to change the other sequence.
                     event_new = tagged_event.empty_copy()
                     event_new.extend(tagged_event[:])
-                    tagged_event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
+                    tagged_event = event_new.slide_in(0, core_events.Simple(self_duration))
                 self.append(tagged_event)
             else:
                 self._extend_ancestor(ancestor, tagged_event)
@@ -1113,8 +1120,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # event structure. This is good, but in it's current form it's mostly
     # only useful with rather long and complex user defined 'slice_tuple_to_event'
     # definitions. For instance when sequentializing
-    # SimultaneousEvent[SequentialEvent[SimpleEvent]] the returned event will be
-    # SequentialEvent[SimultaneousEvent[SequentialEvent[SimpleEvent]]]. Here the
+    # Simultaneous[Sequential[Simple]] the returned event will be
+    # Sequential[Simultaneous[Sequential[Simple]]]. Here the
     # inner sequential events are always pointless, since they will always only
     # contain one simple event.
     def sequentialize(
@@ -1124,7 +1131,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 [tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event
             ]
         ] = None,
-    ) -> core_events.SequentialEvent:
+    ) -> core_events.Sequential:
         """Convert parallel structure to a sequential structure.
 
         :param slice_tuple_to_event: In order to sequentialize the event
@@ -1134,44 +1141,44 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             one new event. These new events are sequentially ordered to result
             in a new sequential structure. The simplest and default way to
             archive this is by simply putting all event parts into a new
-            :class:`SimultaneousEvent`, so the resulting :class:`SequentialEvent`
-            will be a sequence of `SimultaneousEvent`. This parameter is
+            :class:`Simultaneous`, so the resulting :class:`Sequential`
+            will be a sequence of `Simultaneous`. This parameter is
             available so that users can convert her/his parallel structure in
             meaningful ways (for instance to imitate the ``.chordify``
             `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`
             which transforms polyphonic music to a chord structure).
             If ``None`` `slice_tuple_to_event` is set to
-            :class:`SimultaneousEvent`. Default to ``None``.
+            :class:`Simultaneous`. Default to ``None``.
         :type slice_tuple_to_event: typing.Optional[typing.Callable[[tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event]]
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> e = core_events.SimultaneousEvent(
+        >>> e = core_events.Simultaneous(
         ...     [
-        ...         core_events.SequentialEvent(
-        ...             [core_events.SimpleEvent(2), core_events.SimpleEvent(1)]
+        ...         core_events.Sequential(
+        ...             [core_events.Simple(2), core_events.Simple(1)]
         ...         ),
-        ...         core_events.SequentialEvent(
-        ...             [core_events.SimpleEvent(3)]
+        ...         core_events.Sequential(
+        ...             [core_events.Simple(3)]
         ...         ),
         ...     ]
         ... )
         >>> e.sequentialize()
-        SequentialEvent([SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))])]), SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))])])])
+        Sequential([Simultaneous([Sequential([Simple(duration = DirectDuration(duration = 2))]), Sequential([Simple(duration = DirectDuration(duration = 2))])]), Simultaneous([Sequential([Simple(duration = DirectDuration(duration = 1))]), Sequential([Simple(duration = DirectDuration(duration = 1))])])])
         """
         if slice_tuple_to_event is None:
-            slice_tuple_to_event = SimultaneousEvent
+            slice_tuple_to_event = Simultaneous
 
         # Find all start/end times
         absolute_time_set = set([])
         for e in self:
-            try:  # SequentialEvent
+            try:  # Sequential
                 (
                     absolute_time_tuple,
                     duration,
                 ) = e._absolute_time_in_floats_tuple_and_duration
-            except AttributeError:  # SimpleEvent or SimultaneousEvent
+            except AttributeError:  # Simple or Simultaneous
                 absolute_time_tuple, duration = (0,), e.duration.duration_in_floats
             for t in absolute_time_tuple + (duration,):
                 absolute_time_set.add(t)
@@ -1181,7 +1188,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # there isn't any event left in any child.
         absolute_time_list = sorted(absolute_time_set)[:-1]
 
-        return core_events.SequentialEvent(
+        return core_events.Sequential(
             self._make_event_slice_tuple(absolute_time_list, slice_tuple_to_event)
         )
 
@@ -1189,7 +1196,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         *absolute_time: core_parameters.abc.Duration,
         ignore_invalid_split_point: bool = False,
-    ) -> tuple[SimultaneousEvent, ...]:
+    ) -> tuple[Simultaneous, ...]:
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
@@ -1207,23 +1214,23 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
 
 @core_utilities.add_tag_to_class
-class TaggedSimpleEvent(SimpleEvent):
-    """:class:`SimpleEvent` with tag."""
+class TaggedSimple(Simple):
+    """:class:`Simple` with tag."""
 
 
 @core_utilities.add_tag_to_class
-class TaggedSequentialEvent(
-    SequentialEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
+class TaggedSequential(
+    Sequential, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
 ):
-    """:class:`SequentialEvent` with tag."""
+    """:class:`Sequential` with tag."""
 
 
 @core_utilities.add_tag_to_class
-class TaggedSimultaneousEvent(
-    SimultaneousEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
+class TaggedSimultaneous(
+    Simultaneous, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
 ):
-    """:class:`SimultaneousEvent` with tag."""
+    """:class:`Simultaneous` with tag."""
 
     def sequentialize(self, *args, **kwargs):
-        sequential_event = super().sequentialize(*args, **kwargs)
-        return TaggedSequentialEvent(sequential_event, tag=self.tag)
+        sequential = super().sequentialize(*args, **kwargs)
+        return TaggedSequential(sequential, tag=self.tag)

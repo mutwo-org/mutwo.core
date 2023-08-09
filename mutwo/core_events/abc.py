@@ -13,7 +13,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = ("Event", "ComplexEvent")
+__all__ = ("Event", "Complex")
 
 
 class Event(abc.ABC):
@@ -138,9 +138,9 @@ class Event(abc.ABC):
 
         >>> import copy
         >>> from mutwo import core_events
-        >>> my_simple_event_0 = core_events.SimpleEvent(2)
-        >>> my_simple_event_1 = core_events.SimpleEvent(3)
-        >>> my_sequential_event = core_events.SequentialEvent(
+        >>> my_simple_event_0 = core_events.Simple(2)
+        >>> my_simple_event_1 = core_events.Simple(3)
+        >>> my_sequential_event = core_events.Sequential(
         ...     [my_simple_event_0, my_simple_event_1, my_simple_event_0]
         ... )
         >>> deepcopied_event = copy.deepcopy(my_sequential_event)
@@ -178,9 +178,9 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2)])
+        >>> sequential_event = core_events.Sequential([core_events.Simple(2)])
         >>> sequential_event.set('duration', 10).set('my_new_attribute', 'hello-world!')
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 10))])
+        Sequential([Simple(duration = DirectDuration(duration = 10))])
         """
         setattr(self, attribute_name, value)
         return self
@@ -198,7 +198,7 @@ class Event(abc.ABC):
         :type flat: bool
         :param filter_undefined: If set to ``True`` all ``None`` values will be filtered
             from the returned tuple. Default to ``False``. This flag has no effect on
-            :func:`get_parameter` of :class:`mutwo.core_events.SimpleEvent`.
+            :func:`get_parameter` of :class:`mutwo.core_events.Simple`.
         :type flat: bool
         :return: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
@@ -207,12 +207,12 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
+        >>> sequential_event = core_events.Sequential(
+        ...     [core_events.Simple(2), core_events.Simple(3)]
         ... )
         >>> sequential_event.get_parameter('duration')
         (DirectDuration(2), DirectDuration(3))
-        >>> simple_event = core_events.SimpleEvent(10)
+        >>> simple_event = core_events.Simple(10)
         >>> simple_event.get_parameter('duration')
         DirectDuration(10)
         >>> simple_event.get_parameter('undefined_parameter')
@@ -249,23 +249,23 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
+        >>> sequential_event = core_events.Sequential(
+        ...     [core_events.Simple(2), core_events.Simple(3)]
         ... )
         >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 4)), SimpleEvent(duration = DirectDuration(duration = 6))])
+        Sequential([Simple(duration = DirectDuration(duration = 4)), Simple(duration = DirectDuration(duration = 6))])
         >>> sequential_event.get_parameter('duration')
         (DirectDuration(4), DirectDuration(6))
 
         **Warning:**
 
         If there are multiple references of the same Event inside a
-        :class:`~mutwo.core_events.SequentialEvent` or a
-        ~mutwo.core_events.SimultaneousEvent`, ``set_parameter`` will
+        :class:`~mutwo.core_events.Sequential` or a
+        ~mutwo.core_events.Simultaneous`, ``set_parameter`` will
         only be called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
-        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        :class:`mutwo.core_events.abc.Complex` is treated equally
         (so for instance the duration of each item is doubled, and
         nor for some doubled and for those with references which
         appear twice quadrupled).
@@ -303,13 +303,13 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(1)]
+        >>> sequential_event = core_events.Sequential(
+        ...     [core_events.Simple(1)]
         ... )
         >>> sequential_event.mutate_parameter(
         ...     'duration', lambda duration: duration.add(1)
         ... )
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))])
+        Sequential([Simple(duration = DirectDuration(duration = 2))])
         >>> # now duration should be + 1
         >>> sequential_event.get_parameter('duration')
         (DirectDuration(2),)
@@ -317,12 +317,12 @@ class Event(abc.ABC):
         **Warning:**
 
         If there are multiple references of the same Event inside a
-        :class:`~mutwo.core_events.SequentialEvent` or a
-        ~mutwo.core_events.SimultaneousEvent`, ``mutate_parameter`` will
+        :class:`~mutwo.core_events.Sequential` or a
+        ~mutwo.core_events.Simultaneous`, ``mutate_parameter`` will
         only be called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
-        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        :class:`mutwo.core_events.abc.Complex` is treated equally
         (so for instance the duration of each item is doubled, and
         nor for some doubled and for those with references which
         appear twice quadrupled).
@@ -345,12 +345,12 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(duration = 1)
+        >>> simple_event = core_events.Simple(duration = 1)
         >>> simple_event.tempo_envelope[0].value = 100
         >>> simple_event.tempo_envelope
         TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = DirectTempoPoint(BPM = 60, reference = 1), value = 100), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
         >>> simple_event.reset_tempo_envelope()
-        SimpleEvent(duration = DirectDuration(duration = 1))
+        Simple(duration = DirectDuration(duration = 1))
         >>> simple_event.tempo_envelope
         TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = DirectTempoPoint(BPM = 60, reference = 1)), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
         """
@@ -366,7 +366,7 @@ class Event(abc.ABC):
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> my_event = core_events.SimpleEvent(1)
+        >>> my_event = core_events.Simple(1)
         >>> my_event.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
         >>> core_converters.EventToMetrizedEvent().convert(
         ...     my_event
@@ -388,11 +388,11 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> sequential_event = core_events.Sequential(
+        ...     [core_events.Simple(3), core_events.Simple(2)]
         ... )
         >>> sequential_event.cut_out(1, 4)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2)), SimpleEvent(duration = DirectDuration(duration = 1))])
+        Sequential([Simple(duration = DirectDuration(duration = 2)), Simple(duration = DirectDuration(duration = 1))])
         """
 
     @abc.abstractmethod
@@ -409,11 +409,11 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> sequential_event = core_events.Sequential(
+        ...     [core_events.Simple(3), core_events.Simple(2)]
         ... )
         >>> sequential_event.cut_off(1, 3)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 2))])
+        Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 2))])
         """
 
     def split_at(
@@ -439,16 +439,16 @@ class Event(abc.ABC):
 
         Calling ``split_at`` once with multiple split time arguments is much more efficient
         than calling ``split_at`` multiple times with only one split time for
-        :class:`mutwo.core_events.SequentialEvent`.
+        :class:`mutwo.core_events.Sequential`.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
+        >>> sequential_event = core_events.Sequential([core_events.Simple(3)])
         >>> sequential_event.split_at(1)
-        (SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))]))
+        (Sequential([Simple(duration = DirectDuration(duration = 1))]), Sequential([Simple(duration = DirectDuration(duration = 2))]))
         >>> sequential_event[0].split_at(1)
-        (SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 2)))
+        (Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 2)))
         """
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
@@ -484,7 +484,7 @@ T = typing.TypeVar("T", bound=Event)
 # FIXME(This Event can be initialised (no abstract error).
 # Please see the following issue for comparison:
 #   https://bugs.python.org/issue35815
-class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
+class Complex(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
     def __init__(
@@ -505,14 +505,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         # content of the parent class is available and we always have to explicitly
         # make it available with something like:
         #
-        #   class MyComplexEvent(ComplexEvent):
+        #   class MyComplex(Complex):
         #        _class_specific_side_attribute_tuple = (("new_attribute",) +
-        #          ComplexEvent._class_specific_side_attribute_tuple)
+        #          Complex._class_specific_side_attribute_tuple)
         #
         # With __init_subclass__ we can simply write:
         #
-        #   class MyComplexEvent(
-        #     ComplexEvent,
+        #   class MyComplex(
+        #     Complex,
         #    class_specific_side_attribute_tuple = ("new_attribute",)
         #   ): pass
         #
@@ -532,12 +532,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
 
-    def __add__(self, event: list[T]) -> ComplexEvent[T]:
+    def __add__(self, event: list[T]) -> Complex[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend(super().__add__(event))
         return empty_copy
 
-    def __mul__(self, factor: int) -> ComplexEvent[T]:
+    def __mul__(self, factor: int) -> Complex[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend(super().__mul__(factor))
         return empty_copy
@@ -547,16 +547,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ...
 
     @typing.overload
-    def __getitem__(self, index_or_slice_or_tag: slice) -> ComplexEvent[T]:
+    def __getitem__(self, index_or_slice_or_tag: slice) -> Complex[T]:
         ...
 
     @typing.overload
     def __getitem__(self, index_or_slice_or_tag: str) -> T:
         ...
 
-    def __getitem__(
-        self, index_or_slice_or_tag: int | slice | str
-    ) -> T | ComplexEvent[T]:
+    def __getitem__(self, index_or_slice_or_tag: int | slice | str) -> T | Complex[T]:
         try:
             event = super().__getitem__(index_or_slice_or_tag)
         except TypeError as error:
@@ -646,7 +644,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @Event.duration.setter  # type: ignore
     def duration(self, duration: core_parameters.abc.Duration):
         if not self:  # If empty and duration == 0, we'd run into ZeroDivision
-            raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
+            raise core_utilities.CannotSetDurationOfEmptyComplex()
 
         duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
         if (old_duration := self.duration) != 0:
@@ -667,9 +665,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     # Keep private because:
     #   (1) Then we can later change the internal implementation of
-    #       ComplexEvent (for instance: no longer inheriting from list).
+    #       Complex (for instance: no longer inheriting from list).
     #   (2) It's not sure if tag_to_index is valuable for end users of
-    #       ComplexEvent
+    #       Complex
     def _tag_to_index(self, tag: str) -> int:
         # Find index of an event by its tag.
         # param tag: The `tag` of the event which shall be found.
@@ -710,7 +708,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         | core_constants.ParameterType,
         set_unassigned_parameter: bool,
         id_set: set[int],
-    ) -> ComplexEvent[T]:
+    ) -> Complex[T]:
         self._apply_once_per_event(
             "_set_parameter",
             parameter_name,
@@ -725,7 +723,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         parameter_name: str,
         function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
-    ) -> ComplexEvent[T]:
+    ) -> Complex[T]:
         self._apply_once_per_event(
             "_mutate_parameter",
             parameter_name,
@@ -733,13 +731,13 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             id_set=id_set,
         )
 
-    def _concatenate_tempo_envelope(self, other: ComplexEvent):
+    def _concatenate_tempo_envelope(self, other: Complex):
         """Concatenate the tempo of event with tempo of other event.
 
         If we concatenate events on the time axis, we also want to
         ensure that the tempo information is not lost.
-        This includes the `+` magic method of ``SequentialEvent``,
-        but also the `concatenate_by...` methods of ``SimultaneousEvent``.
+        This includes the `+` magic method of ``Sequential``,
+        but also the `concatenate_by...` methods of ``Simultaneous``.
 
         It's important to first call this method before appending the
         child events of the other container, because we still need
@@ -769,27 +767,27 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def destructive_copy(self) -> ComplexEvent[T]:
+    def destructive_copy(self) -> Complex[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend([event.destructive_copy() for event in self])
         return empty_copy
 
-    def empty_copy(self) -> ComplexEvent[T]:
-        """Make a copy of the `ComplexEvent` without any child events.
+    def empty_copy(self) -> Complex[T]:
+        """Make a copy of the `Complex` without any child events.
 
-        This method is useful if one wants to copy an instance of :class:`ComplexEvent`
+        This method is useful if one wants to copy an instance of :class:`Complex`
         and make sure that all side attributes (e.g. any assigned properties specific
         to the respective subclass) get saved.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> piano_voice_0 = core_events.TaggedSequentialEvent([core_events.SimpleEvent(2)], tag="piano")
+        >>> piano_voice_0 = core_events.TaggedSequential([core_events.Simple(2)], tag="piano")
         >>> piano_voice_1 = piano_voice_0.empty_copy()
         >>> piano_voice_1.tag
         'piano'
         >>> piano_voice_1
-        TaggedSequentialEvent([])
+        TaggedSequential([])
         """
         return type(self)(
             [],
@@ -810,14 +808,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> nested_sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SequentialEvent([core_events.SimpleEvent(2)])]
+        >>> nested_sequential_event = core_events.Sequential(
+        ...     [core_events.Sequential([core_events.Simple(2)])]
         ... )
         >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
-        SimpleEvent(duration = DirectDuration(duration = 2))
+        Simple(duration = DirectDuration(duration = 2))
         >>> # this is equal to:
         >>> nested_sequential_event[0][0]
-        SimpleEvent(duration = DirectDuration(duration = 2))
+        Simple(duration = DirectDuration(duration = 2))
         """
 
         return core_utilities.get_nested_item_from_index_sequence(index_sequence, self)
@@ -831,7 +829,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
                 parameter_name, flat=flat
             )
 
-            if is_simple_event := isinstance(event, core_events.SimpleEvent):
+            if is_simple_event := isinstance(event, core_events.Simple):
                 parameter_value_tuple = (parameter_value_or_parameter_value_tuple,)
             else:
                 parameter_value_tuple = parameter_value_or_parameter_value_tuple
@@ -857,7 +855,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @core_utilities.add_copy_option
     def remove_by(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
-    ) -> ComplexEvent[T]:
+    ) -> Complex[T]:
         """Condition-based deletion of child events.
 
         :param condition: Function which takes a :class:`Event` and returns ``True``
@@ -871,11 +869,11 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> simultaneous_event = core_events.SimultaneousEvent(
-        ...     [core_events.SimpleEvent(1), core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> simultaneous_event = core_events.Simultaneous(
+        ...     [core_events.Simple(1), core_events.Simple(3), core_events.Simple(2)]
         ... )
         >>> simultaneous_event.remove_by(lambda event: event.duration > 2)
-        SimultaneousEvent([SimpleEvent(duration = DirectDuration(duration = 3))])
+        Simultaneous([Simple(duration = DirectDuration(duration = 3))])
         """
 
         for item_index, item in zip(reversed(range(len(self))), reversed(self)):
@@ -894,7 +892,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ),
         event_type_to_examine: typing.Type[Event] = Event,
         event_to_remove: bool = True,
-    ) -> ComplexEvent[T]:
+    ) -> Complex[T]:
         """Condition-based deletion of neighboring child events.
 
         :param condition: Function which compares two neighboring
@@ -909,7 +907,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             event.
         :param event_type_to_examine: Defines which events shall be compared.
             If one only wants to process the leaves, this should perhaps be
-            :class:`mutwo.core_events.SimpleEvent`.
+            :class:`mutwo.core_events.Simple`.
         :param event_to_remove: `True` if the second (left) event shall be removed
             and `False` if the first (right) event shall be removed.
         :param mutate: If ``False`` the function will return a copy of the given object.
@@ -960,7 +958,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           abstract methods                             #
     # ###################################################################### #
 
-    def metrize(self, mutate: bool = True) -> ComplexEvent:
+    def metrize(self, mutate: bool = True) -> Complex:
         metrized_event = self._event_to_metrized_event(self)
         if mutate:
             self.tempo_envelope = metrized_event.tempo_envelope
@@ -972,7 +970,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @abc.abstractmethod
     def squash_in(
         self, start: core_parameters.abc.Duration, event_to_squash_in: Event
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> typing.Optional[Complex[T]]:
         """Time-based insert of a new event with overriding given event.
 
         :param start: Absolute time where the event shall be inserted.
@@ -982,22 +980,22 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             If set to ``True`` the object itself will be changed and the function will
             return the changed object. Default to ``True``.
 
-        Unlike `ComplexEvent.slide_in` the events duration won't change.
+        Unlike `Complex.slide_in` the events duration won't change.
         If there is already an event at `start` this event will be shortened
         or removed.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.squash_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 3/2)), SimpleEvent(duration = DirectDuration(duration = 1/2))])
+        >>> sequential_event = core_events.Sequential([core_events.Simple(3)])
+        >>> sequential_event.squash_in(1, core_events.Simple(1.5))
+        Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 3/2)), Simple(duration = DirectDuration(duration = 1/2))])
         """
 
     @abc.abstractmethod
     def slide_in(
         self, start: core_parameters.abc.Duration, event_to_slide_in: Event
-    ) -> ComplexEvent[T]:
+    ) -> Complex[T]:
         """Time-based insert of a new event into the present event.
 
         :param start: Absolute time where the event shall be inserted.
@@ -1007,7 +1005,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             If set to ``True`` the object itself will be changed and the function will
             return the changed object. Default to ``True``.
 
-        Unlike `ComplexEvent.squash_in` the events duration will be prolonged
+        Unlike `Complex.squash_in` the events duration will be prolonged
         by the event which is added. If there is an event at `start` the
         event will be split into two parts, but it won't be shortened or
         processed in any other way.
@@ -1015,15 +1013,15 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.slide_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 3/2)), SimpleEvent(duration = DirectDuration(duration = 2))])
+        >>> sequential_event = core_events.Sequential([core_events.Simple(3)])
+        >>> sequential_event.slide_in(1, core_events.Simple(1.5))
+        Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 3/2)), Simple(duration = DirectDuration(duration = 2))])
         """
 
     @abc.abstractmethod
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> typing.Optional[Complex[T]]:
         """Split child event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where child event shall be split
@@ -1034,9 +1032,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
+        >>> sequential_event = core_events.Sequential([core_events.Simple(3)])
         >>> sequential_event.split_child_at(1)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 2))])
+        Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 2))])
         """
 
     @abc.abstractmethod
@@ -1047,14 +1045,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], Event]
         ] = None,
         prolong_simple_event: bool = True,
-    ) -> ComplexEvent:
+    ) -> Complex:
         """Prolong event until at least `duration` by appending an empty event.
 
         :param duration: Until which duration the event shall be extended.
             If event is already longer than or equal to given `duration`,
-            nothing will be changed. For :class:`~mutwo.core_events.SimultaneousEvent`
+            nothing will be changed. For :class:`~mutwo.core_events.Simultaneous`
             the default value is `None` which is equal to the duration of
-            the `SimultaneousEvent`.
+            the `Simultaneous`.
         :type duration: core_parameters.abc.Duration
         :param duration_to_white_space: A function which creates the 'rest' or
             'white space' event from :class:`~mutwo.core_parameters.abc.Duration`.
@@ -1063,10 +1061,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             Default to `None`.
         :type duration_to_white_space: typing.Optional[typing.Callable[[core_parameters.abc.Duration], Event]]
         :param prolong_simple_event: If set to ``True`` `mutwo` will prolong a single
-            :class:`~mutwo.core_events.SimpleEvent` inside a :class:`~mutwo.core_events.SimultaneousEvent`.
+            :class:`~mutwo.core_events.Simple` inside a :class:`~mutwo.core_events.Simultaneous`.
             If set to ``False`` `mutwo` will raise an :class:`~mutwo.core_utilities.ImpossibleToExtendUntilError`
-            in case it finds a single `SimpleEvent` inside a `SimultaneousEvent`.
-            This doesn't effect `SimpleEvent` inside a `SequentialEvent`, here we can
+            in case it finds a single `Simple` inside a `Simultaneous`.
+            This doesn't effect `Simple` inside a `Sequential`, here we can
             simply append a new white space event.
         :type prolong_simple_event: bool
         :param mutate: If ``False`` the function will return a copy of the given object.
@@ -1077,7 +1075,11 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s = core_events.SequentialEvent([core_events.SimpleEvent(1)])
+        >>> s = core_events.Sequential([core_events.Simple(1)])
         >>> s.extend_until(10)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 9))])
+        Sequential([Simple(duration = DirectDuration(duration = 1)), Simple(duration = DirectDuration(duration = 9))])
         """
+
+
+# BBB
+ComplexEvent = Complex

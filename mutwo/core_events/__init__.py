@@ -28,3 +28,9 @@ __all__ = core_utilities.get_all(basic, envelopes)
 
 # Force flat structure
 del basic, core_utilities, envelopes
+
+# BBB (is dropped in mutwo.core 2.0.0)
+SequentialEvent = Sequential
+SimultaneousEvent = Simultaneous
+SimpleEvent = Simple
+TempoEvent = Tempo

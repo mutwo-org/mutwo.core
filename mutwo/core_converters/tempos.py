@@ -218,7 +218,7 @@ class TempoConverter(core_converters.abc.EventConverter):
 
     def _convert_simple_event(
         self,
-        simple_event: core_events.SimpleEvent,
+        simple_event: core_events.Simple,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
@@ -232,7 +232,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         event_to_convert: core_events.abc.Event,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+    ) -> core_events.abc.Complex[core_events.abc.Event]:
         tempo_envelope = event_to_convert.tempo_envelope
         is_tempo_envelope_effectless = (
             tempo_envelope.is_static and tempo_envelope.value_tuple[0] == 60
@@ -283,9 +283,9 @@ class TempoConverter(core_converters.abc.EventConverter):
         ...     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
         ... )
         >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
-        >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])
+        >>> my_events = core_events.Sequential([core_events.Simple(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 3)), SimpleEvent(duration = DirectDuration(duration = 7205759403792795/2251799813685248)), SimpleEvent(duration = DirectDuration(duration = 6))])
+        Sequential([SimpleEvent(duration = DirectDuration(duration = 3)), SimpleEvent(duration = DirectDuration(duration = 7205759403792795/2251799813685248)), SimpleEvent(duration = DirectDuration(duration = 6))])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))
@@ -305,10 +305,10 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
 
     def _convert_simple_event(
         self,
-        event_to_convert: core_events.SimpleEvent,
+        event_to_convert: core_events.Simple,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.SimpleEvent:
+    ) -> core_events.Simple:
         return event_to_convert
 
     def _convert_event(
@@ -316,7 +316,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
         event_to_convert: core_events.abc.Event,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+    ) -> core_events.abc.Complex[core_events.abc.Event]:
         if (self._skip_level_count is None or self._skip_level_count < depth) and (
             self._maxima_depth_count is None or depth < self._maxima_depth_count
         ):

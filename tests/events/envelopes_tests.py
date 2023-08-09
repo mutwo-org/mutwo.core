@@ -6,11 +6,11 @@ from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
-from .basic_tests import ComplexEventTest
+from .basic_tests import ComplexTest
 
 
-class EnvelopeTest(unittest.TestCase, ComplexEventTest):
-    class EnvelopeEvent(core_events.SimpleEvent):
+class EnvelopeTest(unittest.TestCase, ComplexTest):
+    class EnvelopeEvent(core_events.Simple):
         def __init__(
             self,
             duration: core_constants.DurationType,
@@ -22,7 +22,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             self.curve_shape = curve_shape
 
     def setUp(self):
-        ComplexEventTest.setUp(self)
+        ComplexTest.setUp(self)
         self.envelope = core_events.Envelope(
             [
                 self.EnvelopeEvent(1, 0),
@@ -47,7 +47,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     def get_event_class(self) -> typing.Type:
         return core_events.Envelope
 
-    def get_event_instance(self) -> core_events.SimpleEvent:
+    def get_event_instance(self) -> core_events.Simple:
         return self.get_event_class()([[0, 1], [4, 10]])
 
     def test_split_at_end(self):

@@ -19,7 +19,7 @@ T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
 class Envelope(
-    core_events.SequentialEvent,
+    core_events.Sequential,
     typing.Generic[T],
     class_specific_side_attribute_tuple=(
         "event_to_parameter",
@@ -87,7 +87,7 @@ class Envelope(
 
     >>> from mutwo import core_events
     >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
-    Envelope([SimpleEvent(curve_shape = 1, duration = DirectDuration(duration = 1/2), value = 0), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 1)])
+    Envelope([Simple(curve_shape = 1, duration = DirectDuration(duration = 1/2), value = 0), Simple(curve_shape = 0, duration = DirectDuration(duration = 0), value = 1)])
     """
 
     # Type definitions
@@ -137,7 +137,7 @@ class Envelope(
             core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
             curve_shape,
         ),
-        default_event_class: type[core_events.abc.Event] = core_events.SimpleEvent,
+        default_event_class: type[core_events.abc.Event] = core_events.Simple,
         initialise_default_event_class: typing.Callable[
             [type[core_events.abc.Event], core_constants.DurationType],
             core_events.abc.Event,
@@ -174,12 +174,12 @@ class Envelope(
         This is merely a convenience wrapper to write
 
             >>> Envelope.from_points([0, 1], [1, 100])
-            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
+            Envelope([Simple(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), Simple(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
 
         instead of
 
             >>> Envelope([[0, 1], [1, 100]])
-            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
+            Envelope([Simple(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), Simple(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
 
         to mimic the default initialization behaviour of
         `expenvelope.Envelope`. It's recommended to initialise
@@ -452,7 +452,7 @@ class Envelope(
         ):
             """Find curve shape of new control point"""
             old_event_index = (
-                core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+                core_events.Sequential._get_index_at_from_absolute_time_tuple(
                     absolute_time, absolute_time_tuple, envelope_duration
                 )
             )
@@ -783,7 +783,7 @@ class TempoEnvelope(Envelope):
     for initialization attributes.
 
     The default parameters of the `TempoEnvelope` class expects
-    :class:`mutwo.core_events.SimpleEvent` to which a tempo point
+    :class:`mutwo.core_events.Simple` to which a tempo point
     was assigned by the name "tempo_point". This is specified in the global
     `mutwo.core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME`
     and can be adjusted.
@@ -823,7 +823,7 @@ class TempoEnvelope(Envelope):
         apply_parameter_on_event: typing.Optional[
             typing.Callable[[core_events.abc.Event, core_constants.ParameterType], None]
         ] = None,
-        default_event_class: type[core_events.abc.Event] = core_events.TempoEvent,
+        default_event_class: type[core_events.abc.Event] = core_events.Tempo,
         initialise_default_event_class: typing.Callable[
             [type[core_events.abc.Event], core_constants.DurationType],
             core_events.abc.Event,

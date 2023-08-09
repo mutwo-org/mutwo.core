@@ -38,7 +38,7 @@ This global variable is the reason why the following
 code prints a :class:`mutwo.core_parameters.DirectDuration`:
 
     >>> from mutwo import core_events
-    >>> simple_event = core_events.SimpleEvent(duration=10)
+    >>> simple_event = core_events.Simple(duration=10)
     >>> simple_event.duration
     DirectDuration(10)
 
@@ -50,7 +50,7 @@ Without this function...
     2. Or the code would raise a ``TypeError`` and users would be forced
     to write:
 
-        >>> core_events.SimpleEvent(core_parameters.DirectDuration(10))
+        >>> core_events.Simple(core_parameters.DirectDuration(10))
 
 Because the syntactic sugar partially violates the Python Zen
 "Explicit is better than implicit" this function is publicly defined
@@ -74,13 +74,13 @@ DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
 # Avoid circular import problem
 @functools.cache
 def __simpleEvent():
-    return __import__("mutwo.core_events").core_events.SimpleEvent
+    return __import__("mutwo.core_events").core_events.Simple
 
 
 DEFAULT_DURATION_TO_WHITE_SPACE = lambda duration: __simpleEvent()(duration)
 """Default conversion for parameter `duration_to_white_space` in
-:func:`mutwo.core_events.abc.ComplexEvent.extend_until`. This simply
-returns a :class:`mutwo.core_events.SimpleEvent` with the given
+:func:`mutwo.core_events.abc.Complex.extend_until`. This simply
+returns a :class:`mutwo.core_events.Simple` with the given
 duration."""
 
 

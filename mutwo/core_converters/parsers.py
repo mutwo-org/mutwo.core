@@ -28,7 +28,7 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
     """Extract from a simple event an attribute.
 
     :param attribute_name: The name of the attribute which is fetched
-        from a :class:`mutwo.core_events.SimpleEvent`.
+        from a :class:`mutwo.core_events.Simple`.
     :param exception_value: This value is returned in case an `AttributeError`
         raises .
     """
@@ -37,18 +37,18 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
         self._attribute_name = attribute_name
         self._exception_value = exception_value
 
-    def convert(self, simple_event_to_convert: core_events.SimpleEvent) -> typing.Any:
-        """Extract from a :class:`mutwo.core_events.SimpleEvent` an attribute.
+    def convert(self, simple_event_to_convert: core_events.Simple) -> typing.Any:
+        """Extract from a :class:`mutwo.core_events.Simple` an attribute.
 
-        :param simple_event_to_convert: The :class:`mutwo.core_events.SimpleEvent`
+        :param simple_event_to_convert: The :class:`mutwo.core_events.Simple`
             from which an attribute shall be extracted.
-        :type simple_event_to_convert: mutwo.core_events.SimpleEvent
+        :type simple_event_to_convert: mutwo.core_events.Simple
 
         **Example:**
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(duration=10)
+        >>> simple_event = core_events.Simple(duration=10)
         >>> simple_event_to_duration = core_converters.SimpleEventToAttribute(
         ...     'duration', 0
         ... )
@@ -151,15 +151,15 @@ class MutwoParameterDictToDuration(MutwoParameterDictToKeywordArgument):
 
 
 class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
-    """Convert a dict of mutwo parameters to a :class:`mutwo.core_events.SimpleEvent`
+    """Convert a dict of mutwo parameters to a :class:`mutwo.core_events.Simple`
 
     :param mutwo_parameter_dict_to_keyword_argument_sequence: A sequence of
         :class:`MutwoParameterDictToKeywordArgument`. If set to `None`
         a sequence with :class:`MutwoParameterDictToDuration` will be created.
         Default to `None`.
     :type mutwo_parameter_dict_to_keyword_argument_sequence: typing.Optional[typing.Sequence[MutwoParameterDictToKeywordArgument]]
-    :param simple_event_class: Default to :class:`mutwo.core_events.SimpleEvent`.
-    :type simple_event_class: typing.Type[core_events.SimpleEvent]
+    :param simple_event_class: Default to :class:`mutwo.core_events.Simple`.
+    :type simple_event_class: typing.Type[core_events.Simple]
     """
 
     def __init__(
@@ -168,8 +168,8 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
             typing.Sequence[MutwoParameterDictToKeywordArgument]
         ] = None,
         simple_event_class: typing.Type[
-            core_events.SimpleEvent
-        ] = core_events.SimpleEvent,
+            core_events.Simple
+        ] = core_events.Simple,
     ):
         if mutwo_parameter_dict_to_keyword_argument_sequence is None:
             mutwo_parameter_dict_to_keyword_argument_sequence = (
@@ -182,7 +182,7 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
 
     def convert(
         self, mutwo_parameter_dict_to_convert: MutwoParameterDict
-    ) -> core_events.SimpleEvent:
+    ) -> core_events.Simple:
         keyword_argument_dict = {}
         for (
             mutwo_parameter_dict_to_keyword_argument
