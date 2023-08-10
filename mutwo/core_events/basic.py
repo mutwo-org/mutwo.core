@@ -28,13 +28,6 @@ __all__ = (
     "TaggedSimple",
     "TaggedSequential",
     "TaggedSimultaneous",
-    # BBB
-    "SimpleEvent",
-    "SequentialEvent",
-    "SimultaneousEvent",
-    "TaggedSimpleEvent",
-    "TaggedSequentialEvent",
-    "TaggedSimultaneousEvent",
 )
 
 
