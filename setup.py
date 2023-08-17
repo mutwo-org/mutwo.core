@@ -22,7 +22,7 @@ setuptools.setup(
     author="Tim Pauli, Levin Eric Zimmermann",
     author_email="tim.pauli@folkwang-uni.de, levin.eric.zimmermann@posteo.eu",
     url="https://github.com/mutwo-org/mutwo.core",
-    project_urls={"Documentation": "https://mutwo.readthedocs.io/en/latest/"},
+    project_urls={"Documentation": "https://mutwo-org.github.io"},
     packages=[
         package
         for package in setuptools.find_namespace_packages(include=["mutwo.*"])
