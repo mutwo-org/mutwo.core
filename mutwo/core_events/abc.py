@@ -261,8 +261,8 @@ class Event(abc.ABC):
 
         If there are multiple references of the same Event inside a
         :class:`~mutwo.core_events.SequentialEvent` or a
-        ~mutwo.core_events.SimultaneousEvent`, ``set_parameter`` will
-        only be called once for each Event. So multiple references
+        :class:`~mutwo.core_events.SimultaneousEvent`, ``set_parameter``
+        is only called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
         :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
