@@ -9,7 +9,6 @@
 # mutwo.core v.1.4.0
 
 - Add `ComplexEvent.filter` method: This method should take a function and various setting properties (`nested`, `only_leaves`) and return a new `Event`.
-- Add `NotInstalledError` exception and `run_if_installed` decorator in `core_utilities`: See [this mutwo music commit for rationale](https://github.com/mutwo-org/mutwo.music/commit/8536d6844696e7d3b9b86753df053198fab9a97e#diff-79ed5331232543bfd038daca3962f666aad97d81131621c4a587cd8af8803fb8)
 - Simplify `core_events.Envelope` (maybe)
 - Refactor `DirectParameter` to `Parameter`
 
