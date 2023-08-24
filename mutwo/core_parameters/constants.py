@@ -1,5 +1,3 @@
-import typing
-
 import ranges
 
 TempoInBeatsPerMinute = float
@@ -10,11 +8,9 @@ TempoRangeInBeatsPerMinute = ranges.Range
 """Type alias for `TempoRangeInBeatsPerMinute`. Used in
 `core_parameters.abc.TempoPoint`"""
 
-TempoOrTempoRangeInBeatsPerMinute = typing.Union[
-    TempoInBeatsPerMinute, TempoRangeInBeatsPerMinute
-]
+TempoOrTempoRangeInBeatsPerMinute = TempoInBeatsPerMinute | TempoRangeInBeatsPerMinute
 """Type alias for `TempoOrTempoRangeInBeatsPerMinute`. Used in
 `core_parameters.abc.TempoPoint`"""
 
 # Cleanup
-del ranges, typing
+del ranges
