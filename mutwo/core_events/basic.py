@@ -32,7 +32,7 @@ __all__ = (
 
 
 class SimpleEvent(core_events.abc.Event):
-    """Event-Object which doesn't contain other Event-Objects (the node or leaf).
+    """A :class:`SimpleEvent` is an event without any children (a leaf).
 
     :param duration: The duration of the ``SimpleEvent``. Mutwo will convert
         the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
@@ -295,7 +295,7 @@ T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
 class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
-    """Event-Object which contains other Events which happen in a linear order."""
+    """A :class:`SequentialEvent` is a sequence of events."""
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -813,7 +813,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
 
 class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
-    """Event-Object which contains other Event-Objects which happen at the same time."""
+    """A :class:`SimultaneousEvent` is a simultaneity of events."""
 
     # ###################################################################### #
     #                       private static methods                           #
