@@ -241,7 +241,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     def _test_sample_at(
         self, sample_position: float, envelope_to_sample: core_events.Envelope
     ):
-        sampled_envelope = envelope_to_sample.sample_at(sample_position, mutate=False)
+        sampled_envelope = envelope_to_sample.copy().sample_at(sample_position)
 
         before_sample_position = sample_position * 0.9
         after_sample_position = sample_position * 1.1
@@ -306,7 +306,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
 
     def test_cut_out(self):
         # Envelope needs extra test for customized cut out method.
-        cut_out_envelope = self.envelope.cut_out(0.5, 1.5, mutate=False)
+        cut_out_envelope = self.envelope.copy().cut_out(0.5, 1.5)
         self.assertEqual(cut_out_envelope.value_at(0.25), self.envelope.value_at(0.75))
         self.assertEqual(cut_out_envelope.value_at(0.5), self.envelope.value_at(1))
         self.assertEqual(cut_out_envelope.value_at(0.75), self.envelope.value_at(1.25))
@@ -336,7 +336,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             self.assertEqual(split_envelope2.duration, 3)
 
     def test_cut_off(self):
-        cut_off_envelope = self.envelope.cut_off(0.5, 1.5, mutate=False)
+        cut_off_envelope = self.envelope.copy().cut_off(0.5, 1.5)
         self.assertEqual(self.envelope.value_at(0.4), cut_off_envelope.value_at(0.4))
         # There is a very small floating point error
         self.assertAlmostEqual(

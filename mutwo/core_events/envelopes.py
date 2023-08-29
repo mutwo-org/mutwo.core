@@ -518,7 +518,6 @@ class Envelope(
             *self._absolute_time_tuple_and_duration,
         )
 
-    @core_utilities.add_copy_option
     def sample_at(
         self,
         absolute_time: core_parameters.abc.Duration | typing.Any,
@@ -748,7 +747,6 @@ class Envelope(
         """
         return self.value_to_parameter(self.get_average_value(start, end))
 
-    @core_utilities.add_copy_option
     def cut_out(
         self,
         start: core_parameters.abc.Duration | typing.Any,
@@ -781,7 +779,6 @@ class Envelope(
 
         return cut_out_envelope
 
-    @core_utilities.add_copy_option
     def cut_off(
         self,
         start: core_parameters.abc.Duration | typing.Any,
@@ -814,7 +811,6 @@ class Envelope(
 
         return self
 
-    @core_utilities.add_copy_option
     def extend_until(
         self,
         duration: core_parameters.abc.Duration,
@@ -825,7 +821,7 @@ class Envelope(
     ) -> Envelope[T]:
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "extend_until")
-        self.sample_at(duration)
+        return self.sample_at(duration)
 
     def split_at(
         self,

@@ -11,6 +11,7 @@ newly created parameter class.
 from __future__ import annotations
 
 import abc
+import copy
 import functools
 import operator
 import typing
@@ -157,6 +158,9 @@ class SingleValueParameter(abc.ABC):
         except AttributeError:
             return False
 
+    def copy(self) -> SingleValueParameter:
+        return copy.deepcopy(self)
+
 
 @functools.total_ordering
 class SingleNumberParameter(SingleValueParameter):
@@ -274,33 +278,29 @@ class Duration(
         )
         return self
 
-    @core_utilities.add_copy_option
     def add(self, other: DurationOrReal) -> Duration:
         return self._math_operation(other, operator.add)
 
-    @core_utilities.add_copy_option
     def subtract(self, other: DurationOrReal) -> Duration:
         return self._math_operation(other, operator.sub)
 
-    @core_utilities.add_copy_option
     def multiply(self, other: DurationOrReal) -> Duration:
         return self._math_operation(other, operator.mul)
 
-    @core_utilities.add_copy_option
     def divide(self, other: DurationOrReal) -> Duration:
         return self._math_operation(other, operator.truediv)
 
     def __add__(self, other: DurationOrReal) -> Duration:
-        return self.add(other, mutate=False)
+        return self.copy().add(other)
 
     def __sub__(self, other: DurationOrReal) -> Duration:
-        return self.subtract(other, mutate=False)
+        return self.copy().subtract(other)
 
     def __mul__(self, other: DurationOrReal) -> Duration:
-        return self.multiply(other, mutate=False)
+        return self.copy().multiply(other)
 
     def __truediv__(self, other: DurationOrReal) -> Duration:
-        return self.divide(other, mutate=False)
+        return self.copy().divide(other)
 
     def __float__(self) -> float:
         return core_utilities.round_floats(

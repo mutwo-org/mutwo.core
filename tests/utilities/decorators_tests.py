@@ -5,23 +5,6 @@ from mutwo import core_utilities
 
 
 class DecoratorsTest(unittest.TestCase):
-    def test_add_copy_option(self):
-        class TestClass(object):
-            a = 10
-
-            @core_utilities.add_copy_option
-            def duplicate(self) -> None:
-                self.a *= 2
-
-        test_object = TestClass()
-
-        # with mutate=False
-        self.assertEqual(test_object.duplicate(mutate=False).a, TestClass.a * 2)
-
-        # with mutate=True
-        test_object.duplicate()
-        self.assertEqual(test_object.a, TestClass.a * 2)
-
     def test_compute_lazy(self):
         global nth_calculation
         nth_calculation = 0

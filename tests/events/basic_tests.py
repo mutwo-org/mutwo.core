@@ -152,7 +152,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
             1, tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]])
         )
         self.assertEqual(
-            simple_event.metrize(mutate=False),
+            simple_event.copy().metrize(),
             core_converters.EventToMetrizedEvent().convert(simple_event),
         )
 
@@ -244,10 +244,10 @@ class SimpleEventTest(unittest.TestCase, EventTest):
         event2.cut_out(2, 3)
 
         self.assertEqual(
-            event0.cut_out(2, 4, mutate=False).duration, cut_out_event0.duration
+            event0.copy().cut_out(2, 4).duration, cut_out_event0.duration
         )
         self.assertEqual(
-            event1.cut_out(0, 5, mutate=False).duration, cut_out_event1.duration
+            event1.copy().cut_out(0, 5).duration, cut_out_event1.duration
         )
         self.assertEqual(event2.duration, cut_out_event2.duration)
 
@@ -271,8 +271,8 @@ class SimpleEventTest(unittest.TestCase, EventTest):
         event1 = core_events.SimpleEvent(10)
         cut_off_event1 = core_events.SimpleEvent(5)
 
-        self.assertEqual(event0.cut_off(0, 2, mutate=False), cut_off_event0)
-        self.assertEqual(event0.cut_off(2, 5, mutate=False), cut_off_event0)
+        self.assertEqual(event0.copy().cut_off(0, 2), cut_off_event0)
+        self.assertEqual(event0.copy().cut_off(2, 5), cut_off_event0)
 
         event1.cut_off(0, 5)
         self.assertEqual(event1, cut_off_event1)
@@ -403,7 +403,7 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
             tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]]),
         )
         self.assertEqual(
-            sequential_event.metrize(mutate=False),
+            sequential_event.copy().metrize(),
             core_converters.EventToMetrizedEvent().convert(sequential_event),
         )
 
@@ -513,11 +513,11 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         result1 = core_events.SequentialEvent([core_events.SimpleEvent(1)])
         self.assertEqual(
             [event.duration for event in result0],
-            [event.duration for event in self.sequence.cut_out(0.5, 5, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_out(0.5, 5)],
         )
         self.assertEqual(
             [event.duration for event in result1],
-            [event.duration for event in self.sequence.cut_out(1, 2, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_out(1, 2)],
         )
 
     def test_cut_off(self):
@@ -534,48 +534,48 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
         self.assertEqual(
             [event.duration for event in result0],
-            [event.duration for event in self.sequence.cut_off(0.5, 1, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(0.5, 1)],
         )
         self.assertEqual(
             [event.duration for event in result1],
-            [event.duration for event in self.sequence.cut_off(1, 6, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(1, 6)],
         )
         self.assertEqual(
             [event.duration for event in result1],
-            [event.duration for event in self.sequence.cut_off(1, 7, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(1, 7)],
         )
         self.assertEqual(
             [event.duration for event in result2],
-            [event.duration for event in self.sequence.cut_off(1.75, 7, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(1.75, 7)],
         )
 
     def test_squash_in(self):
         self.assertEqual(
-            self.sequence.squash_in(0.5, core_events.SimpleEvent(1), mutate=False),
+            self.sequence.copy().squash_in(0.5, core_events.SimpleEvent(1)),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(duration) for duration in (0.5, 1, 1.5, 3)]
             ),
         )
         self.assertEqual(
-            self.sequence.squash_in(5, core_events.SimpleEvent(2), mutate=False),
+            self.sequence.copy().squash_in(5, core_events.SimpleEvent(2)),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(duration) for duration in (1, 2, 2, 2)]
             ),
         )
         self.assertEqual(
-            self.sequence.squash_in(0, core_events.SimpleEvent(1.5), mutate=False),
+            self.sequence.copy().squash_in(0, core_events.SimpleEvent(1.5)),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(duration) for duration in (1.5, 1.5, 3)]
             ),
         )
         self.assertEqual(
-            self.sequence.squash_in(6, core_events.SimpleEvent(1), mutate=False),
+            self.sequence.copy().squash_in(6, core_events.SimpleEvent(1)),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(duration) for duration in (1, 2, 3, 1)]
             ),
         )
         self.assertEqual(
-            self.sequence.squash_in(0.5, core_events.SimpleEvent(0.25), mutate=False),
+            self.sequence.copy().squash_in(0.5, core_events.SimpleEvent(0.25)),
             core_events.SequentialEvent(
                 [
                     core_events.SimpleEvent(duration)
@@ -585,16 +585,16 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
         self.assertRaises(
             core_utilities.InvalidStartValueError,
-            lambda: self.sequence.squash_in(
-                7, core_events.SimpleEvent(1.5), mutate=False
+            lambda: self.sequence.copy().squash_in(
+                7, core_events.SimpleEvent(1.5)
             ),
         )
 
     def test_squash_in_with_minor_differences(self):
         minor_difference = fractions.Fraction(6e-10)
         self.assertEqual(
-            self.sequence.squash_in(
-                minor_difference, core_events.SimpleEvent(1), mutate=False
+            self.sequence.copy().squash_in(
+                minor_difference, core_events.SimpleEvent(1)
             ),
             core_events.SequentialEvent(
                 [
@@ -605,8 +605,8 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_squash_in_event_with_0_duration(self):
-        squashed_in_sequence = self.sequence.squash_in(
-            1, core_events.SimpleEvent(0), mutate=False
+        squashed_in_sequence = self.sequence.copy().squash_in(
+            1, core_events.SimpleEvent(0)
         )
         self.assertEqual(
             squashed_in_sequence,
@@ -653,7 +653,7 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         ):
             with self.subTest(start=start):
                 self.assertEqual(
-                    self.sequence.slide_in(start, event_to_slide_in, mutate=False),
+                    self.sequence.copy().slide_in(start, event_to_slide_in),
                     expected_sequential_event,
                 )
 
@@ -676,35 +676,32 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
         # Ensure tie_by function as expected
         self.assertEqual(
-            self.sequence.tie_by(
+            self.sequence.copy().tie_by(
                 lambda event_left, event_right: event_left.duration + 1
                 == event_right.duration,
                 event_type_to_examine=core_events.SimpleEvent,
-                mutate=False,
             ),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(3), core_events.SimpleEvent(3)]
             ),
         )
         self.assertEqual(
-            self.sequence.tie_by(
+            self.sequence.copy().tie_by(
                 lambda event_left, event_right: event_left.duration + 1
                 == event_right.duration,
                 lambda event_to_survive, event_to_remove: None,
                 event_type_to_examine=core_events.SimpleEvent,
                 event_to_remove=False,
-                mutate=False,
             ),
             core_events.SequentialEvent([core_events.SimpleEvent(3)]),
         )
         self.assertEqual(
-            self.sequence.tie_by(
+            self.sequence.copy().tie_by(
                 lambda event_left, event_right: event_left.duration + 1
                 == event_right.duration,
                 lambda event_to_survive, event_to_remove: None,
                 event_type_to_examine=core_events.SimpleEvent,
                 event_to_remove=True,
-                mutate=False,
             ),
             core_events.SequentialEvent(
                 [core_events.SimpleEvent(1), core_events.SimpleEvent(3)]
@@ -835,7 +832,7 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         s, se = core_events.SimpleEvent, core_events.SequentialEvent
 
         self.assertEqual(
-            self.sequence.extend_until(100, mutate=False), se([s(1), s(2), s(3), s(94)])
+            self.sequence.copy().extend_until(100), se([s(1), s(2), s(3), s(94)])
         )
 
         # Do nothing if already long enough
@@ -1051,17 +1048,17 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         self.assertEqual(
             [event.duration for event in result],
-            [event.duration for event in self.sequence.cut_out(0.5, 1, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_out(0.5, 1)],
         )
         self.assertEqual(
             [event.duration for event in result],
-            [event.duration for event in self.sequence.cut_out(0, 0.5, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_out(0, 0.5)],
         )
         self.assertEqual(
             [event.duration for event in result],
             [
                 event.duration
-                for event in self.sequence.cut_out(0.25, 0.75, mutate=False)
+                for event in self.sequence.copy().cut_out(0.25, 0.75)
             ],
         )
 
@@ -1082,18 +1079,18 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         self.assertEqual(
             [event.duration for event in result0],
-            [event.duration for event in self.sequence.cut_off(0, 0.5, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(0, 0.5)],
         )
         self.assertEqual(
             [event.duration for event in result1],
-            [event.duration for event in self.sequence.cut_off(2.5, 3, mutate=False)],
+            [event.duration for event in self.sequence.copy().cut_off(2.5, 3)],
         )
 
     def test_squash_in(self):
         self.assertRaises(
             core_utilities.ImpossibleToSquashInError,
-            lambda: self.sequence.squash_in(
-                0, core_events.SimpleEvent(1.5), mutate=False
+            lambda: self.sequence.copy().squash_in(
+                0, core_events.SimpleEvent(1.5)
             ),
         )
 
@@ -1119,8 +1116,8 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         )
 
         self.assertEqual(
-            simultaneous_event_to_test.squash_in(
-                1, core_events.SimpleEvent(1.5), mutate=False
+            simultaneous_event_to_test.copy().squash_in(
+                1, core_events.SimpleEvent(1.5)
             ),
             expected_simultaneous_event,
         )
@@ -1139,8 +1136,8 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         ):
             with self.subTest(start=start):
                 self.assertEqual(
-                    self.nested_sequence.slide_in(
-                        start, event_to_slide_in, mutate=False
+                    self.nested_sequence.copy().slide_in(
+                        start, event_to_slide_in
                     ),
                     expected_simultaneous_event,
                 )
@@ -1192,7 +1189,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         # Extend simple events inside simultaneous event..
         self.assertEqual(
-            self.sequence.extend_until(10, mutate=False), si([s(10), s(10), s(10)])
+            self.sequence.copy().extend_until(10), si([s(10), s(10), s(10)])
         )
 
         # ..should raise if flag is set to False
@@ -1212,12 +1209,12 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         # Extend sequential events inside simultaneous event..
         ese = se([s(1), s(2), s(3), s(4)])  # extended sequential event
         self.assertEqual(
-            self.nested_sequence.extend_until(10, mutate=False), si([ese, ese])
+            self.nested_sequence.copy().extend_until(10), si([ese, ese])
         )
 
         # Nothing happens if already long enough
         self.assertEqual(
-            self.nested_sequence.extend_until(4, mutate=False), self.nested_sequence
+            self.nested_sequence.copy().extend_until(4), self.nested_sequence
         )
 
         # Check default value for SimultaneousEvent
@@ -1240,8 +1237,8 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         # Equal size concatenation
         self.assertEqual(
-            self.nested_sequence.concatenate_by_index(
-                self.nested_sequence, mutate=False
+            self.nested_sequence.copy().concatenate_by_index(
+                self.nested_sequence
             ).metrize(),
             si(
                 [
@@ -1338,14 +1335,14 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         # Equal size concatenation
         self.assertEqual(
-            s1.concatenate_by_tag(s1, mutate=False),
+            s1.copy().concatenate_by_tag(s1),
             si([tse([s(1), s(1), s(1), s(1)], tag="a", tempo_envelope=t0)]),
         )
 
         # Smaller self
         s2.reverse()  # verify order doesn't matter
         self.assertEqual(
-            s1.concatenate_by_tag(s2, mutate=False),
+            s1.copy().concatenate_by_tag(s2),
             si(
                 [
                     tse([s(1), s(1), s(2), s(1)], tag="a", tempo_envelope=t1),
@@ -1359,7 +1356,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         # Smaller other
         s2.reverse()  # reverse to original order
         self.assertEqual(
-            s2.concatenate_by_tag(s1, mutate=False),
+            s2.copy().concatenate_by_tag(s1),
             si(
                 [
                     tse([s(2), s(1), s(1), s(1)], tag="a", tempo_envelope=t2),

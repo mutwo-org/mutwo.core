@@ -195,10 +195,9 @@ class TempoConverter(core_converters.abc.EventConverter):
             t = self._start_and_end_to_tempo_converter_dict[key]
         except KeyError:
             t = self._start_and_end_to_tempo_converter_dict[key] = TempoConverter(
-                self._tempo_envelope.cut_out(
+                self._tempo_envelope.copy().cut_out(
                     start,
                     end,
-                    mutate=False,
                 ),
                 apply_converter_on_events_tempo_envelope=False,
             )

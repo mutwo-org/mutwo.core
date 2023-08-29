@@ -236,16 +236,12 @@ class Event(abc.ABC):
         False
         """
 
-    @core_utilities.add_copy_option
     def set(self, attribute_name: str, value: typing.Any) -> Event:
         """Set an attribute of the object to a specific value
 
         :param attribute_name: The name of the attribute which value shall be set.
         :param value: The value which shall be assigned to the given
             :attr:`attribute_name`
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
         :return: The event.
 
         This function is merely a convenience wrapper for...
@@ -306,7 +302,6 @@ class Event(abc.ABC):
         ]
         | core_constants.ParameterType,
         set_unassigned_parameter: bool = True,
-        mutate: bool = True,
     ) -> typing.Optional[Event]:
         """Sets parameter to new value for all children events.
 
@@ -321,9 +316,6 @@ class Event(abc.ABC):
             respective `parameter_name`. If the Event doesn't know the attribute yet
             and `set_unassigned_parameter` is False, the method call will simply be
             ignored.
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
         :return: The event.
 
         **Example:**
@@ -354,7 +346,6 @@ class Event(abc.ABC):
             parameter_name,
             object_or_function,
             set_unassigned_parameter=set_unassigned_parameter,
-            mutate=mutate,
             id_set=set([]),
         )
 
@@ -362,7 +353,6 @@ class Event(abc.ABC):
         self,
         parameter_name: str,
         function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
-        mutate: bool = True,
     ) -> typing.Optional[Event]:
         """Mutate parameter with a function.
 
@@ -371,9 +361,6 @@ class Event(abc.ABC):
             as an input the assigned value for the passed parameter_name of the
             respective object. The function shouldn't return anything, but simply
             calls a method of the parameter value.
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         This method is useful when a particular parameter has been assigned to objects
         that know methods which mutate themselves. Then 'mutate_parameter' is a
@@ -410,17 +397,11 @@ class Event(abc.ABC):
         return self._mutate_parameter(
             parameter_name,
             function,
-            mutate=mutate,
             id_set=set([]),
         )
 
-    @core_utilities.add_copy_option
     def reset_tempo_envelope(self) -> Event:
         """Set events tempo envelope so that one beat equals one second (tempo 60).
-
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         **Example:**
 
@@ -434,8 +415,8 @@ class Event(abc.ABC):
         >>> simple_event.tempo_envelope
         TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1), tempo_point = DirectTempoPoint(BPM = 60, reference = 1)), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
         """
-
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
+        return self
 
     @abc.abstractmethod
     def metrize(self) -> typing.Optional[Event]:
@@ -547,7 +528,7 @@ class Event(abc.ABC):
         split_event_list = []
         for t0, t1 in zip(absolute_time_list, absolute_time_list[1:]):
             try:
-                split_event_list.append(self.cut_out(t0, t1, mutate=False))
+                split_event_list.append(self.copy().cut_out(t0, t1))
             except (
                 core_utilities.InvalidStartAndEndValueError,
                 core_utilities.InvalidCutOutStartAndEndValuesError,
@@ -774,13 +755,13 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def _apply_once_per_event(
         self, method_name: str, *args, id_set: set[int], **kwargs
-    ):
+    ) -> ComplexEvent[T]:
         for event in self:
             if (event_id := id(event)) not in id_set:
                 id_set.add(event_id)
                 getattr(event, method_name)(*args, id_set=id_set, **kwargs)
+        return self
 
-    @core_utilities.add_copy_option
     def _set_parameter(  # type: ignore
         self,
         parameter_name: str,
@@ -791,7 +772,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> ComplexEvent[T]:
-        self._apply_once_per_event(
+        return self._apply_once_per_event(
             "_set_parameter",
             parameter_name,
             object_or_function,
@@ -799,14 +780,13 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             set_unassigned_parameter=set_unassigned_parameter,
         )
 
-    @core_utilities.add_copy_option
     def _mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
         function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
         id_set: set[int],
     ) -> ComplexEvent[T]:
-        self._apply_once_per_event(
+        return self._apply_once_per_event(
             "_mutate_parameter",
             parameter_name,
             function,
@@ -934,7 +914,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
                     parameter_value_list.append(parameter_value_tuple)
         return tuple(parameter_value_list)
 
-    @core_utilities.add_copy_option
     def remove_by(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
     ) -> ComplexEvent[T]:
@@ -944,9 +923,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             or ``False``. If the return value of the function is ``False`` the
             respective `Event` will be deleted.
         :type condition: typing.Callable[[Event], bool]
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         **Example:**
 
@@ -962,8 +938,8 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             shall_survive = condition(item)
             if not shall_survive:
                 del self[item_index]
+        return self
 
-    @core_utilities.add_copy_option
     def tie_by(  # type: ignore
         self,
         condition: typing.Callable[[Event, Event], bool],
@@ -992,9 +968,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             :class:`mutwo.core_events.SimpleEvent`.
         :param event_to_remove: `True` if the second (left) event shall be removed
             and `False` if the first (right) event shall be removed.
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
         """
 
         # Nothing to tie if no child events exist
@@ -1036,18 +1009,17 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         if not isinstance(self[-1], event_type_to_examine):
             tie_by_if_available(self[-1])
 
+        return self
+
     # ###################################################################### #
     #                           abstract methods                             #
     # ###################################################################### #
 
-    def metrize(self, mutate: bool = True) -> ComplexEvent:
+    def metrize(self) -> ComplexEvent:
         metrized_event = self._event_to_metrized_event(self)
-        if mutate:
-            self.tempo_envelope = metrized_event.tempo_envelope
-            self[:] = metrized_event[:]
-            return self
-        else:
-            return metrized_event
+        self.tempo_envelope = metrized_event.tempo_envelope
+        self[:] = metrized_event[:]
+        return self
 
     @abc.abstractmethod
     def squash_in(
@@ -1058,9 +1030,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         :param start: Absolute time where the event shall be inserted.
         :param event_to_squash_in: the event that shall be squashed into
             the present event.
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         Unlike `ComplexEvent.slide_in` the events duration won't change.
         If there is already an event at `start` this event will be shortened
@@ -1083,9 +1052,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         :param start: Absolute time where the event shall be inserted.
         :param event_to_slide_in: the event that shall be slide into
             the present event.
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         Unlike `ComplexEvent.squash_in` the events duration will be prolonged
         by the event which is added. If there is an event at `start` the
@@ -1107,9 +1073,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         """Split child event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where child event shall be split
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
 
         **Example:**
 
@@ -1149,10 +1112,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             This doesn't effect `SimpleEvent` inside a `SequentialEvent`, here we can
             simply append a new white space event.
         :type prolong_simple_event: bool
-        :param mutate: If ``False`` the function will return a copy of the given object.
-            If set to ``True`` the object itself will be changed and the function will
-            return the changed object. Default to ``True``.
-        :type mutate: bool
 
         **Example:**
 

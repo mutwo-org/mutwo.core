@@ -1,50 +1,16 @@
 """Generic decorators that are used within :mod:`mutwo`."""
 
-import copy
 import functools
 import os
 import types
 import typing
 
-__all__ = ("add_copy_option", "add_tag_to_class", "compute_lazy")
+__all__ = ("add_tag_to_class", "compute_lazy")
 
 from mutwo import core_utilities
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
-
-
-def add_copy_option(function: F) -> F:
-    """This decorator adds a copy option for object mutating methods.
-
-    :arg function: The method which shall be adjusted.
-
-    The 'add_copy_option' decorator adds the 'mutate' keyword argument
-    to the decorated method. If 'mutate' is set to ``False``, the decorator deep
-    copies the respective object, then applies the called method on the new
-    copied object and finally returns the copied object. This can be useful
-    for methods that by default mutate its object. When adding this method,
-    it is up to the user whether the original object shall be changed
-    and returned (for mutate=True) or if a copied version of the object with
-    the respective mutation shall be returned (for mutate=False).
-    """
-
-    @functools.wraps(function)
-    def wrapper(self, *args, mutate: bool = True, **kwargs) -> typing.Any:
-        if mutate is True:
-            function(self, *args, **kwargs)
-            return self
-        else:
-            deep_copied_object = copy.deepcopy(self)
-            function(deep_copied_object, *args, **kwargs)
-            return deep_copied_object
-
-    wrapped_function = typing.cast(F, wrapper)
-    wrapped_function.__annotations__.update({"mutate": bool})
-
-    return wrapped_function
-
-
 G = typing.TypeVar("G")
 
 
