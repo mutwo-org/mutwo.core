@@ -18,6 +18,8 @@
 """Module for mutwo specific exceptions."""
 
 __all__ = (
+    "FrozenError",
+    "NotFrozenError",
     "CannotSetDurationOfEmptyComplexEvent",
     "AlreadyDefinedValueNameError",
     "InvalidAverageValueStartAndEndWarning",
@@ -39,6 +41,16 @@ __all__ = (
     "NoSplitTimeError",
     "CannotParseError",
 )
+
+
+class FrozenError(Exception):
+    def __init__(self):
+        super().__init__("Can't mutate frozen object.")
+
+
+class NotFrozenError(Exception):
+    def __init__(self):
+        super().__init__("Can't call on unfrozen object.")
 
 
 class CannotSetDurationOfEmptyComplexEvent(Exception):
