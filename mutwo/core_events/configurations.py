@@ -10,8 +10,26 @@ import quicktions
 # directly because it would raise a circular import error.
 @functools.cache
 def __unknown_object_to_duration():
+    import typing
+
     from mutwo import core_converters
     from mutwo import core_parameters
+
+    def raise_parse_error(value: typing.Any):
+        raise NotImplementedError(f"Can't parse '{value}' to a duration object!")
+
+    def string_to_duration(string: str):
+        if "." in string:
+            f = float
+        elif "/" in string:
+            f = quicktions.Fraction
+        else:
+            f = int
+        try:
+            v = f(string)
+        except ValueError:
+            raise_parse_error(string)
+        return UNKNOWN_OBJECT_TO_DURATION(v)
 
     return core_converters.UnknownObjectToObject[core_parameters.abc.Duration](
         (
@@ -19,6 +37,7 @@ def __unknown_object_to_duration():
                 (float, int, fractions.Fraction, quicktions.Fraction),
                 core_parameters.DirectDuration,
             ),
+            ((str,), string_to_duration),
         )
     )
 
