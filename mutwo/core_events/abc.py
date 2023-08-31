@@ -22,6 +22,86 @@ class Event(abc.ABC):
     :param tempo_envelope: An envelope which describes the dynamic tempo of an event.
     """
 
+    # It looks tempting to drop the 'tempo_envelope' attribute of events.
+    # It may look simpler (and therefore more elegant) if events are only
+    # defined by one attribute: their duration. Let's remember why the
+    # 'tempo_envelope' attribute was initially introduced [1]:
+    #
+    # - With [1] it was decided that durations are represented in the unit
+    #   'beats'.
+    #
+    # - An event should have an unambiguous duration, so that converters
+    #   (and all other 'mutwo' parts) can treat an event consistently.
+    #
+    # - The unit of 'beats' doesn't say anything about the real duration: only
+    #   in cooperation with a specified tempo it can be clearly stated how long
+    #   an event is.
+    #
+    # - Therefore the combination of (a) having duration specified in the unit
+    #   'beats' and (b) wanting to have events with unambiguous duration leads
+    #   to the necessity to attach tempo envelopes to events.
+    #
+    # In the early days of mutwo (b) wasn't considered to be an objective:
+    # it was the opposite, an implicit ambiguity was considered to be a good
+    # idea [2]. But in the practical usage of the library it turned out that
+    # this approach rather increased complexity, as other code bits are unable
+    # to treat an event consistently and a user constantly has to keep in mind
+    # the specific way how each converter interprets a duration. To fix this
+    # complexity, the 'beat' unit was specified and a 'tempo_envelope'
+    # attribute has been added. Now converters could be reliable to produce
+    # results which match the duration of an event.
+    #
+    # Now we could change durations to be no longer in the unit 'beats', but in
+    # the unit 'seconds'. Then the duration of an event would still be
+    # unambiguous without the need of a tempo envelope attribute.  We could
+    # furthermore implement duration representations with beat & tempo as a
+    # subclass of a more general 'duration=seconds' approach. This has two
+    # problems:
+    #
+    # (1) It may be more computation intensive to ask for the
+    #     'absolute_time_tuple' of a event with beat-based durations as their
+    #     'seconds' attribute would need to be calculated from their beat+tempo
+    #     values in run time.
+    #
+    # (2) It would be very impractical to use all event methods with absolute
+    #     times as arguments (e. g. 'slide_in', 'split_at', ...) in a beat
+    #     approached subclass, as we wouldn't squash in our event at the given
+    #     'beat', but a given duration in seconds, which would depend on the
+    #     tempo - and wouldn't resonate with how we usually think about music.
+    #
+    # (3) If we think of tempo, it's rather a global trajectory independent
+    #     from single notes. Therefore a 'TempoEnvelope' object seems to be
+    #     more consistent with how we usually approach tempo in music than a
+    #     specific tempo for each note. To still be able to have this global
+    #     trajectory, a 'duration=seconds' approach would need additional
+    #     helper functions, to apply a tempo envelope on an event with beat
+    #     based durations.
+    #
+    # Due to these reasons, that describe new complexities by switching to a
+    # 'duration=seconds' model, we should stick to the beats/tempo_envelope
+    # approach until we can find a better solution.
+    #
+    # Now we could also ask the other way around, because if durations are in
+    # 'beats', are musical applications too dominant in 'mutwo' and is the
+    # 'mutwo' model not general enough? Interestingly duration as beats+tempo
+    # isn't only a subset of a 'duration=seconds' model, but this is also
+    # true vice versa: if the default tempo of an event (which is 60 BPM)
+    # isn't changed, the beats of a duration does in fact equal seconds.
+    # So for users who don't care about splitting duration into beats+tempo,
+    # they can simply avoid any 'tempo_envelope' attribute and directly write
+    # their duration in seconds.
+    #
+    # ---
+    #
+    # [1] https://github.com/mutwo-org/mutwo.core/commit/c2c7f3ba
+    # [2] In fact this ambiguity was always only true for durations: pitches
+    #     or volumes for instance were always unambiguous. Nowadays we can
+    #     clearly describe the 'mutwo' approach as: events unambiguously
+    #     represent a clear idea of *something*. Converters, on the other
+    #     hand, interpret this event as it is in the converters idiosyncratic
+    #     understanding of it, but by trying to be as true as possible to
+    #     the original idea.
+
     def __init__(
         self,
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
