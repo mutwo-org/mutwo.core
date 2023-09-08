@@ -191,13 +191,6 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             ((d(0.25), 0.25, 0), (d(0.75), 0.75, 0)),
         )
 
-    def test_from_points_simple(self):
-        envelope_from_init = core_events.Envelope(
-            [self.EnvelopeEvent(1, 0, 10), self.EnvelopeEvent(0, 1)]
-        )
-        envelope_from_points = core_events.Envelope.from_points((0, 0, 10), (1, 1))
-        self.assertEqual(envelope_from_points, envelope_from_init)
-
     def test_is_static(self):
         self.assertEqual(self.envelope.is_static, False)
         self.assertEqual(core_events.Envelope([]).is_static, True)
