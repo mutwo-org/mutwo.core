@@ -162,35 +162,6 @@ class Envelope(
         super().__init__(event_iterable, tempo_envelope)
 
     # ###################################################################### #
-    #                      public class methods                              #
-    # ###################################################################### #
-
-    @classmethod
-    def from_points(
-        cls,
-        *point: Point,
-        **kwargs,
-    ) -> Envelope:
-        """Create new :class:`Envelope` from points.
-
-        This is merely a convenience wrapper to write
-
-            >>> Envelope.from_points([0, 1], [1, 100])
-            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
-
-        instead of
-
-            >>> Envelope([[0, 1], [1, 100]])
-            Envelope([SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 1), value = 1), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 100)])
-
-        to mimic the default initialization behaviour of
-        `expenvelope.Envelope`. It's recommended to initialise
-        an Envelope without this method. This method will be
-        removed sooner or later.
-        """
-        return cls(point, **kwargs)
-
-    # ###################################################################### #
     #                           magic methods                                #
     # ###################################################################### #
 
