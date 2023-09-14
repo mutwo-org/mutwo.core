@@ -15,8 +15,13 @@ import functools
 import operator
 import typing
 
-import quicktions as fractions
-import fractions as _fractions
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+    _fractions = None
+else:
+    import fractions as _fractions
 
 import ranges
 
@@ -251,9 +256,15 @@ class Duration(
     property :attr:`duration` has to be overridden.
 
     The attribute :attr:`duration` is stored in unit `beats`.
+
+    The ``duration`` of :mod:`mutwo` events are therefore not
+    related to a clear physical unit as for instance seconds.
+    The reason for this decision is to simplify musical usage.
     """
 
-    direct_comparison_type_tuple = (float, int, fractions.Fraction, _fractions.Fraction)
+    direct_comparison_type_tuple = (float, int, fractions.Fraction)
+    if _fractions:
+        direct_comparison_type_tuple += (_fractions.Fraction,)
 
     def _math_operation(
         self, other: DurationOrReal, operation: typing.Callable[[float, float], float]

@@ -4,7 +4,17 @@ import fractions
 import functools
 import typing
 
-import quicktions
+try:
+    import quicktions
+except ImportError:
+    quicktions = None
+
+
+def _add_quicktions(type_tuple: tuple[typing.Type, ...]) -> tuple[typing.Type, ...]:
+    if quicktions:
+        type_tuple += (quicktions.Fraction,)
+    return type_tuple
+
 
 # We can't set core_converters.UnknownObjectToObject
 # directly because it would raise a circular import error.
@@ -22,7 +32,10 @@ def __unknown_object_to_duration():
         if "." in string:
             f = float
         elif "/" in string:
-            f = quicktions.Fraction
+            if quicktions:
+                f = quicktions.Fraction
+            else:
+                f = fractions.Fraction
         else:
             f = int
         try:
@@ -34,7 +47,7 @@ def __unknown_object_to_duration():
     return core_converters.UnknownObjectToObject[core_parameters.abc.Duration](
         (
             (
-                (float, int, fractions.Fraction, quicktions.Fraction),
+                _add_quicktions((float, int, fractions.Fraction)),
                 core_parameters.DirectDuration,
             ),
             ((str,), string_to_duration),
@@ -110,13 +123,10 @@ def __unknown_object_to_tempo_point():
     from mutwo import core_converters
     from mutwo import core_parameters
 
+    type_tuple = _add_quicktions((float, int, fractions.Fraction))
+
     return core_converters.UnknownObjectToObject[core_parameters.abc.TempoPoint](
-        (
-            (
-                (float, int, fractions.Fraction, quicktions.Fraction),
-                core_parameters.DirectTempoPoint,
-            ),
-        )
+        ((type_tuple, core_parameters.DirectTempoPoint),)
     )
 
 
