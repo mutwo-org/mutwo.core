@@ -4,9 +4,12 @@
 import fractions
 import typing
 
-import quicktions
+try:
+    import quicktions
+except ImportError:
+    quicktions = None
 
-Real = float | fractions.Fraction | quicktions.Fraction | int
+Real = float | fractions.Fraction | int
 """The main reason for this constant is a mypy issue with Pythons buildin
 [numbers module](https://docs.python.org/3/library/numbers.html) which
 is documented [here](https://github.com/python/mypy/issues/3186). Mypy
@@ -16,6 +19,9 @@ classes. PEP 3141 recommends users to simply annotate arguments with
 'float', but this wouldn't include `fractions.Fraction` which is often
 necessary in musical contexts (as github user arseniiv also remarked)."""
 
+if quicktions:
+    Real |= quicktions.Fraction
+
 DurationType = Real
 """Type variable to arguments and return values for `duration`.
 This can be any real number (float, integer, fraction)."""
@@ -24,3 +30,6 @@ ParameterType = typing.Any
 """Type variable to assign to arguments and return values
 which expect objects from the :mod:`mutwo.core.parameters` module,
 but could actually be anything."""
+
+# Cleanup
+del fractions, quicktions, typing
