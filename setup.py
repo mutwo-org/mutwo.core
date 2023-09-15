@@ -32,7 +32,6 @@ setuptools.setup(
     install_requires=[
         "numpy>=1.18, <2.00",
         "python-ranges>=1.2.0, <2.0.0",
-        "quicktions>=1.10, <2.0",
     ],
     extras_require=extras_require,
     classifiers=[
