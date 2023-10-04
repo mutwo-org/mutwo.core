@@ -28,7 +28,7 @@ This can be any real number (float, integer, fraction)."""
 
 ParameterType = typing.Any
 """Type variable to assign to arguments and return values
-which expect objects from the :mod:`mutwo.core.parameters` module,
+which expect objects from the :mod:`mutwo.core_parameters` module,
 but could actually be anything."""
 
 # Cleanup
