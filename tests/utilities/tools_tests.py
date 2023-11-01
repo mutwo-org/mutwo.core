@@ -129,6 +129,16 @@ class ToolsTest(unittest.TestCase):
         core_utilities.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
         self.assertEqual(nested_sequence[2][2][0], 100)
 
+    def test_del_nested_item_from_index_sequence(self):
+        seq = [1, [2, 3, [4]]]
+        d = core_utilities.del_nested_item_from_index_sequence
+        d((1, 1), seq)
+        self.assertEqual(seq, [1, [2, [4]]])
+        d((1, 1, 0), seq)
+        self.assertEqual(seq, [1, [2, []]])
+        d((0,), seq)
+        self.assertEqual(seq, [[2, []]])
+
     def test_find_numbers_which_sums_up_to(self):
         self.assertEqual(
             core_utilities.find_numbers_which_sums_up_to(3), ((3,), (1, 2), (1, 1, 1))

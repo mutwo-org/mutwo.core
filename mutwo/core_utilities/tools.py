@@ -26,6 +26,7 @@ __all__ = (
     "find_closest_item",
     "get_nested_item_from_index_sequence",
     "set_nested_item_from_index_sequence",
+    "del_nested_item_from_index_sequence",
     "find_numbers_which_sums_up_to",
     "call_function_except_attribute_error",
     "round_floats",
@@ -392,6 +393,34 @@ def set_nested_item_from_index_sequence(
     for index_index, index in enumerate(index_sequence):
         if index_count == index_index + 1:
             sequence.__setitem__(index, item)
+        else:
+            sequence = sequence[index]
+
+
+def del_nested_item_from_index_sequence(
+    index_sequence: typing.Sequence[int],
+    sequence: typing.MutableSequence,
+) -> None:
+    """Delete item in nested Sequence.
+
+    :param index_sequence: The indices of the nested item which shall be deleted.
+    :type index_sequence: typing.Sequence[int]
+    :param sequence: A nested sequence.
+    :type sequence: typing.MutableSequence[typing.Any]
+
+    **Example:**
+
+    >>> from mutwo import core_utilities
+    >>> nested_sequence = [1, 2, [4, [5, 1], [9, [3]]]]
+    >>> core_utilities.del_nested_item_from_index_sequence((2, 2, 0), nested_sequence)
+    >>> nested_sequence
+    [1, 2, [4, [5, 1], [[3]]]]
+    """
+
+    index_count = len(index_sequence)
+    for index_index, index in enumerate(index_sequence):
+        if index_count == index_index + 1:
+            sequence.__delitem__(index)
         else:
             sequence = sequence[index]
 
