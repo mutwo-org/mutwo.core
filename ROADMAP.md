@@ -10,5 +10,4 @@
 
 - Add `ComplexEvent.filter` method: This method should take a function and various setting properties (`nested`, `only_leaves`) and return a new `Event`.
 - Simplify `core_events.Envelope` (maybe)
-- Refactor `DirectParameter` to `Parameter`
 
