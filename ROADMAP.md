@@ -9,5 +9,5 @@
 # mutwo.core v.1.4.0
 
 - Add `ComplexEvent.filter` method: This method should take a function and various setting properties (`nested`, `only_leaves`) and return a new `Event`.
-- Simplify `core_events.Envelope` (maybe)
+- Replace `core_event.Envelope` default lambda functions with global configuration functions
 
