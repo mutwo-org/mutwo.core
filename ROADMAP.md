@@ -6,7 +6,7 @@
 - add `freeze` method (see [here](https://github.com/mutwo-org/mutwo.core/blob/05711a7/mutwo/core_converters/tempos.py#L128-L133) for rationale and more context)
 
 
-# mutwo.core v.1.4.0
+# mutwo.core v.1.5.0
 
 - Add `ComplexEvent.filter` method: This method should take a function and various setting properties (`nested`, `only_leaves`) and return a new `Event`.
 - Replace `core_event.Envelope` default lambda functions with global configuration functions

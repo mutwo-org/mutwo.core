@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2023-11-01
+
+### Added
+- string parser support for duration definitions in events, see [here](https://github.com/mutwo-org/mutwo.core/commit/ff3c0d510b8f5cbb6297a539dcb7d4e73879b001)
+
+This adds support for this:
+
+    >>> from mutwo import core_events
+    >>> core_events.SimpleEvent("1/1")
+    >>> core_events.SimpleEvent("4.32")
+    >>> ...
+
+- `core_utilities.del_nested_item_from_index_sequence`, see [here](https://github.com/mutwo-org/mutwo.core/commit/be976cbd269ea630d6a8ce51212435f787ef984f)
+
+### Changed
+- Use `quicktions` only optionally in the code-base, see [here](https://github.com/mutwo-org/mutwo.core/commit/e3ee75a6c043904912d9cd8a91c124f7f53c3e71)
+
+### Fixed
+- replace deprecated 'warn' with 'warning', see [here](https://github.com/mutwo-org/mutwo.core/commit/0ea79ab7f96590d33667394e6e8f71e083ac291f)
+
 
 ## [1.3.0] - 2023-07-22
 
