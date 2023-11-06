@@ -133,11 +133,12 @@ class TempoConverter(core_converters.abc.EventConverter):
     # properties to catched properties. But this may still takes some time
     # and we already want to have faster converters now.
     class _CatchedTempoEnvelope(core_events.TempoEnvelope):
-        @functools.cached_property
-        def _absolute_time_in_floats_tuple_and_duration(
-            self,
-        ) -> tuple[tuple[float, ...], float]:
-            return super()._absolute_time_in_floats_tuple_and_duration
+        pass
+        # @functools.cached_property
+        # def _absolute_time_in_floats_tuple_and_duration(
+        #     self,
+        # ) -> tuple[tuple[float, ...], float]:
+        #     return super()._absolute_time_in_floats_tuple_and_duration
 
     def __init__(
         self,

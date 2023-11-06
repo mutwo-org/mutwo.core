@@ -498,6 +498,7 @@ class Envelope(
                 difference = absolute_time - envelope_duration
                 self[-1].duration += difference
                 self.append(event)
+            # This means we want to squash in at a position much
 
         return self
 
@@ -511,7 +512,53 @@ class Envelope(
         :param end: End of integration interval.
         :type end: core_parameters.abc.Duration
         """
-        return integrate.quad(lambda x: self.value_at(x), start, end)[0]
+        # return integrate.quad(self.value_at, start, end)[0]
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(t)
+            for t in (start, end)
+        )
+        if start == end:
+            return 0
+
+        # XXX: we need something better: sample_at only makes sense
+        # if our envelope isn't frozen yet. if it is frozen we can't
+        # change our object e.g. sample_at doesn't work.
+        #
+        # We need an utility function that depending on the frozeness
+        # state behaves different.
+        # This utility function should be "time_range_to_point_tuple".
+        # And we also need something like "point_at" which similarly
+        # to "value_at" returns a tuple with (VALUE_AT, CURVE_SHAPE)
+        # so we also need "curve_shape_at" before implementing "point_at"
+        #
+        # 1. curve_shape_at
+        # 2. point_at
+        # 3. time_range_to_point_tuple(start, end, sample_at: bool = False)
+        self.sample_at(start)
+        self.sample_at(end)
+        (
+            absolute_time_in_floats_tuple,
+            duration_in_floats,
+        ) = self._absolute_time_in_floats_tuple_and_duration
+        start, end = (
+            core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+                float(t), absolute_time_in_floats_tuple, duration_in_floats
+            )
+            for t in (start, end)
+        )
+        if end is None:
+            end = len(self)
+        import sympy
+
+        x = sympy.Symbol("x")
+        integral = 0
+        for ev0, ev1 in zip(self[start:end], self[start + 1 : end + 1]):
+            if (d0 := float(ev0.duration)) > 0:
+                v0, v1 = (self._event_to_value(e) for e in (ev0, ev1))
+                diff = (v1 - v0) / d0
+                func = (x * diff) + v0
+                integral += sympy.integrate(func, (x, 0, d0))
+        return float(integral)
 
     def get_average_value(
         self,
