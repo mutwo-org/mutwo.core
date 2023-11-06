@@ -548,16 +548,21 @@ class Envelope(
         )
         if end is None:
             end = len(self)
-        import sympy
-
-        x = sympy.Symbol("x")
+        # import sympy
+        # x = sympy.Symbol("x")
         integral = 0
         for ev0, ev1 in zip(self[start:end], self[start + 1 : end + 1]):
             if (d0 := float(ev0.duration)) > 0:
                 v0, v1 = (self._event_to_value(e) for e in (ev0, ev1))
-                diff = (v1 - v0) / d0
-                func = (x * diff) + v0
-                integral += sympy.integrate(func, (x, 0, d0))
+                diff = v1 - v0 if v1 > v0 else v0 - v1
+                rechteck = (d0 * min((v0, v1)))
+                dreieck = (0.5 * d0 * diff)
+                # print('rechteck', rechteck)
+                # print('dreieck', dreieck)
+                integral += rechteck + dreieck
+                # diff = (v1 - v0) / d0
+                # func = (x * diff) + v0
+                # integral += sympy.integrate(func, (x, 0, d0))
         return float(integral)
 
     def get_average_value(
