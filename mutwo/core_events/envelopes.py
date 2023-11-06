@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import bisect
+import math
 import typing
 
 from scipy import integrate
@@ -554,12 +555,25 @@ class Envelope(
         for ev0, ev1 in zip(self[start:end], self[start + 1 : end + 1]):
             if (d0 := float(ev0.duration)) > 0:
                 v0, v1 = (self._event_to_value(e) for e in (ev0, ev1))
-                diff = v1 - v0 if v1 > v0 else v0 - v1
-                rechteck = (d0 * min((v0, v1)))
-                dreieck = (0.5 * d0 * diff)
-                # print('rechteck', rechteck)
+                curve_shape = self.event_to_curve_shape(ev0)
+                if curve_shape != 0:
+                    # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L102-103
+                    A = v0 - (v1 - v0) / (math.exp(curve_shape) - 1)
+                    B = (v1 - v0) / (curve_shape * (math.exp(curve_shape) - 1))
+
+                    def antiderivative(tn):
+                        # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L239
+                        return A * tn + B * math.exp(curve_shape * tn)
+
+                    a0, a1 = (antiderivative(i) for i in (0, 1))
+                    integral += d0 * (a1 - a0)
+                else:
+                    diff = v1 - v0 if v1 > v0 else v0 - v1
+                    rechteck = d0 * min((v0, v1))
+                    dreieck = 0.5 * d0 * diff
+                    integral += rechteck + dreieck
+
                 # print('dreieck', dreieck)
-                integral += rechteck + dreieck
                 # diff = (v1 - v0) / d0
                 # func = (x * diff) + v0
                 # integral += sympy.integrate(func, (x, 0, d0))
