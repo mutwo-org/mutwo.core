@@ -22,14 +22,5 @@ necessary in musical contexts (as github user arseniiv also remarked)."""
 if quicktions:
     Real |= quicktions.Fraction
 
-DurationType = Real
-"""Type variable to arguments and return values for `duration`.
-This can be any real number (float, integer, fraction)."""
-
-ParameterType = typing.Any
-"""Type variable to assign to arguments and return values
-which expect objects from the :mod:`mutwo.core_parameters` module,
-but could actually be anything."""
-
 # Cleanup
 del fractions, quicktions, typing

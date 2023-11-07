@@ -70,7 +70,7 @@ class Envelope(
     :param default_event_class: The default event class which describes a point.
     :type default_event_class: type[core_events.abc.Event]
     :param initialise_default_event_class:
-    :type initialise_default_event_class: typing.Callable[[type[core_events.abc.Event], core_constants.DurationType], core_events.abc.Event]
+    :type initialise_default_event_class: typing.Callable[[type[core_events.abc.Event], core_parameters.abc.Duration], core_events.abc.Event]
 
     This class is inspired by Marc Evansteins `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
@@ -94,10 +94,11 @@ class Envelope(
 
     # Type definitions
     Value = core_constants.Real
+    Parameter = typing.Any
     CurveShape = core_constants.Real
-    IncompletePoint = tuple[core_constants.DurationType, core_constants.ParameterType]
+    IncompletePoint = tuple["core_parameters.abc.Duration", Parameter]
     CompletePoint = tuple[
-        core_constants.DurationType, core_constants.ParameterType, CurveShape  # type: ignore
+        "core_parameters.abc.Duration", Parameter, CurveShape  # type: ignore
     ]
     Point = CompletePoint | IncompletePoint
 
@@ -141,7 +142,7 @@ class Envelope(
         ),
         default_event_class: type[core_events.abc.Event] = core_events.SimpleEvent,
         initialise_default_event_class: typing.Callable[
-            [type[core_events.abc.Event], core_constants.DurationType],
+            [type[core_events.abc.Event], "core_parameters.abc.Duration"],
             core_events.abc.Event,
         ] = lambda simple_event_class, duration: simple_event_class(
             duration
@@ -273,9 +274,9 @@ class Envelope(
     # absolute_time_tuple if it helps their performance.
     def _curve_shape_at(
         self,
-        absolute_time: core_parameters.abc.Duration,
-        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
-        duration: core_parameters.abc.Duration,
+        absolute_time: "core_parameters.abc.Duration",
+        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
+        duration: "core_parameters.abc.Duration",
     ):
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "curve_shape_at")
@@ -300,9 +301,9 @@ class Envelope(
 
     def _value_at(
         self,
-        absolute_time: core_parameters.abc.Duration,
-        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
-        duration: core_parameters.abc.Duration,
+        absolute_time: "core_parameters.abc.Duration",
+        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
+        duration: "core_parameters.abc.Duration",
     ):
         absolute_time_in_floats = absolute_time.duration_in_floats
         absolute_time_in_floats_tuple = tuple(map(float, absolute_time_tuple))
@@ -352,9 +353,9 @@ class Envelope(
 
     def _parameter_at(
         self,
-        absolute_time: core_parameters.abc.Duration,
-        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
-        duration: core_parameters.abc.Duration,
+        absolute_time: "core_parameters.abc.Duration",
+        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
+        duration: "core_parameters.abc.Duration",
     ):
         return self.value_to_parameter(
             self._value_at(absolute_time, absolute_time_tuple, duration)
@@ -362,9 +363,9 @@ class Envelope(
 
     def _point_at(
         self,
-        absolute_time: core_parameters.abc.Duration | typing.Any,
-        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
-        duration: core_parameters.abc.Duration,
+        absolute_time: "core_parameters.abc.Duration",
+        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
+        duration: "core_parameters.abc.Duration",
     ):
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "point_at")
@@ -414,14 +415,12 @@ class Envelope(
     #                          public methods                                #
     # ###################################################################### #
 
-    def value_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
-    ) -> Value:
+    def value_at(self, absolute_time: "core_parameters.abc.Duration") -> Value:
         """Get `value` at `absolute_time`.
 
         :param absolute_time: Absolute position in time at which value shall be found.
             This is 'x' in the function notation 'f(x)'.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration
 
         This function interpolates between the control points according to
         their `curve_shape` property.
@@ -443,24 +442,22 @@ class Envelope(
         return self._value_at(absolute_time, *self._absolute_time_tuple_and_duration)
 
     def parameter_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
+        self, absolute_time: "core_parameters.abc.Duration"
     ) -> core_constants.ParameterType:
         """Get `parameter` at `absolute_time`.
 
         :param absolute_time: Absolute position in time at which parameter shall
             be found. This is 'x' in the function notation 'f(x)'.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration
         """
         return self.value_to_parameter(self.value_at(absolute_time))
 
-    def curve_shape_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
-    ) -> float:
+    def curve_shape_at(self, absolute_time: "core_parameters.abc.Duration") -> float:
         """Get `curve_shape` at `absolute_time`.
 
         :param absolute_time: Absolute position in time at which curve shape shall
             be found. This is 'x' in the function notation 'f(x)'.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration
         """
         absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
@@ -471,13 +468,13 @@ class Envelope(
 
     def point_at(
         self,
-        absolute_time: core_parameters.abc.Duration | typing.Any,
+        absolute_time: "core_parameters.abc.Duration",
     ):
         """Get `point` at `absolute_time`.
 
         :param absolute_time: Absolute position in time at which point shall
             be found. This is 'x' in the function notation 'f(x)'.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration
 
         A point is a tuple with (absolute_time, value, curve_shape).
         """
@@ -491,22 +488,22 @@ class Envelope(
 
     def sample_at(
         self,
-        absolute_time: core_parameters.abc.Duration | typing.Any,
-        append_duration: core_parameters.abc.Duration | typing.Any = 0,
+        absolute_time: "core_parameters.abc.Duration",
+        append_duration: "core_parameters.abc.Duration" = 0,
     ) -> Envelope:
         """Discretize envelope at given time
 
         :param absolute_time: Position in time where the envelope should
             define a new event.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration
         :param append_duration: In case we add a new control point after any
             already defined point, the duration of this control point will be
             equal to "append_duration". Default to core_parameters.DirectDuration(0)
         """
 
         def find_duration(
-            absolute_time: core_parameters.abc.Duration,
-            absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+            absolute_time: "core_parameters.abc.Duration",
+            absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
         ):
             """Find duration of new control point"""
             next_event_start_index = bisect.bisect_right(
@@ -609,7 +606,7 @@ class Envelope(
         return tuple(point_list)
 
     def integrate_interval(
-        self, start: core_constants.DurationType, end: core_constants.DurationType
+        self, start: "core_parameters.abc.Duration", end: "core_parameters.abc.Duration"
     ) -> float:
         """Integrate envelope above given interval.
 
@@ -652,17 +649,17 @@ class Envelope(
 
     def get_average_value(
         self,
-        start: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
-        end: typing.Optional[core_parameters.abc.Duration | typing.Any] = None,
+        start: typing.Optional["core_parameters.abc.Duration"] = None,
+        end: typing.Optional["core_parameters.abc.Duration"] = None,
     ) -> Value:
         """Find average `value` in given interval.
 
         :param start: The beginning of the interval. If set to `None` this
             will be 0. Default to `None`.
-        :type start: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :type start: typing.Optional[core_parameters.abc.Duration]
         :param end: The end of the interval. If set to `None` this
             will be the duration of the :class:`Envelope`.. Default to `None`.
-        :type end: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :type end: typing.Optional[core_parameters.abc.Duration]
 
         **Example:**
 
@@ -693,17 +690,17 @@ class Envelope(
 
     def get_average_parameter(
         self,
-        start: typing.Optional[core_constants.DurationType] = None,
-        end: typing.Optional[core_constants.DurationType] = None,
+        start: typing.Optional["core_parameters.abc.Duration"] = None,
+        end: typing.Optional["core_parameters.abc.Duration"] = None,
     ) -> core_constants.ParameterType:
         """Find average `parameter` in given interval.
 
         :param start: The beginning of the interval. If set to `None` this
             will be 0. Default to `None`.
-        :type start: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :type start: typing.Optional[core_parameters.abc.Duration]
         :param end: The end of the interval. If set to `None` this
             will be the duration of the :class:`Envelope`.. Default to `None`.
-        :type end: typing.Optional[core_parameters.abc.Duration | typing.Any]
+        :type end: typing.Optional[core_parameters.abc.Duration]
 
         **Example:**
 
@@ -720,8 +717,8 @@ class Envelope(
 
     def cut_out(
         self,
-        start: core_parameters.abc.Duration | typing.Any,
-        end: core_parameters.abc.Duration | typing.Any,
+        start: "core_parameters.abc.Duration",
+        end: "core_parameters.abc.Duration",
     ) -> Envelope[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -752,8 +749,8 @@ class Envelope(
 
     def cut_off(
         self,
-        start: core_parameters.abc.Duration | typing.Any,
-        end: core_parameters.abc.Duration | typing.Any,
+        start: "core_parameters.abc.Duration",
+        end: "core_parameters.abc.Duration",
     ) -> Envelope[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -784,9 +781,9 @@ class Envelope(
 
     def extend_until(
         self,
-        duration: core_parameters.abc.Duration,
+        duration: "core_parameters.abc.Duration",
         duration_to_white_space: typing.Optional[
-            typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
+            typing.Callable[["core_parameters.abc.Duration"], core_events.abc.Event]
         ] = None,
         prolong_simple_event: bool = True,
     ) -> Envelope[T]:
@@ -796,7 +793,7 @@ class Envelope(
 
     def split_at(
         self,
-        *absolute_time: core_parameters.abc.Duration,
+        *absolute_time: "core_parameters.abc.Duration",
         ignore_invalid_split_point: bool = False,
     ) -> tuple[Envelope, ...]:
         if not absolute_time:
@@ -876,7 +873,7 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
 
     def resolve(
         self,
-        duration: core_parameters.abc.Duration | typing.Any,
+        duration: "core_parameters.abc.Duration",
         base_parameter: core_constants.ParameterType,
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
@@ -959,7 +956,7 @@ class TempoEnvelope(Envelope):
         ] = None,
         default_event_class: type[core_events.abc.Event] = core_events.TempoEvent,
         initialise_default_event_class: typing.Callable[
-            [type[core_events.abc.Event], core_constants.DurationType],
+            [type[core_events.abc.Event], "core_parameters.abc.Duration"],
             core_events.abc.Event,
         ] = lambda simple_event_class, duration: simple_event_class(
             tempo_point=1, duration=duration

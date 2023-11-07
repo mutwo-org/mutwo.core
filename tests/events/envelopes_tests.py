@@ -15,7 +15,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     class EnvelopeEvent(core_events.SimpleEvent):
         def __init__(
             self,
-            duration: core_constants.DurationType,
+            duration: core_parameters.abc.Duration,
             value: core_constants.Real,
             curve_shape: core_constants.Real = 0,
         ):
