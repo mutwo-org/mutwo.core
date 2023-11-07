@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import bisect
+import functools
 import typing
 
 from scipy import integrate
+import ranges
 
 from mutwo import core_constants
 from mutwo import core_events
@@ -405,7 +407,11 @@ class Envelope(
 
         else:
             e = self[absolute_time_tuple.index(absolute_time)]
-            point = (absolute_time, self._event_to_value(e), self.event_to_curve_shape(e))
+            point = (
+                absolute_time,
+                self._event_to_value(e),
+                self.event_to_curve_shape(e),
+            )
 
         return point
 
@@ -583,6 +589,54 @@ class Envelope(
                 self.append(event)
 
         return self
+
+    def time_range_to_point_tuple(
+        self, time_range: ranges.Range
+    ) -> tuple[CompletePoint, ...]:
+        """Return all control points in given time range.
+
+        :param time_range: Start and end time encapsulated in a
+            :class:`ranges.Range` object.
+        :type time_range: ranges.Range
+
+        If at start and end time aren't any control points, the functions
+        creates them ad-hoc via ``point_at``.
+        """
+
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(o)
+            for o in (time_range.start, time_range.end)
+        )
+        absolute_time_tuple, duration = self._absolute_time_tuple_and_duration
+
+        p = functools.partial(  # point_at
+            self._point_at, absolute_time_tuple=absolute_time_tuple, duration=duration
+        )
+
+        point_list = []
+
+        if start not in absolute_time_tuple:
+            point_list.append(p(start))
+            i0 = bisect.bisect_left(absolute_time_tuple, start)
+        else:
+            i0 = absolute_time_tuple.index(start)
+
+        if end not in absolute_time_tuple:
+            i1 = bisect.bisect_left(absolute_time_tuple, end)
+            last_point = p(end)
+        else:
+            i1 = absolute_time_tuple.index(end) + 1
+            last_point = None
+
+        for t, ev in zip(absolute_time_tuple[i0:i1], self[i0:i1]):
+            point_list.append(
+                (t, self._event_to_value(ev), self.event_to_curve_shape(ev))
+            )
+
+        if last_point is not None:
+            point_list.append(last_point)
+
+        return tuple(point_list)
 
     def integrate_interval(
         self, start: core_constants.DurationType, end: core_constants.DurationType

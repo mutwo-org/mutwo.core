@@ -1,6 +1,8 @@
 import typing
 import unittest
 
+import ranges
+
 from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
@@ -158,6 +160,36 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
         self.assertEqual(self.envelope.point_at(0), (d(0), 0, 0))
         self.assertEqual(self.envelope.point_at(1), (d(1), 1, 1))
         self.assertEqual(self.envelope.point_at(2), (d(2), 0, -1))
+
+    def test_time_range_to_point_tuple(self):
+        d = core_parameters.DirectDuration
+        # All pre-defined points
+        self.assertEqual(
+            self.envelope.time_range_to_point_tuple(ranges.Range(0, 5)),
+            (
+                (d(0), 0, 0),
+                (d(1), 1, 1),
+                (d(2), 0, -1),
+                (d(3), 1, 0),
+                (d(5), 0.5, 0),
+            ),
+        )
+        # Interpolation points
+        #   first point
+        self.assertEqual(
+            self.envelope.time_range_to_point_tuple(ranges.Range(0.5, 1)),
+            ((d(0.5), 0.5, 0), (d(1), 1, 1)),
+        )
+        #   last point
+        self.assertEqual(
+            self.envelope.time_range_to_point_tuple(ranges.Range(0, 0.5)),
+            ((d(0), 0, 0), (d(0.5), 0.5, 0)),
+        )
+        #   both points
+        self.assertEqual(
+            self.envelope.time_range_to_point_tuple(ranges.Range(0.25, 0.75)),
+            ((d(0.25), 0.25, 0), (d(0.75), 0.75, 0)),
+        )
 
     def test_from_points_simple(self):
         envelope_from_init = core_events.Envelope(
