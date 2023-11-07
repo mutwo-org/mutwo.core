@@ -325,6 +325,68 @@ class Envelope(
 
         return curve_shape_new_event
 
+    def _value_at(
+        self,
+        absolute_time: core_parameters.abc.Duration,
+        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+        duration: core_parameters.abc.Duration,
+    ):
+        absolute_time_in_floats = absolute_time.duration_in_floats
+        absolute_time_in_floats_tuple = tuple(map(float, absolute_time_tuple))
+        duration_in_floats = float(duration)
+
+        try:
+            use_only_first_event = (
+                absolute_time_in_floats <= absolute_time_in_floats_tuple[0]
+            )
+        except IndexError:
+            raise core_utilities.EmptyEnvelopeError(self, "value_at")
+
+        use_only_last_event = absolute_time_in_floats >= (
+            # If the duration of the last event == 0 there is the danger
+            # of floating point errors (the value in absolute_time_tuple could
+            # be slightly higher than the duration of the Envelope. If this
+            # happens the function will raise an AssertionError, because
+            # "_get_index_at_from_absolute_time_tuple" will return
+            # "None"). With explicitly testing if the last duration
+            # equals 0 we can avoid this danger.
+            absolute_time_in_floats_tuple[-1]
+            if self[-1].duration > 0
+            else duration_in_floats
+        )
+        if use_only_first_event or use_only_last_event:
+            index = 0 if use_only_first_event else -1
+            return self._event_to_value(self[index])
+
+        event_0_index = self._get_index_at_from_absolute_time_tuple(
+            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
+        )
+        assert event_0_index is not None
+
+        value0, value1 = (
+            self._event_to_value(self[event_0_index + n]) for n in range(2)
+        )
+        curve_shape = self.event_to_curve_shape(self[event_0_index])
+
+        return core_utilities.scale(
+            absolute_time_in_floats,
+            absolute_time_in_floats_tuple[event_0_index],
+            absolute_time_in_floats_tuple[event_0_index + 1],
+            value0,
+            value1,
+            curve_shape,
+        )
+
+    def _parameter_at(
+        self,
+        absolute_time: core_parameters.abc.Duration,
+        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+        duration: core_parameters.abc.Duration,
+    ):
+        return self.value_to_parameter(
+            self._value_at(absolute_time, absolute_time_tuple, duration)
+        )
+
     # ###################################################################### #
     #                         public properties                              #
     # ###################################################################### #
@@ -379,54 +441,7 @@ class Envelope(
         absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
         )
-        absolute_time_in_floats = absolute_time.duration_in_floats
-
-        (
-            absolute_time_in_floats_tuple,
-            duration_in_floats,
-        ) = self._absolute_time_in_floats_tuple_and_duration
-
-        try:
-            use_only_first_event = (
-                absolute_time_in_floats <= absolute_time_in_floats_tuple[0]
-            )
-        except IndexError:
-            raise core_utilities.EmptyEnvelopeError(self, "value_at")
-
-        use_only_last_event = absolute_time_in_floats >= (
-            # If the duration of the last event == 0 there is the danger
-            # of floating point errors (the value in absolute_time_tuple could
-            # be slightly higher than the duration of the Envelope. If this
-            # happens the function will raise an AssertionError, because
-            # "_get_index_at_from_absolute_time_tuple" will return
-            # "None"). With explicitly testing if the last duration
-            # equals 0 we can avoid this danger.
-            absolute_time_in_floats_tuple[-1]
-            if self[-1].duration > 0
-            else duration_in_floats
-        )
-        if use_only_first_event or use_only_last_event:
-            index = 0 if use_only_first_event else -1
-            return self._event_to_value(self[index])
-
-        event_0_index = self._get_index_at_from_absolute_time_tuple(
-            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
-        )
-        assert event_0_index is not None
-
-        value0, value1 = (
-            self._event_to_value(self[event_0_index + n]) for n in range(2)
-        )
-        curve_shape = self.event_to_curve_shape(self[event_0_index])
-
-        return core_utilities.scale(
-            absolute_time_in_floats,
-            absolute_time_in_floats_tuple[event_0_index],
-            absolute_time_in_floats_tuple[event_0_index + 1],
-            value0,
-            value1,
-            curve_shape,
-        )
+        return self._value_at(absolute_time, *self._absolute_time_tuple_and_duration)
 
     def parameter_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
@@ -506,8 +521,12 @@ class Envelope(
             envelope_duration = absolute_time_tuple[-1] + self[-1].duration
             event = self._make_event(
                 find_duration(absolute_time, absolute_time_tuple),
-                self.parameter_at(absolute_time),
-                self._curve_shape_at(absolute_time, absolute_time_tuple, envelope_duration),
+                self._parameter_at(
+                    absolute_time, absolute_time_tuple, envelope_duration
+                ),
+                self._curve_shape_at(
+                    absolute_time, absolute_time_tuple, envelope_duration
+                ),
             )
 
             try:
