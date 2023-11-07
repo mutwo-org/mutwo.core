@@ -15,7 +15,6 @@ import typing
 
 import ranges
 
-from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
@@ -88,10 +87,7 @@ class SimpleEvent(core_events.abc.Event):
     def _set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Callable[
-            [core_constants.ParameterType], core_constants.ParameterType
-        ]
-        | core_constants.ParameterType,
+        object_or_function: typing.Callable[[typing.Any], typing.Any] | typing.Any,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> SimpleEvent:
@@ -107,7 +103,7 @@ class SimpleEvent(core_events.abc.Event):
     def _mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
+        function: typing.Callable[[typing.Any], None] | typing.Any,
         id_set: set[int],
     ) -> SimpleEvent:
         parameter = self.get_parameter(parameter_name)
@@ -170,7 +166,7 @@ class SimpleEvent(core_events.abc.Event):
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
-    ) -> core_constants.ParameterType:
+    ) -> typing.Any:
         return getattr(self, parameter_name, None)
 
     # Update docstring
@@ -575,8 +571,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_out(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> SequentialEvent[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -619,8 +615,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_off(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> SequentialEvent[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -874,7 +870,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @core_events.abc.ComplexEvent.duration.getter
-    def duration(self) -> core_constants.DurationType:
+    def duration(self) -> core_parameters.abc.Duration:
         try:
             return max(event.duration for event in self)
         # If SimultaneousEvent is empty
@@ -901,8 +897,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_off(  # type: ignore
         self,
-        start: core_constants.DurationType,
-        end: core_constants.DurationType,
+        start: core_parameters.abc.Duration,
+        end: core_parameters.abc.Duration,
     ) -> SimultaneousEvent[T]:
         start, end = (
             core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
@@ -947,7 +943,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         return self
 
     def split_child_at(
-        self, absolute_time: core_constants.DurationType
+        self, absolute_time: core_parameters.abc.Duration
     ) -> SimultaneousEvent[T]:
         for event_index, event in enumerate(self):
             try:

@@ -139,12 +139,12 @@ class InvalidCutOutStartAndEndValuesError(Exception):
 
 
 class SplitError(Exception):
-    def __init__(self, absolute_time: core_constants.DurationType):
+    def __init__(self, absolute_time: 'core_parameters.abc.Duration'):
         super().__init__(f"Can't split event at absolute time '{absolute_time}'.")
 
 
 class SplitUnavailableChildError(Exception):
-    def __init__(self, absolute_time: core_constants.DurationType):
+    def __init__(self, absolute_time: 'core_parameters.abc.Duration'):
         super().__init__(
             f"Can't split child at absolute time '{absolute_time}'. There is no child"
             " event available at the requested time."

@@ -7,7 +7,6 @@ import copy
 import functools
 import typing
 
-from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
@@ -156,10 +155,7 @@ class Event(abc.ABC):
     def _set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Callable[
-            [core_constants.ParameterType], core_constants.ParameterType
-        ]
-        | core_constants.ParameterType,
+        object_or_function: typing.Callable[[typing.Any], typing.Any] | typing.Any,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> Event:
@@ -169,7 +165,7 @@ class Event(abc.ABC):
     def _mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
+        function: typing.Callable[[typing.Any], None] | typing.Any,
         id_set: set[int],
     ) -> Event:
         ...
@@ -264,7 +260,7 @@ class Event(abc.ABC):
     @abc.abstractmethod
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
-    ) -> tuple[core_constants.ParameterType, ...] | core_constants.ParameterType:
+    ) -> tuple[typing.Any, ...] | typing.Any:
         """Return event attribute with the entered name.
 
         :param parameter_name: The name of the attribute that shall be returned.
@@ -297,10 +293,7 @@ class Event(abc.ABC):
     def set_parameter(
         self,
         parameter_name: str,
-        object_or_function: typing.Callable[
-            [core_constants.ParameterType], core_constants.ParameterType
-        ]
-        | core_constants.ParameterType,
+        object_or_function: typing.Callable[[typing.Any], typing.Any] | typing.Any,
         set_unassigned_parameter: bool = True,
     ) -> typing.Optional[Event]:
         """Sets parameter to new value for all children events.
@@ -352,7 +345,7 @@ class Event(abc.ABC):
     def mutate_parameter(
         self,
         parameter_name: str,
-        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
+        function: typing.Callable[[typing.Any], None] | typing.Any,
     ) -> typing.Optional[Event]:
         """Mutate parameter with a function.
 
@@ -765,10 +758,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def _set_parameter(  # type: ignore
         self,
         parameter_name: str,
-        object_or_function: typing.Callable[
-            [core_constants.ParameterType], core_constants.ParameterType
-        ]
-        | core_constants.ParameterType,
+        object_or_function: typing.Callable[[typing.Any], typing.Any] | typing.Any,
         set_unassigned_parameter: bool,
         id_set: set[int],
     ) -> ComplexEvent[T]:
@@ -783,7 +773,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def _mutate_parameter(  # type: ignore
         self,
         parameter_name: str,
-        function: typing.Callable[[core_constants.ParameterType], None] | typing.Any,
+        function: typing.Callable[[typing.Any], None] | typing.Any,
         id_set: set[int],
     ) -> ComplexEvent[T]:
         return self._apply_once_per_event(
@@ -884,8 +874,8 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
-    ) -> tuple[core_constants.ParameterType, ...]:
-        parameter_value_list: list[core_constants.ParameterType] = []
+    ) -> tuple[typing.Any, ...]:
+        parameter_value_list: list[typing.Any] = []
         for event in self:
             parameter_value_or_parameter_value_tuple = event.get_parameter(
                 parameter_name, flat=flat

@@ -63,7 +63,7 @@ class ParameterWithEnvelope(abc.ABC):
 
     def resolve_envelope(
         self,
-        duration: core_constants.DurationType,
+        duration: core_parameters.abc.Duration,
         # XXX: We can't directly set the default attribute value,
         # but we have to do it with `None` and resolve it later,
         # because otherwise we will get a circular import

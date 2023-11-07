@@ -71,7 +71,7 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
         )
 
 
-MutwoParameterDict = dict[str, core_constants.ParameterType]
+MutwoParameterDict = dict[str, typing.Any]
 
 
 class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
@@ -105,7 +105,7 @@ class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
 
     def convert(
         self, mutwo_parameter_dict_to_convert: MutwoParameterDict
-    ) -> typing.Optional[tuple[str, core_constants.ParameterType]]:
+    ) -> typing.Optional[tuple[str, typing.Any]]:
         try:
             return (
                 self._keyword,
