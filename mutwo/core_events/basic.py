@@ -1144,6 +1144,12 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             :class:`SimultaneousEvent`. Default to ``None``.
         :type slice_tuple_to_event: typing.Optional[typing.Callable[[tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event]]
 
+        **Warning:**
+
+        Because the returned event is a :class:`SequentialEvent` class specific
+        side attributes of the :class:`SimultaneousEvent` aren't persistent in
+        the returned event.
+
         **Example:**
 
         >>> from mutwo import core_events
