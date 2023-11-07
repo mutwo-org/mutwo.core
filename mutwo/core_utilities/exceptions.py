@@ -20,7 +20,6 @@ __all__ = (
     "InvalidStartAndEndValueError",
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
-    "NoSolutionFoundError",
     "EmptyEnvelopeError",
     "UndefinedReferenceWarning",
     "ConcatenationError",
@@ -162,11 +161,6 @@ class SplitUnavailableChildError(Exception):
             f"Can't split child at absolute time '{absolute_time}'. There is no child"
             " event available at the requested time."
         )
-
-
-class NoSolutionFoundError(Exception):
-    def __init__(self, message: str):
-        super().__init__(message)
 
 
 class EmptyEnvelopeError(Exception):
