@@ -58,7 +58,7 @@ def scale(
 
     The algorithmic to change the translation with the
     `translation_shape` has been copied from
-    `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope/tree/master/item/expenvelope/envelope_segment.py#L206>`_
+    `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L234>`_
     by M. Evanstein.
 
     **Example:**
