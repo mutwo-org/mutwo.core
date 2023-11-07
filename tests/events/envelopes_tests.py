@@ -143,6 +143,22 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             0,
         )
 
+    def test_point_at_before(self):
+        d = core_parameters.DirectDuration
+        self.assertEqual(self.envelope.point_at(-1), (d(-1), 0, 0))
+        self.assertEqual(self.envelope.point_at(-100), (d(-100), 0, 0))
+
+    def test_point_at_after(self):
+        d = core_parameters.DirectDuration
+        self.assertEqual(self.envelope.point_at(6), (d(6), 0.5, 0))
+        self.assertEqual(self.envelope.point_at(100), (d(100), 0.5, 0))
+
+    def test_point_at_points(self):
+        d = core_parameters.DirectDuration
+        self.assertEqual(self.envelope.point_at(0), (d(0), 0, 0))
+        self.assertEqual(self.envelope.point_at(1), (d(1), 1, 1))
+        self.assertEqual(self.envelope.point_at(2), (d(2), 0, -1))
+
     def test_from_points_simple(self):
         envelope_from_init = core_events.Envelope(
             [self.EnvelopeEvent(1, 0, 10), self.EnvelopeEvent(0, 1)]

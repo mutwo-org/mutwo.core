@@ -387,6 +387,28 @@ class Envelope(
             self._value_at(absolute_time, absolute_time_tuple, duration)
         )
 
+    def _point_at(
+        self,
+        absolute_time: core_parameters.abc.Duration | typing.Any,
+        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+        duration: core_parameters.abc.Duration,
+    ):
+        if not self:
+            raise core_utilities.EmptyEnvelopeError(self, "point_at")
+
+        if absolute_time not in (absolute_time_tuple := self.absolute_time_tuple):
+            point = (
+                absolute_time,
+                self._value_at(absolute_time, absolute_time_tuple, duration),
+                self._curve_shape_at(absolute_time, absolute_time_tuple, duration),
+            )
+
+        else:
+            e = self[absolute_time_tuple.index(absolute_time)]
+            point = (absolute_time, self._event_to_value(e), self.event_to_curve_shape(e))
+
+        return point
+
     # ###################################################################### #
     #                         public properties                              #
     # ###################################################################### #
@@ -470,6 +492,26 @@ class Envelope(
             absolute_time, *self._absolute_time_tuple_and_duration
         )
 
+    def point_at(
+        self,
+        absolute_time: core_parameters.abc.Duration | typing.Any,
+    ):
+        """Get `point` at `absolute_time`.
+
+        :param absolute_time: Absolute position in time at which point shall
+            be found. This is 'x' in the function notation 'f(x)'.
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
+
+        A point is a tuple with (absolute_time, value, curve_shape).
+        """
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
+        return self._point_at(
+            absolute_time,
+            *self._absolute_time_tuple_and_duration,
+        )
+
     @core_utilities.add_copy_option
     def sample_at(
         self,
@@ -515,18 +557,20 @@ class Envelope(
 
         self._assert_valid_absolute_time(absolute_time)
 
+        absolute_time_tuple, duration = self._absolute_time_tuple_and_duration
+
         # We only add a new event in case there isn't any event yet at
         # given point in time.
-        if absolute_time not in (absolute_time_tuple := self.absolute_time_tuple):
-            envelope_duration = absolute_time_tuple[-1] + self[-1].duration
+        if absolute_time not in absolute_time_tuple:
+            point = self._point_at(
+                absolute_time,
+                absolute_time_tuple,
+                duration,
+            )
             event = self._make_event(
                 find_duration(absolute_time, absolute_time_tuple),
-                self._parameter_at(
-                    absolute_time, absolute_time_tuple, envelope_duration
-                ),
-                self._curve_shape_at(
-                    absolute_time, absolute_time_tuple, envelope_duration
-                ),
+                self.value_to_parameter(point[1]),
+                point[2],
             )
 
             try:
@@ -534,7 +578,7 @@ class Envelope(
             # This means we want to squash in at a position much
             # later than any already defined event.
             except core_utilities.InvalidStartValueError:
-                difference = absolute_time - envelope_duration
+                difference = absolute_time - duration
                 self[-1].duration += difference
                 self.append(event)
 
