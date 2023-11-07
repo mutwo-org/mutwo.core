@@ -119,6 +119,30 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             core_utilities.EmptyEnvelopeError, core_events.Envelope([]).value_at, 0
         )
 
+    def test_curve_shape_at_before(self):
+        self.assertEqual(self.envelope.curve_shape_at(-1), 0)
+        self.assertEqual(self.envelope.curve_shape_at(-100), 0)
+
+    def test_curve_shape_at_after(self):
+        self.assertEqual(self.envelope.curve_shape_at(100), 0)
+        self.assertEqual(self.envelope.curve_shape_at(6), 0)
+
+    def test_curve_shape_at_point(self):
+        e = self.envelope
+        self.assertEqual(e.curve_shape_at(1), 1)
+        self.assertEqual(e.curve_shape_at(2), -1)
+
+    def test_curve_shape_at_between_points(self):
+        e = self.envelope
+        self.assertEqual(e.curve_shape_at(1.5), 0.5)
+
+    def test_curve_shape_at_empty_envelope(self):
+        self.assertRaises(
+            core_utilities.EmptyEnvelopeError,
+            core_events.Envelope([]).curve_shape_at,
+            0,
+        )
+
     def test_from_points_simple(self):
         envelope_from_init = core_events.Envelope(
             [self.EnvelopeEvent(1, 0, 10), self.EnvelopeEvent(0, 1)]
@@ -280,7 +304,9 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
         self.assertEqual(
             self.envelope.parameter_tuple[-1], self.envelope.parameter_tuple[-2]
         )
-        self.assertRaises(core_utilities.EmptyEnvelopeError, core_events.Envelope([]).extend_until, 1)
+        self.assertRaises(
+            core_utilities.EmptyEnvelopeError, core_events.Envelope([]).extend_until, 1
+        )
 
 
 class RelativeEnvelopeTest(unittest.TestCase):
