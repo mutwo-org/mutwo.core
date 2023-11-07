@@ -57,7 +57,7 @@ class PerformanceTest(unittest.TestCase):
         split_time_list = sorted([random.uniform(0, duration) for _ in range(25)])
         e.split_at(*split_time_list)
 
-    @t(0.8, 100)
+    @t(0.17, 100)
     def test_metrize(self):
         e = sim(
             [seq([s(random.uniform(0.9, 1.2)) for _ in range(20)]) for _ in range(3)]
