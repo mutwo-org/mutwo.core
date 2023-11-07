@@ -48,12 +48,12 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(duration=10)
+        >>> simple_event = core_events.SimpleEvent(duration=10.0)
         >>> simple_event_to_duration = core_converters.SimpleEventToAttribute(
         ...     'duration', 0
         ... )
         >>> simple_event_to_duration.convert(simple_event)
-        DirectDuration(10)
+        DirectDuration(10.0)
         >>> simple_event_to_pasta = core_converters.SimpleEventToAttribute(
         ...     'pasta', 'spaghetti'
         ... )
@@ -90,9 +90,9 @@ class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
     >>> from mutwo import core_parameters
     >>> mutwo_parameter_dict_to_keyword_argument = core_converters.MutwoParameterDictToKeywordArgument('duration')
     >>> mutwo_parameter_dict_to_keyword_argument.convert(
-    ...     {'duration': core_parameters.DirectDuration(1)}
+    ...     {'duration': core_parameters.DirectDuration(1.0)}
     ... )
-    ('duration', DirectDuration(1))
+    ('duration', DirectDuration(1.0))
     """
 
     def __init__(

@@ -89,7 +89,7 @@ class Envelope(
 
     >>> from mutwo import core_events
     >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
-    Envelope([SimpleEvent(curve_shape = 1, duration = DirectDuration(duration = 1/2), value = 0), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0), value = 1)])
+    Envelope([SimpleEvent(curve_shape = 1, duration = DirectDuration(duration = 0.5), value = 0), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0.0), value = 1)])
     """
 
     # Type definitions
@@ -291,7 +291,7 @@ class Envelope(
             curve_shape_old_event = (
                 (absolute_time - absolute_time_tuple[old_event_index])
                 / old_event.duration
-            ).duration_in_floats * curve_shape
+            ).duration * curve_shape
             curve_shape_new_event = curve_shape - curve_shape_old_event
             self.apply_curve_shape_on_event(old_event, curve_shape_old_event)
         else:
@@ -305,7 +305,7 @@ class Envelope(
         absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
         duration: "core_parameters.abc.Duration",
     ):
-        absolute_time_in_floats = absolute_time.duration_in_floats
+        absolute_time_in_floats = absolute_time.duration
         absolute_time_in_floats_tuple = tuple(map(float, absolute_time_tuple))
         duration_in_floats = float(duration)
 

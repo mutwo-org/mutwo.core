@@ -252,7 +252,7 @@ class SingleNumberParameter(SingleValueParameter):
 
 
 class Duration(
-    SingleNumberParameter, value_name="duration", value_return_type="fractions.Fraction"
+    SingleNumberParameter, value_name="duration", value_return_type="float"
 ):
     """Abstract base class for any duration.
 
@@ -273,7 +273,7 @@ class Duration(
     def _math_operation(
         self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
     ) -> Duration:
-        self.duration = fractions.Fraction(
+        self.duration = float(
             operation(self.duration, getattr(other, "duration", other))
         )
         return self
@@ -303,22 +303,15 @@ class Duration(
         return self.copy().divide(other)
 
     def __float__(self) -> float:
-        return core_utilities.round_floats(
-            float(self.duration),
-            core_parameters.configurations.ROUND_DURATION_TO_N_DIGITS,
-        )
+        return self.duration
 
     @property
-    def duration_in_floats(self) -> float:
-        return float(self)
-
-    @property
-    def duration(self) -> fractions.Fraction:
+    def duration(self) -> float:
         ...
 
     @duration.setter
     @abc.abstractmethod
-    def duration(self, duration: fractions.Fraction):
+    def duration(self, duration: core_constants.Real):
         ...
 
 

@@ -46,18 +46,18 @@ class PerformanceTest(unittest.TestCase):
     @t(0.06, 200)
     def test_SequentialEvent_split_at(self):
         e = seq([s(random.uniform(1, 3)) for _ in range(100)])
-        duration = e.duration.duration_in_floats
+        duration = e.duration.duration
         split_time_list = sorted([random.uniform(0, duration) for _ in range(100)])
         e.split_at(*split_time_list)
 
     @t(0.15, 100)
     def test_SimultaneousEvent_split_at(self):
         e = sim([s(random.uniform(1, 3)) for _ in range(30)])
-        duration = e.duration.duration_in_floats
+        duration = e.duration.duration
         split_time_list = sorted([random.uniform(0, duration) for _ in range(25)])
         e.split_at(*split_time_list)
 
-    @t(0.17, 100)
+    @t(0.12, 100)
     def test_metrize(self):
         e = sim(
             [seq([s(random.uniform(0.9, 1.2)) for _ in range(20)]) for _ in range(3)]

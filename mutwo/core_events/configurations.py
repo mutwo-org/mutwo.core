@@ -47,8 +47,12 @@ def __unknown_object_to_duration():
     return core_converters.UnknownObjectToObject[core_parameters.abc.Duration](
         (
             (
-                _add_quicktions((float, int, fractions.Fraction)),
+                (float, int),
                 core_parameters.DirectDuration,
+            ),
+            (
+                _add_quicktions((fractions.Fraction,)),
+                core_parameters.RatioDuration,
             ),
             ((str,), string_to_duration),
         )

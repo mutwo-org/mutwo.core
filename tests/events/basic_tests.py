@@ -243,12 +243,8 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
         event2.cut_out(2, 3)
 
-        self.assertEqual(
-            event0.copy().cut_out(2, 4).duration, cut_out_event0.duration
-        )
-        self.assertEqual(
-            event1.copy().cut_out(0, 5).duration, cut_out_event1.duration
-        )
+        self.assertEqual(event0.copy().cut_out(2, 4).duration, cut_out_event0.duration)
+        self.assertEqual(event1.copy().cut_out(0, 5).duration, cut_out_event1.duration)
         self.assertEqual(event2.duration, cut_out_event2.duration)
 
         # this will raise an error because the simple event isn't within the
@@ -585,9 +581,7 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
         self.assertRaises(
             core_utilities.InvalidStartValueError,
-            lambda: self.sequence.copy().squash_in(
-                7, core_events.SimpleEvent(1.5)
-            ),
+            lambda: self.sequence.copy().squash_in(7, core_events.SimpleEvent(1.5)),
         )
 
     def test_squash_in_with_minor_differences(self):
@@ -1056,10 +1050,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         )
         self.assertEqual(
             [event.duration for event in result],
-            [
-                event.duration
-                for event in self.sequence.copy().cut_out(0.25, 0.75)
-            ],
+            [event.duration for event in self.sequence.copy().cut_out(0.25, 0.75)],
         )
 
         # this will raise an error because the simultaneous event contains simple events
@@ -1089,9 +1080,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
     def test_squash_in(self):
         self.assertRaises(
             core_utilities.ImpossibleToSquashInError,
-            lambda: self.sequence.copy().squash_in(
-                0, core_events.SimpleEvent(1.5)
-            ),
+            lambda: self.sequence.copy().squash_in(0, core_events.SimpleEvent(1.5)),
         )
 
         simultaneous_event_to_test = core_events.SimultaneousEvent(
@@ -1136,9 +1125,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
         ):
             with self.subTest(start=start):
                 self.assertEqual(
-                    self.nested_sequence.copy().slide_in(
-                        start, event_to_slide_in
-                    ),
+                    self.nested_sequence.copy().slide_in(start, event_to_slide_in),
                     expected_simultaneous_event,
                 )
 
@@ -1208,9 +1195,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         # Extend sequential events inside simultaneous event..
         ese = se([s(1), s(2), s(3), s(4)])  # extended sequential event
-        self.assertEqual(
-            self.nested_sequence.copy().extend_until(10), si([ese, ese])
-        )
+        self.assertEqual(self.nested_sequence.copy().extend_until(10), si([ese, ese]))
 
         # Nothing happens if already long enough
         self.assertEqual(
@@ -1237,9 +1222,9 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
 
         # Equal size concatenation
         self.assertEqual(
-            self.nested_sequence.copy().concatenate_by_index(
-                self.nested_sequence
-            ).metrize(),
+            self.nested_sequence.copy()
+            .concatenate_by_index(self.nested_sequence)
+            .metrize(),
             si(
                 [
                     se([s(1), s(2), s(3), s(1), s(2), s(3)]),

@@ -43,7 +43,7 @@ class SimpleEvent(core_events.abc.Event):
     >>> from mutwo import core_events
     >>> simple_event = core_events.SimpleEvent(2)
     >>> print(simple_event)
-    SimpleEvent(duration = DirectDuration(duration = 2))
+    SimpleEvent(duration = DirectDuration(duration = 2.0))
     """
 
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope",)
@@ -195,17 +195,17 @@ class SimpleEvent(core_events.abc.Event):
         >>> simple_event.set_parameter(
         ...     'duration', lambda old_duration: old_duration * 2
         ... )
-        SimpleEvent(duration = DirectDuration(duration = 4))
+        SimpleEvent(duration = DirectDuration(duration = 4.0))
         >>> simple_event.duration
-        DirectDuration(4)
+        DirectDuration(4.0)
         >>> simple_event.set_parameter('duration', 3)
-        SimpleEvent(duration = DirectDuration(duration = 3))
+        SimpleEvent(duration = DirectDuration(duration = 3.0))
         >>> simple_event.duration
-        DirectDuration(3)
+        DirectDuration(3.0)
         >>> simple_event.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=False
         ... )  # this will be ignored
-        SimpleEvent(duration = DirectDuration(duration = 3))
+        SimpleEvent(duration = DirectDuration(duration = 3.0))
         >>> simple_event.unknown_parameter
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
@@ -213,7 +213,7 @@ class SimpleEvent(core_events.abc.Event):
         >>> simple_event.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=True
         ... )  # this will be written
-        SimpleEvent(duration = DirectDuration(duration = 3), unknown_parameter = 10)
+        SimpleEvent(duration = DirectDuration(duration = 3.0), unknown_parameter = 10)
         >>> simple_event.unknown_parameter
         10
         """
@@ -375,7 +375,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             absolute_time
         )
         self._assert_valid_absolute_time(absolute_time)
-        absolute_time_in_floats = absolute_time.duration_in_floats
+        absolute_time_in_floats = absolute_time.duration
 
         event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
             absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
@@ -440,7 +440,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         which uses duration and absolute_time_tuple attribute.
         """
 
-        duration_iterator = (event.duration.duration_in_floats for event in self)
+        duration_iterator = (event.duration.duration for event in self)
         absolute_time_tuple = tuple(
             # We need to round each duration again after accumulation,
             # because floats were summed which could lead to
@@ -528,7 +528,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
-        ).duration_in_floats
+        ).duration
         (
             absolute_time_in_floats_tuple,
             duration_in_floats,
@@ -553,9 +553,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
         >>> sequential_event.get_event_at(1)
-        SimpleEvent(duration = DirectDuration(duration = 2))
+        SimpleEvent(duration = DirectDuration(duration = 2.0))
         >>> sequential_event.get_event_at(3)
-        SimpleEvent(duration = DirectDuration(duration = 3))
+        SimpleEvent(duration = DirectDuration(duration = 3.0))
         >>> sequential_event.get_event_at(100)
 
         **Warning:**
@@ -638,7 +638,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
-        start_in_floats = start.duration_in_floats
+        start_in_floats = start.duration
         self._assert_start_in_range(start_in_floats)
 
         # Only run cut_off if necessary -> Improve performance
@@ -697,7 +697,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> SequentialEvent[T]:
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
-        start_in_floats = start.duration_in_floats
+        start_in_floats = start.duration
         if start_in_floats == 0:
             self.insert(0, event_to_slide_in)
             return self
@@ -1018,7 +1018,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
         ... )
         >>> s.concatenate_by_index(s)
-        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1064,7 +1064,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...      [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
         ...  )
         >>> s.concatenate_by_tag(s)
-        SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1)), SimpleEvent(duration = DirectDuration(duration = 1))])])
+        SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1141,7 +1141,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...     ]
         ... )
         >>> e.sequentialize()
-        SequentialEvent([SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2))])]), SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1))])])])
+        SequentialEvent([SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))])]), SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0))])])])
         """
         if slice_tuple_to_event is None:
             slice_tuple_to_event = SimultaneousEvent
@@ -1155,7 +1155,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     duration,
                 ) = e._absolute_time_in_floats_tuple_and_duration
             except AttributeError:  # SimpleEvent or SimultaneousEvent
-                absolute_time_tuple, duration = (0,), e.duration.duration_in_floats
+                absolute_time_tuple, duration = (0,), e.duration.duration
             for t in absolute_time_tuple + (duration,):
                 absolute_time_set.add(t)
 
