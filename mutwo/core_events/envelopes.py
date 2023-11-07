@@ -296,6 +296,35 @@ class Envelope(
     def _event_to_value(self, event: core_events.abc.Event) -> Value:
         return self.parameter_to_value(self.event_to_parameter(event))
 
+    # Keep this part private so that functions can cache
+    # absolute_time_tuple if it helps their performance.
+    def _curve_shape_at(
+        self,
+        absolute_time: core_parameters.abc.Duration,
+        absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
+        duration: core_parameters.abc.Duration,
+    ):
+        if not self:
+            raise core_utilities.EmptyEnvelopeError(self, "curve_shape_at")
+        old_event_index = (
+            core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+                absolute_time, absolute_time_tuple, duration
+            )
+        )
+        if old_event_index is not None:
+            old_event = self[old_event_index]
+            curve_shape = self.event_to_curve_shape(old_event)
+            curve_shape_old_event = (
+                (absolute_time - absolute_time_tuple[old_event_index])
+                / old_event.duration
+            ).duration_in_floats * curve_shape
+            curve_shape_new_event = curve_shape - curve_shape_old_event
+            self.apply_curve_shape_on_event(old_event, curve_shape_old_event)
+        else:
+            curve_shape_new_event = 0
+
+        return curve_shape_new_event
+
     # ###################################################################### #
     #                         public properties                              #
     # ###################################################################### #
@@ -410,6 +439,22 @@ class Envelope(
         """
         return self.value_to_parameter(self.value_at(absolute_time))
 
+    def curve_shape_at(
+        self, absolute_time: core_parameters.abc.Duration | typing.Any
+    ) -> float:
+        """Get `curve_shape` at `absolute_time`.
+
+        :param absolute_time: Absolute position in time at which curve shape shall
+            be found. This is 'x' in the function notation 'f(x)'.
+        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        """
+        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+            absolute_time
+        )
+        return self._curve_shape_at(
+            absolute_time, *self._absolute_time_tuple_and_duration
+        )
+
     @core_utilities.add_copy_option
     def sample_at(
         self,
@@ -445,31 +490,6 @@ class Envelope(
 
             return duration_new_event
 
-        def find_curve_shape(
-            absolute_time: core_parameters.abc.Duration,
-            absolute_time_tuple: tuple[core_parameters.abc.Duration, ...],
-            envelope_duration: core_parameters.abc.Duration,
-        ):
-            """Find curve shape of new control point"""
-            old_event_index = (
-                core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
-                    absolute_time, absolute_time_tuple, envelope_duration
-                )
-            )
-            if old_event_index is not None:
-                old_event = self[old_event_index]
-                curve_shape = self.event_to_curve_shape(old_event)
-                curve_shape_old_event = (
-                    (absolute_time - absolute_time_tuple[old_event_index])
-                    / old_event.duration
-                ).duration_in_floats * curve_shape
-                curve_shape_new_event = curve_shape - curve_shape_old_event
-                self.apply_curve_shape_on_event(old_event, curve_shape_old_event)
-            else:
-                curve_shape_new_event = 0
-
-            return curve_shape_new_event
-
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "sample_at")
 
@@ -487,7 +507,7 @@ class Envelope(
             event = self._make_event(
                 find_duration(absolute_time, absolute_time_tuple),
                 self.parameter_at(absolute_time),
-                find_curve_shape(absolute_time, absolute_time_tuple, envelope_duration),
+                self._curve_shape_at(absolute_time, absolute_time_tuple, envelope_duration),
             )
 
             try:
