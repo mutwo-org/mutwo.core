@@ -105,56 +105,61 @@ class Envelope(
         self,
         event_iterable_or_point_sequence: typing.Iterable[T] | typing.Sequence[Point],
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
-        event_to_parameter: typing.Callable[
-            [core_events.abc.Event], core_constants.ParameterType
-        ] = lambda event: getattr(
-            event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME
-        )
-        if hasattr(event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME)
-        else 0,
-        event_to_curve_shape: typing.Callable[
-            [core_events.abc.Event], CurveShape
-        ] = lambda event: getattr(
-            event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME
-        )
-        if hasattr(event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME)
-        else 0,
-        parameter_to_value: typing.Callable[
-            [Value], core_constants.ParameterType
-        ] = lambda parameter: parameter,
-        value_to_parameter: typing.Callable[
-            [Value], core_constants.ParameterType
-        ] = lambda value: value,
-        apply_parameter_on_event: typing.Callable[
-            [core_events.abc.Event, core_constants.ParameterType], None
-        ] = lambda event, parameter: setattr(
-            event,
-            core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME,
-            parameter,
-        ),
-        apply_curve_shape_on_event: typing.Callable[
-            [core_events.abc.Event, CurveShape], None
-        ] = lambda event, curve_shape: setattr(
-            event,
-            core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
-            curve_shape,
-        ),
-        default_event_class: type[core_events.abc.Event] = core_events.SimpleEvent,
-        initialise_default_event_class: typing.Callable[
-            [type[core_events.abc.Event], core_constants.DurationType],
-            core_events.abc.Event,
-        ] = lambda simple_event_class, duration: simple_event_class(
-            duration
-        ),  # type: ignore
+        event_to_parameter: typing.Optional[
+            typing.Callable[[core_events.abc.Event], core_constants.ParameterType]
+        ] = None,
+        event_to_curve_shape: typing.Optional[
+            typing.Callable[[core_events.abc.Event], CurveShape]
+        ] = None,
+        parameter_to_value: typing.Optional[
+            typing.Callable[[Value], core_constants.ParameterType]
+        ] = None,
+        value_to_parameter: typing.Optional[
+            typing.Callable[[Value], core_constants.ParameterType]
+        ] = None,
+        apply_parameter_on_event: typing.Optional[
+            typing.Callable[[core_events.abc.Event, core_constants.ParameterType], None]
+        ] = None,
+        apply_curve_shape_on_event: typing.Optional[
+            typing.Callable[[core_events.abc.Event, CurveShape], None]
+        ] = None,
+        default_event_class: typing.Optional[type[core_events.abc.Event]] = None,
+        initialise_default_event_class: typing.Optional[
+            typing.Callable[
+                [type[core_events.abc.Event], core_constants.DurationType],
+                core_events.abc.Event,
+            ]
+        ] = None,
     ):
-        self.event_to_parameter = event_to_parameter
-        self.event_to_curve_shape = event_to_curve_shape
-        self.value_to_parameter = value_to_parameter
-        self.parameter_to_value = parameter_to_value
-        self.apply_parameter_on_event = apply_parameter_on_event
-        self.apply_curve_shape_on_event = apply_curve_shape_on_event
-        self.default_event_class = default_event_class
-        self.initialise_default_event_class = initialise_default_event_class
+        self.event_to_parameter = (
+            event_to_parameter or core_events.configurations.DEFAULT_EVENT_TO_PARAMETER
+        )
+        self.event_to_curve_shape = (
+            event_to_curve_shape
+            or core_events.configurations.DEFAULT_EVENT_TO_CURVE_SHAPE
+        )
+        self.value_to_parameter = (
+            value_to_parameter or core_events.configurations.DEFAULT_VALUE_TO_PARAMETER
+        )
+        self.parameter_to_value = (
+            parameter_to_value or core_events.configurations.DEFAULT_PARAMETER_TO_VALUE
+        )
+        self.apply_parameter_on_event = (
+            apply_parameter_on_event
+            or core_events.configurations.DEFAULT_APPLY_PARAMETER_ON_EVENT
+        )
+        self.apply_curve_shape_on_event = (
+            apply_curve_shape_on_event
+            or core_events.configurations.DEFAULT_APPLY_CURVE_SHAPE_ON_EVENT
+        )
+        self.default_event_class = (
+            default_event_class
+            or core_events.configurations.DEFAULT_DEFAULT_EVENT_CLASS
+        )
+        self.initialise_default_event_class = (
+            initialise_default_event_class
+            or core_events.configurations.DEFAULT_INITIALISE_DEFAULT_EVENT_CLASS
+        )
 
         event_iterable = self._event_iterable_or_point_sequence_to_event_iterable(
             event_iterable_or_point_sequence

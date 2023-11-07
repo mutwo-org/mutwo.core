@@ -90,18 +90,6 @@ in the `configurations` module (and not in private class methods),
 so that users are encouraged to override the variable if desired.
 """
 
-# Configure envelopes submodule
-
-DEFAULT_PARAMETER_ATTRIBUTE_NAME = "value"
-"""Default attribute name when fetching the parameter of an event"""
-
-DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME = "curve_shape"
-"""Default attribute name when fetching the curve shape of an event"""
-
-DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
-"""Default property parameter name for events in
-:class:`mutwo.core_events.TempoEnvelope`."""
-
 
 # Avoid circular import problem
 @functools.cache
@@ -163,5 +151,101 @@ Because the syntactic sugar partially violates the Python Zen
 in the `configurations` module (and not in private class methods),
 so that users are encouraged to override the variable if desired.
 """
+
+
+# Configure envelopes submodule
+
+DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
+"""Default property parameter name for events in
+:class:`mutwo.core_events.TempoEnvelope`."""
+
+
+# Avoid circular import problem
+@functools.cache
+def __event_to_parameter():
+    return __import__("mutwo.core_converters").core_converters.SimpleEventToAttribute(
+        "value", 0
+    )
+
+
+def _event_to_parameter(e):
+    return __event_to_parameter()(e)
+
+
+DEFAULT_EVENT_TO_PARAMETER = _event_to_parameter
+"""Default value for `event_to_parameter` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+# Avoid circular import problem
+@functools.cache
+def __event_to_curve_shape():
+    return __import__("mutwo.core_converters").core_converters.SimpleEventToAttribute(
+        "curve_shape", 0
+    )
+
+
+def _event_to_curve_shape(e):
+    return __event_to_curve_shape()(e)
+
+
+DEFAULT_EVENT_TO_CURVE_SHAPE = _event_to_curve_shape
+"""Default value for `event_to_curve_shape` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __parameter_to_value(p):
+    return p
+
+
+DEFAULT_PARAMETER_TO_VALUE = __parameter_to_value
+"""Default value for `parameter_to_value` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __value_to_parameter(p):
+    return p
+
+
+DEFAULT_VALUE_TO_PARAMETER = __value_to_parameter
+"""Default value for `value_to_parameter` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __apply_parameter_on_event(e, p):
+    e.value = p
+
+
+DEFAULT_APPLY_PARAMETER_ON_EVENT = __apply_parameter_on_event
+"""Default value for `apply_parameter_on_event` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __apply_curve_shape_on_event(e, p):
+    e.curve_shape = p
+
+
+DEFAULT_APPLY_CURVE_SHAPE_ON_EVENT = __apply_curve_shape_on_event
+"""Default value for `apply_curve_shape` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __default_event_class(*args, **kwargs):
+    return __simpleEvent()(*args, **kwargs)
+
+
+DEFAULT_DEFAULT_EVENT_CLASS = __default_event_class
+"""Default value for `default_event_class` argument
+of :class:`mutwo.core_events.Envelope`."""
+
+
+def __initialise_default_event_class(cls, duration):
+    return cls(duration)
+
+
+DEFAULT_INITIALISE_DEFAULT_EVENT_CLASS = __initialise_default_event_class
+"""Default value for `initialise_default_event_class` argument
+of :class:`mutwo.core_events.Envelope`."""
+
 
 del functools, typing
