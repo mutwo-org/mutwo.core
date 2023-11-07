@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import bisect
 import functools
+import math
 import typing
 
-from scipy import integrate
 import ranges
 
 from mutwo import core_constants
@@ -648,7 +648,37 @@ class Envelope(
         :param end: End of integration interval.
         :type end: core_parameters.abc.Duration
         """
-        return integrate.quad(lambda x: self.value_at(x), start, end)[0]
+        start, end = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(t)
+            for t in (start, end)
+        )
+        if start == end:
+            return 0
+
+        point_tuple = self.time_range_to_point_tuple(ranges.Range(start, end))
+        integral = 0
+        for p0, p1 in zip(point_tuple, point_tuple[1:]):
+            t0, v0, cs0 = p0  # (absolute_time, value, curve_shape)
+            t1, v1, _ = p1
+            if (d0 := float(t1 - t0)) > 0:
+                if cs0 != 0:
+                    # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L102-103
+                    A = v0 - (v1 - v0) / (math.exp(cs0) - 1)
+                    B = (v1 - v0) / (cs0 * (math.exp(cs0) - 1))
+
+                    def antiderivative(tn):
+                        # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L239
+                        return A * tn + B * math.exp(cs0 * tn)
+
+                    a0, a1 = (antiderivative(i) for i in (0, 1))
+                    integral += d0 * (a1 - a0)
+                else:  # linear interpolation
+                    diff = v1 - v0 if v1 > v0 else v0 - v1
+                    square = d0 * min((v0, v1))
+                    triangle = 0.5 * d0 * diff
+                    integral += square + triangle
+
+        return float(integral)
 
     def get_average_value(
         self,

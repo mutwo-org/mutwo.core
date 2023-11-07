@@ -285,7 +285,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
         >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 3)), SimpleEvent(duration = DirectDuration(duration = 7205759403792795/2251799813685248)), SimpleEvent(duration = DirectDuration(duration = 6))])
+        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 3)), SimpleEvent(duration = DirectDuration(duration = 3602879701896397/1125899906842624)), SimpleEvent(duration = DirectDuration(duration = 6))])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))
