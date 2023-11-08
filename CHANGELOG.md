@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2024-04-09
+
+### Added
+- new method `Envelope.curve_shape_at`, see [here](https://github.com/mutwo-org/mutwo.core/commit/ff3c0d510b8f5cbb6297a539dcb7d4e73879b001)
+- new method `Envelope.point_at`, see [here](https://github.com/mutwo-org/mutwo.core/commit/8ae9f406ccd1846874ac7d6fa4c0992e2209d369)
+- new method `Envelope.time_range_to_point_tuple`, see [here](https://github.com/mutwo-org/mutwo.core/commit/f42c5facd0eebc397c0de85d4aaa12c3015d6acb)
+- conciste `__str__` for mutwo events, see [here](https://github.com/mutwo-org/mutwo.core/commit/178f0e0815f069391d9b2ca25b10fee2278af444)
+- `MutwoObject` as base class for all mutwo objects, see [here](https://github.com/mutwo-org/mutwo.core/commit/64e33e06c452f4b0bd6589e808745f055b52d0c9) and [here](https://github.com/mutwo-org/mutwo.core/commit/8343f8eaefd5a3bdc8befd24aa87720f7630fda2)
+- general `core_parameters.abc.Parameter` class, see [here](https://github.com/mutwo-org/mutwo.core/commit/c711348bd4d5253f84047ee3459fc6b68760596f)
+- `core_utilities.str_to_number_parser`, see [here](https://github.com/mutwo-org/mutwo.core/commit/9840711eb53ee8fe0e5eb723c7050ef97388bbb5)
+
+### Changed
+- names of basic event classes: `SequentialEvent` is now `Consecution`, `SimultaneousEvent` is now `Concurrence`, `SimpleEvent` is now `Chronon` and `ComplexEvent` is now `Compound`, see [here](https://github.com/mutwo-org/mutwo.core/commit/8c54bb1cf2f8253568d57ff50c9f4a9de75774fc) and [here](https://github.com/mutwo-org/mutwo.core/commit/e7567d4a82f4561e5dfb875631e4f11284149c45) and [here](https://github.com/mutwo-org/mutwo.core/commit/ed9522573246356bf97326bc75635573eb8a244b)
+- improved performance of `Envelope.integrate_interval` by a factor of 8, see [here](https://github.com/mutwo-org/mutwo.core/commit/ae8343cc1f7476c7b6c6a7db3b0186f8c9f3a131)
+- type of `Duration` value from `fractions.Fraction` to `float`, see [here](https://github.com/mutwo-org/mutwo.core/commit/90b0a3f6d75e4df58f8a55802c7de4efb446c4a5)
+- dropped specific tagged events: instead all events have optional tags from now, see [here](https://github.com/mutwo-org/mutwo.core/commit/4e469adb2e7d0f852d31d9b9d2aa6df536e8ef8a)
+- structure of `Envelope` class (simplifying it), see [here](https://github.com/mutwo-org/mutwo.core/commit/d85a2a3edab740450c572685ad0d550cb2b6a0c7)
+- syntactic sugar parser from `???_events.configurations.UNKNOWN_OBJECT_TO_???` to `???_parameters.abc.???.from_any`, see [here](https://github.com/mutwo-org/mutwo.core/commit/35e05cd3722d4d65d7593c047d2918372cf301e6)
+- `DirectTempo` and added dedicated `WesternTempo`, see [here](https://github.com/mutwo-org/mutwo.core/commit/f8bc9f7ecd7b4afea952d6d1b55ad4e2326e122c)
+- `Parameter.$PROPERTY` to `Parameter.$UNIT`, see [here](https://github.com/mutwo-org/mutwo.core/commit/9f08dcacc8e82a1bba3c69977a1f4f3b8e322f94)
+- `TempoPoint` to `Tempo`, see [here](https://github.com/mutwo-org/mutwo.core/commit/5972c97aa998d17e848087faf6b990176feb2857)
+- generalize/simplify dynamic parameters, see [here](https://github.com/mutwo-org/mutwo.core/commit/850f22b6a821a954801f0e569831ae00438dd779)
+- `core_converters.TempoToBeathLengthInSeconds` to `core_parameters.Tempo.seconds` parameter, see [here](https://github.com/mutwo-org/mutwo.core/commit/0b887896ea113d45fc5fa13331d95783c1194062)
+
+### Dropped
+- `mutate` parameter in many methods of mutwo events and parameters, see [here](https://github.com/mutwo-org/mutwo.core/commit/4aef5e0bda7495bb3e92e06c26d2dfd7e5c96a38)
+- deprecated `Envelope.from_points`, see [here](https://github.com/mutwo-org/mutwo.core/commit/f22942fd9b541f1a17994265aa77dec1dd521f17)
+- `quicktions` dependency, see [here](https://github.com/mutwo-org/mutwo.core/commit/9b6195e6719a289f2dbc4595d9ed622a4a8c567f)
+- `core_generators` module, see [here](https://github.com/mutwo-org/mutwo.core/commit/974aac303ed0c800b570b8c5d094137d06b0dbb4)
+- `core_utilities.NoSolutionFound`, see [here](https://github.com/mutwo-org/mutwo.core/commit/11d8adf09826b2c09a2a811468b9aa680bcda775)
+- `core_constants.DurationType` and `core_constants.ParameterType`, see [here](https://github.com/mutwo-org/mutwo.core/commit/0f4f79257df520ab7d1b2a7809edaab600c2dc59)
+- `UndefinedReferenceWarning`, see [here](https://github.com/mutwo-org/mutwo.core/commit/0783f900bb460aca6178ae2bab54f24e8516aa5a)
+- `core_events.RelativeEnvelope`, see [here](https://github.com/mutwo-org/mutwo.core/commit/2c73955e0e4f9e86a36b355e7262ba593ee1cbc6)
+
+
 ## [1.4.0] - 2023-11-01
 
 ### Added
