@@ -26,7 +26,7 @@ __all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent")
 class SimpleEvent(core_events.abc.Event):
     """A :class:`SimpleEvent` is an event without any children (a leaf).
 
-    :param duration: The duration of the ``SimpleEvent``. Mutwo will convert
+    :param duration: The duration of the ``SimpleEvent``. Mutwo converts
         the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
         with the global `core_events.configurations.UNKNOWN_OBJECT_TO_DURATION`
         callable.
@@ -99,9 +99,8 @@ class SimpleEvent(core_events.abc.Event):
         function: typing.Callable[[typing.Any], None] | typing.Any,
         id_set: set[int],
     ) -> SimpleEvent:
-        parameter = self.get_parameter(parameter_name)
-        if parameter is not None:
-            function(parameter)
+        if (p := self.get_parameter(parameter_name)) is not None:
+            function(p)
         return self
 
     # ###################################################################### #
@@ -178,11 +177,11 @@ class SimpleEvent(core_events.abc.Event):
         :param object_or_function: For setting the parameter either a new value can be
             passed directly or a function can be passed. The function gets as an
             argument the previous value that has had been assigned to the respective
-            object and has to return a new value that will be assigned to the object.
-        :param set_unassigned_parameter: If set to ``False`` a new parameter will only
-            be assigned to an Event if the Event already has a attribute with the
+            object and has to return a new value that is assigned to the object.
+        :param set_unassigned_parameter: If set to ``False`` a new parameter is only
+            assigned to an Event if the Event already has a attribute with the
             respective `parameter_name`. If the Event doesn't know the attribute yet
-            and `set_unassigned_parameter` is False, the method call will simply be
+            and `set_unassigned_parameter` is False, the method call is simply
             ignored.
 
         **Example:**
@@ -228,31 +227,27 @@ class SimpleEvent(core_events.abc.Event):
         end: core_parameters.abc.Duration,
     ) -> SimpleEvent:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
         )
 
-        duration = self.duration
-
-        difference_to_duration: core_parameters.DirectDuration = (
-            core_parameters.DirectDuration(0)
-        )
+        dur = self.duration
+        diff: core_parameters.DirectDuration = core_parameters.DirectDuration(0)
 
         if start > 0:
-            difference_to_duration += start
-        if end < duration:
-            difference_to_duration += duration - end
-
-        if difference_to_duration >= duration:
+            diff += start
+        if end < dur:
+            diff += dur - end
+        if diff >= dur:
             raise core_utilities.InvalidCutOutStartAndEndValuesError(
-                start, end, self, duration
+                start, end, self, dur
             )
 
-        self.duration -= difference_to_duration
+        self.duration -= diff
         return self
 
     def cut_off(  # type: ignore
@@ -261,8 +256,8 @@ class SimpleEvent(core_events.abc.Event):
         end: core_parameters.abc.Duration,
     ) -> SimpleEvent:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
 
         self._assert_valid_absolute_time(start)
@@ -272,7 +267,6 @@ class SimpleEvent(core_events.abc.Event):
         if start < duration:
             if end > duration:
                 end = duration
-
             self.duration -= end - start
         return self
 
@@ -299,12 +293,12 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     @staticmethod
     def _get_index_at_from_absolute_time_tuple(
-        absolute_time: float,
-        absolute_time_tuple: float,
+        abst: float,
+        abst_tuple: float,
         duration: float,
     ) -> typing.Optional[int]:
-        if absolute_time < duration and absolute_time >= 0:
-            return bisect.bisect_right(absolute_time_tuple, absolute_time) - 1
+        if abst < duration and abst >= 0:
+            return bisect.bisect_right(abst_tuple, abst) - 1
         else:
             return None
 
@@ -327,55 +321,42 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> SequentialEvent[T]:
         if cut_off_duration is None:
             cut_off_duration = end - start
-
-        # Collect core_events which are only active within the
-        # cut_off - range
+        # Collect events which are only active within the cut_off - range
         event_to_delete_list = []
-        absolute_time_tuple = self.absolute_time_tuple
-        for event_index, event_start, event_end, event in zip(
-            range(len(self)),
-            absolute_time_tuple,
-            absolute_time_tuple[1:] + (None,),
-            self,
+        abst_tuple = self.absolute_time_tuple
+        for i, t0, t1, e in zip(
+            range(len(self)), abst_tuple, abst_tuple[1:] + (None,), self
         ):
-            if event_end is None:
-                event_end = event_start + event.duration
-
-            if event_start >= start and event_end <= end:
-                event_to_delete_list.append(event_index)
-
+            if t1 is None:
+                t1 = t0 + e.duration
+            if t0 >= start and t1 <= end:
+                event_to_delete_list.append(i)
             # Shorten event which are partly active within the
             # cut_off - range
-            elif event_start <= start and event_end >= start:
-                difference_to_event_start = start - event_start
-                event.cut_off(
-                    difference_to_event_start,
-                    difference_to_event_start + cut_off_duration,
-                )
-
-            elif event_start < end and event_end > end:
-                difference_to_event_start = event_start - start
-                event.cut_off(0, cut_off_duration - difference_to_event_start)
-
-        for index in reversed(event_to_delete_list):
-            del self[index]
-
+            elif t0 <= start and t1 >= start:
+                diff = start - t0
+                e.cut_off(diff, diff + cut_off_duration)
+            elif t0 < end and t1 > end:
+                diff = t0 - start
+                e.cut_off(0, cut_off_duration - diff)
+        for i in reversed(event_to_delete_list):
+            del self[i]
         return self
 
     def _split_child_at(
         self,
         absolute_time: core_parameters.abc.Duration | typing.Any,
-        absolute_time_in_floats_tuple: tuple[float, ...],
-        duration_in_floats: float,
+        abstf_tuple: tuple[float, ...],
+        durf: float,
     ) -> int:
         absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
         )
         self._assert_valid_absolute_time(absolute_time)
-        absolute_time_in_floats = absolute_time.duration
+        abstf = absolute_time.duration
 
         event_index = SequentialEvent._get_index_at_from_absolute_time_tuple(
-            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
+            abstf, abstf_tuple, durf
         )
 
         # If there is no event at the requested time, raise error
@@ -384,13 +365,13 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         # Only try to split child event at the requested time if there isn't
         # a segregation already anyway
-        elif absolute_time_in_floats != absolute_time_in_floats_tuple[event_index]:
+        elif abstf != abstf_tuple[event_index]:
             try:
-                end = absolute_time_in_floats_tuple[event_index + 1]
+                end = abstf_tuple[event_index + 1]
             except IndexError:
-                end = duration_in_floats
+                end = durf
 
-            difference = end - absolute_time_in_floats
+            difference = end - abstf
             split_event = self[event_index].split_at(difference)
             split_event_count = len(split_event)
             match split_event_count:
@@ -410,7 +391,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     @property
-    def _absolute_time_tuple_and_duration(
+    def _abst_tuple_and_dur(
         self,
     ) -> [tuple[core_parameters.abc.Duration, ...], core_parameters.abc.Duration]:
         """Return start time for each event and the end time of the last event.
@@ -418,17 +399,14 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         This property helps to improve performance of various functions
         which uses duration and absolute_time_tuple attribute.
         """
-
-        duration_iterator = (event.duration for event in self)
-        absolute_time_tuple = tuple(
-            core_utilities.accumulate_from_n(
-                duration_iterator, core_parameters.DirectDuration(0)
-            )
+        d_iter = (e.duration for e in self)
+        abst_tuple = tuple(
+            core_utilities.accumulate_from_n(d_iter, core_parameters.DirectDuration(0))
         )
-        return absolute_time_tuple[:-1], absolute_time_tuple[-1]
+        return abst_tuple[:-1], abst_tuple[-1]
 
     @property
-    def _absolute_time_in_floats_tuple_and_duration(
+    def _abstf_tuple_and_dur(
         self,
     ) -> tuple[tuple[float, ...], float]:
         """Return start time for each event and the end time of the last event.
@@ -436,9 +414,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         This property helps to improve performance of various functions
         which uses duration and absolute_time_tuple attribute.
         """
-
-        duration_iterator = (event.duration.duration for event in self)
-        absolute_time_tuple = tuple(
+        d_iter = (e.duration.duration for e in self)
+        abstf_tuple = tuple(
             # We need to round each duration again after accumulation,
             # because floats were summed which could lead to
             # potential floating point errors again, which will
@@ -449,10 +426,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     d,
                     core_parameters.configurations.ROUND_DURATION_TO_N_DIGITS,
                 ),
-                core_utilities.accumulate_from_n(duration_iterator, 0),
+                core_utilities.accumulate_from_n(d_iter, 0),
             )
         )
-        return absolute_time_tuple[:-1], absolute_time_tuple[-1]
+        return abstf_tuple[:-1], abstf_tuple[-1]
 
     # ###################################################################### #
     #                           properties                                   #
@@ -461,7 +438,7 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_events.abc.ComplexEvent.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
         try:
-            return functools.reduce(operator.add, (event.duration for event in self))
+            return functools.reduce(operator.add, (e.duration for e in self))
         # If SequentialEvent is empty
         except TypeError:
             return core_parameters.DirectDuration(0)
@@ -469,29 +446,23 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @property
     def absolute_time_tuple(self) -> tuple[core_parameters.abc.Duration, ...]:
         """Return start time as :class:`core_parameters.abc.Duration` for each event."""
-        return self._absolute_time_tuple_and_duration[0]
+        return self._abst_tuple_and_dur[0]
 
     @property
     def absolute_time_in_floats_tuple(self) -> tuple[float, ...]:
         """Return start time as `float` for each event."""
-        return self._absolute_time_in_floats_tuple_and_duration[0]
+        return self._abstf_tuple_and_dur[0]
 
     @property
     def start_and_end_time_per_event(
         self,
     ) -> tuple[ranges.Range, ...]:
         """Return start and end time for each event."""
-
-        duration_iterator = (event.duration for event in self)
-        absolute_time_tuple = tuple(
-            core_utilities.accumulate_from_n(
-                duration_iterator, core_parameters.DirectDuration(0)
-            )
+        d_iter = (e.duration for e in self)
+        abst_tuple = tuple(
+            core_utilities.accumulate_from_n(d_iter, core_parameters.DirectDuration(0))
         )
-        return tuple(
-            ranges.Range(*start_and_end_time)
-            for start_and_end_time in zip(absolute_time_tuple, absolute_time_tuple[1:])
-        )
+        return tuple(ranges.Range(*t) for t in zip(abst_tuple, abst_tuple[1:]))
 
     # ###################################################################### #
     #                           public methods                               #
@@ -522,16 +493,12 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         This method ignores events with duration == 0.
         """
-
-        absolute_time_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
+        abstf = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
             absolute_time
         ).duration
-        (
-            absolute_time_in_floats_tuple,
-            duration_in_floats,
-        ) = self._absolute_time_in_floats_tuple_and_duration
+        abstf_tuple, durf = self._abstf_tuple_and_dur
         return SequentialEvent._get_index_at_from_absolute_time_tuple(
-            absolute_time_in_floats, absolute_time_in_floats_tuple, duration_in_floats
+            abstf, abstf_tuple, durf
         )
 
     def get_event_at(
@@ -559,12 +526,10 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         This method ignores events with duration == 0.
         """
-
         event_index = self.get_event_index_at(absolute_time)
         if event_index is None:
             return None
-        else:
-            return self[event_index]  # type: ignore
+        return self[event_index]  # type: ignore
 
     def cut_out(  # type: ignore
         self,
@@ -572,39 +537,33 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         end: core_parameters.abc.Duration,
     ) -> SequentialEvent[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
 
         event_to_remove_index_list = []
-        for event_index, event_start, event in zip(
-            range(len(self)), self.absolute_time_tuple, self
-        ):
-            event_duration = event.duration
-            event_end = event_start + event_duration
-
+        for i, t0, e in zip(range(len(self)), self.absolute_time_tuple, self):
+            event_duration = e.duration
+            t1 = t0 + event_duration
             cut_out_start: core_parameters.DirectDuration = (
                 core_parameters.DirectDuration(0)
             )
             cut_out_end = event_duration
-
-            if event_start < start:
-                cut_out_start += start - event_start
-
-            if event_end > end:
-                cut_out_end -= event_end - end
-
+            if t0 < start:
+                cut_out_start += start - t0
+            if t1 > end:
+                cut_out_end -= t1 - end
             if cut_out_start < cut_out_end:
-                event.cut_out(cut_out_start, cut_out_end)
+                e.cut_out(cut_out_start, cut_out_end)
             elif not (
                 # Support special case of events with duration = 0.
-                event.duration == 0
-                and event_start >= start
-                and event_start <= end
+                e.duration == 0
+                and t0 >= start
+                and t0 <= end
             ):
-                event_to_remove_index_list.append(event_index)
+                event_to_remove_index_list.append(i)
 
         for event_to_remove_index in reversed(event_to_remove_index_list):
             del self[event_to_remove_index]
@@ -616,13 +575,11 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         end: core_parameters.abc.Duration,
     ) -> SequentialEvent[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
-
         cut_off_duration = end - start
-
         # Avoid unnecessary iterations
         if cut_off_duration > 0:
             return self._cut_off(start, end, cut_off_duration)
@@ -649,28 +606,23 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # floating point rounding error. To avoid odd bugs
         # we therefore have to define the bigger-equal
         # relationship.
-        (
-            absolute_time_in_floats_tuple,
-            duration_in_floats,
-        ) = self._absolute_time_in_floats_tuple_and_duration
-        if start_in_floats >= duration_in_floats:
+        abstf_tuple, durf = self._abstf_tuple_and_dur
+        if start_in_floats >= durf:
             self.append(event_to_squash_in)
         else:
             try:
-                insert_index = absolute_time_in_floats_tuple.index(start)
+                insert_index = abstf_tuple.index(start)
             # There is an event on the given point which need to be
             # split.
             except ValueError:
                 active_event_index = (
                     SequentialEvent._get_index_at_from_absolute_time_tuple(
                         start_in_floats,
-                        absolute_time_in_floats_tuple,
-                        duration_in_floats,
+                        abstf_tuple,
+                        durf,
                     )
                 )
-                split_position = (
-                    start_in_floats - absolute_time_in_floats_tuple[active_event_index]
-                )
+                split_position = start_in_floats - abstf_tuple[active_event_index]
                 if (
                     split_position > 0
                     and split_position < self[active_event_index].duration
@@ -710,14 +662,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration | typing.Any
     ) -> SequentialEvent[T]:
-        (
-            absolute_time_in_floats_tuple,
-            duration_in_floats,
-        ) = self._absolute_time_in_floats_tuple_and_duration
-
-        self._split_child_at(
-            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
-        )
+        abstf_tuple, durf = self._abstf_tuple_and_dur
+        self._split_child_at(absolute_time, abstf_tuple, durf)
         return self
 
     def split_at(
@@ -728,13 +674,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
-        (
-            absolute_time_in_floats_tuple,
-            duration_in_floats,
-        ) = self._absolute_time_in_floats_tuple_and_duration
-
-        absolute_time_list = list(absolute_time_in_floats_tuple)
-
+        abstf_tuple, durf = self._abstf_tuple_and_dur
+        abst_list = list(abstf_tuple)
         c = self.copy()
 
         index_list = []
@@ -747,15 +688,15 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             # already split here. We also need to be sure to not
             # add any duplicates to 'absolute_time_list', so we need
             # to check anyway.
-            if t in absolute_time_list:
-                index_list.append(absolute_time_list.index(t))
+            if t in abst_list:
+                index_list.append(abst_list.index(t))
                 continue
             # It's okay to ignore, this is still within the given event
             # (if we don't continue 'split_child_at' raises an error).
-            if t == duration_in_floats:
+            if t == durf:
                 continue
             try:
-                i = c._split_child_at(t, tuple(absolute_time_list), duration_in_floats)
+                i = c._split_child_at(t, tuple(abst_list), durf)
             except core_utilities.SplitUnavailableChildError:
                 if not ignore_invalid_split_point:
                     raise core_utilities.SplitError(t)
@@ -764,8 +705,8 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                 # absolute times are sorted).
                 break
             index_list.append(i)
-            absolute_time_list.append(t)
-            absolute_time_list.sort()
+            abst_list.append(t)
+            abst_list.sort()
 
         # Add frame indices (if not already present)
         if 0 not in index_list:
@@ -835,13 +776,12 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ],
     ) -> tuple[core_events.abc.Event, ...]:
         """Split at given times and cast split events into new events."""
+        abst_list = absolute_time_list
 
         # Slice all child events
         slices = []
         for e in self:
-            slices.append(
-                list(e.split_at(*absolute_time_list, ignore_invalid_split_point=True))
-            )
+            slices.append(list(e.split_at(*abst_list, ignore_invalid_split_point=True)))
 
         # Ensure all slices have the same amount of entries,
         # because we use 'zip' later and if one of them is
@@ -869,7 +809,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     @core_events.abc.ComplexEvent.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
         try:
-            return max(event.duration for event in self)
+            return max(e.duration for e in self)
         # If SimultaneousEvent is empty
         except ValueError:
             return core_parameters.DirectDuration(0)
@@ -884,12 +824,12 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         end: core_parameters.abc.Duration | typing.Any,
     ) -> SimultaneousEvent[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
-        [event.cut_out(start, end) for event in self]
+        [e.cut_out(start, end) for e in self]
         return self
 
     def cut_off(  # type: ignore
@@ -898,12 +838,12 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         end: core_parameters.abc.Duration,
     ) -> SimultaneousEvent[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
-        [event.cut_off(start, end) for event in self]
+        [e.cut_off(start, end) for e in self]
         return self
 
     def squash_in(  # type: ignore
@@ -915,9 +855,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
 
-        for event in self:
+        for e in self:
             try:
-                event.squash_in(start, event_to_squash_in)  # type: ignore
+                e.squash_in(start, event_to_squash_in)  # type: ignore
             # Simple events don't have a 'squash_in' method.
             except AttributeError:
                 raise core_utilities.ImpossibleToSquashInError(self, event_to_squash_in)
@@ -931,9 +871,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
-        for event in self:
+        for e in self:
             try:
-                event.slide_in(start, event_to_slide_in)  # type: ignore
+                e.slide_in(start, event_to_slide_in)  # type: ignore
             # Simple events don't have a 'slide_in' method.
             except AttributeError:
                 raise core_utilities.ImpossibleToSlideInError(self, event_to_slide_in)
@@ -942,13 +882,13 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration
     ) -> SimultaneousEvent[T]:
-        for event_index, event in enumerate(self):
+        for i, e in enumerate(self):
             try:
-                event.split_child_at(absolute_time)
+                e.split_child_at(absolute_time)
             # simple events don't have a 'split_child_at' method
             except AttributeError:
-                split_event = event.split_at(absolute_time)
-                self[event_index] = SequentialEvent(split_event)
+                split_event = e.split_at(absolute_time)
+                self[i] = SequentialEvent(split_event)
         return self
 
     def extend_until(
@@ -977,18 +917,16 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         # we raise an error, to avoid confusion by the user.
         if not self:
             raise core_utilities.IneffectiveExtendUntilError(self)
-        for event in self:
+        for e in self:
             try:
-                event.extend_until(
-                    duration, duration_to_white_space, prolong_simple_event
-                )
+                e.extend_until(duration, duration_to_white_space, prolong_simple_event)
             # SimpleEvent
             except AttributeError:
                 if prolong_simple_event:
-                    if (difference := duration - event.duration) > 0:
-                        event.duration += difference
+                    if (difference := duration - e.duration) > 0:
+                        e.duration += difference
                 else:
-                    raise core_utilities.ImpossibleToExtendUntilError(event)
+                    raise core_utilities.ImpossibleToExtendUntilError(e)
         return self
 
     def concatenate_by_index(self, other: SimultaneousEvent) -> SimultaneousEvent:
@@ -1017,23 +955,21 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> s.concatenate_by_index(s)
         SimultaneousEvent([SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.0))])])
         """
-        if (self_duration := self.duration) > 0:
-            self.extend_until(self_duration)
-        for index, event in enumerate(other):
+        if (dur := self.duration) > 0:
+            self.extend_until(dur)
+        for i, e in enumerate(other):
             try:
-                ancestor = self[index]
+                ancestor = self[i]
             except IndexError:
-                if self_duration > 0:
+                if dur > 0:
                     # Shallow copy before 'slide_in': We use the same
                     # events, but we don't want to change the other sequence.
-                    event_new = event.empty_copy()
-                    event_new.extend(event[:])
-                    event = event_new.slide_in(
-                        0, core_events.SimpleEvent(self_duration)
-                    )
-                self.append(event)
+                    e_new = e.empty_copy()
+                    e_new.extend(e[:])
+                    e = e_new.slide_in(0, core_events.SimpleEvent(dur))
+                self.append(e)
             else:
-                self._extend_ancestor(ancestor, event)
+                self._extend_ancestor(ancestor, e)
         return self
 
     def concatenate_by_tag(self, other: SimultaneousEvent) -> SimultaneousEvent:
@@ -1065,20 +1001,20 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> s.concatenate_by_tag(s)
         SimultaneousEvent([SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.0))])])
         """
-        if (self_duration := self.duration) > 0:
-            self.extend_until(self_duration)
+        if (dur := self.duration) > 0:
+            self.extend_until(dur)
         for e in other:
             if not (tag := e.tag):
                 raise core_utilities.NoTagError(e)
             try:
                 ancestor = self[tag]
             except KeyError:
-                if self_duration > 0:
+                if dur > 0:
                     # Shallow copy before 'slide_in': We use the same
                     # events, but we don't want to change the other sequence.
-                    event_new = e.empty_copy()
-                    event_new.extend(e[:])
-                    e = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
+                    e_new = e.empty_copy()
+                    e_new.extend(e[:])
+                    e = e_new.slide_in(0, core_events.SimpleEvent(dur))
                 self.append(e)
             else:
                 self._extend_ancestor(ancestor, e)
@@ -1110,7 +1046,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             in a new sequential structure. The simplest and default way to
             archive this is by simply putting all event parts into a new
             :class:`SimultaneousEvent`, so the resulting :class:`SequentialEvent`
-            will be a sequence of `SimultaneousEvent`. This parameter is
+            is a sequence of `SimultaneousEvent`. This parameter is
             available so that users can convert her/his parallel structure in
             meaningful ways (for instance to imitate the ``.chordify``
             `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`
@@ -1146,25 +1082,22 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             slice_tuple_to_event = SimultaneousEvent
 
         # Find all start/end times
-        absolute_time_set = set([])
+        abst_set = set([])
         for e in self:
             try:  # SequentialEvent
-                (
-                    absolute_time_tuple,
-                    duration,
-                ) = e._absolute_time_in_floats_tuple_and_duration
+                abst_tuple, dur = e._abstf_tuple_and_dur
             except AttributeError:  # SimpleEvent or SimultaneousEvent
-                absolute_time_tuple, duration = (0,), e.duration.duration
-            for t in absolute_time_tuple + (duration,):
-                absolute_time_set.add(t)
+                abst_tuple, dur = (0,), e.duration.duration
+            for t in abst_tuple + (dur,):
+                abst_set.add(t)
 
         # Sort, but also remove the last entry: we don't need
         # to split at complete duration, because after duration
         # there isn't any event left in any child.
-        absolute_time_list = sorted(absolute_time_set)[:-1]
+        abst_list = sorted(abst_set)[:-1]
 
         return core_events.SequentialEvent(
-            self._make_event_slice_tuple(absolute_time_list, slice_tuple_to_event),
+            self._make_event_slice_tuple(abst_list, slice_tuple_to_event),
             tag=self.tag,
         )
 
@@ -1176,14 +1109,14 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
-        absolute_time = sorted(absolute_time)
-        self._assert_valid_absolute_time(absolute_time[0])
-        if absolute_time[-1] > self.duration and not ignore_invalid_split_point:
-            raise core_utilities.SplitError(absolute_time[-1])
+        abst_list = sorted(absolute_time)
+        self._assert_valid_absolute_time(abst_list[0])
+        if abst_list[-1] > self.duration and not ignore_invalid_split_point:
+            raise core_utilities.SplitError(abst_list[-1])
 
         def slice_tuple_to_event(slice_tuple):
             e = self.empty_copy()
             e[:] = slice_tuple
             return e
 
-        return self._make_event_slice_tuple(absolute_time, slice_tuple_to_event)
+        return self._make_event_slice_tuple(abst_list, slice_tuple_to_event)

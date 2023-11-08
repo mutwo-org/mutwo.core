@@ -82,16 +82,14 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         """
 
         (
-            beats_per_minute,
-            reference,
+            bpm,
+            ref,
         ) = self._extract_beats_per_minute_and_reference_from_tempo_point(
             tempo_point_to_convert
         )
         return (
-            TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(
-                beats_per_minute
-            )
-            / reference
+            TempoPointToBeatLengthInSeconds._beats_per_minute_to_seconds_per_beat(bpm)
+            / ref
         )
 
 
@@ -133,10 +131,10 @@ class TempoConverter(core_converters.abc.EventConverter):
     # and we already want to have faster converters now.
     class _CatchedTempoEnvelope(core_events.TempoEnvelope):
         @functools.cached_property
-        def _absolute_time_in_floats_tuple_and_duration(
+        def _abstf_tuple_and_dur(
             self,
         ) -> tuple[tuple[float, ...], float]:
-            return super()._absolute_time_in_floats_tuple_and_duration
+            return super()._abstf_tuple_and_dur
 
     def __init__(
         self,
@@ -165,21 +163,19 @@ class TempoConverter(core_converters.abc.EventConverter):
         tempo_envelope: core_events.Envelope,
     ) -> core_events.Envelope:
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
-
+        e = tempo_envelope
         level_list: list[float] = []
-        for tempo_point in tempo_envelope.parameter_tuple:
+        for tp in e.parameter_tuple:
             beat_length_in_seconds = (
-                TempoConverter._tempo_point_to_beat_length_in_seconds(tempo_point)
+                TempoConverter._tempo_point_to_beat_length_in_seconds(tp)
             )
             level_list.append(beat_length_in_seconds)
 
         return TempoConverter._CatchedTempoEnvelope(
             [
-                [absolute_time, value, curve_shape]
-                for absolute_time, value, curve_shape in zip(
-                    tempo_envelope.absolute_time_tuple,
-                    level_list,
-                    tempo_envelope.curve_shape_tuple,
+                [t, v, cs]
+                for t, v, cs in zip(
+                    e.absolute_time_tuple, level_list, e.curve_shape_tuple
                 )
             ]
         )

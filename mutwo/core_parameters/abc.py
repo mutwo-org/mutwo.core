@@ -242,8 +242,7 @@ class SingleNumberParameter(SingleValueParameter):
                 )
             return False
 
-        value0, value1 = self._prepare_value_pair_for_comparison(value_pair)
-        return compare(value0, value1)
+        return compare(*self._prepare_value_pair_for_comparison(value_pair))
 
     def __float__(self) -> float:
         return float(getattr(self, self.value_name))  # type: ignore

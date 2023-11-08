@@ -38,25 +38,25 @@ class Envelope(
 
     :param event_iterable_or_point_sequence: An iterable filled with events
         or with points. If the sequence is filled with points, the points
-        will be converted to events. Each event represents a point in a
+        are converted to events. Each event represents a point in a
         two dimensional graph where the x-axis presents time and the y-axis
         a changing value. Any event class can be used. It is
         more important that the used event classes fit with the functions
         passed in the following parameters.
     :type event_iterable_or_point_sequence: typing.Iterable[T]
     :param event_to_parameter: A function which receives an event and has to
-        return a parameter object (any object). By default the function will
-        ask the event for its `value` property. If the property can't be found
-        it will return 0.
+        return a parameter object (any object). By default the function
+        asks the event for its `value` property. If the property can't be found
+        it returns 0.
     :type event_to_parameter: typing.Callable[[core_events.abc.Event], typing.Any]
     :param event_to_curve_shape: A function which receives an event and has
         to return a curve_shape. A curve_shape is either a float, an integer
         or a fraction. For a curve_shape = 0 a linear transition between two
         points is created. For a curve_shape > 0 the envelope changes slower
         at the beginning and faster at the end, for a curve_shape < 0 it is
-        the inverse behaviour. The default function will ask the event for its
+        the inverse behaviour. The default function asks the event for its
         `curve_shape` property. If the property can't be found
-        it will return 0.
+        it returns 0.
     :type event_to_curve_shape: typing.Callable[[core_events.abc.Event], CurveShape]
     :param parameter_to_value: Convert a parameter to a value. A value is any
         object which supports mathematical operations.
@@ -78,8 +78,8 @@ class Envelope(
 
     **Hint:**
 
-    When comparing two envelopes (e.g. `env0 == env1`) `mutwo` will only return
-    `True` in case all control points (= simple events inside the envelope) are
+    When comparing two envelopes (e.g. `env0 == env1`) `mutwo` only returns
+    `True` in case all control points (= events inside the envelope) are
     equal between both envelopes. So `mutwo` won't make the much more
     complicated test to check if two envelopes have the same shape (= the same
     value at each `env0.value_at(x) == env1.value_at(x)` for each possible
@@ -124,9 +124,7 @@ class Envelope(
         parameter_to_value: typing.Callable[
             [Value], typing.Any
         ] = lambda parameter: parameter,
-        value_to_parameter: typing.Callable[
-            [Value], typing.Any
-        ] = lambda value: value,
+        value_to_parameter: typing.Callable[[Value], typing.Any] = lambda value: value,
         apply_parameter_on_event: typing.Callable[
             [core_events.abc.Event, typing.Any], None
         ] = lambda event, parameter: setattr(
@@ -200,15 +198,14 @@ class Envelope(
     def _point_sequence_to_corrected_point_list(
         point_or_invalid_type_sequence: typing.Sequence[Point | typing.Any],
     ) -> list[Envelope.CompletePoint | None]:
-        corrected_point_list: list[Envelope.CompletePoint | None] = []
-        for point in point_or_invalid_type_sequence:
-            point_count = len(point)
-            if point_count == 2:
-                point += (0,)  # type: ignore
-            elif point_count != 3:
-                raise core_utilities.InvalidPointError(point, point_count)
-            corrected_point_list.append(point)  # type: ignore
-        return corrected_point_list
+        pnorm_list: list[Envelope.CompletePoint | None] = []
+        for p in point_or_invalid_type_sequence:
+            if (point_size := len(p)) == 2:
+                p += (0,)  # type: ignore
+            elif point_size != 3:
+                raise core_utilities.InvalidPointError(p, point_size)
+            pnorm_list.append(p)  # type: ignore
+        return pnorm_list
 
     # ###################################################################### #
     #                         private methods                                #
@@ -224,22 +221,22 @@ class Envelope(
         self,
         point_or_invalid_type_sequence: typing.Sequence[Point | typing.Any],
     ) -> list[core_events.abc.Event]:
-        corrected_point_list = Envelope._point_sequence_to_corrected_point_list(
+        pnorm_list = Envelope._point_sequence_to_corrected_point_list(
             point_or_invalid_type_sequence
         )
-        corrected_point_list.append(None)
+        pnorm_list.append(None)
         event_list = []
-        for point0, point1 in zip(corrected_point_list, corrected_point_list[1:]):
-            if point0 is not None:
-                absolute_time0, value_or_parameter, curve_shape = point0
+        for p0, p1 in zip(pnorm_list, pnorm_list[1:]):
+            if p0 is not None:
+                abst0, value_or_parameter, curve_shape = p0
             else:
                 raise TypeError("Found unexpected position of None in provided points.")
-            if point1:
-                absolute_time1 = point1[0]
-                assert absolute_time1 >= absolute_time0
+            if p1:
+                abst1 = p1[0]
+                assert abst1 >= abst0
             else:
-                absolute_time1 = absolute_time0
-            duration = absolute_time1 - absolute_time0
+                abst1 = abst0
+            duration = abst1 - abst0
             event = self._make_event(duration, value_or_parameter, curve_shape)
             event_list.append(event)
         return event_list
@@ -275,117 +272,98 @@ class Envelope(
     # absolute_time_tuple if it helps their performance.
     def _curve_shape_at(
         self,
-        absolute_time: "core_parameters.abc.Duration",
-        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
-        duration: "core_parameters.abc.Duration",
+        abst: "core_parameters.abc.Duration",
+        abst_tuple: tuple["core_parameters.abc.Duration", ...],
+        dur: "core_parameters.abc.Duration",
     ):
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "curve_shape_at")
-        old_event_index = (
-            core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
-                absolute_time, absolute_time_tuple, duration
-            )
+        e_idx = core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+            abst, abst_tuple, dur
         )
-        if old_event_index is not None:
-            old_event = self[old_event_index]
-            curve_shape = self.event_to_curve_shape(old_event)
-            curve_shape_old_event = (
-                (absolute_time - absolute_time_tuple[old_event_index])
-                / old_event.duration
-            ).duration * curve_shape
-            curve_shape_new_event = curve_shape - curve_shape_old_event
-            self.apply_curve_shape_on_event(old_event, curve_shape_old_event)
+        if e_idx is not None:
+            e = self[e_idx]
+            cs = self.event_to_curve_shape(e)
+            csx = ((abst - abst_tuple[e_idx]) / e.duration).duration * cs
+            cs_at_abst = cs - csx
+            self.apply_curve_shape_on_event(e, csx)
         else:
-            curve_shape_new_event = 0
-
-        return curve_shape_new_event
+            cs_at_abst = 0
+        return cs_at_abst
 
     def _value_at(
         self,
-        absolute_time: "core_parameters.abc.Duration",
-        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
-        duration: "core_parameters.abc.Duration",
+        abst: "core_parameters.abc.Duration",
+        abst_tuple: tuple["core_parameters.abc.Duration", ...],
+        dur: "core_parameters.abc.Duration",
     ):
-        absolute_time_in_floats = absolute_time.duration
-        absolute_time_in_floats_tuple = tuple(map(float, absolute_time_tuple))
-        duration_in_floats = float(duration)
+        abstf = abst.duration
+        abstf_tuple = tuple(map(float, abst_tuple))
+        durf = float(dur)
 
         try:
-            use_only_first_event = (
-                absolute_time_in_floats <= absolute_time_in_floats_tuple[0]
-            )
+            use_only_first_event = abstf <= abstf_tuple[0]
         except IndexError:
             raise core_utilities.EmptyEnvelopeError(self, "value_at")
 
-        use_only_last_event = absolute_time_in_floats >= (
+        use_only_last_event = abstf >= (
             # If the duration of the last event == 0 there is the danger
             # of floating point errors (the value in absolute_time_tuple could
             # be slightly higher than the duration of the Envelope. If this
-            # happens the function will raise an AssertionError, because
-            # "_get_index_at_from_absolute_time_tuple" will return
+            # happens the function raises an AssertionError, because
+            # "_get_index_at_from_absolute_time_tuple" returns
             # "None"). With explicitly testing if the last duration
             # equals 0 we can avoid this danger.
-            absolute_time_in_floats_tuple[-1]
+            abstf_tuple[-1]
             if self[-1].duration > 0
-            else duration_in_floats
+            else durf
         )
         if use_only_first_event or use_only_last_event:
             index = 0 if use_only_first_event else -1
             return self._event_to_value(self[index])
 
         event_0_index = self._get_index_at_from_absolute_time_tuple(
-            absolute_time, absolute_time_in_floats_tuple, duration_in_floats
+            abstf, abstf_tuple, durf
         )
         assert event_0_index is not None
 
-        value0, value1 = (
-            self._event_to_value(self[event_0_index + n]) for n in range(2)
-        )
-        curve_shape = self.event_to_curve_shape(self[event_0_index])
+        v0, v1 = (self._event_to_value(self[event_0_index + n]) for n in range(2))
+        cs = self.event_to_curve_shape(self[event_0_index])
 
         return core_utilities.scale(
-            absolute_time_in_floats,
-            absolute_time_in_floats_tuple[event_0_index],
-            absolute_time_in_floats_tuple[event_0_index + 1],
-            value0,
-            value1,
-            curve_shape,
+            abstf,
+            abstf_tuple[event_0_index],
+            abstf_tuple[event_0_index + 1],
+            v0,
+            v1,
+            cs,
         )
 
     def _parameter_at(
         self,
-        absolute_time: "core_parameters.abc.Duration",
-        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
-        duration: "core_parameters.abc.Duration",
+        abst: "core_parameters.abc.Duration",
+        abst_tuple: tuple["core_parameters.abc.Duration", ...],
+        dur: "core_parameters.abc.Duration",
     ):
-        return self.value_to_parameter(
-            self._value_at(absolute_time, absolute_time_tuple, duration)
-        )
+        return self.value_to_parameter(self._value_at(abst, abst_tuple, dur))
 
     def _point_at(
         self,
-        absolute_time: "core_parameters.abc.Duration",
-        absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
-        duration: "core_parameters.abc.Duration",
+        abst: "core_parameters.abc.Duration",
+        abst_tuple: tuple["core_parameters.abc.Duration", ...],
+        dur: "core_parameters.abc.Duration",
     ):
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "point_at")
-
-        if absolute_time not in (absolute_time_tuple := self.absolute_time_tuple):
+        if abst not in abst_tuple:
             point = (
-                absolute_time,
-                self._value_at(absolute_time, absolute_time_tuple, duration),
-                self._curve_shape_at(absolute_time, absolute_time_tuple, duration),
+                abst,
+                self._value_at(abst, abst_tuple, dur),
+                self._curve_shape_at(abst, abst_tuple, dur),
             )
-
         else:
-            e = self[absolute_time_tuple.index(absolute_time)]
-            point = (
-                absolute_time,
-                self._event_to_value(e),
-                self.event_to_curve_shape(e),
-            )
-
+            e = self[abst_tuple.index(abst)]
+            point = (abst, self._event_to_value(e), self.event_to_curve_shape(e))
         return point
 
     # ###################################################################### #
@@ -437,14 +415,10 @@ class Envelope(
         >>> e.value_at(0.5)
         1.0
         """
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
-        return self._value_at(absolute_time, *self._absolute_time_tuple_and_duration)
+        abst = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(absolute_time)
+        return self._value_at(abst, *self._abst_tuple_and_dur)
 
-    def parameter_at(
-        self, absolute_time: "core_parameters.abc.Duration"
-    ) -> typing.Any:
+    def parameter_at(self, absolute_time: "core_parameters.abc.Duration") -> typing.Any:
         """Get `parameter` at `absolute_time`.
 
         :param absolute_time: Absolute position in time at which parameter shall
@@ -460,12 +434,8 @@ class Envelope(
             be found. This is 'x' in the function notation 'f(x)'.
         :type absolute_time: core_parameters.abc.Duration
         """
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
-        return self._curve_shape_at(
-            absolute_time, *self._absolute_time_tuple_and_duration
-        )
+        abst = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(absolute_time)
+        return self._curve_shape_at(abst, *self._abst_tuple_and_dur)
 
     def point_at(
         self,
@@ -479,13 +449,8 @@ class Envelope(
 
         A point is a tuple with (absolute_time, value, curve_shape).
         """
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
-        return self._point_at(
-            absolute_time,
-            *self._absolute_time_tuple_and_duration,
-        )
+        abst = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(absolute_time)
+        return self._point_at(abst, *self._abst_tuple_and_dur)
 
     def sample_at(
         self,
@@ -502,59 +467,48 @@ class Envelope(
             equal to "append_duration". Default to core_parameters.DirectDuration(0)
         """
 
-        def find_duration(
-            absolute_time: "core_parameters.abc.Duration",
-            absolute_time_tuple: tuple["core_parameters.abc.Duration", ...],
+        def find_dur(
+            abst: "core_parameters.abc.Duration",
+            abst_tuple: tuple["core_parameters.abc.Duration", ...],
         ):
             """Find duration of new control point"""
-            next_event_start_index = bisect.bisect_right(
-                absolute_time_tuple, absolute_time
-            )
+            next_event_start_index = bisect.bisect_right(abst_tuple, abst)
             try:
-                next_event_start = absolute_time_tuple[next_event_start_index]
+                next_event_start = abst_tuple[next_event_start_index]
             # In case we call "sample_at" at a position after any already
             # specified point.
             except IndexError:
-                duration_new_event = append_duration
+                return append_duration
             else:
-                duration_new_event = next_event_start - absolute_time
-
-            return duration_new_event
+                return next_event_start - abst
 
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "sample_at")
 
-        absolute_time, append_duration = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (absolute_time, append_duration)
+        abst, append_duration = (
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (absolute_time, append_duration)
         )
 
-        self._assert_valid_absolute_time(absolute_time)
-
-        absolute_time_tuple, duration = self._absolute_time_tuple_and_duration
+        self._assert_valid_absolute_time(abst)
+        abst_tuple, dur = self._abst_tuple_and_dur
 
         # We only add a new event in case there isn't any event yet at
         # given point in time.
-        if absolute_time not in absolute_time_tuple:
-            point = self._point_at(
-                absolute_time,
-                absolute_time_tuple,
-                duration,
-            )
-            event = self._make_event(
-                find_duration(absolute_time, absolute_time_tuple),
-                self.value_to_parameter(point[1]),
-                point[2],
+        if abst not in abst_tuple:
+            p = self._point_at(abst, abst_tuple, dur)
+            e = self._make_event(
+                find_dur(abst, abst_tuple), self.value_to_parameter(p[1]), p[2]
             )
 
             try:
-                self.squash_in(absolute_time, event)
+                self.squash_in(abst, e)
             # This means we want to squash in at a position much
             # later than any already defined event.
             except core_utilities.InvalidStartValueError:
-                difference = absolute_time - duration
+                difference = abst - dur
                 self[-1].duration += difference
-                self.append(event)
+                self.append(e)
 
         return self
 
@@ -570,41 +524,32 @@ class Envelope(
         If at start and end time aren't any control points, the functions
         creates them ad-hoc via ``point_at``.
         """
-
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(o)
-            for o in (time_range.start, time_range.end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (time_range.start, time_range.end)
         )
-        absolute_time_tuple, duration = self._absolute_time_tuple_and_duration
-
+        abst_tuple, dur = self._abst_tuple_and_dur
         p = functools.partial(  # point_at
-            self._point_at, absolute_time_tuple=absolute_time_tuple, duration=duration
+            self._point_at, abst_tuple=abst_tuple, dur=dur
         )
 
-        point_list = []
-
-        if start not in absolute_time_tuple:
-            point_list.append(p(start))
-            i0 = bisect.bisect_left(absolute_time_tuple, start)
+        plist = []
+        if start not in abst_tuple:
+            plist.append(p(start))
+            i0 = bisect.bisect_left(abst_tuple, start)
         else:
-            i0 = absolute_time_tuple.index(start)
-
-        if end not in absolute_time_tuple:
-            i1 = bisect.bisect_left(absolute_time_tuple, end)
+            i0 = abst_tuple.index(start)
+        if end not in abst_tuple:
+            i1 = bisect.bisect_left(abst_tuple, end)
             last_point = p(end)
         else:
-            i1 = absolute_time_tuple.index(end) + 1
+            i1 = abst_tuple.index(end) + 1
             last_point = None
-
-        for t, ev in zip(absolute_time_tuple[i0:i1], self[i0:i1]):
-            point_list.append(
-                (t, self._event_to_value(ev), self.event_to_curve_shape(ev))
-            )
-
+        for t, ev in zip(abst_tuple[i0:i1], self[i0:i1]):
+            plist.append((t, self._event_to_value(ev), self.event_to_curve_shape(ev)))
         if last_point is not None:
-            point_list.append(last_point)
-
-        return tuple(point_list)
+            plist.append(last_point)
+        return tuple(plist)
 
     def integrate_interval(
         self, start: "core_parameters.abc.Duration", end: "core_parameters.abc.Duration"
@@ -617,8 +562,8 @@ class Envelope(
         :type end: core_parameters.abc.Duration
         """
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(t)
-            for t in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         if start == end:
             return 0
@@ -656,10 +601,10 @@ class Envelope(
         """Find average `value` in given interval.
 
         :param start: The beginning of the interval. If set to `None` this
-            will be 0. Default to `None`.
+            is set to0. Default to `None`.
         :type start: typing.Optional[core_parameters.abc.Duration]
         :param end: The end of the interval. If set to `None` this
-            will be the duration of the :class:`Envelope`.. Default to `None`.
+            is set to the duration of the :class:`Envelope`.. Default to `None`.
         :type end: typing.Optional[core_parameters.abc.Duration]
 
         **Example:**
@@ -679,8 +624,8 @@ class Envelope(
             end = self.duration
 
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
 
         duration = end - start
@@ -697,10 +642,10 @@ class Envelope(
         """Find average `parameter` in given interval.
 
         :param start: The beginning of the interval. If set to `None` this
-            will be 0. Default to `None`.
+            is set be 0. Default to `None`.
         :type start: typing.Optional[core_parameters.abc.Duration]
         :param end: The end of the interval. If set to `None` this
-            will be the duration of the :class:`Envelope`.. Default to `None`.
+            is set to the duration of the :class:`Envelope`.. Default to `None`.
         :type end: typing.Optional[core_parameters.abc.Duration]
 
         **Example:**
@@ -722,8 +667,8 @@ class Envelope(
         end: "core_parameters.abc.Duration",
     ) -> Envelope[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         # _assert_correct_start_and_end_values and _assert_valid_absolute_time
         # is called when super().cut_out is called later.
@@ -754,8 +699,8 @@ class Envelope(
         end: "core_parameters.abc.Duration",
     ) -> Envelope[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(unknown_object)
-            for unknown_object in (start, end)
+            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
+            for u in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(
@@ -840,23 +785,18 @@ class Envelope(
 
 
 class RelativeEnvelope(Envelope, typing.Generic[T]):
-    __parent_doc_string = Envelope.__doc__.split("\n")[2:]  # type: ignore
-    __after_parameter_text_index = __parent_doc_string.index("")
-    __doc__ = "\n".join(
-        ["Envelope with relative durations and values / parameters.\n"]
-        + __parent_doc_string[:__after_parameter_text_index]
-        + [
-            "    :param base_parameter_and_relative_parameter_to_absolute_parameter: A function",
-            "        which runs when the :func:`resolve` is called. It expects the base parameter",
-            "        and the relative parameter (which is extracted from the envelope events)",
-            "        and should return an absolute parameter.",
-        ]
-        + __parent_doc_string[__after_parameter_text_index:]
-        + [
-            "    The :class:`RelativeEnvelope` adds the :func:`resolve` method",
-            "    to the base class :class:`Envelope`.",
-        ]
-    )
+    """Envelope with relative durations and values / parameters.
+
+    :param *args: Argument of :class:`Envelope`.
+    :param base_parameter_and_relative_parameter_to_absolute_parameter: A function",
+        which runs when the :func:`resolve` is called. It expects the base parameter",
+        and the relative parameter (which is extracted from the envelope events)",
+        and should return an absolute parameter.",
+    :param **kwargs: Keyword arguments of :class:`Envelope`.
+
+    The :class:`RelativeEnvelope` adds the :func:`resolve` method to the base
+    class :class:`Envelope`.",
+    """
 
     def __init__(
         self,
@@ -878,26 +818,22 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
         base_parameter: typing.Any,
         resolve_envelope_class: type[Envelope] = Envelope,
     ) -> Envelope:
-        duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
-        point_list = []
+        dur = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+        plist = []
         try:
-            duration_factor = duration / self.duration
+            fact = dur / self.duration
         except ZeroDivisionError:
-            duration_factor = core_parameters.DirectDuration(0)
-        for absolute_time, event in zip(self.absolute_time_tuple, self):
-            relative_parameter = self.event_to_parameter(event)
-            new_parameter = (
+            fact = core_parameters.DirectDuration(0)
+        for abst, e in zip(self.absolute_time_tuple, self):
+            rel_param = self.event_to_parameter(e)
+            new_param = (
                 self.base_parameter_and_relative_parameter_to_absolute_parameter(
-                    base_parameter, relative_parameter
+                    base_parameter, rel_param
                 )
             )
-            point = (
-                absolute_time * duration_factor,
-                new_parameter,
-                self.event_to_curve_shape(event),
-            )
-            point_list.append(point)
-        return resolve_envelope_class(point_list)
+            p = (abst * fact, new_param, self.event_to_curve_shape(e))
+            plist.append(p)
+        return resolve_envelope_class(plist)
 
 
 TempoPoint: typing.TypeAlias = "core_parameters.abc.TempoPoint | core_constants.Real"

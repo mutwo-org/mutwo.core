@@ -98,10 +98,8 @@ class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
     def __init__(
         self, mutwo_parameter_to_search_name: str, keyword: typing.Optional[str] = None
     ):
-        if keyword is None:
-            keyword = str(mutwo_parameter_to_search_name)
         self._mutwo_parameter_to_search_name = mutwo_parameter_to_search_name
-        self._keyword = keyword
+        self._keyword = keyword or str(mutwo_parameter_to_search_name)
 
     def convert(
         self, mutwo_parameter_dict_to_convert: MutwoParameterDict
@@ -137,17 +135,12 @@ class MutwoParameterDictToDuration(MutwoParameterDictToKeywordArgument):
         duration_to_search_name: typing.Optional[str] = None,
         duration_keyword_name: typing.Optional[str] = None,
     ):
-        if duration_to_search_name is None:
-            duration_to_search_name = (
-                core_converters.configurations.DEFAULT_DURATION_TO_SEARCH_NAME
-            )
-        if duration_keyword_name is None:
-            duration_keyword_name = (
-                core_converters.configurations.DEFAULT_DURATION_KEYWORD_NAME
-            )
-        assert isinstance(duration_to_search_name, str)
-        assert isinstance(duration_keyword_name, str)
-        super().__init__(duration_to_search_name, duration_keyword_name)
+        super().__init__(
+            duration_to_search_name
+            or core_converters.configurations.DEFAULT_DURATION_TO_SEARCH_NAME,
+            duration_keyword_name
+            or core_converters.configurations.DEFAULT_DURATION_KEYWORD_NAME,
+        )
 
 
 class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
@@ -171,12 +164,9 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
             core_events.SimpleEvent
         ] = core_events.SimpleEvent,
     ):
-        if mutwo_parameter_dict_to_keyword_argument_sequence is None:
-            mutwo_parameter_dict_to_keyword_argument_sequence = (
-                MutwoParameterDictToDuration(),
-            )
         self._mutwo_parameter_dict_to_keyword_argument_sequence = (
             mutwo_parameter_dict_to_keyword_argument_sequence
+            or (MutwoParameterDictToDuration(),)
         )
         self._simple_event_class = simple_event_class
 

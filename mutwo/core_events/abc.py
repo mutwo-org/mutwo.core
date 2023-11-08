@@ -116,7 +116,7 @@ class Event(abc.ABC):
 
     @classmethod
     def _short_name(cls):
-        return cls.__name__[:cls._short_name_length].lower()
+        return cls.__name__[: cls._short_name_length].lower()
 
     # ###################################################################### #
     #                        abstract properties                             #
@@ -518,19 +518,19 @@ class Event(abc.ABC):
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
-        absolute_time_list = list(sorted(absolute_time))
+        abst_list = list(sorted(absolute_time))
         # Already sorted => check if smallest t < 0
-        self._assert_valid_absolute_time(absolute_time_list[0])
-        if 0 not in absolute_time_list:
-            absolute_time_list.insert(0, core_parameters.DirectDuration(0))
+        self._assert_valid_absolute_time(abst_list[0])
+        if 0 not in abst_list:
+            abst_list.insert(0, core_parameters.DirectDuration(0))
 
-        if (duration := self.duration) > absolute_time_list[-1]:
-            absolute_time_list.append(duration)
-        elif duration < absolute_time_list[-1] and not ignore_invalid_split_point:
-            raise core_utilities.SplitError(absolute_time_list[-1])
+        if (dur := self.duration) > abst_list[-1]:
+            abst_list.append(dur)
+        elif dur < abst_list[-1] and not ignore_invalid_split_point:
+            raise core_utilities.SplitError(abst_list[-1])
 
         split_event_list = []
-        for t0, t1 in zip(absolute_time_list, absolute_time_list[1:]):
+        for t0, t1 in zip(abst_list, abst_list[1:]):
             try:
                 split_event_list.append(self.copy().cut_out(t0, t1))
             except (
@@ -582,14 +582,11 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         #    class_specific_side_attribute_tuple = ("new_attribute",)
         #   ): pass
         #
-        super_class_class_specific_side_attribute_tuple = getattr(
+        super_class_attr_tuple = getattr(
             cls, "_class_specific_side_attribute_tuple", ("tempo_envelope", "tag")
         )
-        class_specific_side_attribute_tuple = (
-            super_class_class_specific_side_attribute_tuple
-            + class_specific_side_attribute_tuple
-        )
-        cls._class_specific_side_attribute_tuple = class_specific_side_attribute_tuple
+        class_attr_tuple = super_class_attr_tuple + class_specific_side_attribute_tuple
+        cls._class_specific_side_attribute_tuple = class_attr_tuple
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -602,14 +599,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         return "{}({})".format(self._short_name(), ", ".join([str(e) for e in self]))
 
     def __add__(self, event: list[T]) -> ComplexEvent[T]:
-        empty_copy = self.empty_copy()
-        empty_copy.extend(super().__add__(event))
-        return empty_copy
+        e = self.empty_copy()
+        e.extend(super().__add__(event))
+        return e
 
     def __mul__(self, factor: int) -> ComplexEvent[T]:
-        empty_copy = self.empty_copy()
-        empty_copy.extend(super().__mul__(factor))
-        return empty_copy
+        e = self.empty_copy()
+        e.extend(super().__mul__(factor))
+        return e
 
     @typing.overload
     def __getitem__(self, index_or_slice_or_tag: int) -> T:
@@ -694,11 +691,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         """Test for checking if two objects are equal."""
         try:
             parameter_to_compare_set = set([])
-            for object_ in (self, other):
-                for (
-                    parameter_to_compare
-                ) in object_._class_specific_side_attribute_tuple:
-                    parameter_to_compare_set.add(parameter_to_compare)
+            for obj in (self, other):
+                for param in obj._class_specific_side_attribute_tuple:
+                    parameter_to_compare_set.add(param)
         except AttributeError:
             return False
         return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
@@ -717,18 +712,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         if not self:  # If empty and duration == 0, we'd run into ZeroDivision
             raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
 
-        duration_in_floats = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            duration
-        ).duration
-        if (old_duration_in_floats := self.duration.duration) != 0:
+        durf = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration).duration
+        if (old_durf := self.duration.duration) != 0:
 
             def f(event_duration: core_parameters.abc.Duration):
                 return core_utilities.scale(
-                    event_duration.duration,
-                    0,
-                    old_duration_in_floats,
-                    0,
-                    duration_in_floats,
+                    event_duration.duration, 0, old_durf, 0, durf
                 )
 
         else:
@@ -749,14 +738,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         # Find index of an event by its tag.
         # param tag: The `tag` of the event which shall be found.
         # type tag: str
-
-        for event_index, event in enumerate(self):
-            try:
-                event_tag = event.tag
-            except AttributeError:
-                continue
-            if tag == event_tag:
-                return event_index
+        for i, e in enumerate(self):
+            if tag == e.tag:
+                return i
         raise KeyError(f"No event found with tag = '{tag}'.")
 
     def _assert_start_in_range(self, start: core_parameters.abc.Duration):
@@ -770,10 +754,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def _apply_once_per_event(
         self, method_name: str, *args, id_set: set[int], **kwargs
     ) -> ComplexEvent[T]:
-        for event in self:
-            if (event_id := id(event)) not in id_set:
-                id_set.add(event_id)
-                getattr(event, method_name)(*args, id_set=id_set, **kwargs)
+        for e in self:
+            if (e_id := id(e)) not in id_set:
+                id_set.add(e_id)
+                getattr(e, method_name)(*args, id_set=id_set, **kwargs)
         return self
 
     def _set_parameter(  # type: ignore
@@ -864,10 +848,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         """
         return type(self)(
             [],
-            **{
-                attribute_name: getattr(self, attribute_name)
-                for attribute_name in self._class_specific_side_attribute_tuple
-            },
+            **{a: getattr(self, a) for a in self._class_specific_side_attribute_tuple},
         )
 
     def get_event_from_index_sequence(
@@ -896,34 +877,26 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
     ) -> tuple[typing.Any, ...]:
-        parameter_value_list: list[typing.Any] = []
-        for event in self:
-            parameter_value_or_parameter_value_tuple = event.get_parameter(
-                parameter_name, flat=flat
-            )
-
-            if is_simple_event := isinstance(event, core_events.SimpleEvent):
-                parameter_value_tuple = (parameter_value_or_parameter_value_tuple,)
+        plist: list[typing.Any] = []
+        for e in self:
+            param_or_param_tuple = e.get_parameter(parameter_name, flat=flat)
+            if is_simple_event := isinstance(e, core_events.SimpleEvent):
+                param_tuple = (param_or_param_tuple,)
             else:
-                parameter_value_tuple = parameter_value_or_parameter_value_tuple
+                param_tuple = param_or_param_tuple
             if filter_undefined:
-                parameter_value_tuple = tuple(
-                    filter(
-                        lambda parameter_value: parameter_value is not None,
-                        parameter_value_tuple,
-                    )
-                )
+                param_tuple = tuple(filter(lambda v: v is not None, param_tuple))
             if flat:
-                parameter_value_list.extend(parameter_value_tuple)
+                plist.extend(param_tuple)
             else:
                 # Simple events should be added without tuple, they only
                 # provide one parameter.
                 if is_simple_event:
-                    if parameter_value_tuple:
-                        parameter_value_list.append(parameter_value_tuple[0])
+                    if param_tuple:
+                        plist.append(param_tuple[0])
                 else:
-                    parameter_value_list.append(parameter_value_tuple)
-        return tuple(parameter_value_list)
+                    plist.append(param_tuple)
+        return tuple(plist)
 
     def remove_by(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
@@ -944,11 +917,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> simultaneous_event.remove_by(lambda event: event.duration > 2)
         SimultaneousEvent([SimpleEvent(duration=DirectDuration(3.0))])
         """
-
-        for item_index, item in zip(reversed(range(len(self))), reversed(self)):
-            shall_survive = condition(item)
-            if not shall_survive:
-                del self[item_index]
+        for i, e in zip(reversed(range(len(self))), reversed(self)):
+            if not condition(e):
+                del self[i]
         return self
 
     def tie_by(  # type: ignore
@@ -985,9 +956,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         if not self:
             return self
 
-        def tie_by_if_available(event_to_tie: Event):
-            if hasattr(event_to_tie, "tie_by"):
-                event_to_tie.tie_by(
+        def tie_by_if_available(e: Event):
+            if hasattr(e, "tie_by"):
+                e.tie_by(
                     condition,
                     process_surviving_event,
                     event_type_to_examine,
@@ -997,9 +968,8 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         pointer = 0
         while pointer + 1 < len(self):
             event_tuple = self[pointer], self[pointer + 1]
-            if all(isinstance(event, event_type_to_examine) for event in event_tuple):
-                shall_delete = condition(*event_tuple)
-                if shall_delete:
+            if all(isinstance(e, event_type_to_examine) for e in event_tuple):
+                if condition(*event_tuple):  # shall_delete
                     if event_to_remove:
                         process_surviving_event(*event_tuple)
                         del self[pointer + 1]
