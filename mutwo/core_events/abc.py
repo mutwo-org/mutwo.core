@@ -218,28 +218,26 @@ class Event(abc.ABC):
         It's called 'destructive', because it forgets potential repetitions of
         the same object in compound objects. Instead of reproducing the original
         structure of the compound object that shall be copied, every repetition
-        of the same reference will return a new unique independent object.
+        of the same reference returns a new unique independent object.
 
         The following example shall illustrate the difference between copy.deepcopy
         and destructive_copy:
 
         >>> import copy
         >>> from mutwo import core_events
-        >>> my_simple_event_0 = core_events.SimpleEvent(2)
-        >>> my_simple_event_1 = core_events.SimpleEvent(3)
-        >>> my_sequential_event = core_events.SequentialEvent(
-        ...     [my_simple_event_0, my_simple_event_1, my_simple_event_0]
-        ... )
-        >>> deepcopied_event = copy.deepcopy(my_sequential_event)
-        >>> destructivecopied_event = my_sequential_event.destructive_copy()
-        >>> deepcopied_event[0].duration = 10  # setting the duration of the first event
-        >>> destructivecopied_event[0].duration = 10
+        >>> s0 = core_events.SimpleEvent(2)
+        >>> s1 = core_events.SimpleEvent(3)
+        >>> seq = core_events.SequentialEvent([s0, s1, s0])
+        >>> seq_copy = copy.deepcopy(seq)
+        >>> seq_destr_copy = seq.destructive_copy()
+        >>> seq_copy[0].duration = 10  # setting the duration of the first event
+        >>> seq_destr_copy[0].duration = 10
         >>> # return True because the first and the third objects share the same
         >>> # reference (both are the same copy of 'my_simple_event_0')
-        >>> deepcopied_event[0].duration == deepcopied_event[2].duration
+        >>> seq_copy[0].duration == seq_copy[2].duration
         True
         >>> # return False because destructive_copy forgets the shared reference
-        >>> destructivecopied_event[0].duration == destructivecopied_event[2].duration
+        >>> seq_destr_copy[0].duration == seq_destr_copy[2].duration
         False
         """
 
@@ -261,8 +259,8 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2)])
-        >>> sequential_event.set('duration', 10).set('my_new_attribute', 'hello-world!')
+        >>> seq = core_events.SequentialEvent([core_events.SimpleEvent(2)])
+        >>> seq.set('duration', 10).set('my_new_attribute', 'hello-world!')
         SequentialEvent([SimpleEvent(duration=DirectDuration(10.0))])
         """
         setattr(self, attribute_name, value)
@@ -290,15 +288,15 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
+        >>> seq = core_events.SequentialEvent(
         ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
         ... )
-        >>> sequential_event.get_parameter('duration')
+        >>> seq.get_parameter('duration')
         (DirectDuration(2.0), DirectDuration(3.0))
-        >>> simple_event = core_events.SimpleEvent(10)
-        >>> simple_event.get_parameter('duration')
+        >>> s = core_events.SimpleEvent(10)
+        >>> s.get_parameter('duration')
         DirectDuration(10.0)
-        >>> simple_event.get_parameter('undefined_parameter')
+        >>> s.get_parameter('undefined_parameter')
         """
 
     def set_parameter(
@@ -325,12 +323,12 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
+        >>> seq = core_events.SequentialEvent(
         ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
         ... )
-        >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
+        >>> seq.set_parameter('duration', lambda duration: duration * 2)
         SequentialEvent([SimpleEvent(duration=DirectDuration(4.0)), SimpleEvent(duration=DirectDuration(6.0))])
-        >>> sequential_event.get_parameter('duration')
+        >>> seq.get_parameter('duration')
         (DirectDuration(4.0), DirectDuration(6.0))
 
         **Warning:**
@@ -374,15 +372,13 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(1)]
-        ... )
-        >>> sequential_event.mutate_parameter(
+        >>> seq= core_events.SequentialEvent([core_events.SimpleEvent(1)])
+        >>> seq.mutate_parameter(
         ...     'duration', lambda duration: duration.add(1)
         ... )
         SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))])
         >>> # now duration should be + 1
-        >>> sequential_event.get_parameter('duration')
+        >>> seq.get_parameter('duration')
         (DirectDuration(2.0),)
 
         **Warning:**
@@ -410,13 +406,13 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(duration = 1)
-        >>> simple_event.tempo_envelope[0].value = 100
-        >>> print(simple_event.tempo_envelope)
+        >>> s = core_events.SimpleEvent(duration = 1)
+        >>> s.tempo_envelope[0].value = 100
+        >>> print(s.tempo_envelope)
         tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1), val=100), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
-        >>> simple_event.reset_tempo_envelope()
+        >>> s.reset_tempo_envelope()
         SimpleEvent(duration=DirectDuration(1.0))
-        >>> print(simple_event.tempo_envelope)
+        >>> print(s.tempo_envelope)
         tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1)), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         """
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
@@ -431,11 +427,11 @@ class Event(abc.ABC):
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> my_event = core_events.SimpleEvent(1)
-        >>> my_event.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
+        >>> s = core_events.SimpleEvent(1)
+        >>> s.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
         >>> core_converters.EventToMetrizedEvent().convert(
-        ...     my_event
-        ... ) == my_event.metrize()
+        ...     s
+        ... ) == s.metrize()
         True
         """
 
@@ -453,10 +449,9 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
-        ... )
-        >>> sequential_event.cut_out(1, 4)
+        >>> s0, s1 = (core_events.SimpleEvent(3), core_events.SimpleEvent(2))
+        >>> seq = core_events.SequentialEvent([s0, s1])
+        >>> seq.cut_out(1, 4)
         SequentialEvent([SimpleEvent(duration=DirectDuration(2.0)), SimpleEvent(duration=DirectDuration(1.0))])
         """
 
@@ -474,10 +469,9 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
-        ... )
-        >>> sequential_event.cut_off(1, 3)
+        >>> s0, s1 = (core_events.SimpleEvent(3), core_events.SimpleEvent(2))
+        >>> seq = core_events.SequentialEvent([s0, s1])
+        >>> seq.cut_off(1, 3)
         SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0))])
         """
 
@@ -509,10 +503,10 @@ class Event(abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.split_at(1)
+        >>> seq = core_events.SequentialEvent([core_events.SimpleEvent(3)])
+        >>> seq.split_at(1)
         (SequentialEvent([SimpleEvent(duration=DirectDuration(1.0))]), SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))]))
-        >>> sequential_event[0].split_at(1)
+        >>> seq[0].split_at(1)
         (SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0)))
         """
         if not absolute_time:
