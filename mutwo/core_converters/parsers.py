@@ -8,7 +8,6 @@ Adds classes to allow transformations in two directions:
 
 import typing
 
-from mutwo import core_constants
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_utilities
