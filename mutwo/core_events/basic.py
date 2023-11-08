@@ -30,6 +30,8 @@ class SimpleEvent(core_events.abc.Event):
         the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
         with the global `core_events.configurations.UNKNOWN_OBJECT_TO_DURATION`
         callable.
+    :param *args: Arguments parsed to :class:`mutwo.core_events.abc.Event`.
+    :param **kwargs: Keyword arguments parsed to :class:`mutwo.core_events.abc.Event`.
 
     **Example:**
 
