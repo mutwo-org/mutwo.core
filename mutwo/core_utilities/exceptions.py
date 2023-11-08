@@ -182,9 +182,9 @@ class NoTagError(Exception):
         super().__init__(
             "It's not possible to concatenate an event "
             "with the 'concatenate_by_tag' method if not "
-            "all child events have tags. Here 'mutwo' detected the "
+            "all child events have tags != None. Here 'mutwo' detected the "
             f"child event '{str(event_without_tag)[:50]}...' "
-            "which doesn't have any 'tag' attribute."
+            "which has a tag attribute that is set to 'None'."
         )
 
 

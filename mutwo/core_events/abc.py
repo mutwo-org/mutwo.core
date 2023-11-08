@@ -19,6 +19,8 @@ class Event(abc.ABC):
     """Abstract Event-Object
 
     :param tempo_envelope: An envelope which describes the dynamic tempo of an event.
+    :param tag: The name of the event. This can be used to find the event
+        inside a :class:`ComplexEvent`.
     """
 
     # It looks tempting to drop the 'tempo_envelope' attribute of events.
@@ -104,8 +106,10 @@ class Event(abc.ABC):
     def __init__(
         self,
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+        tag: typing.Optional[str] = None,
     ):
         self.tempo_envelope = tempo_envelope
+        self.tag = tag
 
     # ###################################################################### #
     #                        abstract properties                             #
@@ -545,8 +549,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         self,
         iterable: typing.Iterable[T] = [],
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+        tag: typing.Optional[str] = None,
     ):
-        Event.__init__(self, tempo_envelope)
+        Event.__init__(self, tempo_envelope, tag)
         list.__init__(self, iterable)
         self._logger = core_utilities.get_cls_logger(type(self))
 
@@ -571,7 +576,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         #   ): pass
         #
         super_class_class_specific_side_attribute_tuple = getattr(
-            cls, "_class_specific_side_attribute_tuple", ("tempo_envelope",)
+            cls, "_class_specific_side_attribute_tuple", ("tempo_envelope", "tag")
         )
         class_specific_side_attribute_tuple = (
             super_class_class_specific_side_attribute_tuple
@@ -840,12 +845,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> piano_voice_0 = core_events.TaggedSequentialEvent([core_events.SimpleEvent(2)], tag="piano")
+        >>> piano_voice_0 = core_events.SequentialEvent([core_events.SimpleEvent(2)], tag="piano")
         >>> piano_voice_1 = piano_voice_0.empty_copy()
         >>> piano_voice_1.tag
         'piano'
         >>> piano_voice_1
-        TaggedSequentialEvent([])
+        SequentialEvent([])
         """
         return type(self)(
             [],

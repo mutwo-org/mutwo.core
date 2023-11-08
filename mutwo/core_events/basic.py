@@ -20,14 +20,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = (
-    "SimpleEvent",
-    "SequentialEvent",
-    "SimultaneousEvent",
-    "TaggedSimpleEvent",
-    "TaggedSequentialEvent",
-    "TaggedSimultaneousEvent",
-)
+__all__ = ("SimpleEvent", "SequentialEvent", "SimultaneousEvent")
 
 
 class SimpleEvent(core_events.abc.Event):
@@ -46,14 +39,10 @@ class SimpleEvent(core_events.abc.Event):
     SimpleEvent(duration = DirectDuration(duration = 2.0))
     """
 
-    parameter_to_exclude_from_representation_tuple = ("tempo_envelope",)
+    parameter_to_exclude_from_representation_tuple = ("tempo_envelope", "tag")
 
-    def __init__(
-        self,
-        duration: core_parameters.abc.Duration,
-        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
-    ):
-        super().__init__(tempo_envelope)
+    def __init__(self, duration: core_parameters.abc.Duration, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.duration = duration
 
     # ###################################################################### #
@@ -1031,7 +1020,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
                     # events, but we don't want to change the other sequence.
                     event_new = event.empty_copy()
                     event_new.extend(event[:])
-                    event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
+                    event = event_new.slide_in(
+                        0, core_events.SimpleEvent(self_duration)
+                    )
                 self.append(event)
             else:
                 self._extend_ancestor(ancestor, event)
@@ -1061,29 +1052,28 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         >>> from mutwo import core_events
         >>> s = core_events.SimultaneousEvent(
-        ...      [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="test")]
+        ...      [core_events.SequentialEvent([core_events.SimpleEvent(1)], tag="test")]
         ...  )
         >>> s.concatenate_by_tag(s)
-        SimultaneousEvent([TaggedSequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
+        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
-        for tagged_event in other:
-            if not hasattr(tagged_event, "tag"):
-                raise core_utilities.NoTagError(tagged_event)
-            tag = tagged_event.tag
+        for e in other:
+            if not (tag := e.tag):
+                raise core_utilities.NoTagError(e)
             try:
                 ancestor = self[tag]
             except KeyError:
                 if self_duration > 0:
                     # Shallow copy before 'slide_in': We use the same
                     # events, but we don't want to change the other sequence.
-                    event_new = tagged_event.empty_copy()
-                    event_new.extend(tagged_event[:])
-                    tagged_event = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
-                self.append(tagged_event)
+                    event_new = e.empty_copy()
+                    event_new.extend(e[:])
+                    e = event_new.slide_in(0, core_events.SimpleEvent(self_duration))
+                self.append(e)
             else:
-                self._extend_ancestor(ancestor, tagged_event)
+                self._extend_ancestor(ancestor, e)
         return self
 
     # NOTE: 'sequentalize' is very generic, it works for all type of child
@@ -1165,7 +1155,8 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         absolute_time_list = sorted(absolute_time_set)[:-1]
 
         return core_events.SequentialEvent(
-            self._make_event_slice_tuple(absolute_time_list, slice_tuple_to_event)
+            self._make_event_slice_tuple(absolute_time_list, slice_tuple_to_event),
+            tag=self.tag,
         )
 
     def split_at(
@@ -1187,26 +1178,3 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             return e
 
         return self._make_event_slice_tuple(absolute_time, slice_tuple_to_event)
-
-
-@core_utilities.add_tag_to_class
-class TaggedSimpleEvent(SimpleEvent):
-    """:class:`SimpleEvent` with tag."""
-
-
-@core_utilities.add_tag_to_class
-class TaggedSequentialEvent(
-    SequentialEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
-):
-    """:class:`SequentialEvent` with tag."""
-
-
-@core_utilities.add_tag_to_class
-class TaggedSimultaneousEvent(
-    SimultaneousEvent, typing.Generic[T], class_specific_side_attribute_tuple=("tag",)
-):
-    """:class:`SimultaneousEvent` with tag."""
-
-    def sequentialize(self, *args, **kwargs):
-        sequential_event = super().sequentialize(*args, **kwargs)
-        return TaggedSequentialEvent(sequential_event, tag=self.tag)

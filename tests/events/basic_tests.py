@@ -207,7 +207,7 @@ class SimpleEventTest(unittest.TestCase, EventTest):
 
     def test_parameter_to_compare_tuple(self):
         simple_event = core_events.SimpleEvent(1)
-        expected_parameter_to_compare_tuple = ("duration", "tempo_envelope")
+        expected_parameter_to_compare_tuple = ("duration", "tag", "tempo_envelope")
         self.assertEqual(
             simple_event._parameter_to_compare_tuple,
             expected_parameter_to_compare_tuple,
@@ -443,7 +443,7 @@ class SequentialEventTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_magic_method_del_by_tag(self):
-        s = core_events.SequentialEvent([core_events.TaggedSimpleEvent(1, tag="a")])
+        s = core_events.SequentialEvent([core_events.SimpleEvent(1, tag="a")])
         del s["a"]
         self.assertEqual(s, core_events.SequentialEvent([]))
 
@@ -1305,7 +1305,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
     def test_concatenate_by_tag(self):
         s, tse, si, t = (
             core_events.SimpleEvent,
-            core_events.TaggedSequentialEvent,
+            core_events.SequentialEvent,
             core_events.SimultaneousEvent,
             core_events.TempoEnvelope,
         )
@@ -1359,7 +1359,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
             self.sequence,
         )
 
-        s1 = core_events.SimultaneousEvent([core_events.TaggedSimpleEvent(1, tag="a")])
+        s1 = core_events.SimultaneousEvent([core_events.SimpleEvent(1, tag="a")])
         self.assertRaises(
             core_utilities.ConcatenationError,
             s1.concatenate_by_tag,
@@ -1369,7 +1369,7 @@ class SimultaneousEventTest(unittest.TestCase, ComplexEventTest):
     def test_concatenate_by_tag_to_empty_event(self):
         empty_se = core_events.SimultaneousEvent([])
         filled_se = core_events.SimultaneousEvent(
-            [core_events.TaggedSequentialEvent([core_events.SimpleEvent(1)], tag="t")]
+            [core_events.SequentialEvent([core_events.SimpleEvent(1)], tag="t")]
         )
         empty_se.concatenate_by_tag(filled_se)
         self.assertEqual(empty_se, filled_se)

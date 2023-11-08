@@ -106,6 +106,7 @@ class Envelope(
         self,
         event_iterable_or_point_sequence: typing.Iterable[T] | typing.Sequence[Point],
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+        tag: typing.Optional[str] = None,
         event_to_parameter: typing.Callable[
             [core_events.abc.Event], typing.Any
         ] = lambda event: getattr(
@@ -160,7 +161,7 @@ class Envelope(
         event_iterable = self._event_iterable_or_point_sequence_to_event_iterable(
             event_iterable_or_point_sequence
         )
-        super().__init__(event_iterable, tempo_envelope)
+        super().__init__(event_iterable, tempo_envelope, tag=tag)
 
     # ###################################################################### #
     #                           magic methods                                #

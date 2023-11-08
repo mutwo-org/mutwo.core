@@ -5,29 +5,13 @@ import os
 import types
 import typing
 
-__all__ = ("add_tag_to_class", "compute_lazy")
+__all__ = ("compute_lazy",)
 
 from mutwo import core_utilities
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
 G = typing.TypeVar("G")
-
-
-def add_tag_to_class(class_to_decorate: G) -> G:
-    """This decorator adds a 'tag' argument to the init method of a class.
-
-    :arg class_to_decorate: The class which shall be decorated.
-    """
-
-    init = class_to_decorate.__init__
-
-    def init_with_tag(self, *args, tag: typing.Optional[str] = None, **kwargs):
-        init(self, *args, **kwargs)
-        self.tag = tag
-
-    class_to_decorate.__init__ = init_with_tag
-    return class_to_decorate
 
 
 def compute_lazy(
