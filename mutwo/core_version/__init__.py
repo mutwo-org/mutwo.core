@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-MAJOR, MINOR, PATCH = 1, 4, 0
+MAJOR, MINOR, PATCH = 2, 0, 0
 
 VERSION = f"{MAJOR}.{MINOR}.{PATCH}"
 """The version of the package ``mutwo.core``."""
