@@ -136,6 +136,12 @@ class TempoConverter(core_converters.abc.EventConverter):
         ) -> tuple[tuple[float, ...], float]:
             return super()._abstf_tuple_and_dur
 
+        @functools.cached_property
+        def _abst_tuple_and_dur(
+            self,
+        ) -> tuple[tuple[float, ...], float]:
+            return super()._abst_tuple_and_dur
+
     def __init__(
         self,
         tempo_envelope: core_events.TempoEnvelope,
