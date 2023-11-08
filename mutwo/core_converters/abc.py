@@ -73,11 +73,11 @@ class EventConverter(Converter):
     ...     ]
     ... )
     >>> DurationPrintConverter().convert(random_event)
-    DirectDuration(duration = 0.0): DirectDuration(duration = 1.1823905068)
-    DirectDuration(duration = 1.1823905068): DirectDuration(duration = 1.6561757085)
-    DirectDuration(duration = 2.8385662153): DirectDuration(duration = 1.5582698404)
-    DirectDuration(duration = 4.3968360557): DirectDuration(duration = 1.5979384595)
-    DirectDuration(duration = 5.9947745152): DirectDuration(duration = 1.1502716523)
+    D(0.0): D(1.1823905068)
+    D(1.1823905068): D(1.6561757085)
+    D(2.8385662153): D(1.5582698404)
+    D(4.3968360557): D(1.5979384595)
+    D(5.9947745152): D(1.1502716523)
     """
 
     @abc.abstractmethod

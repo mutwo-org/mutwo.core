@@ -35,11 +35,14 @@ class SimpleEvent(core_events.abc.Event):
 
     >>> from mutwo import core_events
     >>> simple_event = core_events.SimpleEvent(2)
-    >>> print(simple_event)
-    SimpleEvent(duration = DirectDuration(duration = 2.0))
+    >>> simple_event
+    SimpleEvent(duration=DirectDuration(2.0))
+    >>> print(simple_event)  # pretty print for debugging
+    s(dur=D(2.0))
     """
 
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope", "tag")
+    _short_name_length = 1
 
     def __init__(self, duration: core_parameters.abc.Duration, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,11 +66,12 @@ class SimpleEvent(core_events.abc.Event):
         )
 
     def __repr__(self) -> str:
-        attribute_iterator = (
-            "{} = {}".format(attribute, getattr(self, attribute))
-            for attribute in self._parameter_to_print_tuple
-        )
-        return "{}({})".format(type(self).__name__, ", ".join(attribute_iterator))
+        a = [f"{attr}={repr(v)}" for attr, v in self._print_data.items()]
+        return "{}({})".format(type(self).__name__, ", ".join(a))
+
+    def __str__(self) -> str:
+        a = [f"{attr[:3]}={str(v)}" for attr, v in self._print_data.items()]
+        return "{}({})".format(self._short_name(), ", ".join(a))
 
     # ###################################################################### #
     #                           private methods                              #
@@ -116,6 +120,10 @@ class SimpleEvent(core_events.abc.Event):
                 self._parameter_to_compare_tuple,
             )
         )
+
+    @property
+    def _print_data(self) -> dict[str, typing.Any]:
+        return {attr: getattr(self, attr) for attr in self._parameter_to_print_tuple}
 
     @property
     def _parameter_to_compare_tuple(self) -> tuple[str, ...]:
@@ -184,17 +192,17 @@ class SimpleEvent(core_events.abc.Event):
         >>> simple_event.set_parameter(
         ...     'duration', lambda old_duration: old_duration * 2
         ... )
-        SimpleEvent(duration = DirectDuration(duration = 4.0))
+        SimpleEvent(duration=DirectDuration(4.0))
         >>> simple_event.duration
         DirectDuration(4.0)
         >>> simple_event.set_parameter('duration', 3)
-        SimpleEvent(duration = DirectDuration(duration = 3.0))
+        SimpleEvent(duration=DirectDuration(3.0))
         >>> simple_event.duration
         DirectDuration(3.0)
         >>> simple_event.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=False
         ... )  # this will be ignored
-        SimpleEvent(duration = DirectDuration(duration = 3.0))
+        SimpleEvent(duration=DirectDuration(3.0))
         >>> simple_event.unknown_parameter
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
@@ -202,7 +210,7 @@ class SimpleEvent(core_events.abc.Event):
         >>> simple_event.set_parameter(
         ...     'unknown_parameter', 10, set_unassigned_parameter=True
         ... )  # this will be written
-        SimpleEvent(duration = DirectDuration(duration = 3.0), unknown_parameter = 10)
+        SimpleEvent(duration=DirectDuration(3.0), unknown_parameter=10)
         >>> simple_event.unknown_parameter
         10
         """
@@ -542,9 +550,9 @@ class SequentialEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2), core_events.SimpleEvent(3)])
         >>> sequential_event.get_event_at(1)
-        SimpleEvent(duration = DirectDuration(duration = 2.0))
+        SimpleEvent(duration=DirectDuration(2.0))
         >>> sequential_event.get_event_at(3)
-        SimpleEvent(duration = DirectDuration(duration = 3.0))
+        SimpleEvent(duration=DirectDuration(3.0))
         >>> sequential_event.get_event_at(100)
 
         **Warning:**
@@ -1007,7 +1015,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...     [core_events.SequentialEvent([core_events.SimpleEvent(1)])]
         ... )
         >>> s.concatenate_by_index(s)
-        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
+        SimultaneousEvent([SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.0))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1055,7 +1063,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...      [core_events.SequentialEvent([core_events.SimpleEvent(1)], tag="test")]
         ...  )
         >>> s.concatenate_by_tag(s)
-        SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])])
+        SimultaneousEvent([SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.0))])])
         """
         if (self_duration := self.duration) > 0:
             self.extend_until(self_duration)
@@ -1130,8 +1138,9 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...         ),
         ...     ]
         ... )
-        >>> e.sequentialize()
-        SequentialEvent([SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))])]), SimultaneousEvent([SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0))])])])
+        >>> seq = e.sequentialize()
+        >>> print(seq)
+        seq(sim(seq(s(dur=D(2.0))), seq(s(dur=D(2.0)))), sim(seq(s(dur=D(1.0))), seq(s(dur=D(1.0)))))
         """
         if slice_tuple_to_event is None:
             slice_tuple_to_event = SimultaneousEvent

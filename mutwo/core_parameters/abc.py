@@ -20,6 +20,7 @@ try:
     import quicktions as fractions
 except ImportError:
     import fractions
+
     _fractions = None
 else:
     import fractions as _fractions
@@ -146,10 +147,16 @@ class SingleValueParameter(abc.ABC):
 
             setattr(cls, "value_name", property(lambda _: value_name))
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return (
             f"{type(self).__name__}"
-            f"({self.value_name} = {getattr(self, self.value_name)})"  # type: ignore
+            f"({getattr(self, self.value_name)})"  # type: ignore
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"{type(self).__name__[:1]}"
+            f"({getattr(self, self.value_name)})"  # type: ignore
         )
 
     def __eq__(self, other: typing.Any) -> bool:
@@ -251,9 +258,7 @@ class SingleNumberParameter(SingleValueParameter):
         return self._compare(other, lambda value0, value1: value0 < value1, True)
 
 
-class Duration(
-    SingleNumberParameter, value_name="duration", value_return_type="float"
-):
+class Duration(SingleNumberParameter, value_name="duration", value_return_type="float"):
     """Abstract base class for any duration.
 
     If the user wants to define a Duration class, the abstract
@@ -327,9 +332,14 @@ class TempoPoint(abc.ABC):
     """
 
     def __repr__(self) -> str:
-        return "{}(BPM = {}, reference = {})".format(
-            type(self).__name__, self.tempo_in_beats_per_minute, self.reference
-        )
+        return f"{type(self).__name__}{self._print_data}"
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__[0]}{self._print_data}"
+
+    @property
+    def _print_data(self) -> str:
+        return f"(BPM={self.tempo_in_beats_per_minute},ref={self.reference})"
 
     def __eq__(self, other: object) -> bool:
         attribute_to_compare_tuple = (

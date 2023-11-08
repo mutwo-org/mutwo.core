@@ -23,6 +23,9 @@ class Event(abc.ABC):
         inside a :class:`ComplexEvent`.
     """
 
+    # For '_short_name': this is used in __str__.
+    _short_name_length = 3
+
     # It looks tempting to drop the 'tempo_envelope' attribute of events.
     # It may look simpler (and therefore more elegant) if events are only
     # defined by one attribute: their duration. Let's remember why the
@@ -110,6 +113,10 @@ class Event(abc.ABC):
     ):
         self.tempo_envelope = tempo_envelope
         self.tag = tag
+
+    @classmethod
+    def _short_name(cls):
+        return cls.__name__[:cls._short_name_length].lower()
 
     # ###################################################################### #
     #                        abstract properties                             #
@@ -256,7 +263,7 @@ class Event(abc.ABC):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(2)])
         >>> sequential_event.set('duration', 10).set('my_new_attribute', 'hello-world!')
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 10.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(10.0))])
         """
         setattr(self, attribute_name, value)
         return self
@@ -322,7 +329,7 @@ class Event(abc.ABC):
         ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
         ... )
         >>> sequential_event.set_parameter('duration', lambda duration: duration * 2)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 4.0)), SimpleEvent(duration = DirectDuration(duration = 6.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(4.0)), SimpleEvent(duration=DirectDuration(6.0))])
         >>> sequential_event.get_parameter('duration')
         (DirectDuration(4.0), DirectDuration(6.0))
 
@@ -373,7 +380,7 @@ class Event(abc.ABC):
         >>> sequential_event.mutate_parameter(
         ...     'duration', lambda duration: duration.add(1)
         ... )
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))])
         >>> # now duration should be + 1
         >>> sequential_event.get_parameter('duration')
         (DirectDuration(2.0),)
@@ -405,12 +412,12 @@ class Event(abc.ABC):
         >>> from mutwo import core_events
         >>> simple_event = core_events.SimpleEvent(duration = 1)
         >>> simple_event.tempo_envelope[0].value = 100
-        >>> simple_event.tempo_envelope
-        TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1.0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1), value = 100), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0.0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
+        >>> print(simple_event.tempo_envelope)
+        tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1), val=100), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         >>> simple_event.reset_tempo_envelope()
-        SimpleEvent(duration = DirectDuration(duration = 1.0))
-        >>> simple_event.tempo_envelope
-        TempoEnvelope([TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 1.0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1)), TempoEvent(curve_shape = 0, duration = DirectDuration(duration = 0.0), tempo_point = DirectTempoPoint(BPM = 60, reference = 1))])
+        SimpleEvent(duration=DirectDuration(1.0))
+        >>> print(simple_event.tempo_envelope)
+        tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1)), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         """
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
         return self
@@ -450,7 +457,7 @@ class Event(abc.ABC):
         ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
         ... )
         >>> sequential_event.cut_out(1, 4)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0)), SimpleEvent(duration = DirectDuration(duration = 1.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(2.0)), SimpleEvent(duration=DirectDuration(1.0))])
         """
 
     @abc.abstractmethod
@@ -471,7 +478,7 @@ class Event(abc.ABC):
         ...     [core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
         ... )
         >>> sequential_event.cut_off(1, 3)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 2.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0))])
         """
 
     def split_at(
@@ -504,9 +511,9 @@ class Event(abc.ABC):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.split_at(1)
-        (SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0))]), SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 2.0))]))
+        (SequentialEvent([SimpleEvent(duration=DirectDuration(1.0))]), SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))]))
         >>> sequential_event[0].split_at(1)
-        (SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 2.0)))
+        (SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0)))
         """
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
@@ -590,6 +597,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def __repr__(self) -> str:
         return "{}({})".format(type(self).__name__, super().__repr__())
+
+    def __str__(self) -> str:
+        return "{}({})".format(self._short_name(), ", ".join([str(e) for e in self]))
 
     def __add__(self, event: list[T]) -> ComplexEvent[T]:
         empty_copy = self.empty_copy()
@@ -875,10 +885,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ...     [core_events.SequentialEvent([core_events.SimpleEvent(2)])]
         ... )
         >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
-        SimpleEvent(duration = DirectDuration(duration = 2.0))
+        SimpleEvent(duration=DirectDuration(2.0))
         >>> # this is equal to:
         >>> nested_sequential_event[0][0]
-        SimpleEvent(duration = DirectDuration(duration = 2.0))
+        SimpleEvent(duration=DirectDuration(2.0))
         """
 
         return core_utilities.get_nested_item_from_index_sequence(index_sequence, self)
@@ -932,7 +942,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ...     [core_events.SimpleEvent(1), core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
         ... )
         >>> simultaneous_event.remove_by(lambda event: event.duration > 2)
-        SimultaneousEvent([SimpleEvent(duration = DirectDuration(duration = 3.0))])
+        SimultaneousEvent([SimpleEvent(duration=DirectDuration(3.0))])
         """
 
         for item_index, item in zip(reversed(range(len(self))), reversed(self)):
@@ -1041,7 +1051,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.squash_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.5)), SimpleEvent(duration = DirectDuration(duration = 0.5))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.5)), SimpleEvent(duration=DirectDuration(0.5))])
         """
 
     @abc.abstractmethod
@@ -1064,7 +1074,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.slide_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 1.5)), SimpleEvent(duration = DirectDuration(duration = 2.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.5)), SimpleEvent(duration=DirectDuration(2.0))])
         """
 
     @abc.abstractmethod
@@ -1080,7 +1090,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> from mutwo import core_events
         >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
         >>> sequential_event.split_child_at(1)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 2.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0))])
         """
 
     @abc.abstractmethod
@@ -1119,5 +1129,5 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         >>> from mutwo import core_events
         >>> s = core_events.SequentialEvent([core_events.SimpleEvent(1)])
         >>> s.extend_until(10)
-        SequentialEvent([SimpleEvent(duration = DirectDuration(duration = 1.0)), SimpleEvent(duration = DirectDuration(duration = 9.0))])
+        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(9.0))])
         """

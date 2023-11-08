@@ -27,9 +27,6 @@ class DirectDuration(core_parameters.abc.Duration):
     def __init__(self, duration: core_constants.Real):
         self.duration = duration
 
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.duration})"
-
     @property
     def duration(self) -> float:
         return self._duration
@@ -50,6 +47,10 @@ class RatioDuration(core_parameters.abc.Duration):
     >>> from mutwo import core_parameters
     >>> # create duration with duration = 10 beats
     >>> d = core_parameters.RatioDuration('2/3')
+    >>> d
+    RatioDuration(0.6666666667)
+    >>> print(d)
+    R(2/3)
     >>> d.ratio
     Fraction(2, 3)
     >>> d.duration
@@ -59,8 +60,8 @@ class RatioDuration(core_parameters.abc.Duration):
     def __init__(self, ratio: core_constants.Real | str):
         self.ratio = ratio
 
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.duration})"
+    def __str__(self) -> str:
+        return f"R({self.ratio})"
 
     @property
     def ratio(self) -> fractions.Fraction:

@@ -89,7 +89,7 @@ class Envelope(
 
     >>> from mutwo import core_events
     >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
-    Envelope([SimpleEvent(curve_shape = 1, duration = DirectDuration(duration = 0.5), value = 0), SimpleEvent(curve_shape = 0, duration = DirectDuration(duration = 0.0), value = 1)])
+    Envelope([SimpleEvent(curve_shape=1, duration=DirectDuration(0.5), value=0), SimpleEvent(curve_shape=0, duration=DirectDuration(0.0), value=1)])
     """
 
     # Type definitions
