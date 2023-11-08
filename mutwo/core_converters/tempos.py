@@ -58,7 +58,6 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         try:
             reference = tempo_point.reference  # type: ignore
         except AttributeError:
-            self._logger.warning(core_utilities.UndefinedReferenceWarning(tempo_point))
             reference = 1
 
         return beats_per_minute, reference

@@ -1,9 +1,5 @@
 """Module for mutwo specific exceptions."""
 
-import typing
-
-from mutwo import core_constants
-
 __all__ = (
     "CannotSetDurationOfEmptyComplexEvent",
     "AlreadyDefinedValueNameError",
@@ -19,7 +15,6 @@ __all__ = (
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
     "EmptyEnvelopeError",
-    "UndefinedReferenceWarning",
     "ConcatenationError",
     "NoTagError",
     "SplitError",
@@ -139,12 +134,12 @@ class InvalidCutOutStartAndEndValuesError(Exception):
 
 
 class SplitError(Exception):
-    def __init__(self, absolute_time: 'core_parameters.abc.Duration'):
+    def __init__(self, absolute_time: "core_parameters.abc.Duration"):
         super().__init__(f"Can't split event at absolute time '{absolute_time}'.")
 
 
 class SplitUnavailableChildError(Exception):
-    def __init__(self, absolute_time: 'core_parameters.abc.Duration'):
+    def __init__(self, absolute_time: "core_parameters.abc.Duration"):
         super().__init__(
             f"Can't split child at absolute time '{absolute_time}'. There is no child"
             " event available at the requested time."
@@ -154,15 +149,6 @@ class SplitUnavailableChildError(Exception):
 class EmptyEnvelopeError(Exception):
     def __init__(self, envelope, method):
         super().__init__(f"Can't call '{method}' on empty envelope '{envelope}'!")
-
-
-class UndefinedReferenceWarning(RuntimeWarning):
-    def __init__(self, tempo_point: typing.Any):
-        super().__init__(
-            f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
-            "doesn't know attribute 'reference'."
-            " Therefore reference has been set to 1."
-        )
 
 
 class ConcatenationError(TypeError):
