@@ -32,17 +32,17 @@ This adds support for this:
 
 ### Added
 - the `sequentialize` method for `SimultaneousEvent`: Convert a `SimultaneousEvent` to a `SequentialEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/a53952a5bf2ff9151117c250d542704b47b28dd0))
-- standardized logging utilities with `core_utilities.get_cls_logger` and `core_configurations.LOGGING_LEVEL` (see [here](12907dc32bc6815aa2485ceaa45710f4406ba8ed)
-- 'core_events.TempoEvent' class to be used in 'core_events.TempoEnvelope' (see [here](37b27052672623ba59527f1a68cd9e7ce389ad67) and [here](1179319e0ada773f8f9ff976abe370403a18b4e9))
+- standardized logging utilities with `core_utilities.get_cls_logger` and `core_configurations.LOGGING_LEVEL` (see [here](https://github.com/mutwo-org/mutwo.core/commit/12907dc32bc6815aa2485ceaa45710f4406ba8ed)
+- 'core_events.TempoEvent' class to be used in 'core_events.TempoEnvelope' (see [here](https://github.com/mutwo-org/mutwo.core/commit/37b27052672623ba59527f1a68cd9e7ce389ad67) and [here](https://github.com/mutwo-org/mutwo.core/commit/1179319e0ada773f8f9ff976abe370403a18b4e9))
 
 ### Changed
-- allow multiple split times in `Event.split_at` (see [here](aa457aea58da5d557eb2a63a93904e42957dc869))
-- improve performance of `SequentialEvent.split_at` (see [here](3df91e248da2e75f5488efb2256271bae8ed5302) and [here](1a8e1d696628aff5d08d0ab775cf53444e7b4e71))
-- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying. (see [here](dcb932000419f44b984fba4d7833583386b89125))
+- allow multiple split times in `Event.split_at` (see [here](https://github.com/mutwo-org/mutwo.core/commit/aa457aea58da5d557eb2a63a93904e42957dc869))
+- improve performance of `SequentialEvent.split_at` (see [here](https://github.com/mutwo-org/mutwo.core/commit/3df91e248da2e75f5488efb2256271bae8ed5302) and [here](https://github.com/mutwo-org/mutwo.core/commit/1a8e1d696628aff5d08d0ab775cf53444e7b4e71))
+- `SimultaneousEvent.concatenate_by_index` and `SimultaneousEvent.concatenate_by_tag` doesn't copy the added event anymore, but rather behaves like ``list.extend``. This improves the performance of the concatenation methods and avoids unnecessary copying. (see [here](https://github.com/mutwo-org/mutwo.core/commit/dcb932000419f44b984fba4d7833583386b89125))
 
 ### Fixed
 - the initialization of the exception `CannotSetDurationOfEmptyComplexEvent` (see [here](https://github.com/mutwo-org/mutwo.core/commit/4d9d26fdc6fb3b39ecf7e2b47231897a216b16df))
-- tempo envelope concatenation (before this there was an inconsistency how tempo envelopes were treated in the package. Now it's consistent.) (see [here](342e6b644345af0288fbb29617dedc90094386f0))
+- tempo envelope concatenation (before this there was an inconsistency how tempo envelopes were treated in the package. Now it's consistent.) (see [here](https://github.com/mutwo-org/mutwo.core/commit/342e6b644345af0288fbb29617dedc90094386f0))
 
 
 ## [1.2.3] - 2023-03-17
