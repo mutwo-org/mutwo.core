@@ -20,20 +20,7 @@ __all__ = ("Envelope", "RelativeEnvelope", "TempoEnvelope")
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
-class Envelope(
-    core_events.SequentialEvent,
-    typing.Generic[T],
-    class_specific_side_attribute_tuple=(
-        "event_to_parameter",
-        "event_to_curve_shape",
-        "value_to_parameter",
-        "parameter_to_value",
-        "apply_parameter_on_event",
-        "apply_curve_shape_on_event",
-        "default_event_class",
-        "initialise_default_event_class",
-    ),
-):
+class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     """Model continuous changing values (e.g. glissandi, crescendo).
 
     :param event_iterable_or_point_sequence: An iterable filled with events
@@ -44,33 +31,6 @@ class Envelope(
         more important that the used event classes fit with the functions
         passed in the following parameters.
     :type event_iterable_or_point_sequence: typing.Iterable[T]
-    :param event_to_parameter: A function which receives an event and has to
-        return a parameter object (any object). By default the function
-        asks the event for its `value` property. If the property can't be found
-        it returns 0.
-    :type event_to_parameter: typing.Callable[[core_events.abc.Event], typing.Any]
-    :param event_to_curve_shape: A function which receives an event and has
-        to return a curve_shape. A curve_shape is either a float, an integer
-        or a fraction. For a curve_shape = 0 a linear transition between two
-        points is created. For a curve_shape > 0 the envelope changes slower
-        at the beginning and faster at the end, for a curve_shape < 0 it is
-        the inverse behaviour. The default function asks the event for its
-        `curve_shape` property. If the property can't be found
-        it returns 0.
-    :type event_to_curve_shape: typing.Callable[[core_events.abc.Event], CurveShape]
-    :param parameter_to_value: Convert a parameter to a value. A value is any
-        object which supports mathematical operations.
-    :type parameter_to_value: typing.Callable[[Value], typing.Any]
-    :param value_to_parameter: A callable object which converts a value to a parameter.
-    :type value_to_parameter: typing.Callable[[Value], typing.Any]
-    :param apply_parameter_on_event: A callable object which applies a parameter on an event.
-    :type apply_parameter_on_event: typing.Callable[[core_events.abc.Event, typing.Any], None]
-    :param apply_curve_shape_on_event: A callable object which applies a curve shape on an event.
-    :type apply_curve_shape_on_event: typing.Callable[[core_events.abc.Event, CurveShape], None]
-    :param default_event_class: The default event class which describes a point.
-    :type default_event_class: type[core_events.abc.Event]
-    :param initialise_default_event_class:
-    :type initialise_default_event_class: typing.Callable[[type[core_events.abc.Event], core_parameters.abc.Duration], core_events.abc.Event]
 
     This class is inspired by Marc Evansteins `Envelope` class in his
     `expenvelope <https://git.sr.ht/~marcevanstein/expenvelope>`_
@@ -102,64 +62,18 @@ class Envelope(
     ]
     Point = CompletePoint | IncompletePoint
 
+    default_event_class = core_events.SimpleEvent
+
     def __init__(
         self,
         event_iterable_or_point_sequence: typing.Iterable[T] | typing.Sequence[Point],
-        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
-        tag: typing.Optional[str] = None,
-        event_to_parameter: typing.Callable[
-            [core_events.abc.Event], typing.Any
-        ] = lambda event: getattr(
-            event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME
-        )
-        if hasattr(event, core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME)
-        else 0,
-        event_to_curve_shape: typing.Callable[
-            [core_events.abc.Event], CurveShape
-        ] = lambda event: getattr(
-            event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME
-        )
-        if hasattr(event, core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME)
-        else 0,
-        parameter_to_value: typing.Callable[
-            [Value], typing.Any
-        ] = lambda parameter: parameter,
-        value_to_parameter: typing.Callable[[Value], typing.Any] = lambda value: value,
-        apply_parameter_on_event: typing.Callable[
-            [core_events.abc.Event, typing.Any], None
-        ] = lambda event, parameter: setattr(
-            event,
-            core_events.configurations.DEFAULT_PARAMETER_ATTRIBUTE_NAME,
-            parameter,
-        ),
-        apply_curve_shape_on_event: typing.Callable[
-            [core_events.abc.Event, CurveShape], None
-        ] = lambda event, curve_shape: setattr(
-            event,
-            core_events.configurations.DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME,
-            curve_shape,
-        ),
-        default_event_class: type[core_events.abc.Event] = core_events.SimpleEvent,
-        initialise_default_event_class: typing.Callable[
-            [type[core_events.abc.Event], "core_parameters.abc.Duration"],
-            core_events.abc.Event,
-        ] = lambda simple_event_class, duration: simple_event_class(
-            duration
-        ),  # type: ignore
+        *args,
+        **kwargs,
     ):
-        self.event_to_parameter = event_to_parameter
-        self.event_to_curve_shape = event_to_curve_shape
-        self.value_to_parameter = value_to_parameter
-        self.parameter_to_value = parameter_to_value
-        self.apply_parameter_on_event = apply_parameter_on_event
-        self.apply_curve_shape_on_event = apply_curve_shape_on_event
-        self.default_event_class = default_event_class
-        self.initialise_default_event_class = initialise_default_event_class
-
         event_iterable = self._event_iterable_or_point_sequence_to_event_iterable(
             event_iterable_or_point_sequence
         )
-        super().__init__(event_iterable, tempo_envelope, tag=tag)
+        super().__init__(event_iterable, *args, **kwargs)
 
     # ###################################################################### #
     #                           magic methods                                #
@@ -212,7 +126,7 @@ class Envelope(
     # ###################################################################### #
 
     def _make_event(self, duration, parameter, curve_shape):
-        event = self.initialise_default_event_class(self.default_event_class, duration)
+        event = self.initialise_default_event_class(duration)
         self.apply_parameter_on_event(event, parameter)
         self.apply_curve_shape_on_event(event, curve_shape)
         return event
@@ -393,6 +307,40 @@ class Envelope(
     # ###################################################################### #
     #                          public methods                                #
     # ###################################################################### #
+
+    def event_to_parameter(self, event: core_events.abc.Event) -> typing.Any:
+        """Fetch 'parameter' from event."""
+        return event.value
+
+    def event_to_curve_shape(self, event: core_events.abc.Event) -> core_constants.Real:
+        """Fetch 'curve_shape' from event."""
+        return event.curve_shape
+
+    def parameter_to_value(self, parameter: typing.Any) -> core_constants.Real:
+        """Convert from 'parameter' to 'value'."""
+        return parameter
+
+    def value_to_parameter(self, value: core_constants.Real) -> typing.Any:
+        """Convert from 'value' to 'parameter'."""
+        return value
+
+    def apply_parameter_on_event(
+        self, event: core_events.abc.Event, parameter: typing.Any
+    ):
+        """Apply 'parameter' on given event"""
+        event.value = parameter
+
+    def apply_curve_shape_on_event(
+        self, event: core_events.abc.Event, curve_shape: core_constants.Real
+    ):
+        """Apply 'curve_shape' on given event"""
+        event.curve_shape = curve_shape
+
+    def initialise_default_event_class(
+        self, duration: core_parameters.abc.Duration
+    ) -> core_events.abc.Event:
+        """Create new event object from event type."""
+        return self.default_event_class(duration=duration)
 
     def value_at(self, absolute_time: "core_parameters.abc.Duration") -> Value:
         """Get `value` at `absolute_time`.
@@ -852,9 +800,7 @@ class TempoEnvelope(Envelope):
 
     The default parameters of the `TempoEnvelope` class expects
     :class:`mutwo.core_events.SimpleEvent` to which a tempo point
-    was assigned by the name "tempo_point". This is specified in the global
-    `mutwo.core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME`
-    and can be adjusted.
+    was assigned by the name "tempo_point".
 
     **Example:**
 
@@ -876,69 +822,7 @@ class TempoEnvelope(Envelope):
     ... )
     """
 
-    def __init__(
-        self,
-        *args,
-        event_to_parameter: typing.Optional[
-            typing.Callable[[core_events.abc.Event], typing.Any]
-        ] = None,
-        value_to_parameter: typing.Optional[
-            typing.Callable[[core_events.Envelope.Value], typing.Any]
-        ] = None,
-        parameter_to_value: typing.Optional[
-            typing.Callable[[typing.Any], core_events.Envelope.Value]
-        ] = None,
-        apply_parameter_on_event: typing.Optional[
-            typing.Callable[[core_events.abc.Event, typing.Any], None]
-        ] = None,
-        default_event_class: type[core_events.abc.Event] = core_events.TempoEvent,
-        initialise_default_event_class: typing.Callable[
-            [type[core_events.abc.Event], "core_parameters.abc.Duration"],
-            core_events.abc.Event,
-        ] = lambda simple_event_class, duration: simple_event_class(
-            tempo_point=1, duration=duration
-        ),
-        **kwargs,
-    ):
-        def default_event_to_parameter(event: core_events.abc.Event) -> TempoPoint:
-            return getattr(
-                event,
-                core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME,
-            )
-
-        def default_value_to_parameter(value: float) -> TempoPoint:
-            return core_parameters.DirectTempoPoint(value)
-
-        def default_parameter_to_value(parameter: TempoPoint) -> float:
-            # Here we specify, that we allow either core_parameters.abc.TempoPoint
-            # or float/number objects.
-            # So in case we have a core_parameters.abc.TempoPoint 'getattr' is
-            # successful, if not it will return 'parameter', because it
-            # will assume that we have a number based tempo point.
-            return float(
-                getattr(parameter, "absolute_tempo_in_beats_per_minute", parameter)
-            )
-
-        def default_apply_parameter_on_event(
-            event: core_events.abc.Event, parameter: TempoPoint
-        ):
-            setattr(
-                event,
-                core_events.configurations.DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME,
-                parameter,
-            )
-
-        super().__init__(
-            *args,
-            event_to_parameter=event_to_parameter or default_event_to_parameter,
-            value_to_parameter=value_to_parameter or default_value_to_parameter,
-            parameter_to_value=parameter_to_value or default_parameter_to_value,
-            apply_parameter_on_event=apply_parameter_on_event
-            or default_apply_parameter_on_event,
-            default_event_class=default_event_class,
-            initialise_default_event_class=initialise_default_event_class,
-            **kwargs,
-        )
+    default_event_class = core_events.TempoEvent
 
     def __eq__(self, other: typing.Any):
         # TempoEnvelope can't use the default '__eq__' method inherited
@@ -955,3 +839,29 @@ class TempoEnvelope(Envelope):
             )
         except AttributeError:
             return False
+
+    def event_to_parameter(self, event: core_events.abc.Event) -> TempoPoint:
+        return event.tempo_point
+
+    def value_to_parameter(self, value: float) -> TempoPoint:
+        return core_parameters.DirectTempoPoint(value)
+
+    def parameter_to_value(self, parameter: TempoPoint) -> float:
+        # Here we specify, that we allow either core_parameters.abc.TempoPoint
+        # or float/number objects.
+        # So in case we have a core_parameters.abc.TempoPoint 'getattr' is
+        # successful, if not it will return 'parameter', because it
+        # will assume that we have a number based tempo point.
+        return float(
+            getattr(parameter, "absolute_tempo_in_beats_per_minute", parameter)
+        )
+
+    def apply_parameter_on_event(
+        self, event: core_events.abc.Event, parameter: TempoPoint
+    ):
+        event.tempo_point = parameter
+
+    def initialise_default_event_class(
+        self, duration: core_parameters.abc.Duration
+    ) -> core_events.abc.Event:
+        return self.default_event_class(tempo_point=1, duration=duration)

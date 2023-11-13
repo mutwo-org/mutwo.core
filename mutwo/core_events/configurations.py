@@ -94,18 +94,6 @@ in the `configurations` module (and not in private class methods),
 so that users are encouraged to override the variable if desired.
 """
 
-# Configure envelopes submodule
-
-DEFAULT_PARAMETER_ATTRIBUTE_NAME = "value"
-"""Default attribute name when fetching the parameter of an event"""
-
-DEFAULT_CURVE_SHAPE_ATTRIBUTE_NAME = "curve_shape"
-"""Default attribute name when fetching the curve shape of an event"""
-
-DEFAULT_TEMPO_ENVELOPE_PARAMETER_NAME = "tempo_point"
-"""Default property parameter name for events in
-:class:`mutwo.core_events.TempoEnvelope`."""
-
 
 # Avoid circular import problem
 @functools.cache

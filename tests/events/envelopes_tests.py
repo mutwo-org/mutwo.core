@@ -41,10 +41,12 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
                 self.EnvelopeEvent(1, 0, -1),
                 self.EnvelopeEvent(2, 1),
                 self.EnvelopeEvent(1, 0.5),
-            ],
-            value_to_parameter=lambda value: value / 2,
-            parameter_to_value=lambda parameter: parameter * 2,
+            ]
         )
+
+        e = self.double_value_envelope
+        e.value_to_parameter = lambda value: value / 2
+        e.parameter_to_value = lambda parameter: parameter * 2
 
     def get_event_class(self) -> typing.Type:
         return core_events.Envelope
