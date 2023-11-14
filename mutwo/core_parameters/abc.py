@@ -91,7 +91,7 @@ class ParameterWithEnvelope(Parameter):
     def resolve_envelope(
         self,
         duration: core_parameters.abc.Duration,
-        # XXX: We can't directly set the default attribute value,
+        # NOTE: We can't directly set the default attribute value,
         # but we have to do it with `None` and resolve it later,
         # because otherwise we will get a circular import
         # (core_parameters need to be imported before core_events,
