@@ -275,8 +275,8 @@ def find_closest_item(
 
 def uniqify_sequence(
     sequence: typing.Sequence,
-    sort_key: typing.Callable[[typing.Any], core_constants.Real] = None,
-    group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
+    sort_key: typing.Optional[typing.Callable[[typing.Any], core_constants.Real]] = None,
+    group_by_key: typing.Optional[typing.Callable[[typing.Any], typing.Any]] = None,
 ) -> typing.Iterable:
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.
 
