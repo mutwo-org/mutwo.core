@@ -32,6 +32,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 __all__ = (
+    "Parameter",
     "SingleValueParameter",
     "SingleNumberParameter",
     "ParameterWithEnvelope",
@@ -40,7 +41,16 @@ __all__ = (
 )
 
 
-class ParameterWithEnvelope(core_utilities.MutwoObject, abc.ABC):
+class Parameter(core_utilities.MutwoObject, abc.ABC):
+    """A Parameter is the base class for all mutwo parameters
+
+    It can be useful as a type hint for any code where a parameter
+    object is expected. This isn't necessarily at many places,
+    as mostly any object can be assigned as a parameter to an event.
+    """
+
+
+class ParameterWithEnvelope(Parameter):
     """Abstract base class for all parameters with an envelope."""
 
     def __init__(self, envelope: core_events.RelativeEnvelope):
@@ -75,7 +85,7 @@ class ParameterWithEnvelope(core_utilities.MutwoObject, abc.ABC):
         return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
-class SingleValueParameter(core_utilities.MutwoObject, abc.ABC):
+class SingleValueParameter(Parameter):
     """Abstract base class for all parameters which are defined by one value.
 
     Classes which inherit from this base class have
@@ -318,7 +328,7 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
 DurationOrReal = Duration | core_constants.Real
 
 
-class TempoPoint(core_utilities.MutwoObject, abc.ABC):
+class TempoPoint(Parameter):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
