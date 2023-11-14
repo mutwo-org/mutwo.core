@@ -5,11 +5,12 @@ import typing
 
 from mutwo import core_events
 from mutwo import core_parameters
+from mutwo import core_utilities
 
 __all__ = ("Converter", "EventConverter", "SymmetricalEventConverter")
 
 
-class Converter(abc.ABC):
+class Converter(core_utilities.MutwoObject, abc.ABC):
     """Abstract base class for all Converter classes.
 
     Converter classes are defined as classes that convert data between

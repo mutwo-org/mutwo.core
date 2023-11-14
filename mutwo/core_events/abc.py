@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import abc
-import copy
 import functools
 import typing
 
@@ -15,7 +14,7 @@ from mutwo import core_utilities
 __all__ = ("Event", "ComplexEvent")
 
 
-class Event(abc.ABC):
+class Event(core_utilities.MutwoObject, abc.ABC):
     """Abstract Event-Object
 
     :param tempo_envelope: An envelope which describes the dynamic tempo of an event.
@@ -206,10 +205,6 @@ class Event(abc.ABC):
     # ###################################################################### #
     #                           public methods                               #
     # ###################################################################### #
-
-    def copy(self) -> Event:
-        """Return a deep copy of the given Event."""
-        return copy.deepcopy(self)
 
     @abc.abstractmethod
     def destructive_copy(self) -> Event:

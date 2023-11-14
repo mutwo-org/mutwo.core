@@ -11,7 +11,6 @@ newly created parameter class.
 from __future__ import annotations
 
 import abc
-import copy
 import functools
 import operator
 import typing
@@ -41,7 +40,7 @@ __all__ = (
 )
 
 
-class ParameterWithEnvelope(abc.ABC):
+class ParameterWithEnvelope(core_utilities.MutwoObject, abc.ABC):
     """Abstract base class for all parameters with an envelope."""
 
     def __init__(self, envelope: core_events.RelativeEnvelope):
@@ -76,7 +75,7 @@ class ParameterWithEnvelope(abc.ABC):
         return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
-class SingleValueParameter(abc.ABC):
+class SingleValueParameter(core_utilities.MutwoObject, abc.ABC):
     """Abstract base class for all parameters which are defined by one value.
 
     Classes which inherit from this base class have
@@ -164,9 +163,6 @@ class SingleValueParameter(abc.ABC):
             return getattr(self, self.value_name) == getattr(other, self.value_name)  # type: ignore
         except AttributeError:
             return False
-
-    def copy(self) -> SingleValueParameter:
-        return copy.deepcopy(self)
 
 
 @functools.total_ordering
@@ -322,7 +318,7 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
 DurationOrReal = Duration | core_constants.Real
 
 
-class TempoPoint(abc.ABC):
+class TempoPoint(core_utilities.MutwoObject, abc.ABC):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
