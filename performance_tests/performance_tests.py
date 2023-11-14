@@ -66,3 +66,13 @@ class PerformanceTest(unittest.TestCase):
             [[i, 60] if i % 2 == 0 else [i, 50] for i in range(5)]
         )
         e.metrize()
+
+    @t(0.07, 100)
+    def test_SimultaneousEvent_copy(self):
+        e = sim(
+            [
+                seq([s(random.uniform(1, 3)).set_parameter("a", 10) for _ in range(30)])
+                for c in range(100)
+            ]
+        )
+        e.copy()
