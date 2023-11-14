@@ -26,7 +26,6 @@ from mutwo import core_constants
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_parameters
-from mutwo import core_utilities
 
 
 __all__ = (
@@ -54,9 +53,6 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
     """
 
     TempoPoint = core_parameters.abc.TempoPoint | core_constants.Real
-
-    def __init__(self):
-        self._logger = core_utilities.get_cls_logger(type(self))
 
     @staticmethod
     def _beats_per_minute_to_seconds_per_beat(

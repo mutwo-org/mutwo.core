@@ -18,12 +18,16 @@
 from __future__ import annotations
 
 import copy
+import functools
 import pickle
 import typing
+
+from mutwo import core_utilities
 
 __all__ = ("MutwoObject",)
 
 T = typing.TypeVar("T")
+
 
 class MutwoObject(object):
     """Base class for mutwo objects
@@ -31,6 +35,11 @@ class MutwoObject(object):
     This class collects functionality that's useful for any object in the
     mutwo ecosystem.
     """
+
+    @functools.cached_property
+    def _logger(self):
+        """The class based logger."""
+        return core_utilities.get_cls_logger(type(self))
 
     def copy(self: T) -> T:
         """Return a deep copy of mutwo object."""

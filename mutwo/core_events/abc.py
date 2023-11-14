@@ -566,7 +566,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     ):
         Event.__init__(self, tempo_envelope, tag)
         list.__init__(self, iterable)
-        self._logger = core_utilities.get_cls_logger(type(self))
 
     def __init_subclass__(
         cls, class_specific_side_attribute_tuple: tuple[str, ...] = tuple([])
