@@ -67,7 +67,7 @@ class PerformanceTest(unittest.TestCase):
         )
         e.metrize()
 
-    @t(0.07, 100)
+    @t(0.03, 100)
     def test_SimultaneousEvent_copy(self):
         e = sim(
             [
