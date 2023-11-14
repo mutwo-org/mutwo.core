@@ -791,7 +791,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         absolute_time_list: list[core_parameters.abc.Duration],
         slice_tuple_to_event: typing.Callable[
-            [tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event
+            [tuple[core_events.abc.Event, ...]], core_events.abc.Event
         ],
     ) -> tuple[core_events.abc.Event, ...]:
         """Split at given times and cast split events into new events."""
@@ -1051,7 +1051,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
         self,
         slice_tuple_to_event: typing.Optional[
             typing.Callable[
-                [tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event
+                [tuple[core_events.abc.Event, ...]], core_events.abc.Event
             ]
         ] = None,
     ) -> core_events.SequentialEvent:
@@ -1072,7 +1072,7 @@ class SimultaneousEvent(core_events.abc.ComplexEvent, typing.Generic[T]):
             which transforms polyphonic music to a chord structure).
             If ``None`` `slice_tuple_to_event` is set to
             :class:`SimultaneousEvent`. Default to ``None``.
-        :type slice_tuple_to_event: typing.Optional[typing.Callable[[tuple[core_parameters.abc.Event, ...]], core_parameters.abc.Event]]
+        :type slice_tuple_to_event: typing.Optional[typing.Callable[[tuple[core_events.abc.Event, ...]], core_events.abc.Event]]
 
         **Warning:**
 
