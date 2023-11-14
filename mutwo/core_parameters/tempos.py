@@ -65,7 +65,7 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
         self.reference = reference
         self.textual_indication = textual_indication
 
-    # XXX: Dummy getter / setter to avoid TypeError due to
+    # NOTE: Dummy getter / setter to avoid TypeError due to
     # abstract parent class.
     @property
     def reference(self) -> float:
