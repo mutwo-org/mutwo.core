@@ -70,14 +70,14 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     """
 
     # Type definitions
-    Value = core_constants.Real
-    Parameter = typing.Any
-    CurveShape = core_constants.Real
-    IncompletePoint = tuple["core_parameters.abc.Duration", Parameter]
-    CompletePoint = tuple[
+    Value: typing.TypeAlias = core_constants.Real
+    Parameter: typing.TypeAlias = typing.Any
+    CurveShape: typing.TypeAlias = core_constants.Real
+    IncompletePoint: typing.TypeAlias = tuple["core_parameters.abc.Duration", Parameter]
+    CompletePoint: typing.TypeAlias = tuple[
         "core_parameters.abc.Duration", Parameter, CurveShape  # type: ignore
     ]
-    Point = CompletePoint | IncompletePoint
+    Point: typing.TypeAlias = CompletePoint | IncompletePoint
 
     default_event_class = core_events.SimpleEvent
 

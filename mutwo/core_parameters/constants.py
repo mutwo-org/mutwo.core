@@ -16,18 +16,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import ranges
+import typing
 
-TempoInBeatsPerMinute = float
+TempoInBeatsPerMinute: typing.TypeAlias = float
 """Type alias for `TempoInBeatsPerMinute`. Used in
 `core_parameters.abc.TempoPoint`"""
 
-TempoRangeInBeatsPerMinute = ranges.Range
+TempoRangeInBeatsPerMinute: typing.TypeAlias = ranges.Range
 """Type alias for `TempoRangeInBeatsPerMinute`. Used in
 `core_parameters.abc.TempoPoint`"""
 
-TempoOrTempoRangeInBeatsPerMinute = TempoInBeatsPerMinute | TempoRangeInBeatsPerMinute
+TempoOrTempoRangeInBeatsPerMinute: typing.TypeAlias = TempoInBeatsPerMinute | TempoRangeInBeatsPerMinute
 """Type alias for `TempoOrTempoRangeInBeatsPerMinute`. Used in
 `core_parameters.abc.TempoPoint`"""
 
 # Cleanup
-del ranges
+del ranges, typing

@@ -87,7 +87,7 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
         )
 
 
-MutwoParameterDict = dict[str, typing.Any]
+MutwoParameterDict: typing.TypeAlias = dict[str, typing.Any]
 
 
 class MutwoParameterDictToKeywordArgument(core_converters.abc.Converter):
