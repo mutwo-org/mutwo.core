@@ -57,6 +57,8 @@ __all__ = (
     "TempoPoint",
 )
 
+T = typing.TypeVar("T", bound="Parameter")
+
 
 class Parameter(core_utilities.MutwoObject, abc.ABC):
     """A Parameter is the base class for all mutwo parameters
@@ -65,6 +67,20 @@ class Parameter(core_utilities.MutwoObject, abc.ABC):
     object is expected. This isn't necessarily at many places,
     as mostly any object can be assigned as a parameter to an event.
     """
+
+    @classmethod
+    def from_any(cls: typing.Type[T], object) -> T:
+        """Parse any object to Parameter.
+
+        :param object: Object that is parsed to the parameter.
+        :raises: core_utilities.CannotParseError in case the object
+          can't be parsed to the parameter type.
+
+        This method is useful for allowing syntactic sugar.
+        """
+        if not isinstance(object, cls):
+            raise core_utilities.CannotParseError(object, cls)
+        return object
 
 
 class ParameterWithEnvelope(Parameter):
@@ -297,36 +313,42 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
     if _fractions:
         direct_comparison_type_tuple += (_fractions.Fraction,)
 
+    Type: typing.TypeAlias = typing.Union[core_constants.Real, str, "Duration"]
+    """Duration.Type hosts all types that are supported by the duration parser
+    :func:`Duration.from_any`."""
+
     def _math_operation(
-        self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
+        self,
+        other: Duration | core_constants.Real,
+        operation: typing.Callable[[float, float], float],
     ) -> Duration:
         self.duration = float(
             operation(self.duration, getattr(other, "duration", other))
         )
         return self
 
-    def add(self, other: DurationOrReal) -> Duration:
+    def add(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.add)
 
-    def subtract(self, other: DurationOrReal) -> Duration:
+    def subtract(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.sub)
 
-    def multiply(self, other: DurationOrReal) -> Duration:
+    def multiply(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.mul)
 
-    def divide(self, other: DurationOrReal) -> Duration:
+    def divide(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.truediv)
 
-    def __add__(self, other: DurationOrReal) -> Duration:
+    def __add__(self, other: Duration | core_constants.Real) -> Duration:
         return self.copy().add(other)
 
-    def __sub__(self, other: DurationOrReal) -> Duration:
+    def __sub__(self, other: Duration | core_constants.Real) -> Duration:
         return self.copy().subtract(other)
 
-    def __mul__(self, other: DurationOrReal) -> Duration:
+    def __mul__(self, other: Duration | core_constants.Real) -> Duration:
         return self.copy().multiply(other)
 
-    def __truediv__(self, other: DurationOrReal) -> Duration:
+    def __truediv__(self, other: Duration | core_constants.Real) -> Duration:
         return self.copy().divide(other)
 
     def __float__(self) -> float:
@@ -341,8 +363,33 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
     def duration(self, duration: core_constants.Real):
         ...
 
+    @classmethod
+    def from_any(cls: typing.Type[T], object: Duration.Type) -> T:
+        builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
+        match object:
+            case Duration():
+                return object
+            case float() | int():
+                return core_parameters.DirectDuration(object)
+            case fractions.Fraction() | builtin_fraction():
+                return core_parameters.RatioDuration(object)
+            case str():
+                if "." in object:
+                    f = float
+                elif "/" in object:
+                    f = fractions.Fraction
+                else:
+                    f = int
+                try:
+                    v = f(object)
+                except ValueError:
+                    pass
+                else:
+                    return Duration.from_any(v)
+            case _:
+                pass
 
-DurationOrReal = Duration | core_constants.Real
+        raise core_utilities.CannotParseError(object, cls)
 
 
 class TempoPoint(Parameter):
@@ -352,6 +399,10 @@ class TempoPoint(Parameter):
     properties :attr:`tempo_or_tempo_range_in_beats_per_minute`
     and `reference` have to be overridden.
     """
+
+    Type: typing.TypeAlias = typing.Union["TempoPoint", core_constants.Real]
+    """TempoPoint.Type hosts all types that are supported by the tempo point
+    parser :func:`TempoPoint.from_any`."""
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}{self._print_data}"
@@ -408,3 +459,14 @@ class TempoPoint(Parameter):
         """
 
         return self.tempo_in_beats_per_minute * self.reference
+
+    @classmethod
+    def from_any(cls: typing.Type[T], object: TempoPoint.Type) -> T:
+        builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
+        match object:
+            case Tempo():
+                return object
+            case float() | int() | fractions.Fraction() | builtin_fraction():
+                return core_parameters.DirectTempoPoint(object)
+            case _:
+                raise core_utilities.CannotParseError(object, cls)

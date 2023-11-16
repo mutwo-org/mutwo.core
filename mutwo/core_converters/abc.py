@@ -147,7 +147,7 @@ class EventConverter(Converter):
             3. :class:`mutwo.core_events.Concurrence`.
         """
         e = event_to_convert
-        t = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(absolute_entry_delay)
+        t = core_parameters.abc.Duration.from_any(absolute_entry_delay)
         match e:
             case core_events.Consecution():
                 f = self._convert_consecution

@@ -45,7 +45,7 @@ class Chronon(core_events.abc.Event):
 
     :param duration: The duration of the ``Chronon``. Mutwo converts
         the incoming object to a :class:`mutwo.core_parameters.abc.Duration` object
-        with the global `core_events.configurations.UNKNOWN_OBJECT_TO_DURATION`
+        with the global `core_parameters.abc.Duration.from_any`
         callable.
     :param *args: Arguments parsed to :class:`mutwo.core_events.abc.Event`.
     :param **kwargs: Keyword arguments parsed to :class:`mutwo.core_events.abc.Event`.
@@ -63,7 +63,7 @@ class Chronon(core_events.abc.Event):
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope", "tag")
     _short_name_length = 1
 
-    def __init__(self, duration: core_parameters.abc.Duration, *args, **kwargs):
+    def __init__(self, duration: core_parameters.abc.Duration.Type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.duration = duration
 
@@ -169,8 +169,8 @@ class Chronon(core_events.abc.Event):
         return self._duration
 
     @duration.setter
-    def duration(self, duration: core_parameters.abc.Duration):
-        self._duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+    def duration(self, duration: core_parameters.abc.Duration.Type):
+        self._duration = core_parameters.abc.Duration.from_any(duration)
 
     # ###################################################################### #
     #                           public methods                               #
@@ -242,13 +242,10 @@ class Chronon(core_events.abc.Event):
 
     def cut_out(  # type: ignore
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Chronon:
-        start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(
             start, end, condition=lambda start, end: start < end
@@ -271,13 +268,10 @@ class Chronon(core_events.abc.Event):
 
     def cut_off(  # type: ignore
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Chronon:
-        start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
 
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
@@ -364,13 +358,11 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def _split_child_at(
         self,
-        absolute_time: core_parameters.abc.Duration | typing.Any,
+        absolute_time: core_parameters.abc.Duration.Type,
         abstf_tuple: tuple[float, ...],
         durf: float,
     ) -> int:
-        absolute_time = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        )
+        absolute_time = core_parameters.abc.Duration.from_any(absolute_time)
         self._assert_valid_absolute_time(absolute_time)
         abstf = absolute_time.duration
 
@@ -488,13 +480,13 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
     # ###################################################################### #
 
     def get_event_index_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
+        self, absolute_time: core_parameters.abc.Duration.Type
     ) -> typing.Optional[int]:
         """Get index of event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration.Type
         :return: Index of event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -512,22 +504,20 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         This method ignores events with duration == 0.
         """
-        abstf = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_time
-        ).duration
+        abstf = core_parameters.abc.Duration.from_any(absolute_time).duration
         abstf_tuple, durf = self._abstf_tuple_and_dur
         return Consecution._get_index_at_from_absolute_time_tuple(
             abstf, abstf_tuple, durf
         )
 
     def get_event_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
+        self, absolute_time: core_parameters.abc.Duration.Type
     ) -> typing.Optional[T]:
         """Get event which is active at the passed absolute_time.
 
         :param absolute_time: The absolute time where the method shall search
             for the active event.
-        :type absolute_time: core_parameters.abc.Duration | typing.Any
+        :type absolute_time: core_parameters.abc.Duration.Type
         :return: Event if there is any event at the requested absolute time
             and ``None`` if there isn't any event.
 
@@ -552,12 +542,12 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_out(  # type: ignore
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Consecution[T]:
         start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
+            core_parameters.abc.Duration.from_any(o)
+            for o in (start, end)
         )
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
@@ -590,13 +580,10 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_off(  # type: ignore
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Consecution[T]:
-        start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
         self._assert_valid_absolute_time(start)
         cut_off_duration = end - start
         # Avoid unnecessary iterations
@@ -606,10 +593,10 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def squash_in(  # type: ignore
         self,
-        start: core_parameters.abc.Duration | typing.Any,
+        start: core_parameters.abc.Duration.Type,
         event_to_squash_in: core_events.abc.Event,
     ) -> Consecution[T]:
-        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
         start_in_floats = start.duration
         self._assert_start_in_range(start_in_floats)
@@ -634,12 +621,10 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
             # There is an event on the given point which need to be
             # split.
             except ValueError:
-                active_event_index = (
-                    Consecution._get_index_at_from_absolute_time_tuple(
-                        start_in_floats,
-                        abstf_tuple,
-                        durf,
-                    )
+                active_event_index = Consecution._get_index_at_from_absolute_time_tuple(
+                    start_in_floats,
+                    abstf_tuple,
+                    durf,
                 )
                 split_position = start_in_floats - abstf_tuple[active_event_index]
                 if (
@@ -660,10 +645,10 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def slide_in(
         self,
-        start: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
         event_to_slide_in: core_events.abc.Event,
     ) -> Consecution[T]:
-        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
         start_in_floats = start.duration
         if start_in_floats == 0:
@@ -679,7 +664,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
         return self
 
     def split_child_at(
-        self, absolute_time: core_parameters.abc.Duration | typing.Any
+        self, absolute_time: core_parameters.abc.Duration.Type
     ) -> Consecution[T]:
         abstf_tuple, durf = self._abstf_tuple_and_dur
         self._split_child_at(absolute_time, abstf_tuple, durf)
@@ -687,19 +672,23 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def split_at(
         self,
-        *absolute_time: core_parameters.abc.Duration,
+        *absolute_time: core_parameters.abc.Duration.Type,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[Consecution, ...]:
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
+        split_abstf_list = [
+            core_parameters.abc.Duration.from_any(t).duration for t in absolute_time
+        ]
+
         abstf_tuple, durf = self._abstf_tuple_and_dur
-        abst_list = list(abstf_tuple)
+        abstf_list = list(abstf_tuple)
         c = self.copy()
 
         index_list = []
         is_first = True
-        for t in sorted(absolute_time):
+        for t in sorted(split_abstf_list):
             if is_first:  # First is smallest, check if t < 0
                 self._assert_valid_absolute_time(t)
                 is_first = False
@@ -707,15 +696,15 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
             # already split here. We also need to be sure to not
             # add any duplicates to 'absolute_time_list', so we need
             # to check anyway.
-            if t in abst_list:
-                index_list.append(abst_list.index(t))
+            if t in abstf_list:
+                index_list.append(abstf_list.index(t))
                 continue
             # It's okay to ignore, this is still within the given event
             # (if we don't continue 'split_child_at' raises an error).
             if t == durf:
                 continue
             try:
-                i = c._split_child_at(t, tuple(abst_list), durf)
+                i = c._split_child_at(t, tuple(abstf_list), durf)
             except core_utilities.SplitUnavailableChildError:
                 if not ignore_invalid_split_point:
                     raise core_utilities.SplitError(t)
@@ -724,8 +713,8 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
                 # absolute times are sorted).
                 break
             index_list.append(i)
-            abst_list.append(t)
-            abst_list.sort()
+            abstf_list.append(t)
+            abstf_list.sort()
 
         # Add frame indices (if not already present)
         if 0 not in index_list:
@@ -738,13 +727,13 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def extend_until(
         self,
-        duration: core_parameters.abc.Duration,
+        duration: core_parameters.abc.Duration.Type,
         duration_to_white_space: typing.Optional[
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
         prolong_chronon: bool = True,
     ) -> Consecution[T]:
-        duration = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+        duration = core_parameters.abc.Duration.from_any(duration)
         duration_to_white_space = (
             duration_to_white_space
             or core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE
@@ -839,13 +828,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_out(  # type: ignore
         self,
-        start: core_parameters.abc.Duration | typing.Any,
-        end: core_parameters.abc.Duration | typing.Any,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Concurrence[T]:
-        start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
         [e.cut_out(start, end) for e in self]
@@ -853,13 +839,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def cut_off(  # type: ignore
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> Concurrence[T]:
-        start, end = (
-            core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(u)
-            for u in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
         [e.cut_off(start, end) for e in self]
@@ -867,10 +850,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def squash_in(  # type: ignore
         self,
-        start: core_parameters.abc.Duration | typing.Any,
+        start: core_parameters.abc.Duration.Type,
         event_to_squash_in: core_events.abc.Event,
     ) -> Concurrence[T]:
-        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
 
@@ -884,10 +867,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def slide_in(
         self,
-        start: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
         event_to_slide_in: core_events.abc.Event,
     ) -> Concurrence[T]:
-        start = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(start)
+        start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
         for e in self:
@@ -899,20 +882,21 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         return self
 
     def split_child_at(
-        self, absolute_time: core_parameters.abc.Duration
+        self, absolute_time: core_parameters.abc.Duration.Type
     ) -> Concurrence[T]:
+        abst = core_parameters.abc.Duration.from_any(absolute_time)
         for i, e in enumerate(self):
             try:
-                e.split_child_at(absolute_time)
+                e.split_child_at(abst)
             # chronons don't have a 'split_child_at' method
             except AttributeError:
-                split_event = e.split_at(absolute_time)
+                split_event = e.split_at(abst)
                 self[i] = Consecution(split_event)
         return self
 
     def extend_until(
         self,
-        duration: typing.Optional[core_parameters.abc.Duration] = None,
+        duration: typing.Optional[core_parameters.abc.Duration.Type] = None,
         duration_to_white_space: typing.Optional[
             typing.Callable[[core_parameters.abc.Duration], core_events.abc.Event]
         ] = None,
@@ -921,7 +905,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         duration = (
             self.duration
             if duration is None
-            else core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration)
+            else core_parameters.abc.Duration.from_any(duration)
         )
         duration_to_white_space = (
             duration_to_white_space
@@ -1122,13 +1106,15 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def split_at(
         self,
-        *absolute_time: core_parameters.abc.Duration,
+        *absolute_time: core_parameters.abc.Duration.Type,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[Concurrence, ...]:
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
-        abst_list = sorted(absolute_time)
+        abst_list = sorted(
+            [core_parameters.abc.Duration.from_any(t) for t in absolute_time]
+        )
         self._assert_valid_absolute_time(abst_list[0])
         if abst_list[-1] > self.duration and not ignore_invalid_split_point:
             raise core_utilities.SplitError(abst_list[-1])
