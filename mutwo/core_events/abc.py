@@ -40,7 +40,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     """
 
     # For '_short_name': this is used in __str__.
-    _short_name_length = 3
+    _short_name_length = 4
 
     # It looks tempting to drop the 'tempo_envelope' attribute of events.
     # It may look simpler (and therefore more elegant) if events are only
@@ -237,19 +237,19 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         >>> import copy
         >>> from mutwo import core_events
-        >>> s0 = core_events.SimpleEvent(2)
-        >>> s1 = core_events.SimpleEvent(3)
-        >>> seq = core_events.SequentialEvent([s0, s1, s0])
-        >>> seq_copy = copy.deepcopy(seq)
-        >>> seq_destr_copy = seq.destructive_copy()
-        >>> seq_copy[0].duration = 10  # setting the duration of the first event
-        >>> seq_destr_copy[0].duration = 10
+        >>> chr0 = core_events.Chronon(2)
+        >>> chr1 = core_events.Chronon(3)
+        >>> cons = core_events.Consecution([chr0, chr1, chr0])
+        >>> cons_copy = copy.deepcopy(cons)
+        >>> cons_destr_copy = cons.destructive_copy()
+        >>> cons_copy[0].duration = 10  # setting the duration of the first event
+        >>> cons_destr_copy[0].duration = 10
         >>> # return True because the first and the third objects share the same
-        >>> # reference (both are the same copy of 'my_simple_event_0')
-        >>> seq_copy[0].duration == seq_copy[2].duration
+        >>> # reference (both are the same copy of 'my_chronon_0')
+        >>> cons_copy[0].duration == cons_copy[2].duration
         True
         >>> # return False because destructive_copy forgets the shared reference
-        >>> seq_destr_copy[0].duration == seq_destr_copy[2].duration
+        >>> cons_destr_copy[0].duration == cons_destr_copy[2].duration
         False
         """
 
@@ -271,9 +271,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> seq = core_events.SequentialEvent([core_events.SimpleEvent(2)])
-        >>> seq.set('duration', 10).set('my_new_attribute', 'hello-world!')
-        SequentialEvent([SimpleEvent(duration=DirectDuration(10.0))])
+        >>> cons = core_events.Consecution([core_events.Chronon(2)])
+        >>> cons.set('duration', 10).set('my_new_attribute', 'hello-world!')
+        Consecution([Chronon(duration=DirectDuration(10.0))])
         """
         setattr(self, attribute_name, value)
         return self
@@ -291,7 +291,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         :type flat: bool
         :param filter_undefined: If set to ``True`` all ``None`` values will be filtered
             from the returned tuple. Default to ``False``. This flag has no effect on
-            :func:`get_parameter` of :class:`mutwo.core_events.SimpleEvent`.
+            :func:`get_parameter` of :class:`mutwo.core_events.Chronon`.
         :type flat: bool
         :return: Return tuple containing the assigned values for each contained
             event. If an event doesn't posses the asked parameter, mutwo will simply
@@ -300,15 +300,15 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> seq = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
+        >>> cons = core_events.Consecution(
+        ...     [core_events.Chronon(2), core_events.Chronon(3)]
         ... )
-        >>> seq.get_parameter('duration')
+        >>> cons.get_parameter('duration')
         (DirectDuration(2.0), DirectDuration(3.0))
-        >>> s = core_events.SimpleEvent(10)
-        >>> s.get_parameter('duration')
+        >>> chr = core_events.Chronon(10)
+        >>> chr.get_parameter('duration')
         DirectDuration(10.0)
-        >>> s.get_parameter('undefined_parameter')
+        >>> chr.get_parameter('undefined_parameter')
         """
 
     def set_parameter(
@@ -335,19 +335,19 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> seq = core_events.SequentialEvent(
-        ...     [core_events.SimpleEvent(2), core_events.SimpleEvent(3)]
+        >>> cons = core_events.Consecution(
+        ...     [core_events.Chronon(2), core_events.Chronon(3)]
         ... )
-        >>> seq.set_parameter('duration', lambda duration: duration * 2)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(4.0)), SimpleEvent(duration=DirectDuration(6.0))])
-        >>> seq.get_parameter('duration')
+        >>> cons.set_parameter('duration', lambda duration: duration * 2)
+        Consecution([Chronon(duration=DirectDuration(4.0)), Chronon(duration=DirectDuration(6.0))])
+        >>> cons.get_parameter('duration')
         (DirectDuration(4.0), DirectDuration(6.0))
 
         **Warning:**
 
         If there are multiple references of the same Event inside a
-        :class:`~mutwo.core_events.SequentialEvent` or a
-        :class:`~mutwo.core_events.SimultaneousEvent`, ``set_parameter``
+        :class:`~mutwo.core_events.Consecution` or a
+        :class:`~mutwo.core_events.Concurrence`, ``set_parameter``
         is only called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
@@ -384,20 +384,20 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> seq= core_events.SequentialEvent([core_events.SimpleEvent(1)])
-        >>> seq.mutate_parameter(
+        >>> cons= core_events.Consecution([core_events.Chronon(1)])
+        >>> cons.mutate_parameter(
         ...     'duration', lambda duration: duration.add(1)
         ... )
-        SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))])
+        Consecution([Chronon(duration=DirectDuration(2.0))])
         >>> # now duration should be + 1
-        >>> seq.get_parameter('duration')
+        >>> cons.get_parameter('duration')
         (DirectDuration(2.0),)
 
         **Warning:**
 
         If there are multiple references of the same Event inside a
-        :class:`~mutwo.core_events.SequentialEvent` or a
-        ~mutwo.core_events.SimultaneousEvent`, ``mutate_parameter`` will
+        :class:`~mutwo.core_events.Consecution` or a
+        ~mutwo.core_events.Concurrence`, ``mutate_parameter`` will
         only be called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
@@ -418,13 +418,13 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s = core_events.SimpleEvent(duration = 1)
-        >>> s.tempo_envelope[0].value = 100
-        >>> print(s.tempo_envelope)
+        >>> chr = core_events.Chronon(duration = 1)
+        >>> chr.tempo_envelope[0].value = 100
+        >>> print(chr.tempo_envelope)
         tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1), val=100), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
-        >>> s.reset_tempo_envelope()
-        SimpleEvent(duration=DirectDuration(1.0))
-        >>> print(s.tempo_envelope)
+        >>> chr.reset_tempo_envelope()
+        Chronon(duration=DirectDuration(1.0))
+        >>> print(chr.tempo_envelope)
         tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1)), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         """
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
@@ -439,11 +439,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> s = core_events.SimpleEvent(1)
-        >>> s.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
-        >>> core_converters.EventToMetrizedEvent().convert(
-        ...     s
-        ... ) == s.metrize()
+        >>> chr = core_events.Chronon(1)
+        >>> chr.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
+        >>> core_converters.EventToMetrizedEvent().convert(chr) == chr.metrize()
         True
         """
 
@@ -461,10 +459,10 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s0, s1 = (core_events.SimpleEvent(3), core_events.SimpleEvent(2))
-        >>> seq = core_events.SequentialEvent([s0, s1])
-        >>> seq.cut_out(1, 4)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(2.0)), SimpleEvent(duration=DirectDuration(1.0))])
+        >>> chr0, chr1 = (core_events.Chronon(3), core_events.Chronon(2))
+        >>> cons = core_events.Consecution([chr0, chr1])
+        >>> cons.cut_out(1, 4)
+        Consecution([Chronon(duration=DirectDuration(2.0)), Chronon(duration=DirectDuration(1.0))])
         """
 
     @abc.abstractmethod
@@ -481,10 +479,10 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s0, s1 = (core_events.SimpleEvent(3), core_events.SimpleEvent(2))
-        >>> seq = core_events.SequentialEvent([s0, s1])
-        >>> seq.cut_off(1, 3)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0))])
+        >>> chr0, chr1 = (core_events.Chronon(3), core_events.Chronon(2))
+        >>> cons = core_events.Consecution([chr0, chr1])
+        >>> cons.cut_off(1, 3)
+        Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(2.0))])
         """
 
     def split_at(
@@ -510,16 +508,16 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         Calling ``split_at`` once with multiple split time arguments is much more efficient
         than calling ``split_at`` multiple times with only one split time for
-        :class:`mutwo.core_events.SequentialEvent`.
+        :class:`mutwo.core_events.Consecution`.
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> seq = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> seq.split_at(1)
-        (SequentialEvent([SimpleEvent(duration=DirectDuration(1.0))]), SequentialEvent([SimpleEvent(duration=DirectDuration(2.0))]))
-        >>> seq[0].split_at(1)
-        (SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0)))
+        >>> cons = core_events.Consecution([core_events.Chronon(3)])
+        >>> cons.split_at(1)
+        (Consecution([Chronon(duration=DirectDuration(1.0))]), Consecution([Chronon(duration=DirectDuration(2.0))]))
+        >>> cons[0].split_at(1)
+        (Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(2.0)))
         """
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
@@ -798,8 +796,8 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
         If we concatenate events on the time axis, we also want to
         ensure that the tempo information is not lost.
-        This includes the `+` magic method of ``SequentialEvent``,
-        but also the `concatenate_by...` methods of ``SimultaneousEvent``.
+        This includes the `+` magic method of ``Consecution``,
+        but also the `concatenate_by...` methods of ``Concurrence``.
 
         It's important to first call this method before appending the
         child events of the other container, because we still need
@@ -844,12 +842,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> piano_voice_0 = core_events.SequentialEvent([core_events.SimpleEvent(2)], tag="piano")
+        >>> piano_voice_0 = core_events.Consecution([core_events.Chronon(2)], tag="piano")
         >>> piano_voice_1 = piano_voice_0.empty_copy()
         >>> piano_voice_1.tag
         'piano'
         >>> piano_voice_1
-        SequentialEvent([])
+        Consecution([])
         """
         return type(self)(
             [],
@@ -867,14 +865,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> nested_sequential_event = core_events.SequentialEvent(
-        ...     [core_events.SequentialEvent([core_events.SimpleEvent(2)])]
+        >>> nested_consecution = core_events.Consecution(
+        ...     [core_events.Consecution([core_events.Chronon(2)])]
         ... )
-        >>> nested_sequential_event.get_event_from_index_sequence((0, 0))
-        SimpleEvent(duration=DirectDuration(2.0))
+        >>> nested_consecution.get_event_from_index_sequence((0, 0))
+        Chronon(duration=DirectDuration(2.0))
         >>> # this is equal to:
-        >>> nested_sequential_event[0][0]
-        SimpleEvent(duration=DirectDuration(2.0))
+        >>> nested_consecution[0][0]
+        Chronon(duration=DirectDuration(2.0))
         """
 
         return core_utilities.get_nested_item_from_index_sequence(index_sequence, self)
@@ -885,7 +883,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         plist: list[typing.Any] = []
         for e in self:
             param_or_param_tuple = e.get_parameter(parameter_name, flat=flat)
-            if is_simple_event := isinstance(e, core_events.SimpleEvent):
+            if is_chronon := isinstance(e, core_events.Chronon):
                 param_tuple = (param_or_param_tuple,)
             else:
                 param_tuple = param_or_param_tuple
@@ -896,7 +894,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             else:
                 # Simple events should be added without tuple, they only
                 # provide one parameter.
-                if is_simple_event:
+                if is_chronon:
                     if param_tuple:
                         plist.append(param_tuple[0])
                 else:
@@ -916,11 +914,11 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> simultaneous_event = core_events.SimultaneousEvent(
-        ...     [core_events.SimpleEvent(1), core_events.SimpleEvent(3), core_events.SimpleEvent(2)]
+        >>> concurrence = core_events.Concurrence(
+        ...     [core_events.Chronon(1), core_events.Chronon(3), core_events.Chronon(2)]
         ... )
-        >>> simultaneous_event.remove_by(lambda event: event.duration > 2)
-        SimultaneousEvent([SimpleEvent(duration=DirectDuration(3.0))])
+        >>> concurrence.remove_by(lambda event: event.duration > 2)
+        Concurrence([Chronon(duration=DirectDuration(3.0))])
         """
         for i, e in zip(reversed(range(len(self))), reversed(self)):
             if not condition(e):
@@ -952,7 +950,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             event.
         :param event_type_to_examine: Defines which events shall be compared.
             If one only wants to process the leaves, this should perhaps be
-            :class:`mutwo.core_events.SimpleEvent`.
+            :class:`mutwo.core_events.Chronon`.
         :param event_to_remove: `True` if the second (left) event shall be removed
             and `False` if the first (right) event shall be removed.
         """
@@ -1024,9 +1022,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.squash_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.5)), SimpleEvent(duration=DirectDuration(0.5))])
+        >>> consecution = core_events.Consecution([core_events.Chronon(3)])
+        >>> consecution.squash_in(1, core_events.Chronon(1.5))
+        Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(1.5)), Chronon(duration=DirectDuration(0.5))])
         """
 
     @abc.abstractmethod
@@ -1047,9 +1045,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.slide_in(1, core_events.SimpleEvent(1.5))
-        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(1.5)), SimpleEvent(duration=DirectDuration(2.0))])
+        >>> consecution = core_events.Consecution([core_events.Chronon(3)])
+        >>> consecution.slide_in(1, core_events.Chronon(1.5))
+        Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(1.5)), Chronon(duration=DirectDuration(2.0))])
         """
 
     @abc.abstractmethod
@@ -1063,9 +1061,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> sequential_event = core_events.SequentialEvent([core_events.SimpleEvent(3)])
-        >>> sequential_event.split_child_at(1)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(2.0))])
+        >>> consecution = core_events.Consecution([core_events.Chronon(3)])
+        >>> consecution.split_child_at(1)
+        Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(2.0))])
         """
 
     @abc.abstractmethod
@@ -1075,15 +1073,15 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         duration_to_white_space: typing.Optional[
             typing.Callable[[core_parameters.abc.Duration], Event]
         ] = None,
-        prolong_simple_event: bool = True,
+        prolong_chronon: bool = True,
     ) -> ComplexEvent:
         """Prolong event until at least `duration` by appending an empty event.
 
         :param duration: Until which duration the event shall be extended.
             If event is already longer than or equal to given `duration`,
-            nothing will be changed. For :class:`~mutwo.core_events.SimultaneousEvent`
+            nothing will be changed. For :class:`~mutwo.core_events.Concurrence`
             the default value is `None` which is equal to the duration of
-            the `SimultaneousEvent`.
+            the `Concurrence`.
         :type duration: core_parameters.abc.Duration
         :param duration_to_white_space: A function which creates the 'rest' or
             'white space' event from :class:`~mutwo.core_parameters.abc.Duration`.
@@ -1091,18 +1089,18 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             which is `mutwo.core_events.configurations.DEFAULT_DURATION_TO_WHITE_SPACE`.
             Default to `None`.
         :type duration_to_white_space: typing.Optional[typing.Callable[[core_parameters.abc.Duration], Event]]
-        :param prolong_simple_event: If set to ``True`` `mutwo` will prolong a single
-            :class:`~mutwo.core_events.SimpleEvent` inside a :class:`~mutwo.core_events.SimultaneousEvent`.
+        :param prolong_chronon: If set to ``True`` `mutwo` will prolong a single
+            :class:`~mutwo.core_events.Chronon` inside a :class:`~mutwo.core_events.Concurrence`.
             If set to ``False`` `mutwo` will raise an :class:`~mutwo.core_utilities.ImpossibleToExtendUntilError`
-            in case it finds a single `SimpleEvent` inside a `SimultaneousEvent`.
-            This doesn't effect `SimpleEvent` inside a `SequentialEvent`, here we can
+            in case it finds a single `Chronon` inside a `Concurrence`.
+            This doesn't effect `Chronon` inside a `Consecution`, here we can
             simply append a new white space event.
-        :type prolong_simple_event: bool
+        :type prolong_chronon: bool
 
         **Example:**
 
         >>> from mutwo import core_events
-        >>> s = core_events.SequentialEvent([core_events.SimpleEvent(1)])
-        >>> s.extend_until(10)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(1.0)), SimpleEvent(duration=DirectDuration(9.0))])
+        >>> cons = core_events.Consecution([core_events.Chronon(1)])
+        >>> cons.extend_until(10)
+        Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(9.0))])
         """

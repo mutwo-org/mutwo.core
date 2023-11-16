@@ -229,14 +229,14 @@ class TempoConverter(core_converters.abc.EventConverter):
             ] = self._beat_length_in_seconds_envelope.integrate_interval(start, end)
         return i
 
-    def _convert_simple_event(
+    def _convert_chronon(
         self,
-        simple_event: core_events.SimpleEvent,
+        chronon: core_events.Chronon,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
-        simple_event.duration = self._integrate(
-            absolute_entry_delay, absolute_entry_delay + simple_event.duration
+        chronon.duration = self._integrate(
+            absolute_entry_delay, absolute_entry_delay + chronon.duration
         )
         return tuple([])
 
@@ -296,9 +296,9 @@ class TempoConverter(core_converters.abc.EventConverter):
         ...     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
         ... )
         >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
-        >>> my_events = core_events.SequentialEvent([core_events.SimpleEvent(d) for d in (3, 2, 5)])
+        >>> my_events = core_events.Consecution([core_events.Chronon(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
-        SequentialEvent([SimpleEvent(duration=DirectDuration(3.0)), SimpleEvent(duration=DirectDuration(3.2)), SimpleEvent(duration=DirectDuration(6.0))])
+        Consecution([Chronon(duration=DirectDuration(3.0)), Chronon(duration=DirectDuration(3.2)), Chronon(duration=DirectDuration(6.0))])
         """
         copied_event_to_convert = event_to_convert.destructive_copy()
         self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))
@@ -316,12 +316,12 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
         self._skip_level_count = skip_level_count
         self._maxima_depth_count = maxima_depth_count
 
-    def _convert_simple_event(
+    def _convert_chronon(
         self,
-        event_to_convert: core_events.SimpleEvent,
+        event_to_convert: core_events.Chronon,
         absolute_entry_delay: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.SimpleEvent:
+    ) -> core_events.Chronon:
         return event_to_convert
 
     def _convert_event(

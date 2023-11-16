@@ -9,9 +9,9 @@ import unittest
 
 from mutwo import core_events
 
-sim = core_events.SimultaneousEvent
-seq = core_events.SequentialEvent
-s = core_events.SimpleEvent
+conc = core_events.Concurrence
+cons = core_events.Consecution
+ch = core_events.Chronon
 
 
 def t(duration: float, repetition_count: int = 100, raise_delta: bool = False):
@@ -44,23 +44,23 @@ class PerformanceTest(unittest.TestCase):
         random.seed(100)
 
     @t(0.06, 200)
-    def test_SequentialEvent_split_at(self):
-        e = seq([s(random.uniform(1, 3)) for _ in range(100)])
+    def test_Consecution_split_at(self):
+        e = cons([ch(random.uniform(1, 3)) for _ in range(100)])
         duration = e.duration.duration
         split_time_list = sorted([random.uniform(0, duration) for _ in range(100)])
         e.split_at(*split_time_list)
 
     @t(0.15, 100)
-    def test_SimultaneousEvent_split_at(self):
-        e = sim([s(random.uniform(1, 3)) for _ in range(30)])
+    def test_Concurrence_split_at(self):
+        e = conc([ch(random.uniform(1, 3)) for _ in range(30)])
         duration = e.duration.duration
         split_time_list = sorted([random.uniform(0, duration) for _ in range(25)])
         e.split_at(*split_time_list)
 
     @t(0.0885, 100)
     def test_metrize(self):
-        e = sim(
-            [seq([s(random.uniform(0.9, 1.2)) for _ in range(20)]) for _ in range(3)]
+        e = conc(
+            [cons([ch(random.uniform(0.9, 1.2)) for _ in range(20)]) for _ in range(3)]
         )
         e.tempo_envelope = core_events.TempoEnvelope(
             [[i, 60] if i % 2 == 0 else [i, 50] for i in range(5)]
@@ -68,10 +68,10 @@ class PerformanceTest(unittest.TestCase):
         e.metrize()
 
     @t(0.03, 100)
-    def test_SimultaneousEvent_copy(self):
-        e = sim(
+    def test_Concurrence_copy(self):
+        e = conc(
             [
-                seq([s(random.uniform(1, 3)).set_parameter("a", 10) for _ in range(30)])
+                cons([ch(random.uniform(1, 3)).set_parameter("a", 10) for _ in range(30)])
                 for c in range(100)
             ]
         )

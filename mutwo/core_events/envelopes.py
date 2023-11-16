@@ -37,7 +37,7 @@ __all__ = ("Envelope", "RelativeEnvelope", "TempoEnvelope")
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
-class Envelope(core_events.SequentialEvent, typing.Generic[T]):
+class Envelope(core_events.Consecution, typing.Generic[T]):
     """Model continuous changing values (e.g. glissandi, crescendo).
 
     :param event_iterable_or_point_sequence: An iterable filled with events
@@ -66,7 +66,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
 
     >>> from mutwo import core_events
     >>> core_events.Envelope([[0, 0, 1], [0.5, 1]])
-    Envelope([SimpleEvent(curve_shape=1, duration=DirectDuration(0.5), value=0), SimpleEvent(curve_shape=0, duration=DirectDuration(0.0), value=1)])
+    Envelope([Chronon(curve_shape=1, duration=DirectDuration(0.5), value=0), Chronon(curve_shape=0, duration=DirectDuration(0.0), value=1)])
     """
 
     # Type definitions
@@ -79,7 +79,9 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     ]
     Point: typing.TypeAlias = CompletePoint | IncompletePoint
 
-    default_event_class = core_events.SimpleEvent
+    default_event_class = core_events.Chronon
+
+    _short_name_length = 3
 
     def __init__(
         self,
@@ -209,7 +211,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
     ):
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "curve_shape_at")
-        e_idx = core_events.SequentialEvent._get_index_at_from_absolute_time_tuple(
+        e_idx = core_events.Consecution._get_index_at_from_absolute_time_tuple(
             abst, abst_tuple, dur
         )
         if e_idx is not None:
@@ -536,17 +538,17 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         point_tuple = self.time_range_to_point_tuple(ranges.Range(start, end))
         integral = 0
         for p0, p1 in zip(point_tuple, point_tuple[1:]):
-            t0, v0, cs0 = p0  # (absolute_time, value, curve_shape)
+            t0, v0, cchr0 = p0  # (absolute_time, value, curve_shape)
             t1, v1, _ = p1
             if (d0 := float(t1 - t0)) > 0:
-                if cs0 != 0:
+                if cchr0 != 0:
                     # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L102-103
-                    A = v0 - (v1 - v0) / (math.exp(cs0) - 1)
-                    B = (v1 - v0) / (cs0 * (math.exp(cs0) - 1))
+                    A = v0 - (v1 - v0) / (math.exp(cchr0) - 1)
+                    B = (v1 - v0) / (cchr0 * (math.exp(cchr0) - 1))
 
                     def antiderivative(tn):
                         # See https://git.sr.ht/~marcevanstein/expenvelope/tree/cd4a3710/item/expenvelope/envelope_segment.py#L239
-                        return A * tn + B * math.exp(cs0 * tn)
+                        return A * tn + B * math.exp(cchr0 * tn)
 
                     a0, a1 = (antiderivative(i) for i in (0, 1))
                     integral += d0 * (a1 - a0)
@@ -696,7 +698,7 @@ class Envelope(core_events.SequentialEvent, typing.Generic[T]):
         duration_to_white_space: typing.Optional[
             typing.Callable[["core_parameters.abc.Duration"], core_events.abc.Event]
         ] = None,
-        prolong_simple_event: bool = True,
+        prolong_chronon: bool = True,
     ) -> Envelope[T]:
         if not self:
             raise core_utilities.EmptyEnvelopeError(self, "extend_until")
@@ -816,7 +818,7 @@ class TempoEnvelope(Envelope):
     for initialization attributes.
 
     The default parameters of the `TempoEnvelope` class expects
-    :class:`mutwo.core_events.SimpleEvent` to which a tempo point
+    :class:`mutwo.core_events.Chronon` to which a tempo point
     was assigned by the name "tempo_point".
 
     **Example:**
@@ -839,7 +841,7 @@ class TempoEnvelope(Envelope):
     ... )
     """
 
-    default_event_class = core_events.TempoEvent
+    default_event_class = core_events.TempoChronon
 
     def __eq__(self, other: typing.Any):
         # TempoEnvelope can't use the default '__eq__' method inherited

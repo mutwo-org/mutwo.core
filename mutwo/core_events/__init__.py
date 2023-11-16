@@ -25,9 +25,9 @@ of the :mod:`mutwo` framework. They all own a :attr:`~mutwo.core_events.abc.Even
 
 The most often used classes are:
 
-    - :class:`mutwo.core_events.SimpleEvent`: the leaf or the node of a tree
-    - :class:`mutwo.core_events.SequentialEvent`: a sequence of other events
-    - :class:`mutwo.core_events.SimultaneousEvent`: a simultaneous set of other events
+    - :class:`mutwo.core_events.Chronon`: the leaf or the node of a tree
+    - :class:`mutwo.core_events.Consecution`: a sequence of other events
+    - :class:`mutwo.core_events.Concurrence`: a simultaneous set of other events
 
 Further more complex Event classes with more relevant attributes
 can be generated through inheriting from basic classes.
