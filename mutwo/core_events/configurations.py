@@ -91,8 +91,8 @@ This global variable is the reason why the following
 code prints a :class:`mutwo.core_parameters.DirectDuration`:
 
     >>> from mutwo import core_events
-    >>> simple_event = core_events.SimpleEvent(duration=10)
-    >>> simple_event.duration
+    >>> chronon = core_events.Chronon(duration=10)
+    >>> chronon.duration
     DirectDuration(10)
 
 Without this function...
@@ -103,7 +103,7 @@ Without this function...
     2. Or the code would raise a ``TypeError`` and users would be forced
     to write:
 
-        >>> core_events.SimpleEvent(core_parameters.DirectDuration(10))
+        >>> core_events.Chronon(core_parameters.DirectDuration(10))
 
 Because the syntactic sugar partially violates the Python Zen
 "Explicit is better than implicit" this function is publicly defined
@@ -115,13 +115,13 @@ so that users are encouraged to override the variable if desired.
 # Avoid circular import problem
 @functools.cache
 def __simpleEvent():
-    return __import__("mutwo.core_events").core_events.SimpleEvent
+    return __import__("mutwo.core_events").core_events.Chronon
 
 
 DEFAULT_DURATION_TO_WHITE_SPACE = lambda duration: __simpleEvent()(duration)
 """Default conversion for parameter `duration_to_white_space` in
 :func:`mutwo.core_events.abc.ComplexEvent.extend_until`. This simply
-returns a :class:`mutwo.core_events.SimpleEvent` with the given
+returns a :class:`mutwo.core_events.Chronon` with the given
 duration."""
 
 
@@ -153,7 +153,7 @@ This global variable is the reason why the following
 code prints a :class:`mutwo.core_parameters.DirectTempoPoint`:
 
     >>> from mutwo import core_events
-    >>> t = core_events.TempoEvent(tempo_point=60, duration=1)
+    >>> t = core_events.TempoChronon(tempo_point=60, duration=1)
     >>> t.tempo_point
     DirectTempoPoint(BPM = 60, reference = 1)
 
@@ -165,7 +165,7 @@ Without this function...
     2. Or the code would raise a ``TypeError`` and users would be forced
     to write:
 
-        >>> core_events.TempoEvent(tempo_point=core_parameters.DirectTempoPoint(60), duration=1)
+        >>> core_events.TempoChronon(tempo_point=core_parameters.DirectTempoPoint(60), duration=1)
 
 Because the syntactic sugar partially violates the Python Zen
 "Explicit is better than implicit" this function is publicly defined

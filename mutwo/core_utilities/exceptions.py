@@ -44,10 +44,10 @@ class CannotSetDurationOfEmptyComplexEvent(Exception):
     def __init__(self):
         super().__init__(
             "You tried to set the duration of a complex "
-            "event (e.g. 'SequentialEvent' or 'SimultaneousEvent') "
+            "event (e.g. 'Consecution' or 'Concurrence') "
             "which doesn't have any child events. This"
             " is impossible, because the duration of a 'ComplexEvent'"
-            " is simply the sum of its sequentially ordered child events."
+            " is simply the sum of its consuentially ordered child events."
         )
 
 
@@ -95,10 +95,10 @@ class ImpossibleToPutInError(TypeError):
         m = method_name
         super().__init__(
             f"Can't {m} '{event_to_put_in}' in '{event_to_be_put_into}'. "
-            "Does the SimultaneousEvent contain SimpleEvents or events that inherit"
-            f" from SimpleEvent? For being able to {m} in, the"
-            " SimultaneousEvent needs to only contain SequentialEvents or"
-            " SimultaneousEvents."
+            "Does the Concurrence contain Chronons or events that inherit"
+            f" from Chronon? For being able to {m} in, the"
+            " Concurrence needs to only contain Consecutions or"
+            " Concurrences."
         )
 
 
@@ -117,8 +117,8 @@ class ImpossibleToExtendUntilError(TypeError):
         super().__init__(
             f"Can't extend '{event_to_extend_until}' of type"
             f"'{type(event_to_extend_until)}' which resides inside a "
-            "SimultaneousEvent. Set 'prolong_simple_event' to 'True' in"
-            "case you want simple events to be prolonged."
+            "Concurrence. Set 'prolong_chronon' to 'True' in"
+            "case you want chronons to be prolonged."
         )
 
 
@@ -127,8 +127,8 @@ class IneffectiveExtendUntilError(ValueError):
         super().__init__(
             f"Can't extend empty event '{event_to_extend_until}' of type"
             f"'{type(event_to_extend_until)}'. If you want to extend "
-            "a SimultaneousEvent you should first append an empty "
-            "SequentialEvent to your SimultaneousEvent."
+            "a Concurrence you should first append an empty "
+            "Consecution to your Concurrence."
         )
 
 
@@ -142,9 +142,9 @@ class InvalidStartAndEndValueError(Exception):
 
 
 class InvalidCutOutStartAndEndValuesError(Exception):
-    def __init__(self, start, end, simple_event, duration):
+    def __init__(self, start, end, chronon, duration):
         super().__init__(
-            f"Can't cut out SimpleEvent '{simple_event}' with "
+            f"Can't cut out Chronon '{chronon}' with "
             f"duration '{duration}' from"
             f" (start = {start} to end = {end})."
         )
@@ -174,9 +174,9 @@ class ConcatenationError(TypeError):
             f"Can't concatenate event '{event}' to event '{ancestor}' "
             f"of type '{type(ancestor)}'. It is only possible to"
             " concatenate a new event to events which are instances of "
-            "SequentialEvent or SimultaneousEvent. To fix this bug you can"
-            f" put your event '{ancestor}' inside a SequentialEvent or"
-            " a SimultaneousEvent."
+            "Consecution or Concurrence. To fix this bug you can"
+            f" put your event '{ancestor}' inside a Consecution or"
+            " a Concurrence."
         )
 
 

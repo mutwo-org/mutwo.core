@@ -34,20 +34,20 @@ class UnknownObjectToObjectTest(unittest.TestCase):
         )
 
 
-class SimpleEventToAttributeTest(unittest.TestCase):
+class ChrononToAttributeTest(unittest.TestCase):
     def setUp(self):
-        self.simple_event_to_attribute = core_converters.SimpleEventToAttribute(
+        self.chronon_to_attribute = core_converters.ChrononToAttribute(
             "dummy_attribute", float("inf")
         )
 
     def test_convert_with_attribute(self):
-        simple_event = core_events.SimpleEvent(10)
-        simple_event.dummy_attribute = 100  # type: ignore
-        self.assertEqual(self.simple_event_to_attribute.convert(simple_event), 100)
+        chronon = core_events.Chronon(10)
+        chronon.dummy_attribute = 100  # type: ignore
+        self.assertEqual(self.chronon_to_attribute.convert(chronon), 100)
 
     def test_convert_without_attribute(self):
         self.assertEqual(
-            self.simple_event_to_attribute.convert(core_events.SimpleEvent(10)),
+            self.chronon_to_attribute.convert(core_events.Chronon(10)),
             float("inf"),
         )
 
@@ -106,16 +106,16 @@ class MutwoParameterDictToDurationTest(unittest.TestCase):
         )
 
 
-class MutwoParameterDictToSimpleEventTest(unittest.TestCase):
+class MutwoParameterDictToChrononTest(unittest.TestCase):
     def setUp(self):
-        self.mutwo_parameter_dict_to_simple_event = (
-            core_converters.MutwoParameterDictToSimpleEvent()
+        self.mutwo_parameter_dict_to_chronon = (
+            core_converters.MutwoParameterDictToChronon()
         )
 
     def test_convert(self):
         self.assertEqual(
-            self.mutwo_parameter_dict_to_simple_event.convert({"duration": 10}),
-            core_events.SimpleEvent(10),
+            self.mutwo_parameter_dict_to_chronon.convert({"duration": 10}),
+            core_events.Chronon(10),
         )
 
 

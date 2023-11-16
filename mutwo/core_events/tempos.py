@@ -17,14 +17,16 @@
 
 from mutwo import core_events
 
-__all__ = ("TempoEvent",)
+__all__ = ("TempoChronon",)
 
 
 # XXX: Currently type hints are deactivated here, because otherwise we get
-# problems with circular imports (because 'TempoEvent' is needed by envelopes
+# problems with circular imports (because 'TempoChronon' is needed by envelopes
 # and because envelopes are needed by parameters). Because this code is very
 # short, it may not matter so much.
-class TempoEvent(core_events.SimpleEvent):
+class TempoChronon(core_events.Chronon):
+    """A :class:`TempoChronon` describes the tempo for a given time."""
+
     def __init__(self, tempo_point, *args, **kwargs):
         self.tempo_point = tempo_point
         super().__init__(*args, **kwargs)

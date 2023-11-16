@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Standardization for transformations between parameters and simple events
+"""Standardization for transformations between parameters and chronons
 
 Adds classes to allow transformations in two directions:
 
-1. Extract data (e.g. mutwo parameters) from simple events
-2. Convert data (e.g. mutwo parameters) to simple events
+1. Extract data (e.g. mutwo parameters) from chronons
+2. Convert data (e.g. mutwo parameters) to chronons
 """
 
 import typing
@@ -31,20 +31,20 @@ from mutwo import core_utilities
 
 
 __all__ = (
-    "SimpleEventToAttribute",
+    "ChrononToAttribute",
     "MutwoParameterDict",
     "MutwoParameterDictToKeywordArgument",
     "MutwoParameterDictToDuration",
-    "MutwoParameterDictToSimpleEvent",
+    "MutwoParameterDictToChronon",
     "UnknownObjectToObject",
 )
 
 
-class SimpleEventToAttribute(core_converters.abc.Converter):
-    """Extract from a simple event an attribute.
+class ChrononToAttribute(core_converters.abc.Converter):
+    """Extract from a chronon an attribute.
 
     :param attribute_name: The name of the attribute which is fetched
-        from a :class:`mutwo.core_events.SimpleEvent`.
+        from a :class:`mutwo.core_events.Chronon`.
     :param exception_value: This value is returned in case an `AttributeError`
         raises .
     """
@@ -53,36 +53,36 @@ class SimpleEventToAttribute(core_converters.abc.Converter):
         self._attribute_name = attribute_name
         self._exception_value = exception_value
 
-    def convert(self, simple_event_to_convert: core_events.SimpleEvent) -> typing.Any:
-        """Extract from a :class:`mutwo.core_events.SimpleEvent` an attribute.
+    def convert(self, chronon_to_convert: core_events.Chronon) -> typing.Any:
+        """Extract from a :class:`mutwo.core_events.Chronon` an attribute.
 
-        :param simple_event_to_convert: The :class:`mutwo.core_events.SimpleEvent`
+        :param chronon_to_convert: The :class:`mutwo.core_events.Chronon`
             from which an attribute shall be extracted.
-        :type simple_event_to_convert: mutwo.core_events.SimpleEvent
+        :type chronon_to_convert: mutwo.core_events.Chronon
 
         **Example:**
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> simple_event = core_events.SimpleEvent(duration=10.0)
-        >>> simple_event_to_duration = core_converters.SimpleEventToAttribute(
+        >>> chronon = core_events.Chronon(duration=10.0)
+        >>> chronon_to_duration = core_converters.ChrononToAttribute(
         ...     'duration', 0
         ... )
-        >>> simple_event_to_duration.convert(simple_event)
+        >>> chronon_to_duration.convert(chronon)
         DirectDuration(10.0)
-        >>> simple_event_to_pasta = core_converters.SimpleEventToAttribute(
+        >>> chronon_to_pasta = core_converters.ChrononToAttribute(
         ...     'pasta', 'spaghetti'
         ... )
-        >>> simple_event_to_pasta.convert(simple_event)
+        >>> chronon_to_pasta.convert(chronon)
         'spaghetti'
-        >>> simple_event.pasta = 'tagliatelle'
-        >>> simple_event_to_pasta.convert(simple_event)
+        >>> chronon.pasta = 'tagliatelle'
+        >>> chronon_to_pasta.convert(chronon)
         'tagliatelle'
         """
 
         return core_utilities.call_function_except_attribute_error(
-            lambda simple_event: getattr(simple_event, self._attribute_name),
-            simple_event_to_convert,
+            lambda chronon: getattr(chronon, self._attribute_name),
+            chronon_to_convert,
             self._exception_value,
         )
 
@@ -159,16 +159,16 @@ class MutwoParameterDictToDuration(MutwoParameterDictToKeywordArgument):
         )
 
 
-class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
-    """Convert a dict of mutwo parameters to a :class:`mutwo.core_events.SimpleEvent`
+class MutwoParameterDictToChronon(core_converters.abc.Converter):
+    """Convert a dict of mutwo parameters to a :class:`mutwo.core_events.Chronon`
 
     :param mutwo_parameter_dict_to_keyword_argument_sequence: A sequence of
         :class:`MutwoParameterDictToKeywordArgument`. If set to `None`
         a sequence with :class:`MutwoParameterDictToDuration` will be created.
         Default to `None`.
     :type mutwo_parameter_dict_to_keyword_argument_sequence: typing.Optional[typing.Sequence[MutwoParameterDictToKeywordArgument]]
-    :param simple_event_class: Default to :class:`mutwo.core_events.SimpleEvent`.
-    :type simple_event_class: typing.Type[core_events.SimpleEvent]
+    :param chronon_class: Default to :class:`mutwo.core_events.Chronon`.
+    :type chronon_class: typing.Type[core_events.Chronon]
     """
 
     def __init__(
@@ -176,19 +176,19 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
         mutwo_parameter_dict_to_keyword_argument_sequence: typing.Optional[
             typing.Sequence[MutwoParameterDictToKeywordArgument]
         ] = None,
-        simple_event_class: typing.Type[
-            core_events.SimpleEvent
-        ] = core_events.SimpleEvent,
+        chronon_class: typing.Type[
+            core_events.Chronon
+        ] = core_events.Chronon,
     ):
         self._mutwo_parameter_dict_to_keyword_argument_sequence = (
             mutwo_parameter_dict_to_keyword_argument_sequence
             or (MutwoParameterDictToDuration(),)
         )
-        self._simple_event_class = simple_event_class
+        self._chronon_class = chronon_class
 
     def convert(
         self, mutwo_parameter_dict_to_convert: MutwoParameterDict
-    ) -> core_events.SimpleEvent:
+    ) -> core_events.Chronon:
         keyword_argument_dict = {}
         for (
             mutwo_parameter_dict_to_keyword_argument
@@ -199,7 +199,7 @@ class MutwoParameterDictToSimpleEvent(core_converters.abc.Converter):
             if keyword_argument_or_none:
                 keyword, argument = keyword_argument_or_none
                 keyword_argument_dict.update({keyword: argument})
-        return self._simple_event_class(**keyword_argument_dict)
+        return self._chronon_class(**keyword_argument_dict)
 
 
 T = typing.TypeVar("T")

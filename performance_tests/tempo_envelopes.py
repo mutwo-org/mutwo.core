@@ -5,10 +5,10 @@ from mutwo import core_events
 
 
 def t():
-    e = core_events.SimultaneousEvent(
+    e = core_events.Concurrence(
         [
-            core_events.SequentialEvent(
-                [core_events.SimpleEvent(random.uniform(0.9, 1.2)) for _ in range(100)]
+            core_events.Consecution(
+                [core_events.Chronon(random.uniform(0.9, 1.2)) for _ in range(100)]
             )
             for _ in range(3)
         ]

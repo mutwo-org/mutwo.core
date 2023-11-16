@@ -12,7 +12,7 @@ from .basic_tests import ComplexEventTest
 
 
 class EnvelopeTest(unittest.TestCase, ComplexEventTest):
-    class EnvelopeEvent(core_events.SimpleEvent):
+    class EnvelopeEvent(core_events.Chronon):
         def __init__(
             self,
             duration: core_parameters.abc.Duration,
@@ -51,7 +51,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     def get_event_class(self) -> typing.Type:
         return core_events.Envelope
 
-    def get_event_instance(self) -> core_events.SimpleEvent:
+    def get_event_instance(self) -> core_events.Chronon:
         return self.get_event_class()([[0, 1], [4, 10]])
 
     def test_split_at_end(self):
