@@ -23,6 +23,7 @@ import abc
 import functools
 import typing
 
+from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
@@ -152,8 +153,8 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     @staticmethod
     def _assert_correct_start_and_end_values(
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration | core_constants.Real,
+        end: core_parameters.abc.Duration | core_constants.Real,
         condition: typing.Callable[
             [core_parameters.abc.Duration, core_parameters.abc.Duration], bool
         ] = lambda start, end: end
@@ -167,7 +168,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
             raise core_utilities.InvalidStartAndEndValueError(start, end)
 
     @staticmethod
-    def _assert_valid_absolute_time(t: core_parameters.abc.Duration):
+    def _assert_valid_absolute_time(
+        t: core_parameters.abc.Duration | core_constants.Real,
+    ):
         if t < 0:
             raise core_utilities.InvalidAbsoluteTime(t)
 
@@ -448,8 +451,8 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     @abc.abstractmethod
     def cut_out(
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> typing.Optional[Event]:
         """Time-based slicing of the respective event.
 
@@ -468,8 +471,8 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     @abc.abstractmethod
     def cut_off(
         self,
-        start: core_parameters.abc.Duration,
-        end: core_parameters.abc.Duration,
+        start: core_parameters.abc.Duration.Type,
+        end: core_parameters.abc.Duration.Type,
     ) -> typing.Optional[Event]:
         """Time-based deletion / shortening of the respective event.
 
@@ -487,7 +490,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     def split_at(
         self,
-        *absolute_time: core_parameters.abc.Duration,
+        *absolute_time: core_parameters.abc.Duration.Type,
         ignore_invalid_split_point: bool = False,
     ) -> tuple[Event, ...]:
         """Split event into *n* events at :attr:`absolute_time`.
@@ -522,7 +525,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         if not absolute_time:
             raise core_utilities.NoSplitTimeError()
 
-        abst_list = list(sorted(absolute_time))
+        abst_list = list(
+            sorted([core_parameters.abc.Duration.from_any(t) for t in absolute_time])
+        )
         # Already sorted => check if smallest t < 0
         self._assert_valid_absolute_time(abst_list[0])
         if 0 not in abst_list:
@@ -711,11 +716,11 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     # ###################################################################### #
 
     @Event.duration.setter  # type: ignore
-    def duration(self, duration: core_parameters.abc.Duration):
+    def duration(self, duration: core_parameters.abc.Duration.Type):
         if not self:  # If empty and duration == 0, we'd run into ZeroDivision
             raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
 
-        durf = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(duration).duration
+        durf = core_parameters.abc.Duration.from_any(duration).duration
         if (old_durf := self.duration.duration) != 0:
 
             def f(event_duration: core_parameters.abc.Duration):
@@ -746,7 +751,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
                 return i
         raise KeyError(f"No event found with tag = '{tag}'.")
 
-    def _assert_start_in_range(self, start: core_parameters.abc.Duration):
+    def _assert_start_in_range(
+        self, start: core_parameters.abc.Duration | core_constants.Real
+    ):
         """Helper method to make sure that start < event.duration.
 
         Can be used within the different squash_in methods.
@@ -1007,7 +1014,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def squash_in(
-        self, start: core_parameters.abc.Duration, event_to_squash_in: Event
+        self, start: core_parameters.abc.Duration.Type, event_to_squash_in: Event
     ) -> typing.Optional[ComplexEvent[T]]:
         """Time-based insert of a new event with overriding given event.
 
@@ -1029,7 +1036,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def slide_in(
-        self, start: core_parameters.abc.Duration, event_to_slide_in: Event
+        self, start: core_parameters.abc.Duration.Type, event_to_slide_in: Event
     ) -> ComplexEvent[T]:
         """Time-based insert of a new event into the present event.
 
@@ -1052,7 +1059,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     @abc.abstractmethod
     def split_child_at(
-        self, absolute_time: core_parameters.abc.Duration
+        self, absolute_time: core_parameters.abc.Duration.Type
     ) -> typing.Optional[ComplexEvent[T]]:
         """Split child event in two events at :attr:`absolute_time`.
 
@@ -1069,7 +1076,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @abc.abstractmethod
     def extend_until(
         self,
-        duration: core_parameters.abc.Duration,
+        duration: core_parameters.abc.Duration.Type,
         duration_to_white_space: typing.Optional[
             typing.Callable[[core_parameters.abc.Duration], Event]
         ] = None,
@@ -1082,7 +1089,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             nothing will be changed. For :class:`~mutwo.core_events.Concurrence`
             the default value is `None` which is equal to the duration of
             the `Concurrence`.
-        :type duration: core_parameters.abc.Duration
+        :type duration: core_parameters.abc.Duration.Type
         :param duration_to_white_space: A function which creates the 'rest' or
             'white space' event from :class:`~mutwo.core_parameters.abc.Duration`.
             If this is ``None`` `mutwo` will fall back to use the default function

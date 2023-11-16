@@ -37,6 +37,7 @@ __all__ = (
     "SplitError",
     "InvalidAbsoluteTime",
     "NoSplitTimeError",
+    "CannotParseError",
 )
 
 
@@ -203,3 +204,8 @@ class InvalidAbsoluteTime(Exception):
 class NoSplitTimeError(Exception):
     def __init__(self):
         super().__init__("Nothing to split (no split time given)!")
+
+
+class CannotParseError(NotImplementedError):
+    def __init__(self, o, parse_type):
+        super().__init__("Can't parse '{o}' of type '{type(o)}' to '{parse_type}'!")

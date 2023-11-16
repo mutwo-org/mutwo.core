@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from mutwo import core_events
+from mutwo import core_parameters
 
 __all__ = ("TempoChronon",)
 
@@ -37,6 +38,4 @@ class TempoChronon(core_events.Chronon):
 
     @tempo_point.setter
     def tempo_point(self, tempo_point):
-        self._tempo_point = core_events.configurations.UNKNOWN_OBJECT_TO_TEMPO_POINT(
-            tempo_point
-        )
+        self._tempo_point = core_parameters.abc.TempoPoint.from_any(tempo_point)

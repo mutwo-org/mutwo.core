@@ -4,36 +4,6 @@ from mutwo import core_converters
 from mutwo import core_events
 
 
-class UnknownObjectToObjectTest(unittest.TestCase):
-    def setUp(self):
-        self.unknown_object_to_string = core_converters.UnknownObjectToObject[str](
-            (
-                ((float, int, list), str),
-                ((tuple,), lambda t: str(len(t))),
-                ([], lambda _: "..."),
-            )
-        )
-
-        self.unknown_object_to_integer = core_converters.UnknownObjectToObject[int](
-            (((float, int), int),)
-        )
-
-    def test_convert_defined(self):
-        self.assertEqual(self.unknown_object_to_string(100), "100")
-        self.assertEqual(self.unknown_object_to_string([1, 2, 3]), "[1, 2, 3]")
-        self.assertEqual(self.unknown_object_to_string((1, 2)), "2")
-        self.assertEqual(self.unknown_object_to_string(b""), "...")
-
-    def test_convert_implicit_defined(self):
-        self.assertEqual(self.unknown_object_to_string("abc"), "abc")
-        self.assertEqual(self.unknown_object_to_integer(7), 7)
-
-    def test_convert_undefined(self):
-        self.assertRaises(
-            NotImplementedError, self.unknown_object_to_integer, ([1, 2, 3],)
-        )
-
-
 class ChrononToAttributeTest(unittest.TestCase):
     def setUp(self):
         self.chronon_to_attribute = core_converters.ChrononToAttribute(
