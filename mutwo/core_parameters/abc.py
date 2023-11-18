@@ -355,6 +355,7 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         return self.duration
 
     @property
+    @abc.abstractmethod
     def duration(self) -> float:
         ...
 
