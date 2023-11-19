@@ -189,17 +189,11 @@ class SingleValueParameter(Parameter):
 
             setattr(cls, "value_name", property(lambda _: value_name))
 
-    def __repr__(self) -> str:
-        return (
-            f"{type(self).__name__}"
-            f"({getattr(self, self.value_name)})"  # type: ignore
-        )
+    def __repr_content__(self) -> str:
+        return f"{getattr(self, self.value_name)}"  # type: ignore
 
-    def __str__(self) -> str:
-        return (
-            f"{type(self).__name__[:1]}"
-            f"({getattr(self, self.value_name)})"  # type: ignore
-        )
+    def __str_content__(self) -> str:
+        return f"{getattr(self, self.value_name)}"  # type: ignore
 
     def __eq__(self, other: typing.Any) -> bool:
         try:
@@ -405,15 +399,11 @@ class TempoPoint(Parameter):
     """TempoPoint.Type hosts all types that are supported by the tempo point
     parser :func:`TempoPoint.from_any`."""
 
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}{self._print_data}"
+    def __repr_content__(self) -> str:
+        return f"BPM={self.tempo_in_beats_per_minute},ref={self.reference}"
 
-    def __str__(self) -> str:
-        return f"{type(self).__name__[0]}{self._print_data}"
-
-    @property
-    def _print_data(self) -> str:
-        return f"(BPM={self.tempo_in_beats_per_minute},ref={self.reference})"
+    def __str_content__(self) -> str:
+        return self.__repr_content__()
 
     def __eq__(self, other: object) -> bool:
         attribute_to_compare_tuple = (

@@ -57,11 +57,10 @@ class Chronon(core_events.abc.Event):
     >>> chronon
     Chronon(duration=DirectDuration(2.0))
     >>> print(chronon)  # pretty print for debugging
-    c(dur=D(2.0))
+    C(dur=D(2.0))
     """
 
     parameter_to_exclude_from_representation_tuple = ("tempo_envelope", "tag")
-    _short_name_length = 1
 
     def __init__(self, duration: core_parameters.abc.Duration.Type, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -84,13 +83,13 @@ class Chronon(core_events.abc.Event):
             self, other, tuple(parameter_to_compare_set)
         )
 
-    def __repr__(self) -> str:
-        a = [f"{attr}={repr(v)}" for attr, v in self._print_data.items()]
-        return "{}({})".format(type(self).__name__, ", ".join(a))
+    def __repr_content__(self) -> str:
+        return ", ".join([f"{attr}={repr(v)}" for attr, v in self._print_data.items()])
 
-    def __str__(self) -> str:
-        a = [f"{attr[:3]}={str(v)}" for attr, v in self._print_data.items()]
-        return "{}({})".format(self._short_name(), ", ".join(a))
+    def __str_content__(self) -> str:
+        return ", ".join(
+            [f"{attr[:3]}={str(v)}" for attr, v in self._print_data.items()]
+        )
 
     # ###################################################################### #
     #                           private methods                              #
@@ -545,10 +544,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
         start: core_parameters.abc.Duration.Type,
         end: core_parameters.abc.Duration.Type,
     ) -> Consecution[T]:
-        start, end = (
-            core_parameters.abc.Duration.from_any(o)
-            for o in (start, end)
-        )
+        start, end = (core_parameters.abc.Duration.from_any(o) for o in (start, end))
         self._assert_valid_absolute_time(start)
         self._assert_correct_start_and_end_values(start, end)
 
@@ -1034,9 +1030,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
     def sequentialize(
         self,
         slice_tuple_to_event: typing.Optional[
-            typing.Callable[
-                [tuple[core_events.abc.Event, ...]], core_events.abc.Event
-            ]
+            typing.Callable[[tuple[core_events.abc.Event, ...]], core_events.abc.Event]
         ] = None,
     ) -> core_events.Consecution:
         """Convert parallel structure to a consuential structure.
@@ -1079,7 +1073,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         ... )
         >>> cons = e.sequentialize()
         >>> print(cons)
-        cons(conc(cons(c(dur=D(2.0))), cons(c(dur=D(2.0)))), conc(cons(c(dur=D(1.0))), cons(c(dur=D(1.0)))))
+        Cons(Conc(Cons(C(dur=D(2.0))), Cons(C(dur=D(2.0)))), Conc(Cons(C(dur=D(1.0))), Cons(C(dur=D(1.0)))))
         """
         if slice_tuple_to_event is None:
             slice_tuple_to_event = Concurrence
