@@ -36,6 +36,28 @@ class MutwoObject(object):
     mutwo ecosystem.
     """
 
+    _short_name_length = 1
+
+    def __repr__(self) -> str:
+        return f"{self.__cls_name__}({self.__repr_content__()})"
+
+    def __repr_content__(self) -> str:
+        return ""
+
+    def __str__(self) -> str:
+        return f"{self.__short_cls_name__}({self.__str_content__()})"
+
+    def __str_content__(self) -> str:
+        return ""
+
+    @functools.cached_property
+    def __cls_name__(self) -> str:
+        return type(self).__name__
+
+    @functools.cached_property
+    def __short_cls_name__(self) -> str:
+        return self.__cls_name__[: self._short_name_length]
+
     @functools.cached_property
     def _logger(self):
         """The class based logger."""

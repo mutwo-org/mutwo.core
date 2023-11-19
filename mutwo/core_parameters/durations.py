@@ -77,8 +77,8 @@ class RatioDuration(core_parameters.abc.Duration):
     def __init__(self, ratio: core_constants.Real | str):
         self.ratio = ratio
 
-    def __str__(self) -> str:
-        return f"R({self.ratio})"
+    def __str_content__(self) -> str:
+        return f"{self.ratio}"
 
     @property
     def ratio(self) -> fractions.Fraction:

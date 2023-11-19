@@ -40,9 +40,6 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         inside a :class:`ComplexEvent`.
     """
 
-    # For '_short_name': this is used in __str__.
-    _short_name_length = 4
-
     # It looks tempting to drop the 'tempo_envelope' attribute of events.
     # It may look simpler (and therefore more elegant) if events are only
     # defined by one attribute: their duration. Let's remember why the
@@ -130,10 +127,6 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     ):
         self.tempo_envelope = tempo_envelope
         self.tag = tag
-
-    @classmethod
-    def _short_name(cls):
-        return cls.__name__[: cls._short_name_length].lower()
 
     # ###################################################################### #
     #                        abstract properties                             #
@@ -424,11 +417,11 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         >>> chr = core_events.Chronon(duration = 1)
         >>> chr.tempo_envelope[0].value = 100
         >>> print(chr.tempo_envelope)
-        tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1), val=100), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
+        Tem(T(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1), val=100), T(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         >>> chr.reset_tempo_envelope()
         Chronon(duration=DirectDuration(1.0))
         >>> print(chr.tempo_envelope)
-        tem(t(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1)), t(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
+        Tem(T(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1)), T(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1)))
         """
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
         return self
@@ -561,6 +554,8 @@ T = typing.TypeVar("T", bound=Event)
 class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
+    _short_name_length = 4
+
     def __init__(
         self,
         iterable: typing.Iterable[T] = [],
@@ -599,12 +594,6 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     # ###################################################################### #
     #                           magic methods                                #
     # ###################################################################### #
-
-    def __repr__(self) -> str:
-        return "{}({})".format(type(self).__name__, super().__repr__())
-
-    def __str__(self) -> str:
-        return "{}({})".format(self._short_name(), ", ".join([str(e) for e in self]))
 
     def __add__(self, event: list[T]) -> ComplexEvent[T]:
         e = self.empty_copy()
@@ -710,6 +699,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def __ne__(self, other: typing.Any):
         return not self.__eq__(other)
+
+    def __repr_content__(self):
+        return list.__repr__(self)
+
+    def __str_content__(self):
+        return ", ".join([str(e) for e in self])
 
     # ###################################################################### #
     #                           properties                                   #
