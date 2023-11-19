@@ -28,8 +28,8 @@ except ImportError:
 
 Real: typing.TypeAlias = float | fractions.Fraction | int
 """The main reason for this constant is a mypy issue with Pythons buildin
-[numbers module](https://docs.python.org/3/library/numbers.html) which
-is documented [here](https://github.com/python/mypy/issues/3186). Mypy
+`numbers module <https://docs.python.org/3/library/numbers.html>`_ which
+is documented `here <https://github.com/python/mypy/issues/3186>_. Mypy
 doesn't accept numbers abstract base classes. Until numbers will be
 supported users have to define their own typing data for general number
 classes. PEP 3141 recommends users to simply annotate arguments with
