@@ -997,15 +997,15 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
         return self
 
-    # ###################################################################### #
-    #                           abstract methods                             #
-    # ###################################################################### #
-
     def metrize(self) -> ComplexEvent:
         metrized_event = self._event_to_metrized_event(self)
         self.tempo_envelope = metrized_event.tempo_envelope
         self[:] = metrized_event[:]
         return self
+
+    # ###################################################################### #
+    #                           abstract methods                             #
+    # ###################################################################### #
 
     @abc.abstractmethod
     def squash_in(
