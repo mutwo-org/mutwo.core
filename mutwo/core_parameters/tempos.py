@@ -72,8 +72,8 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
         return self._reference
 
     @reference.setter
-    def reference(self, reference: float):
-        self._reference = reference
+    def reference(self, reference: core_constants.Real):
+        self._reference = float(reference)
 
     @property
     def tempo_or_tempo_range_in_beats_per_minute(
