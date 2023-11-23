@@ -31,7 +31,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
             self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
-            (tempo_point.tempo_in_beats_per_minute, tempo_point.reference),
+            (tempo_point.tempo, tempo_point.reference),
         )
 
     def test_extract_beats_per_minute_and_reference_from_incomplete_tempo_point_object(
@@ -42,7 +42,7 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
             self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
                 tempo_point
             ),
-            (tempo_point.tempo_in_beats_per_minute, 1),
+            (tempo_point.tempo, 1),
         )
 
     def test_extract_beats_per_minute_and_reference_from_number(self):

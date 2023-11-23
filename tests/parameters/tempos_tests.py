@@ -27,16 +27,16 @@ class DirectTempoPointTest(unittest.TestCase):
     def test_unequal_tempo_point(self):
         self.assertNotEqual(self.tempo_point0, self.tempo_point3)
 
-    def test_tempo_in_beats_per_minute(self):
-        self.assertEqual(self.tempo_point0.tempo_in_beats_per_minute, 60)
-        self.assertEqual(self.tempo_point2.tempo_in_beats_per_minute, 60)
-        self.assertEqual(self.tempo_point3.tempo_in_beats_per_minute, 62)
-        self.assertEqual(self.tempo_point5.tempo_in_beats_per_minute, 50)
+    def test_tempo(self):
+        self.assertEqual(self.tempo_point0.tempo, 60)
+        self.assertEqual(self.tempo_point2.tempo, 60)
+        self.assertEqual(self.tempo_point3.tempo, 62)
+        self.assertEqual(self.tempo_point5.tempo, 50)
 
-    def test_absolute_tempo_in_beats_per_minute(self):
-        self.assertEqual(self.tempo_point0.absolute_tempo_in_beats_per_minute, 60)
-        self.assertEqual(self.tempo_point2.absolute_tempo_in_beats_per_minute, 30)
-        self.assertEqual(self.tempo_point2.tempo_in_beats_per_minute, 60)
+    def test_absolute_tempo(self):
+        self.assertEqual(self.tempo_point0.absolute_tempo, 60)
+        self.assertEqual(self.tempo_point2.absolute_tempo, 30)
+        self.assertEqual(self.tempo_point2.tempo, 60)
 
     def test_textual_indication(self):
         self.assertEqual(self.tempo_point6.textual_indication, "adagio")

@@ -391,7 +391,7 @@ class TempoPoint(Parameter):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
-    properties :attr:`tempo_or_tempo_range_in_beats_per_minute`
+    properties :attr:`tempo_or_tempo_range`
     and `reference` have to be overridden.
     """
 
@@ -400,14 +400,14 @@ class TempoPoint(Parameter):
     parser :func:`TempoPoint.from_any`."""
 
     def __repr_content__(self) -> str:
-        return f"BPM={self.tempo_in_beats_per_minute},ref={self.reference}"
+        return f"BPM={self.tempo},ref={self.reference}"
 
     def __str_content__(self) -> str:
         return self.__repr_content__()
 
     def __eq__(self, other: object) -> bool:
         attribute_to_compare_tuple = (
-            "tempo_in_beats_per_minute",
+            "tempo",
             "reference",
         )
         return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
@@ -416,7 +416,7 @@ class TempoPoint(Parameter):
 
     @property
     @abc.abstractmethod
-    def tempo_or_tempo_range_in_beats_per_minute(
+    def tempo_or_tempo_range(
         self,
     ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
         ...
@@ -427,29 +427,29 @@ class TempoPoint(Parameter):
         ...
 
     @property
-    def tempo_in_beats_per_minute(
+    def tempo(
         self,
     ) -> core_parameters.constants.TempoInBeatsPerMinute:
         """Get tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
 
-        If :attr:`tempo_or_tempo_range_in_beats_per_minute` is a range
+        If :attr:`tempo_or_tempo_range` is a range
         mutwo will return the minimal tempo.
         """
 
-        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, ranges.Range):
-            return self.tempo_or_tempo_range_in_beats_per_minute.start
+        if isinstance(self.tempo_or_tempo_range, ranges.Range):
+            return self.tempo_or_tempo_range.start
         else:
-            return self.tempo_or_tempo_range_in_beats_per_minute
+            return self.tempo_or_tempo_range
 
     @property
-    def absolute_tempo_in_beats_per_minute(self) -> float:
+    def absolute_tempo(self) -> float:
         """Get absolute tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
 
         The absolute tempo takes the :attr:`reference` of the :class:`TempoPoint`
         into account.
         """
 
-        return self.tempo_in_beats_per_minute * self.reference
+        return self.tempo * self.reference
 
     @classmethod
     def from_any(cls: typing.Type[T], object: TempoPoint.Type) -> T:
