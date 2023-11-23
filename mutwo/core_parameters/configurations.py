@@ -17,6 +17,11 @@
 
 """Configurations which are shared for all parameter classes in :mod:`mutwo.core_parameters`."""
 
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
 ROUND_DURATION_TO_N_DIGITS = 10
 """Set floating point precision for the `duration` property of all
 :class:`~mutwo.core_parameters.abc.Duration` classes in the :mod:`mutwo.core_parameters`
@@ -29,3 +34,13 @@ could occur in all duration related methods of the different event
 classes (as it can happen in for instance the
 :func:`mutwo.core_events.abc.ComplexEvent.squash_in` method or
 the :func:`mutwo.core_events.abc.Event.cut_off` method)."""
+
+DEFAULT_REFERENCE: fractions.Fraction = fractions.Fraction(1, 4)
+"""The default value for the 'reference' parameter of
+:class:`mutwo.core_parameters.WesternTempoPoint`. By default
+it is set to 1/4 because it's most common to think that
+the tempo in BPM refers to a 1/4 note (so that tempo = 60 BPM
+means that a 1/4 beat takes one second). Therefore a tempo
+of '60' in :class:`~mutwo.core_parameters.WesternTempoPoint` is
+by default 4 times slower than a tempo of '60' in
+:class:`~mutwo.core_parameters.DirectTempoPoint`."""

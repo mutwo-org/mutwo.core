@@ -380,7 +380,7 @@ class TempoEnvelopeTest(unittest.TestCase):
             [
                 [0, core_parameters.DirectTempoPoint(60)],
                 [1, core_parameters.DirectTempoPoint(30)],
-                [2, core_parameters.DirectTempoPoint(30, reference=2)],
+                [2, core_parameters.WesternTempoPoint(30, reference=2)],
             ]
         )
 

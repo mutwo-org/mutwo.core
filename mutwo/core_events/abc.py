@@ -417,11 +417,11 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         >>> chr = core_events.Chronon(duration = 1)
         >>> chr.tempo_envelope[0].value = 100
         >>> print(chr.tempo_envelope)
-        Tem(T(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1.0), val=100), T(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1.0)))
+        Tem(T(cur=0, dur=D(1.0), tem=D(60.0), val=100), T(cur=0, dur=D(0.0), tem=D(60.0)))
         >>> chr.reset_tempo_envelope()
         Chronon(duration=DirectDuration(1.0))
         >>> print(chr.tempo_envelope)
-        Tem(T(cur=0, dur=D(1.0), tem=D(BPM=60,ref=1.0)), T(cur=0, dur=D(0.0), tem=D(BPM=60,ref=1.0)))
+        Tem(T(cur=0, dur=D(1.0), tem=D(60.0)), T(cur=0, dur=D(0.0), tem=D(60.0)))
         """
         self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
         return self

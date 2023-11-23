@@ -20,24 +20,59 @@
 
 import typing
 
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
+import ranges
+
 from mutwo import core_constants
 from mutwo import core_parameters
 
-__all__ = ("DirectTempoPoint",)
+__all__ = ("DirectTempoPoint", "WesternTempoPoint")
 
 
 class DirectTempoPoint(core_parameters.abc.TempoPoint):
-    """Represent the active tempo at a specific moment in time.
+    """Simple `TempoPoint` that is directly initialised by its tempo.
 
-    :param tempo_or_tempo_range: Specify a tempo in
+    :param tempo: Specify a tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
+
+    **Example:**
+
+    >>> from mutwo import core_events
+    >>> from mutwo import core_parameters
+    >>> tempo_envelope = core_events.TempoEnvelope([
+    ...     [0, core_parameters.DirectTempoPoint(60)]
+    ... ])
+    """
+
+    def __init__(self, tempo: core_constants.Real | str):
+        self.tempo = tempo
+
+    @property
+    def tempo(self) -> float:
+        return self._tempo
+
+    @tempo.setter
+    def tempo(self, tempo: core_constants.Real | str):
+        self._tempo = float(tempo)
+
+
+class WesternTempoPoint(core_parameters.abc.TempoPoint):
+    """A tempo point useful for western notation.
+
+    :param tempo_range: Specify a tempo range in
         `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
-        Tempo can also be a tempo range where the first value indicates a
-        minimal tempo and the second value the maximum tempo. If the user
-        specifies a range :mod:`mutwo` will use the minimal tempo in internal
-        calculations.
-    :param reference: The reference with which the tempo will be multiplied.
-        In terms of Western notation a reference = 1 will be a 1/4 beat, a
-        reference of 2 will be a 1/2 beat, etc. Default to 1.
+        In western notation tempo is often indicated as a range from the
+        minimal accepted tempo to the fastest accepted tempo. Therefore
+        a :class:`WesternTempoPoint` is initialized by a range. In internal
+        calculations the minimal (slowest) tempo is used. The tempo in
+        the tempo range is relative as the absolute tempo depends on
+        the ``reference``.
+    :param reference: The reference with which the tempo is multiplied.
+        In terms of Western notation a reference = 1 equals a 1/4 beat, a
+        reference of 2 equals a 1/2 beat, etc. Default to 1.
     :type reference: float
     :param textual_indication: Sometimes it is desired to specify an extra
         text indication how fast or slow the music should be (for instance
@@ -49,40 +84,53 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.TempoEnvelope([
-    ...     [0, core_parameters.DirectTempoPoint(60, reference=2)]
+    ...     [0, core_parameters.WesternTempoPoint(60, reference=2)]
     ... ])
     """
 
     def __init__(
         self,
-        tempo_or_tempo_range: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
-        reference: core_constants.Real = 1,
+        tempo_range: ranges.Range | core_constants.Real | str,
+        reference: typing.Optional[core_constants.Real | str] = None,
         textual_indication: typing.Optional[str] = None,
     ):
-        self.tempo_or_tempo_range = tempo_or_tempo_range
-        self.reference = reference
+        self.tempo_range = tempo_range
+        self.reference = reference or core_parameters.configurations.DEFAULT_REFERENCE
         self.textual_indication = textual_indication
 
-    # NOTE: Dummy getter / setter to avoid TypeError due to
-    # abstract parent class.
     @property
-    def reference(self) -> float:
+    def tempo(self) -> float:
+        return self._tempo_range.start * self.reference
+
+    @property
+    def tempo_range(self) -> ranges.Range:
+        """A range from the slowest to the fastest accepted tempo.
+
+        In internal calculations the minimal (slowest) tempo is used.
+        The tempo in the tempo range is relative as the absolute tempo
+        depends on the ``reference``.
+        """
+        return self._tempo_range
+
+    @tempo_range.setter
+    def tempo_range(self, tempo_range: ranges.Range | core_constants.Real | str):
+        match tempo_range:
+            case ranges.Range():
+                r = tempo_range
+            case _:
+                v = float(tempo_range)
+                r = ranges.Range(v, v)
+        self._tempo_range = r
+
+    @property
+    def reference(self) -> fractions.Fraction:
+        """The reference with which the tempo is multiplied.
+
+        In terms of Western notation a reference = 1 equals a 1/4 beat, a
+        reference of 2 equals a 1/2 beat, etc. Default to 1.
+        """
         return self._reference
 
     @reference.setter
-    def reference(self, reference: core_constants.Real):
-        self._reference = float(reference)
-
-    @property
-    def tempo_or_tempo_range(
-        self,
-    ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
-        return self._tempo_or_tempo_range
-
-    @tempo_or_tempo_range.setter
-    def tempo_or_tempo_range(
-        self,
-        tempo_or_tempo_range: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
-    ):
-        self._tempo_or_tempo_range = tempo_or_tempo_range
-        return self._tempo_or_tempo_range
+    def reference(self, reference: core_constants.Real | str):
+        self._reference = fractions.Fraction(reference)

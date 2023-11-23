@@ -9,55 +9,10 @@ class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
     def setUp(self):
         self.converter = core_converters.TempoPointToBeatLengthInSeconds()
 
-    def test_convert_beats_per_minute_to_seconds_per_beat(self):
-        self.assertEqual(
-            self.converter._beats_per_minute_to_seconds_per_beat(60),
-            1,
-        )
-        self.assertEqual(
-            self.converter._beats_per_minute_to_seconds_per_beat(30),
-            2,
-        )
-        self.assertEqual(
-            self.converter._beats_per_minute_to_seconds_per_beat(120),
-            0.5,
-        )
-
-    def test_extract_beats_per_minute_and_reference_from_complete_tempo_point_object(
-        self,
-    ):
-        tempo_point = core_parameters.DirectTempoPoint(40, 2)
-        self.assertEqual(
-            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
-                tempo_point
-            ),
-            (tempo_point.tempo, tempo_point.reference),
-        )
-
-    def test_extract_beats_per_minute_and_reference_from_incomplete_tempo_point_object(
-        self,
-    ):
-        tempo_point = core_parameters.DirectTempoPoint(40)
-        self.assertEqual(
-            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
-                tempo_point
-            ),
-            (tempo_point.tempo, 1),
-        )
-
-    def test_extract_beats_per_minute_and_reference_from_number(self):
-        tempo_point = 60
-        self.assertEqual(
-            self.converter._extract_beats_per_minute_and_reference_from_tempo_point(
-                tempo_point
-            ),
-            (60, 1),
-        )
-
     def test_convert(self):
-        tempo_point0 = core_parameters.DirectTempoPoint(60, 1)
-        tempo_point1 = core_parameters.DirectTempoPoint(60, 2)
-        tempo_point2 = core_parameters.DirectTempoPoint(30, 1)
+        tempo_point0 = core_parameters.DirectTempoPoint(60)
+        tempo_point1 = core_parameters.WesternTempoPoint(60, 2)
+        tempo_point2 = core_parameters.WesternTempoPoint(30, 1)
         tempo_point3 = 60
         tempo_point4 = 120
 
@@ -97,13 +52,13 @@ class TempoConverterTest(unittest.TestCase):
             (6, 30, 10),
             (8, 60, 0),
             # Event 4
-            (8, core_parameters.DirectTempoPoint(30, reference=1), -10),
-            (10, core_parameters.DirectTempoPoint(30, reference=2), 0),
+            (8, core_parameters.WesternTempoPoint(30, reference=1), -10),
+            (10, core_parameters.WesternTempoPoint(30, reference=2), 0),
         ]
         tempo_envelope = core_events.Envelope(tempo_point_list)
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_consecution = converter.convert(consecution)
-        expected_duration_tuple = (4, 3, 3, 3.800090804, 2.199909196)
+        expected_duration_tuple = (4.0, 3.0, 3.0, 3.800090804, 2.199909196)
         self.assertEqual(
             tuple(
                 float(duration)
@@ -116,9 +71,7 @@ class TempoConverterTest(unittest.TestCase):
         tempo_envelope = core_events.Envelope([[0, 30], [4, 60]])
         chronon0 = core_events.Chronon(4)
         chronon1 = core_events.Chronon(8)
-        concurrence = core_events.Concurrence(
-            [chronon0, chronon0, chronon1]
-        )
+        concurrence = core_events.Concurrence([chronon0, chronon0, chronon1])
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_concurrence = converter.convert(concurrence)
         expected_duration0 = concurrence[0].duration * 1.5
@@ -155,9 +108,7 @@ class EventToMetrizedEventTest(unittest.TestCase):
         )
         expected_chronon = core_events.Chronon(4)
         event_to_metrized_event = core_converters.EventToMetrizedEvent()
-        self.assertEqual(
-            event_to_metrized_event.convert(chronon), expected_chronon
-        )
+        self.assertEqual(event_to_metrized_event.convert(chronon), expected_chronon)
 
     def test_convert_nested_event_with_simple_hierarchy(self):
         """
@@ -181,11 +132,7 @@ class EventToMetrizedEventTest(unittest.TestCase):
             tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 30]]),
         )
         expected_consecution = core_events.Consecution(
-            [
-                core_events.Consecution(
-                    [core_events.Chronon(8), core_events.Chronon(4)]
-                )
-            ]
+            [core_events.Consecution([core_events.Chronon(8), core_events.Chronon(4)])]
         )
         event_to_metrized_event = core_converters.EventToMetrizedEvent()
         self.assertEqual(
@@ -247,11 +194,7 @@ class EventToMetrizedEventTest(unittest.TestCase):
             tempo_envelope=core_events.TempoEnvelope([[0, 11], [1, 11]]),
         )
         expected_consecution = core_events.Consecution(
-            [
-                core_events.Consecution(
-                    [core_events.Chronon(4), core_events.Chronon(2)]
-                )
-            ],
+            [core_events.Consecution([core_events.Chronon(4), core_events.Chronon(2)])],
             tempo_envelope=core_events.TempoEnvelope([[0, 11], [1, 11]]),
         )
         event_to_metrized_event = core_converters.EventToMetrizedEvent(
