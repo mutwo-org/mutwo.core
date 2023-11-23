@@ -64,7 +64,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         self, tempo_point: TempoPoint
     ) -> tuple[core_constants.Real, core_constants.Real]:
         try:
-            beats_per_minute = tempo_point.tempo_in_beats_per_minute  # type: ignore
+            beats_per_minute = tempo_point.tempo  # type: ignore
         except AttributeError:
             beats_per_minute = float(tempo_point)  # type: ignore
 

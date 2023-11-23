@@ -29,7 +29,7 @@ __all__ = ("DirectTempoPoint",)
 class DirectTempoPoint(core_parameters.abc.TempoPoint):
     """Represent the active tempo at a specific moment in time.
 
-    :param tempo_or_tempo_range_in_beats_per_minute: Specify a tempo in
+    :param tempo_or_tempo_range: Specify a tempo in
         `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
         Tempo can also be a tempo range where the first value indicates a
         minimal tempo and the second value the maximum tempo. If the user
@@ -55,13 +55,11 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
 
     def __init__(
         self,
-        tempo_or_tempo_range_in_beats_per_minute: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
+        tempo_or_tempo_range: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
         reference: core_constants.Real = 1,
         textual_indication: typing.Optional[str] = None,
     ):
-        self.tempo_or_tempo_range_in_beats_per_minute = (
-            tempo_or_tempo_range_in_beats_per_minute
-        )
+        self.tempo_or_tempo_range = tempo_or_tempo_range
         self.reference = reference
         self.textual_indication = textual_indication
 
@@ -76,17 +74,15 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
         self._reference = float(reference)
 
     @property
-    def tempo_or_tempo_range_in_beats_per_minute(
+    def tempo_or_tempo_range(
         self,
     ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
-        return self._tempo_or_tempo_range_in_beats_per_minute
+        return self._tempo_or_tempo_range
 
-    @tempo_or_tempo_range_in_beats_per_minute.setter
-    def tempo_or_tempo_range_in_beats_per_minute(
+    @tempo_or_tempo_range.setter
+    def tempo_or_tempo_range(
         self,
-        tempo_or_tempo_range_in_beats_per_minute: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
+        tempo_or_tempo_range: core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute,
     ):
-        self._tempo_or_tempo_range_in_beats_per_minute = (
-            tempo_or_tempo_range_in_beats_per_minute
-        )
-        return self._tempo_or_tempo_range_in_beats_per_minute
+        self._tempo_or_tempo_range = tempo_or_tempo_range
+        return self._tempo_or_tempo_range
