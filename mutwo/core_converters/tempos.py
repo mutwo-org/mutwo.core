@@ -66,7 +66,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
 
 
 class TempoConverter(core_converters.abc.EventConverter):
-    """Apply tempo curves on mutwo events
+    """Apply tempo curve on an :class:`~mutwo.core_events.abc.Event`.
 
     :param tempo_envelope: The tempo curve that shall be applied on the
         mutwo events. This is expected to be a :class:`core_events.TempoEnvelope`
@@ -74,8 +74,8 @@ class TempoConverter(core_converters.abc.EventConverter):
         [beats per minute]) or with :class:`mutwo.core_parameters.abc.TempoPoint`
         objects.
     :param apply_converter_on_events_tempo_envelope: If set to `True` the
-        converter will also adjust the :attr:`tempo_envelope` attribute of
-        each converted event. Default to `True`.
+        converter adjusts the :attr:`tempo_envelope` attribute of each
+        converted event. Default to `True`.
 
     **Example:**
 
@@ -85,7 +85,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     >>> tempo_envelope = core_events.Envelope(
     ...     [[0, core_parameters.DirectTempoPoint(60)], [3, 60], [3, 30], [5, 50]],
     ... )
-    >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
+    >>> c = core_converters.TempoConverter(tempo_envelope)
     """
 
     _tempo_point_to_beat_length_in_seconds = TempoPointToBeatLengthInSeconds().convert
@@ -226,18 +226,14 @@ class TempoConverter(core_converters.abc.EventConverter):
     # ###################################################################### #
 
     def convert(self, event_to_convert: core_events.abc.Event) -> core_events.abc.Event:
-        """Apply tempo curve of the converter to the entered event.
-
-        The method doesn't change the original event, but returns a copied
-        version with different values for its duration attributes depending
-        on the tempo curve.
+        """Apply tempo curve of the converter on copy of 'event_to_convert'.
 
         :param event_to_convert: The event to convert. Can be any object
-            that inherits from ``mutwo.core_events.abc.Event``. If the event that
+            that inherits from :class:`mutwo.core_events.abc.Event`. If the event that
             shall be converted is longer than the tempo curve of the
-            ``TempoConverter``, then the last tempo of the curve will be hold.
-        :return: A new ``Event`` object which duration property has been adapted
-            by the tempo curve of the ``TempoConverter``.
+            :class:`TempoConverter`, then the last tempo of the curve is hold.
+        :return: A new :class:`~mutwo.core_events.abc.Event` which duration has been
+            adapted by the tempo curve of the :class:`TempoConverter`.
 
         **Example:**
 
@@ -258,7 +254,7 @@ class TempoConverter(core_converters.abc.EventConverter):
 
 
 class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
-    """Apply tempo envelope of event on itself"""
+    """Apply tempo envelope of event on copy of itself"""
 
     def __init__(
         self,
@@ -294,5 +290,5 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
         return super()._convert_event(e, absolute_time, depth)
 
     def convert(self, event_to_convert: core_events.abc.Event) -> core_events.abc.Event:
-        """Apply tempo envelope of event on itself"""
+        """Apply tempo envelope of event on copy of itself"""
         return self._convert_event(event_to_convert, 0, 0)
