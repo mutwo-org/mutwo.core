@@ -61,9 +61,8 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
         0.5
         """
-
-        tempo_point = core_parameters.abc.TempoPoint.from_any(tempo_point_to_convert)
-        return float(60 / tempo_point.tempo)
+        t = core_parameters.abc.TempoPoint.from_any(tempo_point_to_convert)
+        return float(60 / t.tempo)
 
 
 class TempoConverter(core_converters.abc.EventConverter):
@@ -104,15 +103,11 @@ class TempoConverter(core_converters.abc.EventConverter):
     # and we already want to have faster converters now.
     class _CatchedTempoEnvelope(core_events.TempoEnvelope):
         @functools.cached_property
-        def _abstf_tuple_and_dur(
-            self,
-        ) -> tuple[tuple[float, ...], float]:
+        def _abstf_tuple_and_dur(self) -> tuple[tuple[float, ...], float]:
             return super()._abstf_tuple_and_dur
 
         @functools.cached_property
-        def _abst_tuple_and_dur(
-            self,
-        ) -> tuple[tuple[float, ...], float]:
+        def _abst_tuple_and_dur(self) -> tuple[tuple[float, ...], float]:
             return super()._abst_tuple_and_dur
 
     def __init__(
@@ -143,18 +138,15 @@ class TempoConverter(core_converters.abc.EventConverter):
     ) -> core_events.Envelope:
         """Convert bpm / TempoPoint based env to beat-length-in-seconds env."""
         e = tempo_envelope
-        level_list: list[float] = []
+        value_list: list[float] = []
         for tp in e.parameter_tuple:
-            beat_length_in_seconds = (
-                TempoConverter._tempo_point_to_beat_length_in_seconds(tp)
-            )
-            level_list.append(beat_length_in_seconds)
+            value_list.append(TempoConverter._tempo_point_to_beat_length_in_seconds(tp))
 
         return TempoConverter._CatchedTempoEnvelope(
             [
                 [t, v, cs]
                 for t, v, cs in zip(
-                    e.absolute_time_tuple, level_list, e.curve_shape_tuple
+                    e.absolute_time_tuple, value_list, e.curve_shape_tuple
                 )
             ]
         )
@@ -192,18 +184,18 @@ class TempoConverter(core_converters.abc.EventConverter):
     def _convert_chronon(
         self,
         chronon: core_events.Chronon,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> tuple[typing.Any, ...]:
         chronon.duration = self._integrate(
-            absolute_entry_delay, absolute_entry_delay + chronon.duration
+            absolute_time, absolute_time + chronon.duration
         )
         return tuple([])
 
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
         tempo_envelope = event_to_convert.tempo_envelope
@@ -215,12 +207,12 @@ class TempoConverter(core_converters.abc.EventConverter):
             and not is_tempo_envelope_effectless
         ):
             start, end = (
-                absolute_entry_delay,
-                absolute_entry_delay + event_to_convert.duration,
+                absolute_time,
+                absolute_time + event_to_convert.duration,
             )
             local_tempo_converter = self._start_and_end_to_tempo_converter(start, end)
             event_to_convert.tempo_envelope = local_tempo_converter(tempo_envelope)
-        rvalue = super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+        rvalue = super()._convert_event(event_to_convert, absolute_time, depth)
         if is_tempo_envelope_effectless:
             # Yes we simply override the tempo_envelope of the event which we
             # just converted. This is because the TempoConverter copies the
@@ -260,9 +252,9 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> my_tempo_converter.convert(my_events)
         Consecution([Chronon(duration=DirectDuration(3.0)), Chronon(duration=DirectDuration(3.2)), Chronon(duration=DirectDuration(6.0))])
         """
-        copied_event_to_convert = event_to_convert.destructive_copy()
-        self._convert_event(copied_event_to_convert, core_parameters.DirectDuration(0))
-        return copied_event_to_convert
+        e = event_to_convert.destructive_copy()
+        self._convert_event(e, core_parameters.DirectDuration(0))
+        return e
 
 
 class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
@@ -279,7 +271,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
     def _convert_chronon(
         self,
         event_to_convert: core_events.Chronon,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.Chronon:
         return event_to_convert
@@ -287,19 +279,19 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
         if (self._skip_level_count is None or self._skip_level_count < depth) and (
             self._maxima_depth_count is None or depth < self._maxima_depth_count
         ):
             tempo_converter = TempoConverter(event_to_convert.tempo_envelope)
-            event_to_convert = tempo_converter.convert(event_to_convert)
-            event_to_convert.reset_tempo_envelope()
+            e = tempo_converter.convert(event_to_convert)
+            e.reset_tempo_envelope()
         else:
             # Ensure we return copied event!
-            event_to_convert = event_to_convert.destructive_copy()
-        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+            e = event_to_convert.destructive_copy()
+        return super()._convert_event(e, absolute_time, depth)
 
     def convert(self, event_to_convert: core_events.abc.Event) -> core_events.abc.Event:
         """Apply tempo envelope of event on itself"""
