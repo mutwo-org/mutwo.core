@@ -91,16 +91,13 @@ class TempoConverter(core_converters.abc.EventConverter):
     _tempo_point_to_beat_length_in_seconds = TempoPointToBeatLengthInSeconds().convert
 
     # Define private tempo envelope class which catches its
-    # '_absolute_time_in_floats_tuple_and_duration'. With this we can
+    # absolute times and durations. With this we can
     # improve the performance of the 'value_at' method and with this
     # improvment we can have a faster converter.
     #
     # This is actually not safe, because the envelope is still mutable.
     # But we trust that no one changes anything with our internal envelope
-    # and hope everything goes well. The long term solution is to implement
-    # a 'freeze' method for all mutwo objects, which auto-converts all
-    # properties to catched properties. But this may still takes some time
-    # and we already want to have faster converters now.
+    # and hope everything goes well.
     class _CatchedTempoEnvelope(core_events.TempoEnvelope):
         @functools.cached_property
         def _abstf_tuple_and_dur(self) -> tuple[tuple[float, ...], float]:
