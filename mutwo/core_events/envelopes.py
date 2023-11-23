@@ -831,7 +831,7 @@ class TempoEnvelope(Envelope):
     ...     [
     ...         [0, core_parameters.DirectTempoPoint(60)],
     ...         [1, core_parameters.DirectTempoPoint(30)],
-    ...         [2, core_parameters.DirectTempoPoint(30, reference=2)],
+    ...         [2, core_parameters.WesternTempoPoint(30, reference=2)],
     ...     ]
     ... )
     """
@@ -871,7 +871,7 @@ class TempoEnvelope(Envelope):
         # successful, if not it will return 'parameter', because it
         # will assume that we have a number based tempo point.
         return float(
-            getattr(parameter, "absolute_tempo", parameter)
+            getattr(parameter, "tempo", parameter)
         )
 
     def apply_parameter_on_event(

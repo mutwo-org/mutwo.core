@@ -41,8 +41,6 @@ except ImportError:
 else:
     import fractions as _fractions
 
-import ranges
-
 from mutwo import core_constants
 from mutwo import core_events
 from mutwo import core_parameters
@@ -387,69 +385,17 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         raise core_utilities.CannotParseError(object, cls)
 
 
-class TempoPoint(Parameter):
+class TempoPoint(SingleNumberParameter, value_name="tempo", value_return_type="float"):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
-    properties :attr:`tempo_or_tempo_range`
-    and `reference` have to be overridden.
+    property :attr:`tempo` needs to be overridden. Tempo should be
+    in the unit `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
     """
 
     Type: typing.TypeAlias = typing.Union["TempoPoint", core_constants.Real]
     """TempoPoint.Type hosts all types that are supported by the tempo point
     parser :func:`TempoPoint.from_any`."""
-
-    def __repr_content__(self) -> str:
-        return f"BPM={self.tempo},ref={self.reference}"
-
-    def __str_content__(self) -> str:
-        return self.__repr_content__()
-
-    def __eq__(self, other: object) -> bool:
-        attribute_to_compare_tuple = (
-            "tempo",
-            "reference",
-        )
-        return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
-            self, other, attribute_to_compare_tuple
-        )
-
-    @property
-    @abc.abstractmethod
-    def tempo_or_tempo_range(
-        self,
-    ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
-        ...
-
-    @property
-    @abc.abstractmethod
-    def reference(self) -> core_constants.Real:
-        ...
-
-    @property
-    def tempo(
-        self,
-    ) -> core_parameters.constants.TempoInBeatsPerMinute:
-        """Get tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
-
-        If :attr:`tempo_or_tempo_range` is a range
-        mutwo will return the minimal tempo.
-        """
-
-        if isinstance(self.tempo_or_tempo_range, ranges.Range):
-            return self.tempo_or_tempo_range.start
-        else:
-            return self.tempo_or_tempo_range
-
-    @property
-    def absolute_tempo(self) -> float:
-        """Get absolute tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
-
-        The absolute tempo takes the :attr:`reference` of the :class:`TempoPoint`
-        into account.
-        """
-
-        return self.tempo * self.reference
 
     @classmethod
     def from_any(cls: typing.Type[T], object: TempoPoint.Type) -> T:
