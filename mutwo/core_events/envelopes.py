@@ -219,7 +219,7 @@ class Envelope(core_events.Consecution, typing.Generic[T]):
         if e_idx is not None:
             e = self[e_idx]
             cs = self.event_to_curve_shape(e)
-            csx = ((abst - abst_tuple[e_idx]) / e.duration).duration * cs
+            csx = ((abst - abst_tuple[e_idx]) / e.duration).beat_count * cs
             cs_at_abst = cs - csx
             self.apply_curve_shape_on_event(e, csx)
         else:
@@ -232,7 +232,7 @@ class Envelope(core_events.Consecution, typing.Generic[T]):
         abst_tuple: tuple["core_parameters.abc.Duration", ...],
         dur: "core_parameters.abc.Duration",
     ):
-        abstf = abst.duration
+        abstf = abst.beat_count
         abstf_tuple = tuple(map(float, abst_tuple))
         durf = float(dur)
 
@@ -601,7 +601,7 @@ class Envelope(core_events.Consecution, typing.Generic[T]):
         if duration == 0:
             self._logger.warning(core_utilities.InvalidAverageValueStartAndEndWarning())
             return self.value_at(start)
-        return self.integrate_interval(start, end) / duration.duration
+        return self.integrate_interval(start, end) / duration.beat_count
 
     def get_average_parameter(
         self,
@@ -871,7 +871,7 @@ class TempoEnvelope(Envelope):
         # successful, if not it will return 'parameter', because it
         # will assume that we have a number based tempo point.
         return float(
-            getattr(parameter, "tempo", parameter)
+            getattr(parameter, "bpm", parameter)
         )
 
     def apply_parameter_on_event(

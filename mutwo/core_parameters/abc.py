@@ -288,15 +288,13 @@ class SingleNumberParameter(SingleValueParameter):
         return self._compare(other, lambda value0, value1: value0 < value1, True)
 
 
-class Duration(SingleNumberParameter, value_name="duration", value_return_type="float"):
+class Duration(SingleNumberParameter, value_name="beat_count", value_return_type="float"):
     """Abstract base class for any duration.
 
     If the user wants to define a Duration class, the abstract
-    property :attr:`duration` has to be overridden.
+    property :attr:`beat_count` has to be overridden.
 
-    The attribute :attr:`duration` is stored in unit `beats`.
-
-    The ``duration`` of :mod:`mutwo` events are therefore not
+    The ``duration`` of :mod:`mutwo` events are not
     related to a clear physical unit as for instance seconds.
     The reason for this decision is to simplify musical usage.
     """
@@ -314,8 +312,8 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         other: Duration | core_constants.Real,
         operation: typing.Callable[[float, float], float],
     ) -> Duration:
-        self.duration = float(
-            operation(self.duration, getattr(other, "duration", other))
+        self.beat_count = float(
+            operation(self.beat_count, getattr(other, "beat_count", other))
         )
         return self
 
@@ -344,16 +342,16 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         return self.copy().divide(other)
 
     def __float__(self) -> float:
-        return self.duration
+        return self.beat_count
 
     @property
     @abc.abstractmethod
-    def duration(self) -> float:
+    def beat_count(self) -> float:
         ...
 
-    @duration.setter
+    @beat_count.setter
     @abc.abstractmethod
-    def duration(self, duration: core_constants.Real):
+    def beat_count(self, beat_count: core_constants.Real):
         ...
 
     @classmethod
@@ -385,12 +383,13 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         raise core_utilities.CannotParseError(object, cls)
 
 
-class TempoPoint(SingleNumberParameter, value_name="tempo", value_return_type="float"):
+class TempoPoint(SingleNumberParameter, value_name="bpm", value_return_type="float"):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
-    property :attr:`tempo` needs to be overridden. Tempo should be
-    in the unit `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
+    property :attr:`bpm` needs to be overridden. ``BPM`` is an abbreviation
+    for 'beats per minute' and the unit of the parameter tempo, see more
+    information at this `wikipedia article <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
     """
 
     Type: typing.TypeAlias = typing.Union["TempoPoint", core_constants.Real]

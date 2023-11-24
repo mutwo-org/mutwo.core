@@ -62,7 +62,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         0.5
         """
         t = core_parameters.abc.TempoPoint.from_any(tempo_point_to_convert)
-        return float(60 / t.tempo)
+        return float(60 / t.bpm)
 
 
 class TempoConverter(core_converters.abc.EventConverter):
@@ -153,7 +153,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     # ###################################################################### #
 
     def _start_and_end_to_tempo_converter(self, start, end):
-        key = (start.duration, end.duration)
+        key = (start.beat_count, end.beat_count)
         try:
             t = self._start_and_end_to_tempo_converter_dict[key]
         except KeyError:
@@ -169,7 +169,7 @@ class TempoConverter(core_converters.abc.EventConverter):
     def _integrate(
         self, start: core_parameters.abc.Duration, end: core_parameters.abc.Duration
     ):
-        key = (start.duration, end.duration)
+        key = (start.beat_count, end.beat_count)
         try:
             i = self._start_and_end_to_integration[key]
         except KeyError:

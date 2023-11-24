@@ -715,12 +715,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         if not self:  # If empty and duration == 0, we'd run into ZeroDivision
             raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
 
-        durf = core_parameters.abc.Duration.from_any(duration).duration
-        if (old_durf := self.duration.duration) != 0:
+        durf = core_parameters.abc.Duration.from_any(duration).beat_count
+        if (old_durf := self.duration.beat_count) != 0:
 
             def f(event_duration: core_parameters.abc.Duration):
                 return core_utilities.scale(
-                    event_duration.duration, 0, old_durf, 0, durf
+                    event_duration.beat_count, 0, old_durf, 0, durf
                 )
 
         else:

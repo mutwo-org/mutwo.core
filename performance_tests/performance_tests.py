@@ -46,14 +46,14 @@ class PerformanceTest(unittest.TestCase):
     @t(0.06, 200)
     def test_Consecution_split_at(self):
         e = cons([ch(random.uniform(1, 3)) for _ in range(100)])
-        duration = e.duration.duration
+        duration = e.duration.beat_count
         split_time_list = sorted([random.uniform(0, duration) for _ in range(100)])
         e.split_at(*split_time_list)
 
     @t(0.15, 100)
     def test_Concurrence_split_at(self):
         e = conc([ch(random.uniform(1, 3)) for _ in range(30)])
-        duration = e.duration.duration
+        duration = e.duration.beat_count
         split_time_list = sorted([random.uniform(0, duration) for _ in range(25)])
         e.split_at(*split_time_list)
 

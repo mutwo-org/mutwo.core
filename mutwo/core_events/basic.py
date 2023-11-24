@@ -363,7 +363,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> int:
         absolute_time = core_parameters.abc.Duration.from_any(absolute_time)
         self._assert_valid_absolute_time(absolute_time)
-        abstf = absolute_time.duration
+        abstf = absolute_time.beat_count
 
         event_index = Consecution._get_index_at_from_absolute_time_tuple(
             abstf, abstf_tuple, durf
@@ -424,7 +424,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
         This property helps to improve performance of various functions
         which uses duration and absolute_time_tuple attribute.
         """
-        d_iter = (e.duration.duration for e in self)
+        d_iter = (e.duration.beat_count for e in self)
         abstf_tuple = tuple(
             # We need to round each duration again after accumulation,
             # because floats were summed which could lead to
@@ -503,7 +503,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
         This method ignores events with duration == 0.
         """
-        abstf = core_parameters.abc.Duration.from_any(absolute_time).duration
+        abstf = core_parameters.abc.Duration.from_any(absolute_time).beat_count
         abstf_tuple, durf = self._abstf_tuple_and_dur
         return Consecution._get_index_at_from_absolute_time_tuple(
             abstf, abstf_tuple, durf
@@ -594,7 +594,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> Consecution[T]:
         start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
-        start_in_floats = start.duration
+        start_in_floats = start.beat_count
         self._assert_start_in_range(start_in_floats)
 
         # Only run cut_off if necessary -> Improve performance
@@ -646,7 +646,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
     ) -> Consecution[T]:
         start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
-        start_in_floats = start.duration
+        start_in_floats = start.beat_count
         if start_in_floats == 0:
             self.insert(0, event_to_slide_in)
             return self
@@ -675,7 +675,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
             raise core_utilities.NoSplitTimeError()
 
         split_abstf_list = [
-            core_parameters.abc.Duration.from_any(t).duration for t in absolute_time
+            core_parameters.abc.Duration.from_any(t).beat_count for t in absolute_time
         ]
 
         abstf_tuple, durf = self._abstf_tuple_and_dur
@@ -1084,7 +1084,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
             try:  # Consecution
                 abst_tuple, dur = e._abstf_tuple_and_dur
             except AttributeError:  # Chronon or Concurrence
-                abst_tuple, dur = (0,), e.duration.duration
+                abst_tuple, dur = (0,), e.duration.beat_count
             for t in abst_tuple + (dur,):
                 abst_set.add(t)
 

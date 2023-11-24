@@ -47,22 +47,22 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
     ... ])
     """
 
-    def __init__(self, tempo: core_constants.Real | str):
-        self.tempo = tempo
+    def __init__(self, bpm: core_constants.Real | str):
+        self.bpm = bpm
 
     @property
-    def tempo(self) -> float:
-        return self._tempo
+    def bpm(self) -> float:
+        return self._bpm
 
-    @tempo.setter
-    def tempo(self, tempo: core_constants.Real | str):
-        self._tempo = float(tempo)
+    @bpm.setter
+    def bpm(self, bpm: core_constants.Real | str):
+        self._bpm = float(bpm)
 
 
 class WesternTempoPoint(core_parameters.abc.TempoPoint):
     """A tempo point useful for western notation.
 
-    :param tempo_range: Specify a tempo range in
+    :param bpm_range: Specify a tempo range in
         `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
         In western notation tempo is often indicated as a range from the
         minimal accepted tempo to the fastest accepted tempo. Therefore
@@ -90,37 +90,37 @@ class WesternTempoPoint(core_parameters.abc.TempoPoint):
 
     def __init__(
         self,
-        tempo_range: ranges.Range | core_constants.Real | str,
+        bpm_range: ranges.Range | core_constants.Real | str,
         reference: typing.Optional[core_constants.Real | str] = None,
         textual_indication: typing.Optional[str] = None,
     ):
-        self.tempo_range = tempo_range
+        self.bpm_range = bpm_range
         self.reference = reference or core_parameters.configurations.DEFAULT_REFERENCE
         self.textual_indication = textual_indication
 
     @property
-    def tempo(self) -> float:
-        return self._tempo_range.start * self.reference
+    def bpm(self) -> float:
+        return self._bpm_range.start * self.reference
 
     @property
-    def tempo_range(self) -> ranges.Range:
+    def bpm_range(self) -> ranges.Range:
         """A range from the slowest to the fastest accepted tempo.
 
         In internal calculations the minimal (slowest) tempo is used.
         The tempo in the tempo range is relative as the absolute tempo
         depends on the ``reference``.
         """
-        return self._tempo_range
+        return self._bpm_range
 
-    @tempo_range.setter
-    def tempo_range(self, tempo_range: ranges.Range | core_constants.Real | str):
-        match tempo_range:
+    @bpm_range.setter
+    def bpm_range(self, bpm_range: ranges.Range | core_constants.Real | str):
+        match bpm_range:
             case ranges.Range():
-                r = tempo_range
+                r = bpm_range
             case _:
-                v = float(tempo_range)
+                v = float(bpm_range)
                 r = ranges.Range(v, v)
-        self._tempo_range = r
+        self._bpm_range = r
 
     @property
     def reference(self) -> fractions.Fraction:

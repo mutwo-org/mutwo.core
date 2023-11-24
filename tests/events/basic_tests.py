@@ -128,8 +128,8 @@ class ChrononTest(unittest.TestCase, EventTest):
         chronon1 = chronon0.copy()
         chronon1.duration = 300
 
-        self.assertEqual(chronon0.duration.duration, 20)
-        self.assertEqual(chronon1.duration.duration, 300)
+        self.assertEqual(chronon0.duration.beat_count, 20)
+        self.assertEqual(chronon1.duration.beat_count, 300)
 
     def test_set(self):
         chronon = core_events.Chronon(1)
