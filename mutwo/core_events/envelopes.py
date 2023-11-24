@@ -871,7 +871,7 @@ class TempoEnvelope(Envelope):
         # successful, if not it will return 'parameter', because it
         # will assume that we have a number based tempo point.
         return float(
-            getattr(parameter, "tempo", parameter)
+            getattr(parameter, "bpm", parameter)
         )
 
     def apply_parameter_on_event(

@@ -385,12 +385,13 @@ class Duration(SingleNumberParameter, value_name="duration", value_return_type="
         raise core_utilities.CannotParseError(object, cls)
 
 
-class TempoPoint(SingleNumberParameter, value_name="tempo", value_return_type="float"):
+class TempoPoint(SingleNumberParameter, value_name="bpm", value_return_type="float"):
     """Represent the active tempo at a specific moment in time.
 
     If the user wants to define a `TempoPoint` class, the abstract
-    property :attr:`tempo` needs to be overridden. Tempo should be
-    in the unit `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
+    property :attr:`bpm` needs to be overridden. ``BPM`` is an abbreviation
+    for 'beats per minute' and the unit of the parameter tempo, see more
+    information at this `wikipedia article <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
     """
 
     Type: typing.TypeAlias = typing.Union["TempoPoint", core_constants.Real]

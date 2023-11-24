@@ -62,7 +62,7 @@ class TempoPointToBeatLengthInSeconds(core_converters.abc.Converter):
         0.5
         """
         t = core_parameters.abc.TempoPoint.from_any(tempo_point_to_convert)
-        return float(60 / t.tempo)
+        return float(60 / t.bpm)
 
 
 class TempoConverter(core_converters.abc.EventConverter):
