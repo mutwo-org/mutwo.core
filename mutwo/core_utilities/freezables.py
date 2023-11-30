@@ -216,8 +216,16 @@ class Freezable(object):
     __needs_liquiditiy__ = tuple([])
     __needs_solidity__ = tuple([])
 
-    def __init__(self):
-        self._defrost(init=True)
+    # Initialize frozen data when attribute can't be found
+    # (e.g. when '__getattribute__' fails). In this way
+    # we don't need to force all children classes to call
+    # 'super().__init__()'.
+    def __getattr__(self, name: str):
+        try:
+            super().__getattribute__('__frozen__')
+        except AttributeError:
+            self._defrost(init=True)
+        return super().__getattribute__(name)
 
     def copy(self) -> Freezable:
         """Return deep-copy of object."""
