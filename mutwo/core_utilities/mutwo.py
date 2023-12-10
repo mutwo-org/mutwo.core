@@ -29,7 +29,7 @@ __all__ = ("MutwoObject",)
 T = typing.TypeVar("T")
 
 
-class MutwoObject(object):
+class MutwoObject(core_utilities.Freezable):
     """Base class for mutwo objects
 
     This class collects functionality that's useful for any object in the
@@ -73,5 +73,5 @@ class MutwoObject(object):
         # Some objects as lambda functions or modules can't be pickled: in
         # case our MutwoObject contains such unpickable objects, fall
         # back to less efficient deepcopy method.
-        except (pickle.PicklingError, TypeError):
+        except (pickle.PicklingError, TypeError, AttributeError):
             return copy.deepcopy(self)
