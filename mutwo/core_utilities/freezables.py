@@ -231,7 +231,7 @@ class Freezable(object):
         """Return deep-copy of object."""
         return copy.deepcopy(self)
 
-    @needs_liquiditiy
+    # @needs_liquiditiy
     def freeze(self):
         """Make object immutable e.g. its internal state can't be changed anymore.
 

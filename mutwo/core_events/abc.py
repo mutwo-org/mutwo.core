@@ -551,6 +551,7 @@ T = typing.TypeVar("T", bound=Event)
 # FIXME(This Event can be initialised (no abstract error).
 # Please see the following issue for comparison:
 #   https://bugs.python.org/issue35815
+@core_utilities.freezable_list()
 class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
