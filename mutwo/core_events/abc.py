@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -559,6 +559,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     def __init__(
         self,
         iterable: typing.Iterable[T] = [],
+        *,
         tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
         tag: typing.Optional[str] = None,
     ):
