@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ class Chronon(core_events.abc.Event):
     # ###################################################################### #
 
     def destructive_copy(self) -> Chronon:
-        return copy.deepcopy(self)
+        return self.copy()
 
     def get_parameter(
         self, parameter_name: str, flat: bool = False, filter_undefined: bool = False
