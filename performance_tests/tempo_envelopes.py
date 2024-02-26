@@ -2,6 +2,7 @@ import cProfile
 import random
 
 from mutwo import core_events
+from mutwo import core_parameters
 
 
 def t():
@@ -13,7 +14,7 @@ def t():
             for _ in range(3)
         ]
     )
-    e.tempo_envelope = core_events.TempoEnvelope(
+    e.tempo = core_parameters.FlexTempo(
         [[i, 60] if i % 2 == 0 else [i, 50] for i in range(20)]
     )
     e.metrize()

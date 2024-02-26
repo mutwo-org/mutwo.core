@@ -35,29 +35,29 @@ __all__ = ("Event", "ComplexEvent")
 class Event(core_utilities.MutwoObject, abc.ABC):
     """Abstract Event-Object
 
-    :param tempo_envelope: An envelope which describes the dynamic tempo of an event.
+    :param tempo: An envelope which describes the dynamic tempo of an event.
     :param tag: The name of the event. This can be used to find the event
         inside a :class:`ComplexEvent`.
     """
 
-    # It looks tempting to drop the 'tempo_envelope' attribute of events.
+    # It looks tempting to drop the 'tempo' attribute of events.
     # It may look simpler (and therefore more elegant) if events are only
     # defined by one attribute: their duration. Let's remember why the
-    # 'tempo_envelope' attribute was initially introduced [1]:
+    # 'tempo' attribute was initially introduced [1]:
     #
     # - With [1] it was decided that durations are represented in the unit
-    #   'beats'.
+    #   'beat_count'.
     #
     # - An event should have an unambiguous duration, so that converters
     #   (and all other 'mutwo' parts) can treat an event consistently.
     #
-    # - The unit of 'beats' doesn't say anything about the real duration: only
-    #   in cooperation with a specified tempo it can be clearly stated how long
-    #   an event is.
+    # - The unit of 'beat_count' doesn't say anything about the real duration:
+    #   only in cooperation with a specified tempo it can be clearly stated how
+    #   long an event is.
     #
     # - Therefore the combination of (a) having duration specified in the unit
-    #   'beats' and (b) wanting to have events with unambiguous duration leads
-    #   to the necessity to attach tempo envelopes to events.
+    #   'beat_count' and (b) wanting to have events with unambiguous duration
+    #   leads to the necessity to attach tempos to events.
     #
     # In the early days of mutwo (b) wasn't considered to be an objective:
     # it was the opposite, an implicit ambiguity was considered to be a good
@@ -65,13 +65,13 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     # this approach rather increased complexity, as other code bits are unable
     # to treat an event consistently and a user constantly has to keep in mind
     # the specific way how each converter interprets a duration. To fix this
-    # complexity, the 'beat' unit was specified and a 'tempo_envelope'
-    # attribute has been added. Now converters could be reliable to produce
+    # complexity, the 'beat' unit was specified and a 'tempo'
+    # attribute has been added. Now converters could reliably produce
     # results which match the duration of an event.
     #
-    # Now we could change durations to be no longer in the unit 'beats', but in
-    # the unit 'seconds'. Then the duration of an event would still be
-    # unambiguous without the need of a tempo envelope attribute.  We could
+    # Now we could change durations to be no longer in the unit 'beat_count',
+    # but in the unit 'seconds'. Then the duration of an event would still be
+    # unambiguous without the need of a tempo attribute.  We could
     # furthermore implement duration representations with beat & tempo as a
     # subclass of a more general 'duration=seconds' approach. This has two
     # problems:
@@ -88,15 +88,22 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     #     tempo - and wouldn't resonate with how we usually think about music.
     #
     # (3) If we think of tempo, it's rather a global trajectory independent
-    #     from single notes. Therefore a 'TempoEnvelope' object seems to be
-    #     more consistent with how we usually approach tempo in music than a
-    #     specific tempo for each note. To still be able to have this global
-    #     trajectory, a 'duration=seconds' approach would need additional
-    #     helper functions, to apply a tempo envelope on an event with beat
-    #     based durations.
+    #     from single notes. So we usually think of a tempo trajectory as
+    #     something that belongs to a nested event (e.g. a 'Consecution' or
+    #     a 'Concurrence'). But with the duration=seconds approach such a
+    #     tempo trajectory couldn't be persistently mapped to a nested event,
+    #     because the duration of a complex event isn't a statically mapped and
+    #     available entity, but ephemerally and dynamically calculated when
+    #     needed. When the duration of a complex event is set, it becomes
+    #     propagated to the duration of its children until it finds a leaf that
+    #     statically declares its duration and then it's lost. So in order to
+    #     have a persistently available tempo trajectory on a complex event
+    #     that can be read and modified-in-place, we need an extra tempo
+    #     attribute. Otherwise we would break the rule that the duration of
+    #     a complex event is only a sum or max of its children duration.
     #
     # Due to these reasons, that describe new complexities by switching to a
-    # 'duration=seconds' model, we should stick to the beats/tempo_envelope
+    # 'duration=seconds' model, we should stick to the beats/tempo
     # approach until we can find a better solution.
     #
     # Now we could also ask the other way around, because if durations are in
@@ -106,7 +113,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     # true vice versa: if the default tempo of an event (which is 60 BPM)
     # isn't changed, the beats of a duration does in fact equal seconds.
     # So for users who don't care about splitting duration into beats+tempo,
-    # they can simply avoid any 'tempo_envelope' attribute and directly write
+    # they can simply avoid any 'tempo' attribute and directly write
     # their duration in seconds.
     #
     # ---
@@ -122,10 +129,10 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     def __init__(
         self,
-        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+        tempo: typing.Optional[core_parameters.abc.Tempo] = None,
         tag: typing.Optional[str] = None,
     ):
-        self.tempo_envelope = tempo_envelope
+        self.tempo = tempo
         self.tag = tag
 
     # ###################################################################### #
@@ -198,22 +205,15 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     # ###################################################################### #
 
     @property
-    def tempo_envelope(self) -> core_events.TempoEnvelope:
-        """The dynamic tempo of an event; specified as an envelope.
+    def tempo(self) -> core_parameters.abc.Tempo:
+        """The tempo of an event."""
+        if self._tempo is None:
+            self.reset_tempo()
+        return self._tempo
 
-        Tempo envelopes are represented as :class:`core_events.TempoEnvelope`
-        objects. Tempo envelopes are valid for its respective event and all its
-        children events.
-        """
-        if self._tempo_envelope is None:
-            self.reset_tempo_envelope()
-        return self._tempo_envelope
-
-    @tempo_envelope.setter
-    def tempo_envelope(
-        self, tempo_envelope: typing.Optional[core_events.TempoEnvelope]
-    ):
-        self._tempo_envelope = tempo_envelope
+    @tempo.setter
+    def tempo(self, tempo: typing.Optional[core_parameters.abc.Tempo]):
+        self._tempo = tempo
 
     # ###################################################################### #
     #                           public methods                               #
@@ -408,27 +408,27 @@ class Event(core_utilities.MutwoObject, abc.ABC):
             id_set=set([]),
         )
 
-    def reset_tempo_envelope(self) -> Event:
-        """Set events tempo envelope so that one beat equals one second (tempo 60).
+    def reset_tempo(self) -> Event:
+        """Set events tempo so that one beat equals one second (tempo 60).
 
         **Example:**
 
         >>> from mutwo import core_events
         >>> chr = core_events.Chronon(duration = 1)
-        >>> chr.tempo_envelope[0].value = 100
-        >>> print(chr.tempo_envelope)
-        Tem(T(cur=0, dur=D(1.0), tem=D(60.0), val=100), T(cur=0, dur=D(0.0), tem=D(60.0)))
-        >>> chr.reset_tempo_envelope()
+        >>> chr.tempo.bpm = 100
+        >>> print(chr.tempo)
+        D(100.0)
+        >>> chr.reset_tempo()
         Chronon(duration=DirectDuration(1.0))
-        >>> print(chr.tempo_envelope)
-        Tem(T(cur=0, dur=D(1.0), tem=D(60.0)), T(cur=0, dur=D(0.0), tem=D(60.0)))
+        >>> print(chr.tempo)
+        D(60.0)
         """
-        self.tempo_envelope = core_events.TempoEnvelope([[0, 60], [1, 60]])
+        self.tempo = core_parameters.DirectTempo(60)
         return self
 
     @abc.abstractmethod
     def metrize(self) -> typing.Optional[Event]:
-        """Apply tempo envelope of event on itself
+        """Apply tempo of event on itself
 
         Metrize is only syntactic sugar for a call of
         :class:`EventToMetrizedEvent`:
@@ -436,7 +436,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
         >>> chr = core_events.Chronon(1)
-        >>> chr.tempo_envelope = core_events.TempoEnvelope([[0, 100], [1, 40]])
+        >>> chr.tempo = core_parameters.FlexTempo([[0, 100], [1, 40]])
         >>> core_converters.EventToMetrizedEvent().convert(chr) == chr.metrize()
         True
         """
@@ -560,10 +560,10 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         self,
         iterable: typing.Iterable[T] = [],
         *,
-        tempo_envelope: typing.Optional[core_events.TempoEnvelope] = None,
+        tempo: typing.Optional[core_parameters.abc.Tempo] = None,
         tag: typing.Optional[str] = None,
     ):
-        Event.__init__(self, tempo_envelope, tag)
+        Event.__init__(self, tempo, tag)
         list.__init__(self, iterable)
 
     def __init_subclass__(
@@ -587,7 +587,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         #   ): pass
         #
         super_class_attr_tuple = getattr(
-            cls, "_class_specific_side_attribute_tuple", ("tempo_envelope", "tag")
+            cls, "_class_specific_side_attribute_tuple", ("tempo", "tag")
         )
         class_attr_tuple = super_class_attr_tuple + class_specific_side_attribute_tuple
         cls._class_specific_side_attribute_tuple = class_attr_tuple
@@ -794,7 +794,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             id_set=id_set,
         )
 
-    def _concatenate_tempo_envelope(self, other: ComplexEvent):
+    def _concatenate_tempo(self, other: ComplexEvent):
         """Concatenate the tempo of event with tempo of other event.
 
         If we concatenate events on the time axis, we also want to
@@ -807,24 +807,36 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         to know the original duration of the target event. Due to this
         difficulty this method is private.
         """
-        # We need to ensure the tempo envelope of the event
-        # is as long as it's duration, otherwise the others tempo
-        # envelope may be postponed (if our envelope is longer
-        # than the event) or may be too early (if our envelope
-        # is shorted than the event).
-        # We don't care here if the others event envelope is too
+        # Trivial case: if tempo doesn't change and isn't flex, we
+        # don't need to do anything to preserve the tempo of the other event.
+        is_not_flex = map(
+            lambda t: not isinstance(t, core_parameters.FlexTempo),
+            (self.tempo, other.tempo),
+        )
+        if all(is_not_flex) and self.tempo == other.tempo:
+            return
+
+        # Convert to flex tempo, to easily handle tempos.
+        for o in (self, other):
+            o.tempo = core_parameters.FlexTempo.from_parameter(o.tempo)
+
+        # We need to ensure the tempo of the event is as long as
+        # it's duration, otherwise the others tempo may be
+        # postponed (if our envelope is longer than the event)
+        # or may be too early (if our tempo is shorted than the event).
+        # We don't care here if the others event tempo is too
         # short or too long, because the relationships are still
         # the same.
-        if (d := self.duration) < (d_env := self.tempo_envelope.duration):
+        if (d := self.duration) < (d_env := self.tempo.duration):
             self._logger.warning(
                 f"Tempo envelope of '{str(self)[:35]}...' needed "
                 "to be truncated because the envelope was "
                 "longer than the actual event."
             )
-            self.tempo_envelope.cut_out(0, d)
+            self.tempo.cut_out(0, d)
         elif d > d_env:
-            self.tempo_envelope.extend_until(d)
-        self.tempo_envelope.extend(other.tempo_envelope.copy())
+            self.tempo.extend_until(d)
+        self.tempo.extend(other.tempo.copy())
 
     # ###################################################################### #
     #                           public methods                               #
@@ -1000,7 +1012,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def metrize(self) -> ComplexEvent:
         metrized_event = self._event_to_metrized_event(self)
-        self.tempo_envelope = metrized_event.tempo_envelope
+        self.tempo = metrized_event.tempo
         self[:] = metrized_event[:]
         return self
 

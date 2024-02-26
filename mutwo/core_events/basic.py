@@ -60,7 +60,7 @@ class Chronon(core_events.abc.Event):
     C(dur=D(2.0))
     """
 
-    parameter_to_exclude_from_representation_tuple = ("tempo_envelope", "tag")
+    parameter_to_exclude_from_representation_tuple = ("tempo", "tag")
 
     def __init__(self, duration: core_parameters.abc.Duration.Type, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -128,8 +128,7 @@ class Chronon(core_events.abc.Event):
     @property
     def _parameter_to_print_tuple(self) -> tuple[str, ...]:
         """Return tuple of attribute names which shall be printed for repr."""
-        # Fix infinite circular loop (due to 'tempo_envelope')
-        # and avoid printing too verbose parameters.
+        # Avoid printing too verbose parameters.
         return tuple(
             filter(
                 lambda attribute: attribute
@@ -236,7 +235,7 @@ class Chronon(core_events.abc.Event):
     def metrize(self) -> Chronon:
         metrized_event = self._event_to_metrized_event(self)
         self.duration = metrized_event.duration
-        self.tempo_envelope = metrized_event.tempo_envelope
+        self.tempo = metrized_event.tempo
         return self
 
     def cut_out(  # type: ignore
@@ -295,7 +294,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
 
     def __add__(self, event: list[T]) -> Consecution[T]:
         e = self.copy()
-        e._concatenate_tempo_envelope(event)
+        e._concatenate_tempo(event)
         e.extend(event)
         return e
 
@@ -749,7 +748,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
     @staticmethod
     def _extend_ancestor(ancestor: core_events.abc.Event, event: core_events.abc.Event):
         try:
-            ancestor._concatenate_tempo_envelope(event)
+            ancestor._concatenate_tempo(event)
         # We can't concatenate to a chronon.
         # We also can't concatenate to anything else.
         except AttributeError:
@@ -763,7 +762,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
                 except core_utilities.NoTagError:
                     ancestor.concatenate_by_index(event)
             # This should already fail above, but if this strange object
-            # somehow owned '_concatenate_tempo_envelope', it should
+            # somehow owned '_concatenate_tempo', it should
             # fail here.
             case _:
                 raise core_utilities.ConcatenationError(ancestor, event)

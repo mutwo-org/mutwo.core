@@ -43,9 +43,7 @@ class TempoToBeatLengthInSeconds(core_converters.abc.Converter):
     >>> tempo_converter = core_converters.TempoToBeatLengthInSeconds()
     """
 
-    def convert(
-        self, tempo_to_convert: core_parameters.abc.Tempo.Type
-    ) -> float:
+    def convert(self, tempo_to_convert: core_parameters.abc.Tempo.Type) -> float:
         """Converts a :class:`Tempo` to beat-length-in-seconds.
 
         :param tempo_to_convert: A tempo defines the active tempo
@@ -66,39 +64,35 @@ class TempoToBeatLengthInSeconds(core_converters.abc.Converter):
 
 
 class TempoConverter(core_converters.abc.EventConverter):
-    """Apply tempo curve on an :class:`~mutwo.core_events.abc.Event`.
+    """Apply tempo on an :class:`~mutwo.core_events.abc.Event`.
 
-    :param tempo_envelope: The tempo curve that shall be applied on the
-        mutwo events. This is expected to be a :class:`core_events.TempoEnvelope`
-        which values are filled with numbers that will be interpreted as BPM
-        [beats per minute]) or with :class:`mutwo.core_parameters.abc.Tempo`
-        objects.
-    :param apply_converter_on_events_tempo_envelope: If set to `True` the
-        converter adjusts the :attr:`tempo_envelope` attribute of each
+    :param tempo: The tempo that shall be applied on the mutwo events.
+        This must be a :class:`~mutwo.core_parameters.abc.Tempo` object.
+    :param apply_converter_on_events_tempo: If set to `True` the
+        converter adjusts the :attr:`tempo` attribute of each
         converted event. Default to `True`.
 
     **Example:**
 
     >>> from mutwo import core_converters
-    >>> from mutwo import core_events
     >>> from mutwo import core_parameters
-    >>> tempo_envelope = core_events.Envelope(
+    >>> tempo = core_parameters.FlexTempo(
     ...     [[0, core_parameters.DirectTempo(60)], [3, 60], [3, 30], [5, 50]],
     ... )
-    >>> c = core_converters.TempoConverter(tempo_envelope)
+    >>> c = core_converters.TempoConverter(tempo)
     """
 
     _tempo_to_beat_length_in_seconds = TempoToBeatLengthInSeconds().convert
 
-    # Define private tempo envelope class which catches its
-    # absolute times and durations. With this we can
-    # improve the performance of the 'value_at' method and with this
-    # improvment we can have a faster converter.
+    # Define private envelope class which catches its absolute times
+    # and durations. With this we can improve the performance of the
+    # 'value_at' method and with this improvement we can have a faster
+    # converter.
     #
     # This is actually not safe, because the envelope is still mutable.
     # But we trust that no one changes anything with our internal envelope
     # and hope everything goes well.
-    class _CatchedTempoEnvelope(core_events.TempoEnvelope):
+    class _CatchedEnvelope(core_events.Envelope):
         @functools.cached_property
         def _abstf_tuple_and_dur(self) -> tuple[tuple[float, ...], float]:
             return super()._abstf_tuple_and_dur
@@ -109,18 +103,14 @@ class TempoConverter(core_converters.abc.EventConverter):
 
     def __init__(
         self,
-        tempo_envelope: core_events.TempoEnvelope,
-        apply_converter_on_events_tempo_envelope: bool = True,
+        tempo: core_parameters.abc.Tempo,
+        apply_converter_on_events_tempo: bool = True,
     ):
-        self._tempo_envelope = tempo_envelope
+        self._tempo = core_parameters.FlexTempo.from_parameter(tempo)
         self._beat_length_in_seconds_envelope = (
-            TempoConverter._tempo_envelope_to_beat_length_in_seconds_envelope(
-                tempo_envelope
-            )
+            TempoConverter._tempo_to_beat_length_in_seconds_envelope(self._tempo)
         )
-        self._apply_converter_on_events_tempo_envelope = (
-            apply_converter_on_events_tempo_envelope
-        )
+        self._apply_converter_on_events_tempo = apply_converter_on_events_tempo
         # Catches for better performance
         self._start_and_end_to_tempo_converter_dict = {}
         self._start_and_end_to_integration = {}
@@ -130,16 +120,16 @@ class TempoConverter(core_converters.abc.EventConverter):
     # ###################################################################### #
 
     @staticmethod
-    def _tempo_envelope_to_beat_length_in_seconds_envelope(
-        tempo_envelope: core_events.Envelope,
+    def _tempo_to_beat_length_in_seconds_envelope(
+        tempo: core_events.Envelope,
     ) -> core_events.Envelope:
         """Convert bpm / Tempo based env to beat-length-in-seconds env."""
-        e = tempo_envelope
+        e = tempo
         value_list: list[float] = []
         for tp in e.parameter_tuple:
             value_list.append(TempoConverter._tempo_to_beat_length_in_seconds(tp))
 
-        return TempoConverter._CatchedTempoEnvelope(
+        return TempoConverter._CatchedEnvelope(
             [
                 [t, v, cs]
                 for t, v, cs in zip(
@@ -158,11 +148,11 @@ class TempoConverter(core_converters.abc.EventConverter):
             t = self._start_and_end_to_tempo_converter_dict[key]
         except KeyError:
             t = self._start_and_end_to_tempo_converter_dict[key] = TempoConverter(
-                self._tempo_envelope.copy().cut_out(
+                self._tempo.copy().cut_out(
                     start,
                     end,
                 ),
-                apply_converter_on_events_tempo_envelope=False,
+                apply_converter_on_events_tempo=False,
             )
         return t
 
@@ -195,27 +185,23 @@ class TempoConverter(core_converters.abc.EventConverter):
         absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
-        tempo_envelope = event_to_convert.tempo_envelope
-        is_tempo_envelope_effectless = (
-            tempo_envelope.is_static and tempo_envelope.value_tuple[0] == 60
-        )
-        if (
-            self._apply_converter_on_events_tempo_envelope
-            and not is_tempo_envelope_effectless
-        ):
+        tempo = core_parameters.FlexTempo.from_parameter(event_to_convert.tempo)
+        is_tempo_effectless = tempo.is_static and tempo.value_tuple[0] == 60
+        if self._apply_converter_on_events_tempo and not is_tempo_effectless:
             start, end = (
                 absolute_time,
                 absolute_time + event_to_convert.duration,
             )
             local_tempo_converter = self._start_and_end_to_tempo_converter(start, end)
-            event_to_convert.tempo_envelope = local_tempo_converter(tempo_envelope)
+            event_to_convert.tempo = local_tempo_converter(tempo)
         rvalue = super()._convert_event(event_to_convert, absolute_time, depth)
-        if is_tempo_envelope_effectless:
-            # Yes we simply override the tempo_envelope of the event which we
+        if is_tempo_effectless:
+            # Yes we simply override the tempo of the event which we
             # just converted. This is because the TempoConverter copies the
             # event at the start of the algorithm and simply mutates this
             # copied event.
-            event_to_convert.tempo_envelope.duration = event_to_convert.duration
+            event_to_convert.tempo = tempo
+            event_to_convert.tempo.duration = event_to_convert.duration
         return rvalue
 
     # ###################################################################### #
@@ -237,10 +223,10 @@ class TempoConverter(core_converters.abc.EventConverter):
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
         >>> from mutwo import core_parameters
-        >>> tempo_envelope = core_events.Envelope(
+        >>> tempo = core_parameters.FlexTempo(
         ...     [[0, core_parameters.DirectTempo(60)], [3, 60], [3, 30], [5, 50]],
         ... )
-        >>> my_tempo_converter = core_converters.TempoConverter(tempo_envelope)
+        >>> my_tempo_converter = core_converters.TempoConverter(tempo)
         >>> my_events = core_events.Consecution([core_events.Chronon(d) for d in (3, 2, 5)])
         >>> my_tempo_converter.convert(my_events)
         Consecution([Chronon(duration=DirectDuration(3.0)), Chronon(duration=DirectDuration(3.2)), Chronon(duration=DirectDuration(6.0))])
@@ -251,7 +237,7 @@ class TempoConverter(core_converters.abc.EventConverter):
 
 
 class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
-    """Apply tempo envelope of event on copy of itself"""
+    """Apply tempo of event on copy of itself"""
 
     def __init__(
         self,
@@ -278,14 +264,14 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
         if (self._skip_level_count is None or self._skip_level_count < depth) and (
             self._maxima_depth_count is None or depth < self._maxima_depth_count
         ):
-            tempo_converter = TempoConverter(event_to_convert.tempo_envelope)
+            tempo_converter = TempoConverter(event_to_convert.tempo)
             e = tempo_converter.convert(event_to_convert)
-            e.reset_tempo_envelope()
+            e.reset_tempo()
         else:
             # Ensure we return copied event!
             e = event_to_convert.destructive_copy()
         return super()._convert_event(e, absolute_time, depth)
 
     def convert(self, event_to_convert: core_events.abc.Event) -> core_events.abc.Event:
-        """Apply tempo envelope of event on copy of itself"""
+        """Apply tempo of event on copy of itself"""
         return self._convert_event(event_to_convert, 0, 0)

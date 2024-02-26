@@ -60,7 +60,7 @@ class WesternTempoTest(unittest.TestCase):
         This is the expected standard in western music (notation).
         """
         e = core_events.Chronon("1/4")
-        e.tempo_envelope = core_events.TempoEnvelope(
+        e.tempo = core_parameters.FlexTempo(
             [[0, core_parameters.WesternTempo(60)]]
         )
         self.assertEqual(e.metrize().duration, 1)

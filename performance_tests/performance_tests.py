@@ -8,6 +8,7 @@ import timeit
 import unittest
 
 from mutwo import core_events
+from mutwo import core_parameters
 
 conc = core_events.Concurrence
 cons = core_events.Consecution
@@ -62,7 +63,7 @@ class PerformanceTest(unittest.TestCase):
         e = conc(
             [cons([ch(random.uniform(0.9, 1.2)) for _ in range(20)]) for _ in range(3)]
         )
-        e.tempo_envelope = core_events.TempoEnvelope(
+        e.tempo = core_parameters.FlexTempo(
             [[i, 60] if i % 2 == 0 else [i, 50] for i in range(5)]
         )
         e.metrize()

@@ -29,15 +29,15 @@ class EventTest(abc.ABC):
     def get_event_instance(self) -> core_events.abc.Event:
         ...
 
-    def test_tempo_envelope_auto_initialization(self):
-        self.assertTrue(bool(self.event.tempo_envelope))
+    def test_tempo_auto_initialization(self):
+        self.assertTrue(bool(self.event.tempo))
         self.assertTrue(
-            isinstance(self.event.tempo_envelope, core_events.TempoEnvelope)
+            isinstance(self.event.tempo, core_parameters.abc.Tempo)
         )
 
-    def test_tempo_envelope_auto_initialization_and_settable(self):
-        self.event.tempo_envelope[0].duration = 100
-        self.assertEqual(self.event.tempo_envelope[0].duration, 100)
+    def test_tempo_auto_initialization_and_settable(self):
+        self.event.tempo.bpm = 20
+        self.assertEqual(self.event.tempo.bpm, 20)
 
     def test_split_at_start(self):
         self.assertEqual(self.event.split_at(0), (self.event,))
@@ -149,19 +149,19 @@ class ChrononTest(unittest.TestCase, EventTest):
         """
 
         chronon = core_events.Chronon(
-            1, tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]])
+            1, tempo=core_parameters.FlexTempo([[0, 30], [1, 120]])
         )
         self.assertEqual(
             chronon.copy().metrize(),
             core_converters.EventToMetrizedEvent().convert(chronon),
         )
 
-    def test_reset_tempo_envelope(self):
+    def test_reset_tempo(self):
         chronon = self.get_event_instance()
-        chronon.tempo_envelope[0].value = 100
-        self.assertEqual(chronon.tempo_envelope[0].value, 100)
-        chronon.reset_tempo_envelope()
-        self.assertEqual(chronon.tempo_envelope.value_tuple[0], 60)
+        chronon.tempo.bpm = 20
+        self.assertEqual(chronon.tempo.bpm, 20)
+        chronon.reset_tempo()
+        self.assertEqual(chronon.tempo.bpm, 60)
 
     def test_get_assigned_parameter(self):
         duration = core_parameters.DirectDuration(10)
@@ -207,7 +207,7 @@ class ChrononTest(unittest.TestCase, EventTest):
 
     def test_parameter_to_compare_tuple(self):
         chronon = core_events.Chronon(1)
-        expected_parameter_to_compare_tuple = ("duration", "tag", "tempo_envelope")
+        expected_parameter_to_compare_tuple = ("duration", "tag", "tempo")
         self.assertEqual(
             chronon._parameter_to_compare_tuple,
             expected_parameter_to_compare_tuple,
@@ -373,12 +373,12 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
 
         self.assertEqual(consecution0, consecution1)
 
-        consecution0.tempo_envelope = core_events.TempoEnvelope(
+        consecution0.tempo = core_parameters.FlexTempo(
             [[0, 100], [10, 100]]
         )
 
         self.assertNotEqual(
-            consecution0.tempo_envelope, consecution1.tempo_envelope
+            consecution0.tempo, consecution1.tempo
         )
         self.assertNotEqual(consecution0, consecution1)
         self.assertTrue(list.__eq__(consecution0, consecution1))
@@ -393,29 +393,29 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         consecution = core_events.Consecution(
             [
                 core_events.Chronon(
-                    1, tempo_envelope=core_events.TempoEnvelope([[0, 120], [1, 120]])
+                    1, tempo=core_parameters.FlexTempo([[0, 120], [1, 120]])
                 )
             ],
-            tempo_envelope=core_events.TempoEnvelope([[0, 30], [1, 120]]),
+            tempo=core_parameters.FlexTempo([[0, 30], [1, 120]]),
         )
         self.assertEqual(
             consecution.copy().metrize(),
             core_converters.EventToMetrizedEvent().convert(consecution),
         )
 
-    def test_concatenate_tempo_envelope(self):
+    def test_concatenate_tempo(self):
         cons0 = self.get_event_class()(
             [core_events.Chronon(1)],
-            tempo_envelope=core_events.TempoEnvelope([[0, 20], [1, 20], [3, 100]]),
+            tempo=core_parameters.FlexTempo([[0, 20], [1, 20], [3, 100]]),
         )
         cons1 = self.get_event_class()(
             [core_events.Chronon(2)],
-            tempo_envelope=core_events.TempoEnvelope([[0, 50], [1, 10]]),
+            tempo=core_parameters.FlexTempo([[0, 50], [1, 10]]),
         )
-        cons0._concatenate_tempo_envelope(cons1)
-        self.assertEqual(cons0.tempo_envelope.value_tuple, (20, 20, 50, 10))
+        cons0._concatenate_tempo(cons1)
+        self.assertEqual(cons0.tempo.value_tuple, (20, 20, 50, 10))
         self.assertEqual(
-            cons0.tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 2)
+            cons0.tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2)
         )
 
     def test_magic_method_add(self):
@@ -425,13 +425,13 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_magic_method_add_children(self):
-        """Ensure children and tempo envelope are concatenated"""
+        """Ensure children and tempos are concatenated"""
         cons, chr = core_events.Consecution, core_events.Chronon
-        cons0 = cons([chr(1)], tempo_envelope=core_events.TempoEnvelope([[0, 50], [1, 50]]))
+        cons0 = cons([chr(1)], tempo=core_parameters.FlexTempo([[0, 50], [1, 50]]))
         cons1 = cons([chr(1), chr(2)])
         cons_ok = cons(
             [chr(1), chr(1), chr(2)],
-            tempo_envelope=core_events.TempoEnvelope(
+            tempo=core_parameters.FlexTempo(
                 [[0, 50], [1, 50], [1, 60], [2, 60]]
             ),
         )
@@ -1207,13 +1207,13 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
 
     def test_concatenate_by_index(self):
         # In this test we call 'metrize()' on each concatenated
-        # event, so for each layer 'reset_tempo_envelope' is called
-        # and we don't have to provide the concatenated tempo envelope
-        # (which is != the default tempo envelope when constructing events).
+        # event, so for each layer 'reset_tempo' is called
+        # and we don't have to provide the concatenated tempo
+        # (which is != the default tempo when constructing events).
         #
-        # We already carefully test the tempo_envelope concatenation
+        # We already carefully test the tempo concatenation
         # feature of 'conatenate_by_tag' in
-        # 'test_concatenate_by_index_persists_tempo_envelope'.
+        # 'test_concatenate_by_index_persists_tempo'.
         s, se, si = (
             core_events.Chronon,
             core_events.Consecution,
@@ -1276,13 +1276,13 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         empty_conc.concatenate_by_index(filled_conc)
         self.assertEqual(empty_conc, filled_conc)
 
-    def test_concatenate_by_index_persists_tempo_envelope(self):
+    def test_concatenate_by_index_persists_tempo(self):
         """Verify that concatenation also concatenates the tempos"""
         conc0 = core_events.Concurrence(
             [
                 core_events.Consecution(
                     [core_events.Chronon(1)],
-                    tempo_envelope=core_events.TempoEnvelope(
+                    tempo=core_parameters.FlexTempo(
                         [[0, 1], [1, 20], [10, 100]]
                     ),
                 )
@@ -1292,14 +1292,14 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             [
                 core_events.Consecution(
                     [core_events.Chronon(1)],
-                    tempo_envelope=core_events.TempoEnvelope([[0, 1000], [1, 10]]),
+                    tempo=core_parameters.FlexTempo([[0, 1000], [1, 10]]),
                 )
             ]
         )
         conc0.concatenate_by_index(conc1)
-        self.assertEqual(conc0[0].tempo_envelope.value_tuple, (1, 20, 1000, 10))
+        self.assertEqual(conc0[0].tempo.value_tuple, (1, 20, 1000, 10))
         self.assertEqual(
-            conc0[0].tempo_envelope.absolute_time_in_floats_tuple, (0, 1, 1, 2)
+            conc0[0].tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2)
         )
 
     def test_concatenate_by_tag(self):
@@ -1307,13 +1307,13 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             core_events.Chronon,
             core_events.Consecution,
             core_events.Concurrence,
-            core_events.TempoEnvelope,
+            core_parameters.FlexTempo,
         )
 
-        chr1 = si([tse([s(1), s(1)], tag="a", tempo_envelope=t([[0, 50], [1, 50]]))])
+        chr1 = si([tse([s(1), s(1)], tag="a", tempo=t([[0, 50], [1, 50]]))])
         chr2 = si([tse([s(2), s(1)], tag="a"), tse([s(0.5)], tag="b")])
 
-        # Concatenation tempo envelopes
+        # Concatenation flex tempos
         t0 = t([[0, 50], [1, 50], [2, 50], [2, 50], [3, 50]])
         t1 = t([[0, 50], [1, 50], [2, 50], [2, 60], [3, 60]])
         t2 = t([[0, 60], [1, 60], [3, 60], [3, 50], [4, 50]])
@@ -1321,7 +1321,7 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         # Equal size concatenation
         self.assertEqual(
             chr1.copy().concatenate_by_tag(chr1),
-            si([tse([s(1), s(1), s(1), s(1)], tag="a", tempo_envelope=t0)]),
+            si([tse([s(1), s(1), s(1), s(1)], tag="a", tempo=t0)]),
         )
 
         # Smaller self
@@ -1330,9 +1330,9 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             chr1.copy().concatenate_by_tag(chr2),
             si(
                 [
-                    tse([s(1), s(1), s(2), s(1)], tag="a", tempo_envelope=t1),
+                    tse([s(1), s(1), s(2), s(1)], tag="a", tempo=t1),
                     # Tempo envelope is default, because no ancestor existed
-                    # (so '_concatenate_tempo_envelope' wasn't called)
+                    # (so '_concatenate_tempo' wasn't called)
                     tse([s(2), s(0.5)], tag="b"),
                 ]
             ),
@@ -1344,9 +1344,9 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             chr2.copy().concatenate_by_tag(chr1),
             si(
                 [
-                    tse([s(2), s(1), s(1), s(1)], tag="a", tempo_envelope=t2),
+                    tse([s(2), s(1), s(1), s(1)], tag="a", tempo=t2),
                     # Tempo envelope is default, because no successor existed
-                    # (so '_concatenate_tempo_envelope' wasn't called)
+                    # (so '_concatenate_tempo' wasn't called)
                     tse([s(0.5), s(2.5)], tag="b"),
                 ]
             ),
