@@ -376,16 +376,16 @@ class TempoEnvelopeTest(unittest.TestCase):
             [[0, 60], [1, 30], [2, 60]]
         )
 
-        self.tempo_envelope_with_tempo_points = core_events.TempoEnvelope(
+        self.tempo_envelope_with_tempos = core_events.TempoEnvelope(
             [
-                [0, core_parameters.DirectTempoPoint(60)],
-                [1, core_parameters.DirectTempoPoint(30)],
-                [2, core_parameters.WesternTempoPoint(30, reference=2)],
+                [0, core_parameters.DirectTempo(60)],
+                [1, core_parameters.DirectTempo(30)],
+                [2, core_parameters.WesternTempo(30, reference=2)],
             ]
         )
 
         self.mixed_tempo_envelope = core_events.TempoEnvelope(
-            [[0, 60], [1, core_parameters.DirectTempoPoint(30)], [2, 60]]
+            [[0, 60], [1, core_parameters.DirectTempo(30)], [2, 60]]
         )
 
     def _test_value_at(self, tempo_envelope: core_events.TempoEnvelope):
@@ -398,8 +398,8 @@ class TempoEnvelopeTest(unittest.TestCase):
     def test_value_at_with_float(self):
         self._test_value_at(self.tempo_envelope_with_float)
 
-    def test_value_at_with_tempo_points(self):
-        self._test_value_at(self.tempo_envelope_with_tempo_points)
+    def test_value_at_with_tempos(self):
+        self._test_value_at(self.tempo_envelope_with_tempos)
 
     def test_value_at_with_mixed(self):
         self._test_value_at(self.mixed_tempo_envelope)

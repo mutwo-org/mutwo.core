@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ __all__ = (
     "SingleNumberParameter",
     "ParameterWithEnvelope",
     "Duration",
-    "TempoPoint",
+    "Tempo",
 )
 
 T = typing.TypeVar("T", bound="Parameter")
@@ -383,26 +383,26 @@ class Duration(SingleNumberParameter, value_name="beat_count", value_return_type
         raise core_utilities.CannotParseError(object, cls)
 
 
-class TempoPoint(SingleNumberParameter, value_name="bpm", value_return_type="float"):
+class Tempo(SingleNumberParameter, value_name="bpm", value_return_type="float"):
     """Represent the active tempo at a specific moment in time.
 
-    If the user wants to define a `TempoPoint` class, the abstract
+    If the user wants to define a `Tempo` class, the abstract
     property :attr:`bpm` needs to be overridden. ``BPM`` is an abbreviation
     for 'beats per minute' and the unit of the parameter tempo, see more
     information at this `wikipedia article <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
     """
 
-    Type: typing.TypeAlias = typing.Union["TempoPoint", core_constants.Real]
-    """TempoPoint.Type hosts all types that are supported by the tempo point
-    parser :func:`TempoPoint.from_any`."""
+    Type: typing.TypeAlias = typing.Union["Tempo", core_constants.Real]
+    """Tempo.Type hosts all types that are supported by the tempo
+    parser :func:`Tempo.from_any`."""
 
     @classmethod
-    def from_any(cls: typing.Type[T], object: TempoPoint.Type) -> T:
+    def from_any(cls: typing.Type[T], object: Tempo.Type) -> T:
         builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
         match object:
             case Tempo():
                 return object
             case float() | int() | fractions.Fraction() | builtin_fraction():
-                return core_parameters.DirectTempoPoint(object)
+                return core_parameters.DirectTempo(object)
             case _:
                 raise core_utilities.CannotParseError(object, cls)

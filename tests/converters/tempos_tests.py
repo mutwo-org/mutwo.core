@@ -5,24 +5,24 @@ from mutwo import core_events
 from mutwo import core_parameters
 
 
-class TempoPointToBeatLengthInSecondsTest(unittest.TestCase):
+class TempoToBeatLengthInSecondsTest(unittest.TestCase):
     def setUp(self):
-        self.converter = core_converters.TempoPointToBeatLengthInSeconds()
+        self.converter = core_converters.TempoToBeatLengthInSeconds()
 
     def test_convert(self):
-        tempo_point0 = core_parameters.DirectTempoPoint(60)
-        tempo_point1 = core_parameters.WesternTempoPoint(60, 2)
-        tempo_point2 = core_parameters.WesternTempoPoint(30, 1)
-        tempo_point3 = 60
-        tempo_point4 = 120
+        tempo0 = core_parameters.DirectTempo(60)
+        tempo1 = core_parameters.WesternTempo(60, 2)
+        tempo2 = core_parameters.WesternTempo(30, 1)
+        tempo3 = 60
+        tempo4 = 120
 
-        converter = core_converters.TempoPointToBeatLengthInSeconds()
+        converter = core_converters.TempoToBeatLengthInSeconds()
 
-        self.assertEqual(converter.convert(tempo_point0), 1)
-        self.assertEqual(converter.convert(tempo_point1), 0.5)
-        self.assertEqual(converter.convert(tempo_point2), 2)
-        self.assertEqual(converter.convert(tempo_point3), 1)
-        self.assertEqual(converter.convert(tempo_point4), 0.5)
+        self.assertEqual(converter.convert(tempo0), 1)
+        self.assertEqual(converter.convert(tempo1), 0.5)
+        self.assertEqual(converter.convert(tempo2), 2)
+        self.assertEqual(converter.convert(tempo3), 1)
+        self.assertEqual(converter.convert(tempo4), 0.5)
 
 
 class TempoConverterTest(unittest.TestCase):
@@ -38,13 +38,13 @@ class TempoConverterTest(unittest.TestCase):
         consecution = core_events.Consecution(
             [core_events.Chronon(2) for _ in range(5)]
         )
-        tempo_point_list = [
+        tempo_list = [
             # Event 0
             (0, 30, 0),
-            (2, core_parameters.DirectTempoPoint(30), 0),
+            (2, core_parameters.DirectTempo(30), 0),
             # Event 1
             (2, 60, 0),
-            (3, core_parameters.DirectTempoPoint(60), 0),
+            (3, core_parameters.DirectTempo(60), 0),
             (3, 30, 0),
             (4, 30, 0),  # Event 2
             (6, 60, 0),
@@ -52,10 +52,10 @@ class TempoConverterTest(unittest.TestCase):
             (6, 30, 10),
             (8, 60, 0),
             # Event 4
-            (8, core_parameters.WesternTempoPoint(30, reference=1), -10),
-            (10, core_parameters.WesternTempoPoint(30, reference=2), 0),
+            (8, core_parameters.WesternTempo(30, reference=1), -10),
+            (10, core_parameters.WesternTempo(30, reference=2), 0),
         ]
-        tempo_envelope = core_events.Envelope(tempo_point_list)
+        tempo_envelope = core_events.Envelope(tempo_list)
         converter = core_converters.TempoConverter(tempo_envelope)
         converted_consecution = converter.convert(consecution)
         expected_duration_tuple = (4.0, 3.0, 3.0, 3.800090804, 2.199909196)

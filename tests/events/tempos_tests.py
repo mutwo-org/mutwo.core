@@ -15,11 +15,11 @@ class TempoChrononTest(unittest.TestCase, EventTest):
         return core_events.TempoChronon
 
     def get_event_instance(self) -> core_events.TempoChronon:
-        return self.get_event_class()(tempo_point=60, duration=5)
+        return self.get_event_class()(tempo=60, duration=5)
 
     def test_initialization(self):
-        # Ensure tempo point conversion works
+        # Ensure tempo conversion works
         self.assertEqual(
             core_events.TempoChronon(60, 1),
-            core_events.TempoChronon(core_parameters.DirectTempoPoint(60), 1),
+            core_events.TempoChronon(core_parameters.DirectTempo(60), 1),
         )

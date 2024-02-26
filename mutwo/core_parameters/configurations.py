@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@ the :func:`mutwo.core_events.abc.Event.cut_off` method)."""
 
 DEFAULT_REFERENCE: fractions.Fraction = fractions.Fraction(1, 4)
 """The default value for the 'reference' parameter of
-:class:`mutwo.core_parameters.WesternTempoPoint`. By default
+:class:`mutwo.core_parameters.WesternTempo`. By default
 it is set to 1/4 because it's most common to think that
 the tempo in BPM refers to a 1/4 note (so that tempo = 60 BPM
 means that a 1/4 beat takes one second). Therefore a tempo
-of '60' in :class:`~mutwo.core_parameters.WesternTempoPoint` is
+of '60' in :class:`~mutwo.core_parameters.WesternTempo` is
 by default 4 times slower than a tempo of '60' in
-:class:`~mutwo.core_parameters.DirectTempoPoint`."""
+:class:`~mutwo.core_parameters.DirectTempo`."""

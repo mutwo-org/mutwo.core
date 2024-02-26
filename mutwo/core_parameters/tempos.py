@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ import ranges
 from mutwo import core_constants
 from mutwo import core_parameters
 
-__all__ = ("DirectTempoPoint", "WesternTempoPoint")
+__all__ = ("DirectTempo", "WesternTempo")
 
 
-class DirectTempoPoint(core_parameters.abc.TempoPoint):
-    """Simple `TempoPoint` that is directly initialised by its tempo.
+class DirectTempo(core_parameters.abc.Tempo):
+    """Simple `Tempo` that is directly initialised by its tempo.
 
     :param tempo: Specify a tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
 
@@ -43,7 +43,7 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.TempoEnvelope([
-    ...     [0, core_parameters.DirectTempoPoint(60)]
+    ...     [0, core_parameters.DirectTempo(60)]
     ... ])
     """
 
@@ -59,14 +59,14 @@ class DirectTempoPoint(core_parameters.abc.TempoPoint):
         self._bpm = float(bpm)
 
 
-class WesternTempoPoint(core_parameters.abc.TempoPoint):
-    """A tempo point useful for western notation.
+class WesternTempo(core_parameters.abc.Tempo):
+    """A tempo useful for western notation.
 
     :param bpm_range: Specify a tempo range in
         `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
         In western notation tempo is often indicated as a range from the
         minimal accepted tempo to the fastest accepted tempo. Therefore
-        a :class:`WesternTempoPoint` is initialized by a range. In internal
+        a :class:`WesternTempo` is initialized by a range. In internal
         calculations the minimal (slowest) tempo is used. The tempo in
         the tempo range is relative as the absolute tempo depends on
         the ``reference``.
@@ -84,7 +84,7 @@ class WesternTempoPoint(core_parameters.abc.TempoPoint):
     >>> from mutwo import core_events
     >>> from mutwo import core_parameters
     >>> tempo_envelope = core_events.TempoEnvelope([
-    ...     [0, core_parameters.WesternTempoPoint(60, reference=2)]
+    ...     [0, core_parameters.WesternTempo(60, reference=2)]
     ... ])
     """
 

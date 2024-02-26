@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@ __all__ = ("TempoChronon",)
 class TempoChronon(core_events.Chronon):
     """A :class:`TempoChronon` describes the tempo for a given time."""
 
-    def __init__(self, tempo_point, *args, **kwargs):
-        self.tempo_point = tempo_point
+    def __init__(self, tempo, *args, **kwargs):
+        self.tempo = tempo
         super().__init__(*args, **kwargs)
 
     @property
-    def tempo_point(self):
-        return self._tempo_point
+    def tempo(self):
+        return self._tempo
 
-    @tempo_point.setter
-    def tempo_point(self, tempo_point):
-        self._tempo_point = core_parameters.abc.TempoPoint.from_any(tempo_point)
+    @tempo.setter
+    def tempo(self, tempo):
+        self._tempo = core_parameters.abc.Tempo.from_any(tempo)
