@@ -42,7 +42,6 @@ else:
     import fractions as _fractions
 
 from mutwo import core_constants
-from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
@@ -50,7 +49,6 @@ __all__ = (
     "Parameter",
     "SingleValueParameter",
     "SingleNumberParameter",
-    "ParameterWithEnvelope",
     "Duration",
     "Tempo",
 )
@@ -79,41 +77,6 @@ class Parameter(core_utilities.MutwoObject, abc.ABC):
         if not isinstance(object, cls):
             raise core_utilities.CannotParseError(object, cls)
         return object
-
-
-class ParameterWithEnvelope(Parameter):
-    """Abstract base class for all parameters with an envelope."""
-
-    def __init__(self, envelope: core_events.RelativeEnvelope):
-        self.envelope = envelope
-
-    @property
-    def envelope(self) -> core_events.RelativeEnvelope:
-        return self._envelope
-
-    @envelope.setter
-    def envelope(self, new_envelope: typing.Any):
-        if not isinstance(new_envelope, core_events.RelativeEnvelope):
-            raise TypeError(
-                f"Found illegal object '{new_envelope}' of not "
-                f"supported type '{type(new_envelope)}'. "
-                f"Only instances of '{core_events.RelativeEnvelope}'"
-                " are allowed!"
-            )
-        self._envelope = new_envelope
-
-    def resolve_envelope(
-        self,
-        duration: core_parameters.abc.Duration,
-        # NOTE: We can't directly set the default attribute value,
-        # but we have to do it with `None` and resolve it later,
-        # because otherwise we will get a circular import
-        # (core_parameters need to be imported before core_events,
-        #  because we need core_parameters.Duration in core_events).
-        resolve_envelope_class: typing.Optional[type[core_events.Envelope]] = None,
-    ) -> core_events.Envelope:
-        resolve_envelope_class = resolve_envelope_class or core_events.Envelope
-        return self.envelope.resolve(duration, self, resolve_envelope_class)
 
 
 class SingleValueParameter(Parameter):
@@ -185,7 +148,7 @@ class SingleValueParameter(Parameter):
             if hasattr(cls, "value_name"):
                 raise core_utilities.AlreadyDefinedValueNameError(cls)
 
-            setattr(cls, "value_name", property(lambda _: value_name))
+            setattr(cls, "value_name", classmethod(property(lambda _: value_name)))
 
     def __repr_content__(self) -> str:
         return f"{getattr(self, self.value_name)}"  # type: ignore
@@ -288,7 +251,9 @@ class SingleNumberParameter(SingleValueParameter):
         return self._compare(other, lambda value0, value1: value0 < value1, True)
 
 
-class Duration(SingleNumberParameter, value_name="beat_count", value_return_type="float"):
+class Duration(
+    SingleNumberParameter, value_name="beat_count", value_return_type="float"
+):
     """Abstract base class for any duration.
 
     If the user wants to define a Duration class, the abstract

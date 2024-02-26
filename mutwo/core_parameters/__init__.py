@@ -34,3 +34,8 @@ __all__ = core_utilities.get_all(durations, tempos)
 
 # Force flat structure
 del core_utilities, durations, tempos
+
+# Force core_parameters patch in core_events
+from mutwo import core_events
+
+del core_events

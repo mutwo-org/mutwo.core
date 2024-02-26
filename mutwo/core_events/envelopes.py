@@ -32,7 +32,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = ("Envelope", "RelativeEnvelope", "TempoEnvelope")
+__all__ = ("Envelope", "RelativeEnvelope")
 
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
@@ -73,9 +73,7 @@ class Envelope(core_events.Consecution, typing.Generic[T]):
     Value: typing.TypeAlias = core_constants.Real
     Parameter: typing.TypeAlias = typing.Any
     CurveShape: typing.TypeAlias = core_constants.Real
-    IncompletePoint: typing.TypeAlias = tuple[
-        "core_parameters.abc.Duration", Parameter
-    ]
+    IncompletePoint: typing.TypeAlias = tuple["core_parameters.abc.Duration", Parameter]
     CompletePoint: typing.TypeAlias = tuple[
         "core_parameters.abc.Duration", Parameter, CurveShape  # type: ignore
     ]
@@ -799,87 +797,3 @@ class RelativeEnvelope(Envelope, typing.Generic[T]):
             p = (abst * fact, new_param, self.event_to_curve_shape(e))
             plist.append(p)
         return resolve_envelope_class(plist)
-
-
-class TempoEnvelope(Envelope):
-    """Define dynamic or static tempo trajectories.
-
-    You can either define a new `TempoEnvelope` with instances
-    of classes which inherit from :class:`mutwo.core_parameters.abc.Tempo`
-    (for instance :class:`mutwo.core_parameters.DirectTempo`) or with
-    `float` or `int` objects which represent beats per minute.
-
-    Please see the :class:`mutwo.core_events.Envelope` for full documentation
-    for initialization attributes.
-
-    The default parameters of the `TempoEnvelope` class expects
-    :class:`mutwo.core_events.Chronon` to which a tempo
-    was assigned by the name "tempo".
-
-    **Example:**
-
-    >>> from mutwo import core_events
-    >>> from mutwo import core_parameters
-    >>> # (1) define with floats
-    >>> #     So we have an envelope which moves from tempo 60 to 30
-    >>> #     and back to 60.
-    >>> tempo_envelope_with_float = core_events.TempoEnvelope(
-    ...     [[0, 60], [1, 30], [2, 60]]
-    ... )
-    >>> # (2) define with tempos
-    >>> tempo_envelope_with_tempos = core_events.TempoEnvelope(
-    ...     [
-    ...         [0, core_parameters.DirectTempo(60)],
-    ...         [1, core_parameters.DirectTempo(30)],
-    ...         [2, core_parameters.WesternTempo(30, reference=2)],
-    ...     ]
-    ... )
-    """
-
-    default_event_class = core_events.TempoChronon
-
-    def __eq__(self, other: typing.Any):
-        # TempoEnvelope can't use the default '__eq__' method inherited
-        # from list, because this would create endless recursion
-        # (because every event has a TempoEnvelope, so Python would forever
-        #  compare the TempoEnvelopes of TempoEnvelopes).
-        try:
-            return (
-                # Prefer lazy evaluation for better performance
-                # (use 'and' instead of 'all').
-                self.absolute_time_tuple == other.absolute_time_tuple
-                and self.curve_shape_tuple == other.curve_shape_tuple
-                and self.value_tuple == other.value_tuple
-            )
-        except AttributeError:
-            return False
-
-    def event_to_parameter(
-        self, event: core_events.abc.Event
-    ) -> core_parameters.abc.Tempo:
-        return event.tempo
-
-    def value_to_parameter(self, value: float) -> core_parameters.abc.Tempo:
-        return core_parameters.DirectTempo(value)
-
-    def parameter_to_value(
-        self, parameter: core_parameters.abc.Tempo.Type
-    ) -> float:
-        # Here we specify, that we allow either core_parameters.abc.Tempo
-        # or float/number objects.
-        # So in case we have a core_parameters.abc.Tempo 'getattr' is
-        # successful, if not it will return 'parameter', because it
-        # will assume that we have a number based tempo.
-        return float(
-            getattr(parameter, "bpm", parameter)
-        )
-
-    def apply_parameter_on_event(
-        self, event: core_events.abc.Event, parameter: core_parameters.abc.Tempo
-    ):
-        event.tempo = parameter
-
-    def initialise_default_event_class(
-        self, duration: core_parameters.abc.Duration
-    ) -> core_events.abc.Event:
-        return self.default_event_class(tempo=1, duration=duration)

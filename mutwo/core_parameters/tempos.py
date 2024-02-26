@@ -40,11 +40,9 @@ class DirectTempo(core_parameters.abc.Tempo):
 
     **Example:**
 
-    >>> from mutwo import core_events
     >>> from mutwo import core_parameters
-    >>> tempo_envelope = core_events.TempoEnvelope([
-    ...     [0, core_parameters.DirectTempo(60)]
-    ... ])
+    >>> core_parameters.DirectTempo(60)
+    DirectTempo(60.0)
     """
 
     def __init__(self, bpm: core_constants.Real | str):
@@ -81,11 +79,9 @@ class WesternTempo(core_parameters.abc.Tempo):
 
     **Example:**
 
-    >>> from mutwo import core_events
     >>> from mutwo import core_parameters
-    >>> tempo_envelope = core_events.TempoEnvelope([
-    ...     [0, core_parameters.WesternTempo(60, reference=2)]
-    ... ])
+    >>> core_parameters.WesternTempo(60, reference=2)
+    WesternTempo(120.0)
     """
 
     def __init__(
