@@ -27,40 +27,7 @@ from mutwo import core_events
 from mutwo import core_parameters
 
 
-__all__ = (
-    "TempoToBeatLengthInSeconds",
-    "TempoConverter",
-    "EventToMetrizedEvent",
-)
-
-
-class TempoToBeatLengthInSeconds(core_converters.abc.Converter):
-    """Convert a :class:`~mutwo.core_parameters.abc.Tempo` to beat length in seconds.
-
-    **Example:**
-
-    >>> from mutwo import core_converters
-    >>> tempo_converter = core_converters.TempoToBeatLengthInSeconds()
-    """
-
-    def convert(self, tempo_to_convert: core_parameters.abc.Tempo.Type) -> float:
-        """Converts a :class:`Tempo` to beat-length-in-seconds.
-
-        :param tempo_to_convert: A tempo defines the active tempo
-            from which the beat-length-in-seconds shall be calculated.
-        :return: The duration of one beat in seconds within the passed tempo.
-
-        **Example:**
-
-        >>> from mutwo import core_converters
-        >>> converter = core_converters.TempoToBeatLengthInSeconds()
-        >>> converter.convert(60)  # one beat in tempo 60 bpm takes 1 second
-        1.0
-        >>> converter.convert(120)  # one beat in tempo 120 bpm takes 0.5 second
-        0.5
-        """
-        t = core_parameters.abc.Tempo.from_any(tempo_to_convert)
-        return float(60 / t.bpm)
+__all__ = ("TempoConverter", "EventToMetrizedEvent")
 
 
 class TempoConverter(core_converters.abc.EventConverter):
@@ -81,8 +48,6 @@ class TempoConverter(core_converters.abc.EventConverter):
     ... )
     >>> c = core_converters.TempoConverter(tempo)
     """
-
-    _tempo_to_beat_length_in_seconds = TempoToBeatLengthInSeconds().convert
 
     # Define private envelope class which catches its absolute times
     # and durations. With this we can improve the performance of the
@@ -127,7 +92,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         e = tempo
         value_list: list[float] = []
         for tp in e.parameter_tuple:
-            value_list.append(TempoConverter._tempo_to_beat_length_in_seconds(tp))
+            value_list.append(tp.seconds)
 
         return TempoConverter._CatchedEnvelope(
             [

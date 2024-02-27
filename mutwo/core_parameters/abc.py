@@ -361,6 +361,11 @@ class Tempo(SingleNumberParameter, value_name="bpm", value_return_type="float"):
     """Tempo.Type hosts all types that are supported by the tempo
     parser :func:`Tempo.from_any`."""
 
+    @property
+    def seconds(self) -> float:
+        """How many seconds one beat lasts with current BPM."""
+        return float(60 / self.bpm)
+
     @classmethod
     def from_any(cls: typing.Type[T], object: Tempo.Type) -> T:
         builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
