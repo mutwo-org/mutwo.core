@@ -11,26 +11,6 @@ chn = core_events.Chronon
 cntTemp = core_parameters.FlexTempo
 
 
-class TempoToBeatLengthInSecondsTest(unittest.TestCase):
-    def setUp(self):
-        self.converter = core_converters.TempoToBeatLengthInSeconds()
-
-    def test_convert(self):
-        tempo0 = core_parameters.DirectTempo(60)
-        tempo1 = core_parameters.WesternTempo(60, 2)
-        tempo2 = core_parameters.WesternTempo(30, 1)
-        tempo3 = 60
-        tempo4 = 120
-
-        converter = core_converters.TempoToBeatLengthInSeconds()
-
-        self.assertEqual(converter.convert(tempo0), 1)
-        self.assertEqual(converter.convert(tempo1), 0.5)
-        self.assertEqual(converter.convert(tempo2), 2)
-        self.assertEqual(converter.convert(tempo3), 1)
-        self.assertEqual(converter.convert(tempo4), 0.5)
-
-
 class TempoConverterTest(unittest.TestCase):
     def test_convert_chronon(self):
         tempo = cntTemp([[0, 30], [4, 60]])

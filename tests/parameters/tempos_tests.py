@@ -14,6 +14,12 @@ class DirectTempoTest(unittest.TestCase):
         self.assertEqual(d(40.32).bpm, 40.32)
         self.assertEqual(d("33.23").bpm, 33.23)
 
+    def test_seconds(self):
+        d = core_parameters.DirectTempo
+        self.assertEqual(d(60).seconds, 1)
+        self.assertEqual(d(30).seconds, 2)
+        self.assertEqual(d(120).seconds, 0.5)
+
 
 class WesternTempoTest(unittest.TestCase):
     def setUp(self):
@@ -25,6 +31,11 @@ class WesternTempoTest(unittest.TestCase):
         self.tempo4 = w(ranges.Range(50, 60), 1)
         self.tempo5 = w(ranges.Range(50, 60), 1)
         self.tempo6 = w(30, 1, "adagio")
+
+    def test_seconds(self):
+        d = core_parameters.WesternTempo
+        self.assertEqual(d(60, 2).seconds, 0.5)
+        self.assertEqual(d(30, 1).seconds, 2)
 
     def test_equal_with_tempo(self):
         self.assertEqual(self.tempo0, self.tempo1)
