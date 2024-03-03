@@ -361,12 +361,12 @@ def camel_case_to_snake_case(camel_case_string: str) -> str:
 
 
 def get_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int], sequence: typing.Sequence
+    index_sequence: typing.Sequence, sequence: typing.Sequence
 ) -> typing.Any:
     """Get item in nested Sequence.
 
     :param index_sequence: The indices of the nested item.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.Sequence[typing.Any]
 
@@ -387,14 +387,14 @@ def get_nested_item_from_index_sequence(
 
 
 def set_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int],
+    index_sequence: typing.Sequence,
     sequence: typing.MutableSequence,
     item: typing.Any,
 ) -> None:
     """Set item in nested Sequence.
 
     :param index_sequence: The indices of the nested item which shall be set.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.MutableSequence[typing.Any]
     :param item: The new item value.
@@ -413,13 +413,13 @@ def set_nested_item_from_index_sequence(
 
 
 def del_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int],
+    index_sequence: typing.Sequence,
     sequence: typing.MutableSequence,
 ) -> None:
     """Delete item in nested Sequence.
 
     :param index_sequence: The indices of the nested item which shall be deleted.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.MutableSequence[typing.Any]
 
