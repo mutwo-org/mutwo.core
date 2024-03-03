@@ -275,7 +275,9 @@ def find_closest_item(
 
 def uniqify_sequence(
     sequence: typing.Sequence,
-    sort_key: typing.Optional[typing.Callable[[typing.Any], core_constants.Real]] = None,
+    sort_key: typing.Optional[
+        typing.Callable[[typing.Any], core_constants.Real]
+    ] = None,
     group_by_key: typing.Optional[typing.Callable[[typing.Any], typing.Any]] = None,
 ) -> typing.Iterable:
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.
@@ -405,13 +407,9 @@ def set_nested_item_from_index_sequence(
     >>> core_utilities.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
     >>> nested_sequence[2][2][0] = 100  # is equal
     """
-
-    index_count = len(index_sequence)
-    for index_index, index in enumerate(index_sequence):
-        if index_count == index_index + 1:
-            sequence.__setitem__(index, item)
-        else:
-            sequence = sequence[index]
+    for index in index_sequence[:-1]:
+        sequence = sequence[index]
+    sequence.__setitem__(index_sequence[-1], item)
 
 
 def del_nested_item_from_index_sequence(
@@ -433,13 +431,9 @@ def del_nested_item_from_index_sequence(
     >>> nested_sequence
     [1, 2, [4, [5, 1], [[3]]]]
     """
-
-    index_count = len(index_sequence)
-    for index_index, index in enumerate(index_sequence):
-        if index_count == index_index + 1:
-            sequence.__delitem__(index)
-        else:
-            sequence = sequence[index]
+    for index in index_sequence[:-1]:
+        sequence = sequence[index]
+    sequence.__delitem__(index_sequence[-1])
 
 
 def round_floats(
