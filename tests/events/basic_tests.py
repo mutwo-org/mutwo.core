@@ -31,9 +31,7 @@ class EventTest(abc.ABC):
 
     def test_tempo_auto_initialization(self):
         self.assertTrue(bool(self.event.tempo))
-        self.assertTrue(
-            isinstance(self.event.tempo, core_parameters.abc.Tempo)
-        )
+        self.assertTrue(isinstance(self.event.tempo, core_parameters.abc.Tempo))
 
     def test_tempo_auto_initialization_and_settable(self):
         self.event.tempo.bpm = 20
@@ -67,8 +65,10 @@ class EventTest(abc.ABC):
 
     def test_split_at_split_time_order_does_not_matter(self):
         d = self.event.duration
-        chr0, chr1 = d / 3, d / 2
-        self.assertEqual(self.event.split_at(chr0, chr1), self.event.split_at(chr1, chr0))
+        chn0, chn1 = d / 3, d / 2
+        self.assertEqual(
+            self.event.split_at(chn0, chn1), self.event.split_at(chn1, chn0)
+        )
 
     def test_split_at_empty(self):
         self.assertRaises(core_utilities.NoSplitTimeError, self.event.split_at)
@@ -373,13 +373,9 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
 
         self.assertEqual(consecution0, consecution1)
 
-        consecution0.tempo = core_parameters.FlexTempo(
-            [[0, 100], [10, 100]]
-        )
+        consecution0.tempo = core_parameters.FlexTempo([[0, 100], [10, 100]])
 
-        self.assertNotEqual(
-            consecution0.tempo, consecution1.tempo
-        )
+        self.assertNotEqual(consecution0.tempo, consecution1.tempo)
         self.assertNotEqual(consecution0, consecution1)
         self.assertTrue(list.__eq__(consecution0, consecution1))
 
@@ -404,19 +400,17 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_concatenate_tempo(self):
-        cons0 = self.get_event_class()(
+        cns0 = self.get_event_class()(
             [core_events.Chronon(1)],
             tempo=core_parameters.FlexTempo([[0, 20], [1, 20], [3, 100]]),
         )
-        cons1 = self.get_event_class()(
+        cns1 = self.get_event_class()(
             [core_events.Chronon(2)],
             tempo=core_parameters.FlexTempo([[0, 50], [1, 10]]),
         )
-        cons0._concatenate_tempo(cons1)
-        self.assertEqual(cons0.tempo.value_tuple, (20, 20, 50, 10))
-        self.assertEqual(
-            cons0.tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2)
-        )
+        cns0._concatenate_tempo(cns1)
+        self.assertEqual(cns0.tempo.value_tuple, (20, 20, 50, 10))
+        self.assertEqual(cns0.tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2))
 
     def test_magic_method_add(self):
         self.assertEqual(
@@ -426,26 +420,22 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
 
     def test_magic_method_add_children(self):
         """Ensure children and tempos are concatenated"""
-        cons, chr = core_events.Consecution, core_events.Chronon
-        cons0 = cons([chr(1)], tempo=core_parameters.FlexTempo([[0, 50], [1, 50]]))
-        cons1 = cons([chr(1), chr(2)])
-        cons_ok = cons(
-            [chr(1), chr(1), chr(2)],
-            tempo=core_parameters.FlexTempo(
-                [[0, 50], [1, 50], [1, 60], [2, 60]]
-            ),
+        cns, chn = core_events.Consecution, core_events.Chronon
+        cns0 = cns([chn(1)], tempo=core_parameters.FlexTempo([[0, 50], [1, 50]]))
+        cns1 = cns([chn(1), chn(2)])
+        cns_ok = cns(
+            [chn(1), chn(1), chn(2)],
+            tempo=core_parameters.FlexTempo([[0, 50], [1, 50], [1, 60], [2, 60]]),
         )
-        self.assertEqual(cons0 + cons1, cons_ok)
+        self.assertEqual(cns0 + cns1, cns_ok)
 
     def test_magic_method_mul(self):
-        self.assertEqual(
-            type(core_events.Consecution([]) * 5), core_events.Consecution
-        )
+        self.assertEqual(type(core_events.Consecution([]) * 5), core_events.Consecution)
 
     def test_magic_method_del_by_tag(self):
-        cons = core_events.Consecution([core_events.Chronon(1, tag="a")])
-        del cons["a"]
-        self.assertEqual(cons, core_events.Consecution([]))
+        cns = core_events.Consecution([core_events.Chronon(1, tag="a")])
+        del cns["a"]
+        self.assertEqual(cns, core_events.Consecution([]))
 
     def test_get_duration(self):
         self.assertEqual(self.sequence.duration, core_parameters.DirectDuration(6))
@@ -573,10 +563,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         self.assertEqual(
             self.sequence.copy().squash_in(0.5, core_events.Chronon(0.25)),
             core_events.Consecution(
-                [
-                    core_events.Chronon(duration)
-                    for duration in (0.5, 0.25, 0.25, 2, 3)
-                ]
+                [core_events.Chronon(duration) for duration in (0.5, 0.25, 0.25, 2, 3)]
             ),
         )
         self.assertRaises(
@@ -587,9 +574,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
     def test_squash_in_with_minor_differences(self):
         minor_difference = fractions.Fraction(6e-10)
         self.assertEqual(
-            self.sequence.copy().squash_in(
-                minor_difference, core_events.Chronon(1)
-            ),
+            self.sequence.copy().squash_in(minor_difference, core_events.Chronon(1)),
             core_events.Consecution(
                 [
                     core_events.Chronon(duration)
@@ -599,9 +584,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_squash_in_event_with_0_duration(self):
-        squashed_in_sequence = self.sequence.copy().squash_in(
-            1, core_events.Chronon(0)
-        )
+        squashed_in_sequence = self.sequence.copy().squash_in(1, core_events.Chronon(0))
         self.assertEqual(
             squashed_in_sequence,
             core_events.Consecution(
@@ -652,20 +635,18 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
                 )
 
     def test_slide_in_with_invalid_start(self):
-        chr = core_events.Chronon(1)
+        chn = core_events.Chronon(1)
         self.assertRaises(
-            core_utilities.InvalidAbsoluteTime, self.sequence.slide_in, -1, chr
+            core_utilities.InvalidAbsoluteTime, self.sequence.slide_in, -1, chn
         )
         self.assertRaises(
-            core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, chr
+            core_utilities.InvalidStartValueError, self.sequence.slide_in, 100, chn
         )
 
     def test_tie_by(self):
         # Ensure empty event can be tied without error
         self.assertEqual(
-            core_events.Consecution([]).tie_by(
-                lambda event_left, event_right: True
-            ),
+            core_events.Consecution([]).tie_by(lambda event_left, event_right: True),
             core_events.Consecution([]),
         )
         # Ensure tie_by function as expected
@@ -675,9 +656,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
                 == event_right.duration,
                 event_type_to_examine=core_events.Chronon,
             ),
-            core_events.Consecution(
-                [core_events.Chronon(3), core_events.Chronon(3)]
-            ),
+            core_events.Consecution([core_events.Chronon(3), core_events.Chronon(3)]),
         )
         self.assertEqual(
             self.sequence.copy().tie_by(
@@ -697,9 +676,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
                 event_type_to_examine=core_events.Chronon,
                 event_to_remove=True,
             ),
-            core_events.Consecution(
-                [core_events.Chronon(1), core_events.Chronon(3)]
-            ),
+            core_events.Consecution([core_events.Chronon(1), core_events.Chronon(3)]),
         )
 
     def test_tie_by_for_nested_events(self):
@@ -790,20 +767,26 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_split_at_multi(self):
-        cons, chr = core_events.Consecution, core_events.Chronon
+        cns, chn = core_events.Consecution, core_events.Chronon
         # Only at already pre-defined split times.
         self.assertEqual(
             self.sequence.split_at(1, 3),
-            (cons([chr(1)]), cons([chr(2)]), cons([chr(3)])),
+            (cns([chn(1)]), cns([chn(2)]), cns([chn(3)])),
         )
         # Here mutwo really needs to split.
         self.assertEqual(
             self.sequence.split_at(2, 3),
-            (cons([chr(1), chr(1)]), cons([chr(1)]), cons([chr(3)])),
+            (cns([chn(1), chn(1)]), cns([chn(1)]), cns([chn(3)])),
         )
         self.assertEqual(
             self.sequence.split_at(2, 3, 5, 5.5),
-            (cons([chr(1), chr(1)]), cons([chr(1)]), cons([chr(2)]), cons([chr(0.5)]), cons([chr(0.5)])),
+            (
+                cns([chn(1), chn(1)]),
+                cns([chn(1)]),
+                cns([chn(2)]),
+                cns([chn(0.5)]),
+                cns([chn(0.5)]),
+            ),
         )
 
     def test_start_and_end_time_per_event(self):
@@ -1011,14 +994,10 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             core_events.Chronon(1),
             core_events.Chronon(2),
         )
-        for chronon, dummy_parameter in zip(
-            chronon_tuple, dummy_parameter_tuple
-        ):
+        for chronon, dummy_parameter in zip(chronon_tuple, dummy_parameter_tuple):
             if dummy_parameter is not None:
                 chronon.dummy_parameter = dummy_parameter  # type: ignore
-        concurrence = core_events.Concurrence(
-            chronon_tuple
-        ).destructive_copy()
+        concurrence = core_events.Concurrence(chronon_tuple).destructive_copy()
         concurrence.mutate_parameter(
             "dummy_parameter",
             lambda dummy_parameter: dummy_parameter.double_value(),
@@ -1036,9 +1015,7 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
             )
 
     def test_cut_out(self):
-        result = core_events.Concurrence(
-            [core_events.Chronon(0.5) for _ in range(3)]
-        )
+        result = core_events.Concurrence([core_events.Chronon(0.5) for _ in range(3)])
 
         self.assertEqual(
             [event.duration for event in result],
@@ -1105,9 +1082,7 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         )
 
         self.assertEqual(
-            concurrence_to_test.copy().squash_in(
-                1, core_events.Chronon(1.5)
-            ),
+            concurrence_to_test.copy().squash_in(1, core_events.Chronon(1.5)),
             expected_concurrence,
         )
 
@@ -1143,11 +1118,7 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         )
         concurrence0.split_child_at(1)
         concurrence_to_compare0 = core_events.Concurrence(
-            [
-                core_events.Consecution(
-                    [core_events.Chronon(1), core_events.Chronon(2)]
-                )
-            ]
+            [core_events.Consecution([core_events.Chronon(1), core_events.Chronon(2)])]
         )
         self.assertEqual(concurrence0, concurrence_to_compare0)
 
@@ -1269,26 +1240,24 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_concatenate_by_index_to_empty_event(self):
-        empty_conc = core_events.Concurrence([])
-        filled_conc = core_events.Concurrence(
+        empty_cnc = core_events.Concurrence([])
+        filled_cnc = core_events.Concurrence(
             [core_events.Consecution([core_events.Chronon(1)])]
         )
-        empty_conc.concatenate_by_index(filled_conc)
-        self.assertEqual(empty_conc, filled_conc)
+        empty_cnc.concatenate_by_index(filled_cnc)
+        self.assertEqual(empty_cnc, filled_cnc)
 
     def test_concatenate_by_index_persists_tempo(self):
         """Verify that concatenation also concatenates the tempos"""
-        conc0 = core_events.Concurrence(
+        cnc0 = core_events.Concurrence(
             [
                 core_events.Consecution(
                     [core_events.Chronon(1)],
-                    tempo=core_parameters.FlexTempo(
-                        [[0, 1], [1, 20], [10, 100]]
-                    ),
+                    tempo=core_parameters.FlexTempo([[0, 1], [1, 20], [10, 100]]),
                 )
             ]
         )
-        conc1 = core_events.Concurrence(
+        cnc1 = core_events.Concurrence(
             [
                 core_events.Consecution(
                     [core_events.Chronon(1)],
@@ -1296,11 +1265,9 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
                 )
             ]
         )
-        conc0.concatenate_by_index(conc1)
-        self.assertEqual(conc0[0].tempo.value_tuple, (1, 20, 1000, 10))
-        self.assertEqual(
-            conc0[0].tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2)
-        )
+        cnc0.concatenate_by_index(cnc1)
+        self.assertEqual(cnc0[0].tempo.value_tuple, (1, 20, 1000, 10))
+        self.assertEqual(cnc0[0].tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2))
 
     def test_concatenate_by_tag(self):
         s, tse, si, t = (
@@ -1381,9 +1348,7 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_sequentialize_chronon(self):
-        e = core_events.Concurrence(
-            [core_events.Chronon(3), core_events.Chronon(1)]
-        )
+        e = core_events.Concurrence([core_events.Chronon(3), core_events.Chronon(1)])
         e_sequentialized = core_events.Consecution(
             [
                 core_events.Concurrence(
@@ -1395,62 +1360,62 @@ class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
         self.assertEqual(e.sequentialize(), e_sequentialized)
 
     def test_sequentialize_consecution(self):
-        cons, conc, chr = (
+        cns, cnc, chn = (
             core_events.Consecution,
             core_events.Concurrence,
             core_events.Chronon,
         )
-        e = conc(
+        e = cnc(
             [
-                cons([chr(2), chr(1)]),
-                cons([chr(3)]),
+                cns([chn(2), chn(1)]),
+                cns([chn(3)]),
             ]
         )
-        e_sequentialized = cons(
+        e_sequentialized = cns(
             [
-                conc([cons([chr(2)]), cons([chr(2)])]),
-                conc([cons([chr(1)]), cons([chr(1)])]),
+                cnc([cns([chn(2)]), cns([chn(2)])]),
+                cnc([cns([chn(1)]), cns([chn(1)])]),
             ]
         )
         self.assertEqual(e.sequentialize(), e_sequentialized)
 
     def test_sequentialize_concurrence(self):
-        cons, conc, chr = (
+        cns, cnc, chn = (
             core_events.Consecution,
             core_events.Concurrence,
             core_events.Chronon,
         )
-        e = conc(
+        e = cnc(
             [
-                conc([chr(3)]),
-                conc([chr(1)]),
+                cnc([chn(3)]),
+                cnc([chn(1)]),
             ]
         )
-        e_sequentialized = cons(
+        e_sequentialized = cns(
             [
-                conc([conc([chr(1)]), conc([chr(1)])]),
-                conc([conc([chr(2)])]),
+                cnc([cnc([chn(1)]), cnc([chn(1)])]),
+                cnc([cnc([chn(2)])]),
             ]
         )
         self.assertEqual(e.sequentialize(), e_sequentialized)
 
     def test_split_at_multi(self):
-        conc, chr = (core_events.Concurrence, core_events.Chronon)
-        chr0, chr1, chr2 = self.sequence.split_at(1, 2)
-        self.assertEqual(chr0, conc([chr(1), chr(1), chr(1)]))
-        self.assertEqual(chr1, conc([chr(1), chr(1)]))
-        self.assertEqual(chr2, conc([chr(1)]))
+        cnc, chn = (core_events.Concurrence, core_events.Chronon)
+        chn0, chn1, chn2 = self.sequence.split_at(1, 2)
+        self.assertEqual(chn0, cnc([chn(1), chn(1), chn(1)]))
+        self.assertEqual(chn1, cnc([chn(1), chn(1)]))
+        self.assertEqual(chn2, cnc([chn(1)]))
 
     def test_split_at_multi_nested(self):
-        cons, conc, chr = (
+        cns, cnc, chn = (
             core_events.Consecution,
             core_events.Concurrence,
             core_events.Chronon,
         )
-        chr0, chr1, chr2 = self.nested_sequence.split_at(1, 4)
-        self.assertEqual(chr0, conc([cons([chr(1)]), cons([chr(1)])]))
-        self.assertEqual(chr1, conc([cons([chr(2), chr(1)]), cons([chr(2), chr(1)])]))
-        self.assertEqual(chr2, conc([cons([chr(2)]), cons([chr(2)])]))
+        chn0, chn1, chn2 = self.nested_sequence.split_at(1, 4)
+        self.assertEqual(chn0, cnc([cns([chn(1)]), cns([chn(1)])]))
+        self.assertEqual(chn1, cnc([cns([chn(2), chn(1)]), cns([chn(2), chn(1)])]))
+        self.assertEqual(chn2, cnc([cns([chn(2)]), cns([chn(2)])]))
 
 
 if __name__ == "__main__":

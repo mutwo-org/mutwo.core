@@ -233,19 +233,19 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         >>> import copy
         >>> from mutwo import core_events
-        >>> chr0 = core_events.Chronon(2)
-        >>> chr1 = core_events.Chronon(3)
-        >>> cons = core_events.Consecution([chr0, chr1, chr0])
-        >>> cons_copy = copy.deepcopy(cons)
-        >>> cons_destr_copy = cons.destructive_copy()
-        >>> cons_copy[0].duration = 10  # setting the duration of the first event
-        >>> cons_destr_copy[0].duration = 10
+        >>> chn0 = core_events.Chronon(2)
+        >>> chn1 = core_events.Chronon(3)
+        >>> cns = core_events.Consecution([chn0, chn1, chn0])
+        >>> cns_copy = copy.deepcopy(cns)
+        >>> cns_destr_copy = cns.destructive_copy()
+        >>> cns_copy[0].duration = 10  # setting the duration of the first event
+        >>> cns_destr_copy[0].duration = 10
         >>> # return True because the first and the third objects share the same
         >>> # reference (both are the same copy of 'my_chronon_0')
-        >>> cons_copy[0].duration == cons_copy[2].duration
+        >>> cns_copy[0].duration == cns_copy[2].duration
         True
         >>> # return False because destructive_copy forgets the shared reference
-        >>> cons_destr_copy[0].duration == cons_destr_copy[2].duration
+        >>> cns_destr_copy[0].duration == cns_destr_copy[2].duration
         False
         """
 
@@ -267,8 +267,8 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> cons = core_events.Consecution([core_events.Chronon(2)])
-        >>> cons.set('duration', 10).set('my_new_attribute', 'hello-world!')
+        >>> cns = core_events.Consecution([core_events.Chronon(2)])
+        >>> cns.set('duration', 10).set('my_new_attribute', 'hello-world!')
         Consecution([Chronon(duration=DirectDuration(10.0))])
         """
         setattr(self, attribute_name, value)
@@ -296,15 +296,15 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> cons = core_events.Consecution(
+        >>> cns = core_events.Consecution(
         ...     [core_events.Chronon(2), core_events.Chronon(3)]
         ... )
-        >>> cons.get_parameter('duration')
+        >>> cns.get_parameter('duration')
         (DirectDuration(2.0), DirectDuration(3.0))
-        >>> chr = core_events.Chronon(10)
-        >>> chr.get_parameter('duration')
+        >>> chn = core_events.Chronon(10)
+        >>> chn.get_parameter('duration')
         DirectDuration(10.0)
-        >>> chr.get_parameter('undefined_parameter')
+        >>> chn.get_parameter('undefined_parameter')
         """
 
     def set_parameter(
@@ -331,12 +331,12 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> cons = core_events.Consecution(
+        >>> cns = core_events.Consecution(
         ...     [core_events.Chronon(2), core_events.Chronon(3)]
         ... )
-        >>> cons.set_parameter('duration', lambda duration: duration * 2)
+        >>> cns.set_parameter('duration', lambda duration: duration * 2)
         Consecution([Chronon(duration=DirectDuration(4.0)), Chronon(duration=DirectDuration(6.0))])
-        >>> cons.get_parameter('duration')
+        >>> cns.get_parameter('duration')
         (DirectDuration(4.0), DirectDuration(6.0))
 
         **Warning:**
@@ -414,13 +414,13 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> chr = core_events.Chronon(duration = 1)
-        >>> chr.tempo.bpm = 100
-        >>> print(chr.tempo)
+        >>> chn = core_events.Chronon(duration = 1)
+        >>> chn.tempo.bpm = 100
+        >>> print(chn.tempo)
         D(100.0)
-        >>> chr.reset_tempo()
+        >>> chn.reset_tempo()
         Chronon(duration=DirectDuration(1.0))
-        >>> print(chr.tempo)
+        >>> print(chn.tempo)
         D(60.0)
         """
         self.tempo = core_parameters.DirectTempo(60)
@@ -435,9 +435,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         >>> from mutwo import core_converters
         >>> from mutwo import core_events
-        >>> chr = core_events.Chronon(1)
-        >>> chr.tempo = core_parameters.FlexTempo([[0, 100], [1, 40]])
-        >>> core_converters.EventToMetrizedEvent().convert(chr) == chr.metrize()
+        >>> chn = core_events.Chronon(1)
+        >>> chn.tempo = core_parameters.FlexTempo([[0, 100], [1, 40]])
+        >>> core_converters.EventToMetrizedEvent().convert(chn) == chn.metrize()
         True
         """
 
@@ -455,9 +455,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> chr0, chr1 = (core_events.Chronon(3), core_events.Chronon(2))
-        >>> cons = core_events.Consecution([chr0, chr1])
-        >>> cons.cut_out(1, 4)
+        >>> chn0, chn1 = (core_events.Chronon(3), core_events.Chronon(2))
+        >>> cns = core_events.Consecution([chn0, chn1])
+        >>> cns.cut_out(1, 4)
         Consecution([Chronon(duration=DirectDuration(2.0)), Chronon(duration=DirectDuration(1.0))])
         """
 
@@ -475,9 +475,9 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> chr0, chr1 = (core_events.Chronon(3), core_events.Chronon(2))
-        >>> cons = core_events.Consecution([chr0, chr1])
-        >>> cons.cut_off(1, 3)
+        >>> chn0, chn1 = (core_events.Chronon(3), core_events.Chronon(2))
+        >>> cns = core_events.Consecution([chn0, chn1])
+        >>> cns.cut_off(1, 3)
         Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(2.0))])
         """
 
@@ -509,10 +509,10 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> cons = core_events.Consecution([core_events.Chronon(3)])
-        >>> cons.split_at(1)
+        >>> cns = core_events.Consecution([core_events.Chronon(3)])
+        >>> cns.split_at(1)
         (Consecution([Chronon(duration=DirectDuration(1.0))]), Consecution([Chronon(duration=DirectDuration(2.0))]))
-        >>> cons[0].split_at(1)
+        >>> cns[0].split_at(1)
         (Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(2.0)))
         """
         if not absolute_time:
@@ -1115,7 +1115,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> cons = core_events.Consecution([core_events.Chronon(1)])
-        >>> cons.extend_until(10)
+        >>> cns = core_events.Consecution([core_events.Chronon(1)])
+        >>> cns.extend_until(10)
         Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(9.0))])
         """

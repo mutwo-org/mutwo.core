@@ -947,10 +947,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> conc = core_events.Concurrence(
+        >>> cnc = core_events.Concurrence(
         ...     [core_events.Consecution([core_events.Chronon(1)])]
         ... )
-        >>> conc.concatenate_by_index(conc)
+        >>> cnc.concatenate_by_index(cnc)
         Concurrence([Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(1.0))])])
         """
         if (dur := self.duration) > 0:
@@ -993,10 +993,10 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         **Example:**
 
         >>> from mutwo import core_events
-        >>> conc = core_events.Concurrence(
+        >>> cnc = core_events.Concurrence(
         ...      [core_events.Consecution([core_events.Chronon(1)], tag="test")]
         ...  )
-        >>> conc.concatenate_by_tag(conc)
+        >>> cnc.concatenate_by_tag(cnc)
         Concurrence([Consecution([Chronon(duration=DirectDuration(1.0)), Chronon(duration=DirectDuration(1.0))])])
         """
         if (dur := self.duration) > 0:
@@ -1070,8 +1070,8 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
         ...         ),
         ...     ]
         ... )
-        >>> cons = e.sequentialize()
-        >>> print(cons)
+        >>> cns = e.sequentialize()
+        >>> print(cns)
         Cons(Conc(Cons(C(dur=D(2.0))), Cons(C(dur=D(2.0)))), Conc(Cons(C(dur=D(1.0))), Cons(C(dur=D(1.0)))))
         """
         if slice_tuple_to_event is None:
