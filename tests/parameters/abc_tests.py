@@ -188,6 +188,21 @@ class TempoFromAnyTest(unittest.TestCase):
     def test_tuple(self):
         self._test(([0, 20], [3, 60]), self.c(([0, 20], [3, 60])))
 
+    def test_str_int(self):
+        self._test("40", self.d(40))
+
+    def test_str_float(self):
+        self._test("40.321", self.d(40.321))
+
+    def test_str_fraction(self):
+        self._test("60/2", self.d(30))
+
+    def test_str_list(self):
+        self._test("[[0, 30], [1, 20]]", self.c([[0, 30], [1, 20]]))
+
+    def test_str_tuple(self):
+        self._test("([0, 30], [1, 20])", self.c([[0, 30], [1, 20]]))
+
 
 if __name__ == "__main__":
     unittest.main()
