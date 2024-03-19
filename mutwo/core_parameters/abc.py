@@ -330,12 +330,7 @@ class Duration(
             case fractions.Fraction() | builtin_fraction():
                 return core_parameters.RatioDuration(object)
             case str():
-                if "." in object:
-                    f = float
-                elif "/" in object:
-                    f = fractions.Fraction
-                else:
-                    f = int
+                f = core_utilities.str_to_number_parser(object)
                 try:
                     v = f(object)
                 except ValueError:
