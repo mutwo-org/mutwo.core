@@ -162,5 +162,32 @@ class DurationFromAnyTest(unittest.TestCase):
         self._test_bad_input(lambda: None)
 
 
+class TempoFromAnyTest(unittest.TestCase):
+    def setUp(self):
+        self.d = core_parameters.DirectTempo
+        self.c = core_parameters.FlexTempo
+
+    def _test(self, v: typing.Any, tempo_ok: core_parameters.abc.Tempo):
+        self.assertEqual(core_parameters.abc.Tempo.from_any(v), tempo_ok)
+
+    def test_tempo(self):
+        self._test(self.d(40), self.d(40))
+
+    def test_float(self):
+        self._test(40.3, self.d(40.3))
+
+    def test_int(self):
+        self._test(40, self.d(40))
+
+    def test_fraction(self):
+        self._test(fractions.Fraction(3, 5), self.d(fractions.Fraction(3, 5)))
+
+    def test_list(self):
+        self._test([[0, 20], [3, 60]], self.c([[0, 20], [3, 60]]))
+
+    def test_tuple(self):
+        self._test(([0, 20], [3, 60]), self.c(([0, 20], [3, 60])))
+
+
 if __name__ == "__main__":
     unittest.main()
