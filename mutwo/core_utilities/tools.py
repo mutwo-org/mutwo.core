@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,12 @@ import operator
 import types
 import typing
 
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
+
 from mutwo import core_configurations
 from mutwo import core_constants
 
@@ -51,6 +57,7 @@ __all__ = (
     "test_if_objects_are_equal_by_parameter_tuple",
     "get_all",
     "get_cls_logger",
+    "str_to_number_parser",
 )
 
 
@@ -610,3 +617,34 @@ def get_cls_logger(
     logger = logging.getLogger(f"{cls.__module__}.{cls.__name__}")
     logger.setLevel(level)
     return logger
+
+
+def str_to_number_parser(string: str) -> typing.Callable:
+    """Find function that, if called with string, may return a number.
+
+    :param string: The string for which a suitable function is searched for.
+    :type string: str
+    :return: The function that if called with the string as an input may
+        return a number object (int, float, fraction, ...). It could be
+        that no suitable function could found and calling the function
+        with the string returns an error or unexpected results.
+
+    **Example:**
+
+    >>> from mutwo import core_utilities
+    >>> # floats are detected
+    >>> core_utilities.str_to_number_parser('3.21')('3.21')
+    3.21
+    >>> # int are detected
+    >>> core_utilities.str_to_number_parser('7')('7')
+    7
+    >>> # fractions are detected
+    >>> core_utilities.str_to_number_parser('7/4')('7/4')
+    Fraction(7, 4)
+    """
+    if "." in string:
+        return float
+    elif "/" in string:
+        return fractions.Fraction
+    else:
+        return int
