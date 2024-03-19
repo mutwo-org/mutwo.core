@@ -28,6 +28,7 @@ newly created parameter class.
 from __future__ import annotations
 
 import abc
+import ast
 import functools
 import operator
 import typing
@@ -371,5 +372,15 @@ class Tempo(SingleNumberParameter, value_name="bpm", value_return_type="float"):
                 return core_parameters.DirectTempo(object)
             case list() | tuple():
                 return core_parameters.FlexTempo(object)
+            case str():
+                f, v = core_utilities.str_to_number_parser(object), None
+                try:
+                    v = f(object)
+                except ValueError:
+                    try:
+                        v = ast.literal_eval(object)
+                    except Exception:
+                        raise core_utilities.CannotParseError(object, cls)
+                return Tempo.from_any(v)
             case _:
                 raise core_utilities.CannotParseError(object, cls)
