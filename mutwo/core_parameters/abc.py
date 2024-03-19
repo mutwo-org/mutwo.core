@@ -374,5 +374,7 @@ class Tempo(SingleNumberParameter, value_name="bpm", value_return_type="float"):
                 return object
             case float() | int() | fractions.Fraction() | builtin_fraction():
                 return core_parameters.DirectTempo(object)
+            case list() | tuple():
+                return core_parameters.FlexTempo(object)
             case _:
                 raise core_utilities.CannotParseError(object, cls)
