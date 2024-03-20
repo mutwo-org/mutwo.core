@@ -1,3 +1,20 @@
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2024
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """Generic utility functions."""
 
 import bisect
@@ -9,6 +26,12 @@ import math
 import operator
 import types
 import typing
+
+try:
+    import quicktions as fractions
+except ImportError:
+    import fractions
+
 
 from mutwo import core_configurations
 from mutwo import core_constants
@@ -34,6 +57,7 @@ __all__ = (
     "test_if_objects_are_equal_by_parameter_tuple",
     "get_all",
     "get_cls_logger",
+    "str_to_number_parser",
 )
 
 
@@ -258,8 +282,10 @@ def find_closest_item(
 
 def uniqify_sequence(
     sequence: typing.Sequence,
-    sort_key: typing.Callable[[typing.Any], core_constants.Real] = None,
-    group_by_key: typing.Callable[[typing.Any], typing.Any] = None,
+    sort_key: typing.Optional[
+        typing.Callable[[typing.Any], core_constants.Real]
+    ] = None,
+    group_by_key: typing.Optional[typing.Callable[[typing.Any], typing.Any]] = None,
 ) -> typing.Iterable:
     """Not-Order preserving function to uniqify any iterable with non-hashable objects.
 
@@ -342,12 +368,12 @@ def camel_case_to_snake_case(camel_case_string: str) -> str:
 
 
 def get_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int], sequence: typing.Sequence
+    index_sequence: typing.Sequence, sequence: typing.Sequence
 ) -> typing.Any:
     """Get item in nested Sequence.
 
     :param index_sequence: The indices of the nested item.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.Sequence[typing.Any]
 
@@ -368,14 +394,14 @@ def get_nested_item_from_index_sequence(
 
 
 def set_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int],
+    index_sequence: typing.Sequence,
     sequence: typing.MutableSequence,
     item: typing.Any,
 ) -> None:
     """Set item in nested Sequence.
 
     :param index_sequence: The indices of the nested item which shall be set.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.MutableSequence[typing.Any]
     :param item: The new item value.
@@ -388,23 +414,19 @@ def set_nested_item_from_index_sequence(
     >>> core_utilities.set_nested_item_from_index_sequence((2, 2, 0), nested_sequence, 100)
     >>> nested_sequence[2][2][0] = 100  # is equal
     """
-
-    index_count = len(index_sequence)
-    for index_index, index in enumerate(index_sequence):
-        if index_count == index_index + 1:
-            sequence.__setitem__(index, item)
-        else:
-            sequence = sequence[index]
+    for index in index_sequence[:-1]:
+        sequence = sequence[index]
+    sequence.__setitem__(index_sequence[-1], item)
 
 
 def del_nested_item_from_index_sequence(
-    index_sequence: typing.Sequence[int],
+    index_sequence: typing.Sequence,
     sequence: typing.MutableSequence,
 ) -> None:
     """Delete item in nested Sequence.
 
     :param index_sequence: The indices of the nested item which shall be deleted.
-    :type index_sequence: typing.Sequence[int]
+    :type index_sequence: typing.Sequence
     :param sequence: A nested sequence.
     :type sequence: typing.MutableSequence[typing.Any]
 
@@ -416,13 +438,9 @@ def del_nested_item_from_index_sequence(
     >>> nested_sequence
     [1, 2, [4, [5, 1], [[3]]]]
     """
-
-    index_count = len(index_sequence)
-    for index_index, index in enumerate(index_sequence):
-        if index_count == index_index + 1:
-            sequence.__delitem__(index)
-        else:
-            sequence = sequence[index]
+    for index in index_sequence[:-1]:
+        sequence = sequence[index]
+    sequence.__delitem__(index_sequence[-1])
 
 
 def round_floats(
@@ -599,3 +617,34 @@ def get_cls_logger(
     logger = logging.getLogger(f"{cls.__module__}.{cls.__name__}")
     logger.setLevel(level)
     return logger
+
+
+def str_to_number_parser(string: str) -> typing.Callable:
+    """Find function that, if called with string, may return a number.
+
+    :param string: The string for which a suitable function is searched for.
+    :type string: str
+    :return: The function that if called with the string as an input may
+        return a number object (int, float, fraction, ...). It could be
+        that no suitable function could found and calling the function
+        with the string returns an error or unexpected results.
+
+    **Example:**
+
+    >>> from mutwo import core_utilities
+    >>> # floats are detected
+    >>> core_utilities.str_to_number_parser('3.21')('3.21')
+    3.21
+    >>> # int are detected
+    >>> core_utilities.str_to_number_parser('7')('7')
+    7
+    >>> # fractions are detected
+    >>> core_utilities.str_to_number_parser('7/4')('7/4')
+    Fraction(7, 4)
+    """
+    if "." in string:
+        return float
+    elif "/" in string:
+        return fractions.Fraction
+    else:
+        return int

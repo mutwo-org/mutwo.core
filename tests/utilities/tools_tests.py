@@ -130,14 +130,14 @@ class ToolsTest(unittest.TestCase):
         self.assertEqual(nested_sequence[2][2][0], 100)
 
     def test_del_nested_item_from_index_sequence(self):
-        seq = [1, [2, 3, [4]]]
+        cons = [1, [2, 3, [4]]]
         d = core_utilities.del_nested_item_from_index_sequence
-        d((1, 1), seq)
-        self.assertEqual(seq, [1, [2, [4]]])
-        d((1, 1, 0), seq)
-        self.assertEqual(seq, [1, [2, []]])
-        d((0,), seq)
-        self.assertEqual(seq, [[2, []]])
+        d((1, 1), cons)
+        self.assertEqual(cons, [1, [2, [4]]])
+        d((1, 1, 0), cons)
+        self.assertEqual(cons, [1, [2, []]])
+        d((0,), cons)
+        self.assertEqual(cons, [[2, []]])
 
     def test_find_numbers_which_sums_up_to(self):
         self.assertEqual(

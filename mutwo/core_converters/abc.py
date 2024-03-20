@@ -1,3 +1,20 @@
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """Defining the public API for any converter class."""
 
 import abc
@@ -5,11 +22,12 @@ import typing
 
 from mutwo import core_events
 from mutwo import core_parameters
+from mutwo import core_utilities
 
 __all__ = ("Converter", "EventConverter", "SymmetricalEventConverter")
 
 
-class Converter(abc.ABC):
+class Converter(core_utilities.MutwoObject, abc.ABC):
     """Abstract base class for all Converter classes.
 
     Converter classes are defined as classes that convert data between
@@ -36,12 +54,12 @@ class EventConverter(Converter):
     method). Converting mutwo event often involves the same pattern:
     due to the nested structure of an Event, the converter has
     to iterate through the different layers until it reaches leaves
-    (any class that inherits from :class:`mutwo.core_events.SimpleEvent`).
+    (any class that inherits from :class:`mutwo.core_events.Chronon`).
     This common iteration process and the different time treatment
-    between :class:`mutwo.core_events.SequentialEvent` and
-    :class:`mutwo.core_events.SimultaneousEvent` are implemented in
+    between :class:`mutwo.core_events.Consecution` and
+    :class:`mutwo.core_events.Concurrence` are implemented in
     :class:`EventConverter`.  For writing a new EventConverter class,
-    one only has to override the abstract method :func:`_convert_simple_event`
+    one only has to override the abstract method :func:`_convert_chronon`
     and the abstract method :func:`convert` (where one will perhaps call
     :func:`_convert_event`.).
 
@@ -52,8 +70,8 @@ class EventConverter(Converter):
 
     >>> from mutwo import core_converters
     >>> class DurationPrintConverter(core_converters.abc.EventConverter):
-    ...     def _convert_simple_event(self, event_to_convert, absolute_entry_delay):
-    ...         return "{}: {}".format(absolute_entry_delay, event_to_convert.duration),
+    ...     def _convert_chronon(self, event_to_convert, absolute_time):
+    ...         return "{}: {}".format(absolute_time, event_to_convert.duration),
     ...     def convert(self, event_to_convert):
     ...         data_per_event = self._convert_event(event_to_convert, 0)
     ...         [print(data) for data in data_per_event]
@@ -61,11 +79,11 @@ class EventConverter(Converter):
     >>> import random
     >>> from mutwo import core_events
     >>> random.seed(100)
-    >>> random_event = core_events.SimultaneousEvent(
+    >>> random_event = core_events.Concurrence(
     ...     [
-    ...        core_events.SequentialEvent(
+    ...        core_events.Consecution(
     ...             [
-    ...                core_events.SimpleEvent(random.uniform(0.5, 2))
+    ...                core_events.Chronon(random.uniform(0.5, 2))
     ...                 for _ in range(random.randint(2, 5))
     ...             ]
     ...         )
@@ -73,61 +91,50 @@ class EventConverter(Converter):
     ...     ]
     ... )
     >>> DurationPrintConverter().convert(random_event)
-    DirectDuration(duration = 0): DirectDuration(duration = 332813340356277/281474976710656)
-    DirectDuration(duration = 332813340356277/281474976710656): DirectDuration(duration = 3729376151804513/2251799813685248)
-    DirectDuration(duration = 6391882874654729/2251799813685248): DirectDuration(duration = 7017823472572815/4503599627370496)
-    DirectDuration(duration = 19801589221882273/4503599627370496): DirectDuration(duration = 449779690686865/281474976710656)
-    DirectDuration(duration = 26998064272872113/4503599627370496): DirectDuration(duration = 5180362984867255/4503599627370496)
+    D(0.0): D(1.1823905068)
+    D(1.1823905068): D(1.6561757085)
+    D(2.8385662153): D(1.5582698404)
+    D(4.3968360557): D(1.5979384595)
+    D(5.9947745152): D(1.1502716523)
     """
 
     @abc.abstractmethod
-    def _convert_simple_event(
+    def _convert_chronon(
         self,
-        event_to_convert: core_events.SimpleEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        event_to_convert: core_events.Chronon,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
-        """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
+        """Convert instance of :class:`mutwo.core_events.Chronon`."""
 
-    def _convert_simultaneous_event(
+    def _convert_concurrence(
         self,
-        simultaneous_event: core_events.SimultaneousEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        concurrence: core_events.Concurrence,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
-        """Convert instance of :class:`mutwo.core_events.SimultaneousEvent`."""
+        """Convert instance of :class:`mutwo.core_events.Concurrence`."""
+        d: list[tuple[typing.Any]] = []
+        for e in concurrence:
+            d.extend(self._convert_event(e, absolute_time, depth + 1))
+        return tuple(d)
 
-        data_per_simple_event_list: list[tuple[typing.Any]] = []
-
-        for event in simultaneous_event:
-            data_per_simple_event_list.extend(
-                self._convert_event(event, absolute_entry_delay, depth + 1)
-            )
-        return tuple(data_per_simple_event_list)
-
-    def _convert_sequential_event(
+    def _convert_consecution(
         self,
-        sequential_event: core_events.SequentialEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        consecution: core_events.Consecution,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> typing.Sequence[typing.Any]:
-        """Convert instance of :class:`mutwo.core_events.SequentialEvent`."""
-
-        data_per_simple_event_list: list[tuple[typing.Any]] = []
-        for event_start, event in zip(
-            sequential_event.absolute_time_tuple, sequential_event
-        ):
-            data_per_simple_event_list.extend(
-                self._convert_event(
-                    event, event_start + absolute_entry_delay, depth + 1
-                )
-            )
-        return tuple(data_per_simple_event_list)
+        """Convert instance of :class:`mutwo.core_events.Consecution`."""
+        d: list[tuple[typing.Any]] = []
+        for t, e in zip(consecution.absolute_time_tuple, consecution):
+            d.extend(self._convert_event(e, t + absolute_time, depth + 1))
+        return tuple(d)
 
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> typing.Any:
         """Convert :class:`mutwo.core_events.abc.Event` of unknown type.
@@ -135,39 +142,30 @@ class EventConverter(Converter):
         The method calls different subroutines depending on whether
         the passed event either are instances from:
 
-            1. :class:`mutwo.core_events.SimpleEvent` or
-            2. :class:`mutwo.core_events.SequentialEvent` or
-            3. :class:`mutwo.core_events.SimultaneousEvent`.
+            1. :class:`mutwo.core_events.Chronon` or
+            2. :class:`mutwo.core_events.Consecution` or
+            3. :class:`mutwo.core_events.Concurrence`.
         """
-
-        absolute_entry_delay = core_events.configurations.UNKNOWN_OBJECT_TO_DURATION(
-            absolute_entry_delay
-        )
-
-        if isinstance(event_to_convert, core_events.SequentialEvent):
-            conversion_method = self._convert_sequential_event
-        elif isinstance(
-            event_to_convert,
-            core_events.SimultaneousEvent,
-        ):
-            conversion_method = self._convert_simultaneous_event
-        elif isinstance(
-            event_to_convert,
-            core_events.SimpleEvent,
-        ):
-            conversion_method = self._convert_simple_event
-        else:
-            raise TypeError(
-                f"Can't convert object '{event_to_convert}' of type "
-                f"'{type(event_to_convert)}' with EventConverter."
-                " Supported types only include all inherited classes "
-                f"from '{core_events.abc.Event}'."
-            )
-
+        e = event_to_convert
+        t = core_parameters.abc.Duration.from_any(absolute_time)
+        match e:
+            case core_events.Consecution():
+                f = self._convert_consecution
+            case core_events.Concurrence():
+                f = self._convert_concurrence
+            case core_events.Chronon():
+                f = self._convert_chronon
+            case _:
+                raise TypeError(
+                    f"Can't convert object '{event_to_convert}' of type "
+                    f"'{type(event_to_convert)}' with EventConverter."
+                    " Supported types only include all inherited classes "
+                    f"from '{core_events.abc.Event}'."
+                )
         try:
-            return conversion_method(event_to_convert, absolute_entry_delay, depth)
+            return f(event_to_convert, t, depth)
         except TypeError:
-            return conversion_method(event_to_convert, absolute_entry_delay)
+            return f(event_to_convert, t)
 
 
 class SymmetricalEventConverter(EventConverter):
@@ -178,57 +176,42 @@ class SymmetricalEventConverter(EventConverter):
     """
 
     @abc.abstractmethod
-    def _convert_simple_event(
+    def _convert_chronon(
         self,
-        event_to_convert: core_events.SimpleEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        event_to_convert: core_events.Chronon,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.SimpleEvent:
-        """Convert instance of :class:`mutwo.core_events.SimpleEvent`."""
+    ) -> core_events.Chronon:
+        """Convert instance of :class:`mutwo.core_events.Chronon`."""
 
-    def _convert_simultaneous_event(
+    def _convert_concurrence(
         self,
-        simultaneous_event: core_events.SimultaneousEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        concurrence: core_events.Concurrence,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.SimultaneousEvent:
-        """Convert instance of :class:`mutwo.core_events.SimultaneousEvent`."""
+    ) -> core_events.Concurrence:
+        """Convert instance of :class:`mutwo.core_events.Concurrence`."""
+        sim: core_events.Concurrence = concurrence.empty_copy()
+        for e in concurrence:
+            sim.append(self._convert_event(e, absolute_time, depth + 1))
+        return sim
 
-        converted_simultaneous_event: core_events.SimultaneousEvent = (
-            simultaneous_event.empty_copy()
-        )
-
-        for event in simultaneous_event:
-            converted_simultaneous_event.append(
-                self._convert_event(event, absolute_entry_delay, depth + 1)
-            )
-        return converted_simultaneous_event
-
-    def _convert_sequential_event(
+    def _convert_consecution(
         self,
-        sequential_event: core_events.SequentialEvent,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        consecution: core_events.Consecution,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.SequentialEvent:
-        """Convert instance of :class:`mutwo.core_events.SequentialEvent`."""
-
-        converted_sequential_event: core_events.SequentialEvent = (
-            sequential_event.empty_copy()
-        )
-        for event_start, event in zip(
-            sequential_event.absolute_time_tuple, sequential_event
-        ):
-            converted_sequential_event.append(
-                self._convert_event(
-                    event, event_start + absolute_entry_delay, depth + 1
-                )
-            )
-        return converted_sequential_event
+    ) -> core_events.Consecution:
+        """Convert instance of :class:`mutwo.core_events.Consecution`."""
+        cons: core_events.Consecution = consecution.empty_copy()
+        for t, e in zip(consecution.absolute_time_tuple, consecution):
+            cons.append(self._convert_event(e, t + absolute_time, depth + 1))
+        return cons
 
     def _convert_event(
         self,
         event_to_convert: core_events.abc.Event,
-        absolute_entry_delay: core_parameters.abc.Duration | float | int,
+        absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
     ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
-        return super()._convert_event(event_to_convert, absolute_entry_delay, depth)
+        return super()._convert_event(event_to_convert, absolute_time, depth)

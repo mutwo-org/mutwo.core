@@ -1,8 +1,21 @@
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """Module for mutwo specific exceptions."""
-
-import typing
-
-from mutwo import core_constants
 
 __all__ = (
     "CannotSetDurationOfEmptyComplexEvent",
@@ -18,14 +31,13 @@ __all__ = (
     "InvalidStartAndEndValueError",
     "InvalidCutOutStartAndEndValuesError",
     "SplitUnavailableChildError",
-    "NoSolutionFoundError",
     "EmptyEnvelopeError",
-    "UndefinedReferenceWarning",
     "ConcatenationError",
     "NoTagError",
     "SplitError",
     "InvalidAbsoluteTime",
     "NoSplitTimeError",
+    "CannotParseError",
 )
 
 
@@ -33,10 +45,10 @@ class CannotSetDurationOfEmptyComplexEvent(Exception):
     def __init__(self):
         super().__init__(
             "You tried to set the duration of a complex "
-            "event (e.g. 'SequentialEvent' or 'SimultaneousEvent') "
+            "event (e.g. 'Consecution' or 'Concurrence') "
             "which doesn't have any child events. This"
             " is impossible, because the duration of a 'ComplexEvent'"
-            " is simply the sum of its sequentially ordered child events."
+            " is simply the sum of its consuentially ordered child events."
         )
 
 
@@ -84,10 +96,10 @@ class ImpossibleToPutInError(TypeError):
         m = method_name
         super().__init__(
             f"Can't {m} '{event_to_put_in}' in '{event_to_be_put_into}'. "
-            "Does the SimultaneousEvent contain SimpleEvents or events that inherit"
-            f" from SimpleEvent? For being able to {m} in, the"
-            " SimultaneousEvent needs to only contain SequentialEvents or"
-            " SimultaneousEvents."
+            "Does the Concurrence contain Chronons or events that inherit"
+            f" from Chronon? For being able to {m} in, the"
+            " Concurrence needs to only contain Consecutions or"
+            " Concurrences."
         )
 
 
@@ -106,8 +118,8 @@ class ImpossibleToExtendUntilError(TypeError):
         super().__init__(
             f"Can't extend '{event_to_extend_until}' of type"
             f"'{type(event_to_extend_until)}' which resides inside a "
-            "SimultaneousEvent. Set 'prolong_simple_event' to 'True' in"
-            "case you want simple events to be prolonged."
+            "Concurrence. Set 'prolong_chronon' to 'True' in"
+            "case you want chronons to be prolonged."
         )
 
 
@@ -116,8 +128,8 @@ class IneffectiveExtendUntilError(ValueError):
         super().__init__(
             f"Can't extend empty event '{event_to_extend_until}' of type"
             f"'{type(event_to_extend_until)}'. If you want to extend "
-            "a SimultaneousEvent you should first append an empty "
-            "SequentialEvent to your SimultaneousEvent."
+            "a Concurrence you should first append an empty "
+            "Consecution to your Concurrence."
         )
 
 
@@ -131,44 +143,30 @@ class InvalidStartAndEndValueError(Exception):
 
 
 class InvalidCutOutStartAndEndValuesError(Exception):
-    def __init__(self, start, end, simple_event, duration):
+    def __init__(self, start, end, chronon, duration):
         super().__init__(
-            f"Can't cut out SimpleEvent '{simple_event}' with "
+            f"Can't cut out Chronon '{chronon}' with "
             f"duration '{duration}' from"
             f" (start = {start} to end = {end})."
         )
 
 
 class SplitError(Exception):
-    def __init__(self, absolute_time: core_constants.DurationType):
+    def __init__(self, absolute_time: "core_parameters.abc.Duration"):
         super().__init__(f"Can't split event at absolute time '{absolute_time}'.")
 
 
 class SplitUnavailableChildError(Exception):
-    def __init__(self, absolute_time: core_constants.DurationType):
+    def __init__(self, absolute_time: "core_parameters.abc.Duration"):
         super().__init__(
             f"Can't split child at absolute time '{absolute_time}'. There is no child"
             " event available at the requested time."
         )
 
 
-class NoSolutionFoundError(Exception):
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
 class EmptyEnvelopeError(Exception):
     def __init__(self, envelope, method):
         super().__init__(f"Can't call '{method}' on empty envelope '{envelope}'!")
-
-
-class UndefinedReferenceWarning(RuntimeWarning):
-    def __init__(self, tempo_point: typing.Any):
-        super().__init__(
-            f"Tempo point '{tempo_point}' of type '{type(tempo_point)}' "
-            "doesn't know attribute 'reference'."
-            " Therefore reference has been set to 1."
-        )
 
 
 class ConcatenationError(TypeError):
@@ -177,9 +175,9 @@ class ConcatenationError(TypeError):
             f"Can't concatenate event '{event}' to event '{ancestor}' "
             f"of type '{type(ancestor)}'. It is only possible to"
             " concatenate a new event to events which are instances of "
-            "SequentialEvent or SimultaneousEvent. To fix this bug you can"
-            f" put your event '{ancestor}' inside a SequentialEvent or"
-            " a SimultaneousEvent."
+            "Consecution or Concurrence. To fix this bug you can"
+            f" put your event '{ancestor}' inside a Consecution or"
+            " a Concurrence."
         )
 
 
@@ -188,9 +186,9 @@ class NoTagError(Exception):
         super().__init__(
             "It's not possible to concatenate an event "
             "with the 'concatenate_by_tag' method if not "
-            "all child events have tags. Here 'mutwo' detected the "
+            "all child events have tags != None. Here 'mutwo' detected the "
             f"child event '{str(event_without_tag)[:50]}...' "
-            "which doesn't have any 'tag' attribute."
+            "which has a tag attribute that is set to 'None'."
         )
 
 
@@ -206,3 +204,8 @@ class InvalidAbsoluteTime(Exception):
 class NoSplitTimeError(Exception):
     def __init__(self):
         super().__init__("Nothing to split (no split time given)!")
+
+
+class CannotParseError(NotImplementedError):
+    def __init__(self, o, parse_type):
+        super().__init__(f"Can't parse '{o}' of type '{type(o)}' to '{parse_type}'!")

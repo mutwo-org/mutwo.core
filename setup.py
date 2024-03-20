@@ -1,5 +1,21 @@
-import setuptools  # type: ignore
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import setuptools  # type: ignore
 
 version = {}
 with open("mutwo/core_version/__init__.py") as fp:
@@ -19,8 +35,8 @@ setuptools.setup(
     description="core library for event based framework mutwo",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Tim Pauli, Levin Eric Zimmermann",
-    author_email="tim.pauli@folkwang-uni.de, levin.eric.zimmermann@posteo.eu",
+    author="Levin Eric Zimmermann, Tim Pauli",
+    author_email="levin.eric.zimmermann@posteo.eu, tim.pauli@folkwang-uni.de",
     url="https://github.com/mutwo-org/mutwo.core",
     project_urls={"Documentation": "https://mutwo-org.github.io"},
     packages=[
@@ -30,13 +46,11 @@ setuptools.setup(
     ],
     setup_requires=[],
     install_requires=[
-        "numpy>=1.18, <2.00",
         "python-ranges>=1.2.0, <2.0.0",
-        "quicktions>=1.10, <2.0",
     ],
     extras_require=extras_require,
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Education",

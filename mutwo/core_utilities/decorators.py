@@ -1,67 +1,34 @@
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2023
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """Generic decorators that are used within :mod:`mutwo`."""
 
-import copy
 import functools
 import os
 import types
 import typing
 
-__all__ = ("add_copy_option", "add_tag_to_class", "compute_lazy")
+__all__ = ("compute_lazy",)
 
 from mutwo import core_utilities
 
 
 F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
-
-
-def add_copy_option(function: F) -> F:
-    """This decorator adds a copy option for object mutating methods.
-
-    :arg function: The method which shall be adjusted.
-
-    The 'add_copy_option' decorator adds the 'mutate' keyword argument
-    to the decorated method. If 'mutate' is set to ``False``, the decorator deep
-    copies the respective object, then applies the called method on the new
-    copied object and finally returns the copied object. This can be useful
-    for methods that by default mutate its object. When adding this method,
-    it is up to the user whether the original object shall be changed
-    and returned (for mutate=True) or if a copied version of the object with
-    the respective mutation shall be returned (for mutate=False).
-    """
-
-    @functools.wraps(function)
-    def wrapper(self, *args, mutate: bool = True, **kwargs) -> typing.Any:
-        if mutate is True:
-            function(self, *args, **kwargs)
-            return self
-        else:
-            deep_copied_object = copy.deepcopy(self)
-            function(deep_copied_object, *args, **kwargs)
-            return deep_copied_object
-
-    wrapped_function = typing.cast(F, wrapper)
-    wrapped_function.__annotations__.update({"mutate": bool})
-
-    return wrapped_function
-
-
 G = typing.TypeVar("G")
-
-
-def add_tag_to_class(class_to_decorate: G) -> G:
-    """This decorator adds a 'tag' argument to the init method of a class.
-
-    :arg class_to_decorate: The class which shall be decorated.
-    """
-
-    init = class_to_decorate.__init__
-
-    def init_with_tag(self, *args, tag: typing.Optional[str] = None, **kwargs):
-        init(self, *args, **kwargs)
-        self.tag = tag
-
-    class_to_decorate.__init__ = init_with_tag
-    return class_to_decorate
 
 
 def compute_lazy(

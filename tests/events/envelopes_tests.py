@@ -12,10 +12,10 @@ from .basic_tests import ComplexEventTest
 
 
 class EnvelopeTest(unittest.TestCase, ComplexEventTest):
-    class EnvelopeEvent(core_events.SimpleEvent):
+    class EnvelopeEvent(core_events.Chronon):
         def __init__(
             self,
-            duration: core_constants.DurationType,
+            duration: core_parameters.abc.Duration,
             value: core_constants.Real,
             curve_shape: core_constants.Real = 0,
         ):
@@ -41,15 +41,17 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
                 self.EnvelopeEvent(1, 0, -1),
                 self.EnvelopeEvent(2, 1),
                 self.EnvelopeEvent(1, 0.5),
-            ],
-            value_to_parameter=lambda value: value / 2,
-            parameter_to_value=lambda parameter: parameter * 2,
+            ]
         )
+
+        e = self.double_value_envelope
+        e.value_to_parameter = lambda value: value / 2
+        e.parameter_to_value = lambda parameter: parameter * 2
 
     def get_event_class(self) -> typing.Type:
         return core_events.Envelope
 
-    def get_event_instance(self) -> core_events.SimpleEvent:
+    def get_event_instance(self) -> core_events.Chronon:
         return self.get_event_class()([[0, 1], [4, 10]])
 
     def test_split_at_end(self):
@@ -191,13 +193,6 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             ((d(0.25), 0.25, 0), (d(0.75), 0.75, 0)),
         )
 
-    def test_from_points_simple(self):
-        envelope_from_init = core_events.Envelope(
-            [self.EnvelopeEvent(1, 0, 10), self.EnvelopeEvent(0, 1)]
-        )
-        envelope_from_points = core_events.Envelope.from_points((0, 0, 10), (1, 1))
-        self.assertEqual(envelope_from_points, envelope_from_init)
-
     def test_is_static(self):
         self.assertEqual(self.envelope.is_static, False)
         self.assertEqual(core_events.Envelope([]).is_static, True)
@@ -241,7 +236,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
     def _test_sample_at(
         self, sample_position: float, envelope_to_sample: core_events.Envelope
     ):
-        sampled_envelope = envelope_to_sample.sample_at(sample_position, mutate=False)
+        sampled_envelope = envelope_to_sample.copy().sample_at(sample_position)
 
         before_sample_position = sample_position * 0.9
         after_sample_position = sample_position * 1.1
@@ -306,7 +301,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
 
     def test_cut_out(self):
         # Envelope needs extra test for customized cut out method.
-        cut_out_envelope = self.envelope.cut_out(0.5, 1.5, mutate=False)
+        cut_out_envelope = self.envelope.copy().cut_out(0.5, 1.5)
         self.assertEqual(cut_out_envelope.value_at(0.25), self.envelope.value_at(0.75))
         self.assertEqual(cut_out_envelope.value_at(0.5), self.envelope.value_at(1))
         self.assertEqual(cut_out_envelope.value_at(0.75), self.envelope.value_at(1.25))
@@ -336,7 +331,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             self.assertEqual(split_envelope2.duration, 3)
 
     def test_cut_off(self):
-        cut_off_envelope = self.envelope.cut_off(0.5, 1.5, mutate=False)
+        cut_off_envelope = self.envelope.copy().cut_off(0.5, 1.5)
         self.assertEqual(self.envelope.value_at(0.4), cut_off_envelope.value_at(0.4))
         # There is a very small floating point error
         self.assertAlmostEqual(
@@ -355,59 +350,6 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
         self.assertRaises(
             core_utilities.EmptyEnvelopeError, core_events.Envelope([]).extend_until, 1
         )
-
-
-class RelativeEnvelopeTest(unittest.TestCase):
-    def setUp(cls):
-        cls.envelope = core_events.RelativeEnvelope(
-            [
-                [0, 0],
-                [5, 5],
-                [10, 10],
-            ],
-            base_parameter_and_relative_parameter_to_absolute_parameter=lambda base_parameter, relative_parameter: base_parameter
-            + relative_parameter,
-        )
-
-    def test_resolve(self):
-        resolved_envelope = self.envelope.resolve(duration=1, base_parameter=100)
-        self.assertEqual(resolved_envelope.duration, core_parameters.DirectDuration(1))
-        self.assertEqual(resolved_envelope.value_tuple, (100, 105, 110))
-
-
-class TempoEnvelopeTest(unittest.TestCase):
-    def setUp(self):
-        self.tempo_envelope_with_float = core_events.TempoEnvelope(
-            [[0, 60], [1, 30], [2, 60]]
-        )
-
-        self.tempo_envelope_with_tempo_points = core_events.TempoEnvelope(
-            [
-                [0, core_parameters.DirectTempoPoint(60)],
-                [1, core_parameters.DirectTempoPoint(30)],
-                [2, core_parameters.DirectTempoPoint(30, reference=2)],
-            ]
-        )
-
-        self.mixed_tempo_envelope = core_events.TempoEnvelope(
-            [[0, 60], [1, core_parameters.DirectTempoPoint(30)], [2, 60]]
-        )
-
-    def _test_value_at(self, tempo_envelope: core_events.TempoEnvelope):
-        self.assertEqual(tempo_envelope.value_at(0), 60)
-        self.assertEqual(tempo_envelope.value_at(0.5), 45)
-        self.assertEqual(tempo_envelope.value_at(1), 30)
-        self.assertEqual(tempo_envelope.value_at(1.5), 45)
-        self.assertEqual(tempo_envelope.value_at(2), 60)
-
-    def test_value_at_with_float(self):
-        self._test_value_at(self.tempo_envelope_with_float)
-
-    def test_value_at_with_tempo_points(self):
-        self._test_value_at(self.tempo_envelope_with_tempo_points)
-
-    def test_value_at_with_mixed(self):
-        self._test_value_at(self.mixed_tempo_envelope)
 
 
 if __name__ == "__main__":

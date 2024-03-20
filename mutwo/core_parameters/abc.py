@@ -1,3 +1,20 @@
+# This file is part of mutwo, ecosystem for time-based arts.
+#
+# Copyright (C) 2020-2024
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """Abstract base classes for different parameters.
 
 This module defines the public API of parameters.
@@ -11,6 +28,7 @@ newly created parameter class.
 from __future__ import annotations
 
 import abc
+import ast
 import functools
 import operator
 import typing
@@ -19,62 +37,50 @@ try:
     import quicktions as fractions
 except ImportError:
     import fractions
+
     _fractions = None
 else:
     import fractions as _fractions
 
-import ranges
-
 from mutwo import core_constants
-from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
 __all__ = (
+    "Parameter",
     "SingleValueParameter",
     "SingleNumberParameter",
-    "ParameterWithEnvelope",
     "Duration",
-    "TempoPoint",
+    "Tempo",
 )
 
-
-class ParameterWithEnvelope(abc.ABC):
-    """Abstract base class for all parameters with an envelope."""
-
-    def __init__(self, envelope: core_events.RelativeEnvelope):
-        self.envelope = envelope
-
-    @property
-    def envelope(self) -> core_events.RelativeEnvelope:
-        return self._envelope
-
-    @envelope.setter
-    def envelope(self, new_envelope: typing.Any):
-        if not isinstance(new_envelope, core_events.RelativeEnvelope):
-            raise TypeError(
-                f"Found illegal object '{new_envelope}' of not "
-                f"supported type '{type(new_envelope)}'. "
-                f"Only instances of '{core_events.RelativeEnvelope}'"
-                " are allowed!"
-            )
-        self._envelope = new_envelope
-
-    def resolve_envelope(
-        self,
-        duration: core_constants.DurationType,
-        # XXX: We can't directly set the default attribute value,
-        # but we have to do it with `None` and resolve it later,
-        # because otherwise we will get a circular import
-        # (core_parameters need to be imported before core_events,
-        #  because we need core_parameters.Duration in core_events).
-        resolve_envelope_class: typing.Optional[type[core_events.Envelope]] = None,
-    ) -> core_events.Envelope:
-        resolve_envelope_class = resolve_envelope_class or core_events.Envelope
-        return self.envelope.resolve(duration, self, resolve_envelope_class)
+T = typing.TypeVar("T", bound="Parameter")
 
 
-class SingleValueParameter(abc.ABC):
+class Parameter(core_utilities.MutwoObject, abc.ABC):
+    """A Parameter is the base class for all mutwo parameters
+
+    It can be useful as a type hint for any code where a parameter
+    object is expected. This isn't necessarily at many places,
+    as mostly any object can be assigned as a parameter to an event.
+    """
+
+    @classmethod
+    def from_any(cls: typing.Type[T], object) -> T:
+        """Parse any object to Parameter.
+
+        :param object: Object that is parsed to the parameter.
+        :raises: core_utilities.CannotParseError in case the object
+          can't be parsed to the parameter type.
+
+        This method is useful for allowing syntactic sugar.
+        """
+        if not isinstance(object, cls):
+            raise core_utilities.CannotParseError(object, cls)
+        return object
+
+
+class SingleValueParameter(Parameter):
     """Abstract base class for all parameters which are defined by one value.
 
     Classes which inherit from this base class have
@@ -143,13 +149,13 @@ class SingleValueParameter(abc.ABC):
             if hasattr(cls, "value_name"):
                 raise core_utilities.AlreadyDefinedValueNameError(cls)
 
-            setattr(cls, "value_name", property(lambda _: value_name))
+            setattr(cls, "value_name", classmethod(property(lambda _: value_name)))
 
-    def __str__(self) -> str:
-        return (
-            f"{type(self).__name__}"
-            f"({self.value_name} = {getattr(self, self.value_name)})"  # type: ignore
-        )
+    def __repr_content__(self) -> str:
+        return f"{getattr(self, self.value_name)}"  # type: ignore
+
+    def __str_content__(self) -> str:
+        return f"{getattr(self, self.value_name)}"  # type: ignore
 
     def __eq__(self, other: typing.Any) -> bool:
         try:
@@ -231,8 +237,7 @@ class SingleNumberParameter(SingleValueParameter):
                 )
             return False
 
-        value0, value1 = self._prepare_value_pair_for_comparison(value_pair)
-        return compare(value0, value1)
+        return compare(*self._prepare_value_pair_for_comparison(value_pair))
 
     def __float__(self) -> float:
         return float(getattr(self, self.value_name))  # type: ignore
@@ -248,16 +253,14 @@ class SingleNumberParameter(SingleValueParameter):
 
 
 class Duration(
-    SingleNumberParameter, value_name="duration", value_return_type="fractions.Fraction"
+    SingleNumberParameter, value_name="beat_count", value_return_type="float"
 ):
     """Abstract base class for any duration.
 
     If the user wants to define a Duration class, the abstract
-    property :attr:`duration` has to be overridden.
+    property :attr:`beat_count` has to be overridden.
 
-    The attribute :attr:`duration` is stored in unit `beats`.
-
-    The ``duration`` of :mod:`mutwo` events are therefore not
+    The ``duration`` of :mod:`mutwo` events are not
     related to a clear physical unit as for instance seconds.
     The reason for this decision is to simplify musical usage.
     """
@@ -266,120 +269,118 @@ class Duration(
     if _fractions:
         direct_comparison_type_tuple += (_fractions.Fraction,)
 
+    Type: typing.TypeAlias = typing.Union[core_constants.Real, str, "Duration"]
+    """Duration.Type hosts all types that are supported by the duration parser
+    :func:`Duration.from_any`."""
+
     def _math_operation(
-        self, other: DurationOrReal, operation: typing.Callable[[float, float], float]
+        self,
+        other: Duration | core_constants.Real,
+        operation: typing.Callable[[float, float], float],
     ) -> Duration:
-        self.duration = fractions.Fraction(
-            operation(self.duration, getattr(other, "duration", other))
+        self.beat_count = float(
+            operation(self.beat_count, getattr(other, "beat_count", other))
         )
         return self
 
-    @core_utilities.add_copy_option
-    def add(self, other: DurationOrReal) -> Duration:
+    def add(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.add)
 
-    @core_utilities.add_copy_option
-    def subtract(self, other: DurationOrReal) -> Duration:
+    def subtract(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.sub)
 
-    @core_utilities.add_copy_option
-    def multiply(self, other: DurationOrReal) -> Duration:
+    def multiply(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.mul)
 
-    @core_utilities.add_copy_option
-    def divide(self, other: DurationOrReal) -> Duration:
+    def divide(self, other: Duration | core_constants.Real) -> Duration:
         return self._math_operation(other, operator.truediv)
 
-    def __add__(self, other: DurationOrReal) -> Duration:
-        return self.add(other, mutate=False)
+    def __add__(self, other: Duration | core_constants.Real) -> Duration:
+        return self.copy().add(other)
 
-    def __sub__(self, other: DurationOrReal) -> Duration:
-        return self.subtract(other, mutate=False)
+    def __sub__(self, other: Duration | core_constants.Real) -> Duration:
+        return self.copy().subtract(other)
 
-    def __mul__(self, other: DurationOrReal) -> Duration:
-        return self.multiply(other, mutate=False)
+    def __mul__(self, other: Duration | core_constants.Real) -> Duration:
+        return self.copy().multiply(other)
 
-    def __truediv__(self, other: DurationOrReal) -> Duration:
-        return self.divide(other, mutate=False)
+    def __truediv__(self, other: Duration | core_constants.Real) -> Duration:
+        return self.copy().divide(other)
 
     def __float__(self) -> float:
-        return core_utilities.round_floats(
-            float(self.duration),
-            core_parameters.configurations.ROUND_DURATION_TO_N_DIGITS,
-        )
+        return self.beat_count
 
     @property
-    def duration_in_floats(self) -> float:
-        return float(self)
-
-    @property
-    def duration(self) -> fractions.Fraction:
-        ...
-
-    @duration.setter
     @abc.abstractmethod
-    def duration(self, duration: fractions.Fraction):
+    def beat_count(self) -> float:
         ...
 
+    @beat_count.setter
+    @abc.abstractmethod
+    def beat_count(self, beat_count: core_constants.Real):
+        ...
 
-DurationOrReal = Duration | core_constants.Real
+    @classmethod
+    def from_any(cls: typing.Type[T], object: Duration.Type) -> T:
+        builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
+        match object:
+            case Duration():
+                return object
+            case float() | int():
+                return core_parameters.DirectDuration(object)
+            case fractions.Fraction() | builtin_fraction():
+                return core_parameters.RatioDuration(object)
+            case str():
+                f = core_utilities.str_to_number_parser(object)
+                try:
+                    v = f(object)
+                except ValueError:
+                    pass
+                else:
+                    return Duration.from_any(v)
+            case _:
+                pass
+
+        raise core_utilities.CannotParseError(object, cls)
 
 
-class TempoPoint(abc.ABC):
+class Tempo(SingleNumberParameter, value_name="bpm", value_return_type="float"):
     """Represent the active tempo at a specific moment in time.
 
-    If the user wants to define a `TempoPoint` class, the abstract
-    properties :attr:`tempo_or_tempo_range_in_beats_per_minute`
-    and `reference` have to be overridden.
+    If the user wants to define a `Tempo` class, the abstract
+    property :attr:`bpm` needs to be overridden. ``BPM`` is an abbreviation
+    for 'beats per minute' and the unit of the parameter tempo, see more
+    information at this `wikipedia article <https://en.wikipedia.org/wiki/Tempo#Measurement>`_.
     """
 
-    def __repr__(self) -> str:
-        return "{}(BPM = {}, reference = {})".format(
-            type(self).__name__, self.tempo_in_beats_per_minute, self.reference
-        )
-
-    def __eq__(self, other: object) -> bool:
-        attribute_to_compare_tuple = (
-            "tempo_in_beats_per_minute",
-            "reference",
-        )
-        return core_utilities.test_if_objects_are_equal_by_parameter_tuple(
-            self, other, attribute_to_compare_tuple
-        )
+    Type: typing.TypeAlias = typing.Union["Tempo", core_constants.Real]
+    """Tempo.Type hosts all types that are supported by the tempo
+    parser :func:`Tempo.from_any`."""
 
     @property
-    @abc.abstractmethod
-    def tempo_or_tempo_range_in_beats_per_minute(
-        self,
-    ) -> core_parameters.constants.TempoOrTempoRangeInBeatsPerMinute:
-        ...
+    def seconds(self) -> float:
+        """How many seconds one beat lasts with current BPM."""
+        return float(60 / self.bpm)
 
-    @property
-    @abc.abstractmethod
-    def reference(self) -> core_constants.Real:
-        ...
-
-    @property
-    def tempo_in_beats_per_minute(
-        self,
-    ) -> core_parameters.constants.TempoInBeatsPerMinute:
-        """Get tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
-
-        If :attr:`tempo_or_tempo_range_in_beats_per_minute` is a range
-        mutwo will return the minimal tempo.
-        """
-
-        if isinstance(self.tempo_or_tempo_range_in_beats_per_minute, ranges.Range):
-            return self.tempo_or_tempo_range_in_beats_per_minute.start
-        else:
-            return self.tempo_or_tempo_range_in_beats_per_minute
-
-    @property
-    def absolute_tempo_in_beats_per_minute(self) -> float:
-        """Get absolute tempo in `beats per minute <https://en.wikipedia.org/wiki/Tempo#Measurement>`_
-
-        The absolute tempo takes the :attr:`reference` of the :class:`TempoPoint`
-        into account.
-        """
-
-        return self.tempo_in_beats_per_minute * self.reference
+    @classmethod
+    def from_any(cls: typing.Type[T], object: Tempo.Type) -> T:
+        builtin_fraction = _fractions.Fraction if _fractions else fractions.Fraction
+        match object:
+            case Tempo():
+                return object
+            case float() | int() | fractions.Fraction() | builtin_fraction():
+                return core_parameters.DirectTempo(object)
+            case list() | tuple():
+                return core_parameters.ContinuousTempo(object)
+            case str():
+                f, v = core_utilities.str_to_number_parser(object), None
+                try:
+                    v = f(object)
+                except ValueError:
+                    try:
+                        v = ast.literal_eval(object)
+                    except Exception:
+                        raise core_utilities.CannotParseError(object, cls)
+                return Tempo.from_any(v)
+            case _:
+                raise core_utilities.CannotParseError(object, cls)
