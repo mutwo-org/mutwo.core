@@ -32,7 +32,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = ("Envelope", "RelativeEnvelope")
+__all__ = ("Envelope",)
 
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
@@ -745,55 +745,3 @@ class Envelope(core_events.Consecution, typing.Generic[T]):
                 add(s, v)
 
         return segment_tuple
-
-
-class RelativeEnvelope(Envelope, typing.Generic[T]):
-    """Envelope with relative durations and values / parameters.
-
-    :param *args: Argument of :class:`Envelope`.
-    :param base_parameter_and_relative_parameter_to_absolute_parameter: A function",
-        which runs when the :func:`resolve` is called. It expects the base parameter",
-        and the relative parameter (which is extracted from the envelope events)",
-        and should return an absolute parameter.",
-    :param **kwargs: Keyword arguments of :class:`Envelope`.
-
-    The :class:`RelativeEnvelope` adds the :func:`resolve` method to the base
-    class :class:`Envelope`.",
-    """
-
-    def __init__(
-        self,
-        *args,
-        base_parameter_and_relative_parameter_to_absolute_parameter: typing.Callable[
-            [typing.Any, typing.Any],
-            typing.Any,
-        ],
-        **kwargs,
-    ):
-        self.base_parameter_and_relative_parameter_to_absolute_parameter = (
-            base_parameter_and_relative_parameter_to_absolute_parameter
-        )
-        super().__init__(*args, **kwargs)
-
-    def resolve(
-        self,
-        duration: "core_parameters.abc.Duration.Type",
-        base_parameter: typing.Any,
-        resolve_envelope_class: type[Envelope] = Envelope,
-    ) -> Envelope:
-        dur = core_parameters.abc.Duration.from_any(duration)
-        plist = []
-        try:
-            fact = dur / self.duration
-        except ZeroDivisionError:
-            fact = core_parameters.DirectDuration(0)
-        for abst, e in zip(self.absolute_time_tuple, self):
-            rel_param = self.event_to_parameter(e)
-            new_param = (
-                self.base_parameter_and_relative_parameter_to_absolute_parameter(
-                    base_parameter, rel_param
-                )
-            )
-            p = (abst * fact, new_param, self.event_to_curve_shape(e))
-            plist.append(p)
-        return resolve_envelope_class(plist)
