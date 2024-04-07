@@ -24,7 +24,6 @@ are nested or not:
 from __future__ import annotations
 
 import bisect
-import copy
 import functools
 import operator
 import types
