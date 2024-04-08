@@ -213,7 +213,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     @tempo.setter
     def tempo(self, tempo: typing.Optional[core_parameters.abc.Tempo]):
-        self._tempo = tempo
+        self._tempo = core_parameters.abc.Tempo.from_any(tempo) if tempo else None
 
     # ###################################################################### #
     #                           public methods                               #
