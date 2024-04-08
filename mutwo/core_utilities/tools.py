@@ -26,6 +26,7 @@ import math
 import operator
 import types
 import typing
+import warnings
 
 try:
     import quicktions as fractions
@@ -58,6 +59,7 @@ __all__ = (
     "get_all",
     "get_cls_logger",
     "str_to_number_parser",
+    "deprecated",
 )
 
 
@@ -648,3 +650,24 @@ def str_to_number_parser(string: str) -> typing.Callable:
         return fractions.Fraction
     else:
         return int
+
+
+def deprecated(info: typing.Optional[str] = None) -> typing.Callable:
+    """Mark a callable as deprecated.
+
+    :param info: Deprecation info printed to the user.
+    :type info: str
+    """
+
+    def _(f: typing.Callable):
+        def wrapper(*args, **kwargs):
+            o = f(*args, **kwargs)
+            try:
+                o._logger.warning(f"DeprecationWarning: {info or 'Deprecation'}")
+            except AttributeError:
+                warnings.warn(Warning(info or "Deprecation"))
+            return o
+
+        return wrapper
+
+    return _

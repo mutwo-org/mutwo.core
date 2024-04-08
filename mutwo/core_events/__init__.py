@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,8 +45,23 @@ from mutwo import core_utilities
 
 __all__ = core_utilities.get_all(basic, envelopes)
 
+# BBB: Before mutwo.core < 2.0.0, basic events had different
+# names. As this was the most stable, never touched part of mutwo during the
+# first four years of development, we keep these backwards compatibility
+# pointers for easier migration of code that used mutwo.core < 2.0.0.
+TaggedSequentialEvent = SequentialEvent = core_utilities.deprecated(
+    "'SequentialEvent' is deprecated, use 'Consecution'."
+)(Consecution)
+TaggedSimultaneousEvent = SimultaneousEvent = core_utilities.deprecated(
+    "'SimultaneousEvent' is deprecated, use 'Concurrence'."
+)(Concurrence)
+TaggedSimpleEvent = SimpleEvent = core_utilities.deprecated(
+    "'SimpleEvent' is deprecated, use 'Chronon'."
+)(Chronon)
+
 # Force flat structure
 del basic, core_utilities, envelopes
 
 from . import patchparameters
+
 del patchparameters
