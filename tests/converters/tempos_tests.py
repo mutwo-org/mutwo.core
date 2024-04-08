@@ -11,6 +11,14 @@ chn = core_events.Chronon
 
 class TempoConverterTest(unittest.TestCase):
     def test_convert_chronon(self):
+        tempo = core_parameters.DirectTempo(30)
+        chronon = chn(4)
+        converter = core_converters.TempoConverter(tempo)
+        converted_chronon = converter.convert(chronon)
+        expected_duration = 8
+        self.assertEqual(converted_chronon.duration, expected_duration)
+
+    def test_convert_chronon_with_flex_tempo(self):
         tempo = core_parameters.FlexTempo([[0, 30], [4, 60]])
         chronon = chn(4)
         converter = core_converters.TempoConverter(tempo)
@@ -19,6 +27,14 @@ class TempoConverterTest(unittest.TestCase):
         self.assertEqual(converted_chronon.duration, expected_duration)
 
     def test_convert_consecution(self):
+        consecution = cns([chn(2), chn(3)])
+        converter = core_converters.TempoConverter(core_parameters.DirectTempo(30))
+        converted_consecution = converter.convert(consecution)
+        self.assertEqual(converted_consecution.duration, 10)
+        self.assertEqual(converted_consecution[0].duration, 4)
+        self.assertEqual(converted_consecution[1].duration, 6)
+
+    def test_convert_consecution_with_flex_tempo(self):
         consecution = cns([chn(2) for _ in range(5)])
         tempo_list = [
             # Event 0
@@ -50,6 +66,14 @@ class TempoConverterTest(unittest.TestCase):
         )
 
     def test_convert_concurrence(self):
+        concurrence = cnc([chn(2), chn(3)])
+        converter = core_converters.TempoConverter(core_parameters.DirectTempo(30))
+        converted_concurrence = converter.convert(concurrence)
+        self.assertEqual(converted_concurrence.duration, 6)
+        self.assertEqual(converted_concurrence[0].duration, 4)
+        self.assertEqual(converted_concurrence[1].duration, 6)
+
+    def test_convert_concurrence_with_flex_tempo(self):
         tempo = core_parameters.FlexTempo([[0, 30], [4, 60]])
         chronon0 = chn(4)
         chronon1 = chn(8)
