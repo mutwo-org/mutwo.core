@@ -400,6 +400,20 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
     def test_concatenate_tempo(self):
+        cns0 = self.get_event_class()([core_events.Chronon(1)], tempo=50)
+        cns1 = self.get_event_class()([core_events.Chronon(2)], tempo=50)
+        cns2 = self.get_event_class()([core_events.Chronon(3)], tempo=60)
+
+        # If tempo is the same, it should just keep simple
+        self.assertEqual((cns0 + cns1).tempo, core_parameters.DirectTempo(50))
+
+        # Otherwise it should be converted to a FlexTempo
+        self.assertEqual(
+            (cns0 + cns2).tempo,
+            core_parameters.FlexTempo([[0, 50], [1, 50], [1, 60], [4, 60]]),
+        )
+
+    def test_concatenate_flex_tempo(self):
         cns0 = self.get_event_class()(
             [core_events.Chronon(1)],
             tempo=core_parameters.FlexTempo([[0, 20], [1, 20], [3, 100]]),
@@ -411,6 +425,17 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         cns0._concatenate_tempo(cns1)
         self.assertEqual(cns0.tempo.value_tuple, (20, 20, 50, 10))
         self.assertEqual(cns0.tempo.absolute_time_in_floats_tuple, (0, 1, 1, 2))
+
+    def test_concatenate_mixed_tempo(self):
+        """Ensure concatenation with FlexTempo and non-flex Tempo works"""
+        cns0 = self.get_event_class()([core_events.Chronon(2)], tempo=50)
+        cns1 = self.get_event_class()(
+            [core_events.Chronon(1)], tempo=[[0, 30], [1, 40]]
+        )
+        self.assertEqual(
+            (cns0 + cns1).tempo,
+            core_parameters.FlexTempo([[0, 50], [2, 50], [2, 30], [3, 40]]),
+        )
 
     def test_magic_method_add(self):
         self.assertEqual(
