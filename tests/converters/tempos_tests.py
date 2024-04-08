@@ -8,12 +8,10 @@ cns = core_events.Consecution
 cnc = core_events.Concurrence
 chn = core_events.Chronon
 
-cntTemp = core_parameters.FlexTempo
-
 
 class TempoConverterTest(unittest.TestCase):
     def test_convert_chronon(self):
-        tempo = cntTemp([[0, 30], [4, 60]])
+        tempo = core_parameters.FlexTempo([[0, 30], [4, 60]])
         chronon = chn(4)
         converter = core_converters.TempoConverter(tempo)
         converted_chronon = converter.convert(chronon)
@@ -39,7 +37,7 @@ class TempoConverterTest(unittest.TestCase):
             (8, core_parameters.WesternTempo(30, reference=1), -10),
             (10, core_parameters.WesternTempo(30, reference=2), 0),
         ]
-        tempo = cntTemp(tempo_list)
+        tempo = core_parameters.FlexTempo(tempo_list)
         converter = core_converters.TempoConverter(tempo)
         converted_consecution = converter.convert(consecution)
         expected_duration_tuple = (4.0, 3.0, 3.0, 3.800090804, 2.199909196)
@@ -52,7 +50,7 @@ class TempoConverterTest(unittest.TestCase):
         )
 
     def test_convert_concurrence(self):
-        tempo = cntTemp([[0, 30], [4, 60]])
+        tempo = core_parameters.FlexTempo([[0, 30], [4, 60]])
         chronon0 = chn(4)
         chronon1 = chn(8)
         concurrence = cnc([chronon0, chronon0, chronon1])
@@ -65,7 +63,7 @@ class TempoConverterTest(unittest.TestCase):
         self.assertEqual(converted_concurrence[2].duration, expected_duration1)
 
     def test_convert_tempo(self):
-        tempo = cntTemp([[0, 30], [4, 60]])
+        tempo = core_parameters.FlexTempo([[0, 30], [4, 60]])
         chronon = chn(4)
         chronon.tempo = tempo.copy()
         converter = core_converters.TempoConverter(tempo)
@@ -73,7 +71,7 @@ class TempoConverterTest(unittest.TestCase):
         self.assertEqual(converted_chronon.tempo.duration, 6)
 
     def test_convert_tempo_with_too_short_global_tempo(self):
-        tempo = cntTemp([[0, 30], [0.5, 30]])
+        tempo = core_parameters.FlexTempo([[0, 30], [0.5, 30]])
         consecution = cns([chn(1), chn(1)])
         converter = core_converters.TempoConverter(tempo)
         converted_consecution = converter.convert(consecution)
@@ -85,7 +83,7 @@ class TempoConverterTest(unittest.TestCase):
 
 class EventToMetrizedEventTest(unittest.TestCase):
     def test_convert_chronon(self):
-        chronon = chn(2, tempo=cntTemp([[0, 30], [2, 30]]))
+        chronon = chn(2, tempo=core_parameters.FlexTempo([[0, 30], [2, 30]]))
         expected_chronon = chn(4)
         event_to_metrized_event = core_converters.EventToMetrizedEvent()
         self.assertEqual(event_to_metrized_event.convert(chronon), expected_chronon)
@@ -118,8 +116,8 @@ class EventToMetrizedEventTest(unittest.TestCase):
         consecution = cns(
             [
                 cns(
-                    [chn(1, tempo=cntTemp([[0, 30], [1, 30]]))],
-                    tempo=cntTemp([[0, 30], [1, 30]]),
+                    [chn(1, tempo=core_parameters.FlexTempo([[0, 30], [1, 30]]))],
+                    tempo=core_parameters.FlexTempo([[0, 30], [1, 30]]),
                 ),
                 chn(1),
             ],
@@ -137,14 +135,17 @@ class EventToMetrizedEventTest(unittest.TestCase):
         consecution = cns(
             [
                 cns(
-                    [chn(1, tempo=cntTemp([[0, 30], [1, 30]])), chn(1)],
-                    tempo=cntTemp([[0, 30], [1, 30]]),
+                    [
+                        chn(1, tempo=core_parameters.FlexTempo([[0, 30], [1, 30]])),
+                        chn(1),
+                    ],
+                    tempo=core_parameters.FlexTempo([[0, 30], [1, 30]]),
                 )
             ],
-            tempo=cntTemp([[0, 11], [1, 11]]),
+            tempo=core_parameters.FlexTempo([[0, 11], [1, 11]]),
         )
         expected_consecution = cns(
-            [cns([chn(4), chn(2)])], tempo=cntTemp([[0, 11], [1, 11]])
+            [cns([chn(4), chn(2)])], tempo=core_parameters.FlexTempo([[0, 11], [1, 11]])
         )
         event_to_metrized_event = core_converters.EventToMetrizedEvent(
             skip_level_count=0
@@ -160,18 +161,18 @@ class EventToMetrizedEventTest(unittest.TestCase):
         consecution = cns(
             [
                 cns(
-                    [chn(1, tempo=cntTemp([[0, 4], [1, 4]])), chn(1)],
-                    tempo=cntTemp([[0, 30], [1, 30]]),
+                    [chn(1, tempo=core_parameters.FlexTempo([[0, 4], [1, 4]])), chn(1)],
+                    tempo=core_parameters.FlexTempo([[0, 30], [1, 30]]),
                 )
             ],
-            tempo=cntTemp([[0, 30], [1, 30]]),
+            tempo=core_parameters.FlexTempo([[0, 30], [1, 30]]),
         )
         expected_consecution = cns(
             [
                 cns(
                     [
-                        chn(4, tempo=cntTemp([[0, 4], [4, 4]])),
-                        chn(4, tempo=cntTemp([[0, 60], [4, 60]])),
+                        chn(4, tempo=core_parameters.FlexTempo([[0, 4], [4, 4]])),
+                        chn(4, tempo=core_parameters.FlexTempo([[0, 60], [4, 60]])),
                     ]
                 )
             ]
