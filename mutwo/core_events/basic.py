@@ -284,7 +284,7 @@ class Chronon(core_events.abc.Event):
 T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
-class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
+class Consecution(core_events.abc.Compound, typing.Generic[T]):
     """A :class:`Consecution`hosts events that take place one after the other."""
 
     # ###################################################################### #
@@ -443,7 +443,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
     #                           properties                                   #
     # ###################################################################### #
 
-    @core_events.abc.ComplexEvent.duration.getter
+    @core_events.abc.Compound.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
         try:
             return functools.reduce(operator.add, (e.duration for e in self))
@@ -737,7 +737,7 @@ class Consecution(core_events.abc.ComplexEvent, typing.Generic[T]):
         return self
 
 
-class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
+class Concurrence(core_events.abc.Compound, typing.Generic[T]):
     """A :class:`Concurrence` hosts events that take place at the same time."""
 
     # ###################################################################### #
@@ -808,7 +808,7 @@ class Concurrence(core_events.abc.ComplexEvent, typing.Generic[T]):
     #                           properties                                   #
     # ###################################################################### #
 
-    @core_events.abc.ComplexEvent.duration.getter
+    @core_events.abc.Compound.duration.getter
     def duration(self) -> core_parameters.abc.Duration:
         try:
             return max(e.duration for e in self)

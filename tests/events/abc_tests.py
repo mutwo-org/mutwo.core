@@ -11,13 +11,13 @@ class EventTest(unittest.TestCase):
         self.assertRaises(TypeError, core_events.abc.Event.duration)
 
 
-class ComplexEventTest(unittest.TestCase):
+class CompoundTest(unittest.TestCase):
     @unittest.skip(
-        "ComplexEvent is broke (can be initialised); this need "
+        "Compound is broke (can be initialised); this need "
         "to be fixed, but it's not clear how."
     )
     def test_abstract_error(self):
-        self.assertRaises(TypeError, core_events.abc.ComplexEvent)
+        self.assertRaises(TypeError, core_events.abc.Compound)
 
 
 if __name__ == "__main__":

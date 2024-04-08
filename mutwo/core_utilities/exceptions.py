@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 """Module for mutwo specific exceptions."""
 
 __all__ = (
-    "CannotSetDurationOfEmptyComplexEvent",
+    "CannotSetDurationOfEmptyCompound",
     "AlreadyDefinedValueNameError",
     "InvalidAverageValueStartAndEndWarning",
     "InvalidStartValueError",
@@ -41,13 +41,13 @@ __all__ = (
 )
 
 
-class CannotSetDurationOfEmptyComplexEvent(Exception):
+class CannotSetDurationOfEmptyCompound(Exception):
     def __init__(self):
         super().__init__(
-            "You tried to set the duration of a complex "
-            "event (e.g. 'Consecution' or 'Concurrence') "
+            "You tried to set the duration of a Compound "
+            "(e.g. 'Consecution' or 'Concurrence') "
             "which doesn't have any child events. This"
-            " is impossible, because the duration of a 'ComplexEvent'"
+            " is impossible, because the duration of a 'Compound'"
             " is simply the sum of its consuentially ordered child events."
         )
 

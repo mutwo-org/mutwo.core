@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -213,5 +213,5 @@ class SymmetricalEventConverter(EventConverter):
         event_to_convert: core_events.abc.Event,
         absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+    ) -> core_events.abc.Compound[core_events.abc.Event]:
         return super()._convert_event(event_to_convert, absolute_time, depth)

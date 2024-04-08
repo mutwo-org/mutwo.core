@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2023
+# Copyright (C) 2020-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ def __simpleEvent():
 
 DEFAULT_DURATION_TO_WHITE_SPACE = lambda duration: __simpleEvent()(duration)
 """Default conversion for parameter `duration_to_white_space` in
-:func:`mutwo.core_events.abc.ComplexEvent.extend_until`. This simply
+:func:`mutwo.core_events.abc.Compound.extend_until`. This simply
 returns a :class:`mutwo.core_events.Chronon` with the given
 duration."""
 

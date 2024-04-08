@@ -29,7 +29,7 @@ from mutwo import core_parameters
 from mutwo import core_utilities
 
 
-__all__ = ("Event", "ComplexEvent")
+__all__ = ("Event", "Compound")
 
 
 class Event(core_utilities.MutwoObject, abc.ABC):
@@ -37,7 +37,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     :param tempo: An envelope which describes the dynamic tempo of an event.
     :param tag: The name of the event. This can be used to find the event
-        inside a :class:`ComplexEvent`.
+        inside a :class:`Compound`.
     """
 
     # It looks tempting to drop the 'tempo' attribute of events.
@@ -92,15 +92,15 @@ class Event(core_utilities.MutwoObject, abc.ABC):
     #     something that belongs to a nested event (e.g. a 'Consecution' or
     #     a 'Concurrence'). But with the duration=seconds approach such a
     #     tempo trajectory couldn't be persistently mapped to a nested event,
-    #     because the duration of a complex event isn't a statically mapped and
+    #     because the duration of a Compound isn't a statically mapped and
     #     available entity, but ephemerally and dynamically calculated when
-    #     needed. When the duration of a complex event is set, it becomes
+    #     needed. When the duration of a Compound is set, it becomes
     #     propagated to the duration of its children until it finds a leaf that
     #     statically declares its duration and then it's lost. So in order to
-    #     have a persistently available tempo trajectory on a complex event
+    #     have a persistently available tempo trajectory on a Compound
     #     that can be read and modified-in-place, we need an extra tempo
     #     attribute. Otherwise we would break the rule that the duration of
-    #     a complex event is only a sum or max of its children duration.
+    #     a Compound is only a sum or max of its children duration.
     #
     # Due to these reasons, that describe new complexities by switching to a
     # 'duration=seconds' model, we should stick to the beats/tempo
@@ -347,7 +347,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         is only called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
-        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        :class:`mutwo.core_events.abc.Compound` is treated equally
         (so for instance the duration of each item is doubled, and
         nor for some doubled and for those with references which
         appear twice quadrupled).
@@ -397,7 +397,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         only be called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
-        :class:`mutwo.core_events.abc.ComplexEvent` is treated equally
+        :class:`mutwo.core_events.abc.Compound` is treated equally
         (so for instance the duration of each item is doubled, and
         nor for some doubled and for those with references which
         appear twice quadrupled).
@@ -551,7 +551,7 @@ T = typing.TypeVar("T", bound=Event)
 # FIXME(This Event can be initialised (no abstract error).
 # Please see the following issue for comparison:
 #   https://bugs.python.org/issue35815
-class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
+class Compound(Event, abc.ABC, list[T], typing.Generic[T]):
     """Abstract Event-Object, which contains other Event-Objects."""
 
     _short_name_length = 4
@@ -575,14 +575,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         # content of the parent class is available and we always have to explicitly
         # make it available with something like:
         #
-        #   class MyComplexEvent(ComplexEvent):
+        #   class MyCompound(Compound):
         #        _class_specific_side_attribute_tuple = (("new_attribute",) +
-        #          ComplexEvent._class_specific_side_attribute_tuple)
+        #          Compound._class_specific_side_attribute_tuple)
         #
         # With __init_subclass__ we can simply write:
         #
-        #   class MyComplexEvent(
-        #     ComplexEvent,
+        #   class MyCompound(
+        #     Compound,
         #    class_specific_side_attribute_tuple = ("new_attribute",)
         #   ): pass
         #
@@ -596,12 +596,12 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           magic methods                                #
     # ###################################################################### #
 
-    def __add__(self, event: list[T]) -> ComplexEvent[T]:
+    def __add__(self, event: list[T]) -> Compound[T]:
         e = self.empty_copy()
         e.extend(super().__add__(event))
         return e
 
-    def __mul__(self, factor: int) -> ComplexEvent[T]:
+    def __mul__(self, factor: int) -> Compound[T]:
         e = self.empty_copy()
         e.extend(super().__mul__(factor))
         return e
@@ -611,7 +611,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ...
 
     @typing.overload
-    def __getitem__(self, index_or_slice_or_tag: slice) -> ComplexEvent[T]:
+    def __getitem__(self, index_or_slice_or_tag: slice) -> Compound[T]:
         ...
 
     @typing.overload
@@ -620,7 +620,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def __getitem__(
         self, index_or_slice_or_tag: int | slice | str
-    ) -> T | ComplexEvent[T]:
+    ) -> T | Compound[T]:
         try:
             event = super().__getitem__(index_or_slice_or_tag)
         except TypeError as error:
@@ -714,7 +714,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @Event.duration.setter  # type: ignore
     def duration(self, duration: core_parameters.abc.Duration.Type):
         if not self:  # If empty and duration == 0, we'd run into ZeroDivision
-            raise core_utilities.CannotSetDurationOfEmptyComplexEvent()
+            raise core_utilities.CannotSetDurationOfEmptyCompound()
 
         durf = core_parameters.abc.Duration.from_any(duration).beat_count
         if (old_durf := self.duration.beat_count) != 0:
@@ -735,9 +735,9 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     # Keep private because:
     #   (1) Then we can later change the internal implementation of
-    #       ComplexEvent (for instance: no longer inheriting from list).
+    #       Compound (for instance: no longer inheriting from list).
     #   (2) It's not sure if tag_to_index is valuable for end users of
-    #       ComplexEvent
+    #       Compound
     def _tag_to_index(self, tag: str) -> int:
         # Find index of an event by its tag.
         # param tag: The `tag` of the event which shall be found.
@@ -759,7 +759,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def _apply_once_per_event(
         self, method_name: str, *args, id_set: set[int], **kwargs
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         for e in self:
             if (e_id := id(e)) not in id_set:
                 id_set.add(e_id)
@@ -772,7 +772,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         object_or_function: typing.Callable[[typing.Any], typing.Any] | typing.Any,
         set_unassigned_parameter: bool,
         id_set: set[int],
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         return self._apply_once_per_event(
             "_set_parameter",
             parameter_name,
@@ -786,7 +786,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         parameter_name: str,
         function: typing.Callable[[typing.Any], None] | typing.Any,
         id_set: set[int],
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         return self._apply_once_per_event(
             "_mutate_parameter",
             parameter_name,
@@ -794,7 +794,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             id_set=id_set,
         )
 
-    def _concatenate_tempo(self, other: ComplexEvent):
+    def _concatenate_tempo(self, other: Compound):
         """Concatenate the tempo of event with tempo of other event.
 
         If we concatenate events on the time axis, we also want to
@@ -842,15 +842,15 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     #                           public methods                               #
     # ###################################################################### #
 
-    def destructive_copy(self) -> ComplexEvent[T]:
+    def destructive_copy(self) -> Compound[T]:
         empty_copy = self.empty_copy()
         empty_copy.extend([event.destructive_copy() for event in self])
         return empty_copy
 
-    def empty_copy(self) -> ComplexEvent[T]:
-        """Make a copy of the `ComplexEvent` without any child events.
+    def empty_copy(self) -> Compound[T]:
+        """Make a copy of the `Compound` without any child events.
 
-        This method is useful if one wants to copy an instance of :class:`ComplexEvent`
+        This method is useful if one wants to copy an instance of :class:`Compound`
         and make sure that all side attributes (e.g. any assigned properties specific
         to the respective subclass) get saved.
 
@@ -918,7 +918,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
     def remove_by(  # type: ignore
         self, condition: typing.Callable[[Event], bool]
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         """Condition-based deletion of child events.
 
         :param condition: Function which takes a :class:`Event` and returns ``True``
@@ -950,7 +950,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
         ),
         event_type_to_examine: typing.Type[Event] = Event,
         event_to_remove: bool = True,
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         """Condition-based deletion of neighboring child events.
 
         :param condition: Function which compares two neighboring
@@ -1010,7 +1010,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
 
         return self
 
-    def metrize(self) -> ComplexEvent:
+    def metrize(self) -> Compound:
         metrized_event = self._event_to_metrized_event(self)
         self.tempo = metrized_event.tempo
         self[:] = metrized_event[:]
@@ -1023,14 +1023,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @abc.abstractmethod
     def squash_in(
         self, start: core_parameters.abc.Duration.Type, event_to_squash_in: Event
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> typing.Optional[Compound[T]]:
         """Time-based insert of a new event with overriding given event.
 
         :param start: Absolute time where the event shall be inserted.
         :param event_to_squash_in: the event that shall be squashed into
             the present event.
 
-        Unlike `ComplexEvent.slide_in` the events duration won't change.
+        Unlike `Compound.slide_in` the events duration won't change.
         If there is already an event at `start` this event will be shortened
         or removed.
 
@@ -1045,14 +1045,14 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @abc.abstractmethod
     def slide_in(
         self, start: core_parameters.abc.Duration.Type, event_to_slide_in: Event
-    ) -> ComplexEvent[T]:
+    ) -> Compound[T]:
         """Time-based insert of a new event into the present event.
 
         :param start: Absolute time where the event shall be inserted.
         :param event_to_slide_in: the event that shall be slide into
             the present event.
 
-        Unlike `ComplexEvent.squash_in` the events duration will be prolonged
+        Unlike `Compound.squash_in` the events duration will be prolonged
         by the event which is added. If there is an event at `start` the
         event will be split into two parts, but it won't be shortened or
         processed in any other way.
@@ -1068,7 +1068,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
     @abc.abstractmethod
     def split_child_at(
         self, absolute_time: core_parameters.abc.Duration.Type
-    ) -> typing.Optional[ComplexEvent[T]]:
+    ) -> typing.Optional[Compound[T]]:
         """Split child event in two events at :attr:`absolute_time`.
 
         :param absolute_time: where child event shall be split
@@ -1089,7 +1089,7 @@ class ComplexEvent(Event, abc.ABC, list[T], typing.Generic[T]):
             typing.Callable[[core_parameters.abc.Duration], Event]
         ] = None,
         prolong_chronon: bool = True,
-    ) -> ComplexEvent:
+    ) -> Compound:
         """Prolong event until at least `duration` by appending an empty event.
 
         :param duration: Until which duration the event shall be extended.

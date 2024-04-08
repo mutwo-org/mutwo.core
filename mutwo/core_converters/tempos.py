@@ -149,7 +149,7 @@ class TempoConverter(core_converters.abc.EventConverter):
         event_to_convert: core_events.abc.Event,
         absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+    ) -> core_events.abc.Compound[core_events.abc.Event]:
         tempo = core_parameters.FlexTempo.from_parameter(event_to_convert.tempo)
         is_tempo_effectless = tempo.is_static and tempo.value_tuple[0] == 60
         if self._apply_converter_on_events_tempo and not is_tempo_effectless:
@@ -225,7 +225,7 @@ class EventToMetrizedEvent(core_converters.abc.SymmetricalEventConverter):
         event_to_convert: core_events.abc.Event,
         absolute_time: core_parameters.abc.Duration | float | int,
         depth: int = 0,
-    ) -> core_events.abc.ComplexEvent[core_events.abc.Event]:
+    ) -> core_events.abc.Compound[core_events.abc.Event]:
         if (self._skip_level_count is None or self._skip_level_count < depth) and (
             self._maxima_depth_count is None or depth < self._maxima_depth_count
         ):

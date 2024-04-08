@@ -90,7 +90,7 @@ class EventTest(abc.ABC):
         )
 
 
-class ComplexEventTest(EventTest):
+class CompoundTest(EventTest):
     def test_slide_in_invalid_absolute_time(self):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime,
@@ -285,7 +285,7 @@ class ChrononTest(unittest.TestCase, EventTest):
         self.assertEqual(event.split_at(3), split2)
 
 
-class ConsecutionTest(unittest.TestCase, ComplexEventTest):
+class ConsecutionTest(unittest.TestCase, CompoundTest):
     def setUp(self):
         EventTest.setUp(self)
         self.chronon0 = core_events.Chronon(1)
@@ -482,7 +482,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
     def test_set_duration_of_empty_event(self):
         consecution = core_events.Consecution([])
         self.assertRaises(
-            core_utilities.CannotSetDurationOfEmptyComplexEvent,
+            core_utilities.CannotSetDurationOfEmptyCompound,
             consecution.set,
             "duration",
             1,
@@ -854,7 +854,7 @@ class ConsecutionTest(unittest.TestCase, ComplexEventTest):
         )
 
 
-class ConcurrenceTest(unittest.TestCase, ComplexEventTest):
+class ConcurrenceTest(unittest.TestCase, CompoundTest):
     class DummyParameter(object):
         def __init__(self, value: float):
             self.value = value

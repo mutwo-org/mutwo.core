@@ -8,10 +8,10 @@ from mutwo import core_events
 from mutwo import core_parameters
 from mutwo import core_utilities
 
-from .basic_tests import ComplexEventTest
+from .basic_tests import CompoundTest
 
 
-class EnvelopeTest(unittest.TestCase, ComplexEventTest):
+class EnvelopeTest(unittest.TestCase, CompoundTest):
     class EnvelopeEvent(core_events.Chronon):
         def __init__(
             self,
@@ -24,7 +24,7 @@ class EnvelopeTest(unittest.TestCase, ComplexEventTest):
             self.curve_shape = curve_shape
 
     def setUp(self):
-        ComplexEventTest.setUp(self)
+        CompoundTest.setUp(self)
         self.envelope = core_events.Envelope(
             [
                 self.EnvelopeEvent(1, 0),
