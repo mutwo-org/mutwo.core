@@ -285,7 +285,7 @@ T = typing.TypeVar("T", bound=core_events.abc.Event)
 
 
 class Consecution(core_events.abc.Compound, typing.Generic[T]):
-    """A :class:`Consecution`hosts events that take place one after the other."""
+    """A :class:`Consecution` hosts events that take place one after the other."""
 
     # ###################################################################### #
     #                           magic methods                                #
