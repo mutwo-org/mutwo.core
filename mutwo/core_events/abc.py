@@ -393,7 +393,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
         If there are multiple references of the same Event inside a
         :class:`~mutwo.core_events.Consecution` or a
-        ~mutwo.core_events.Concurrence`, ``mutate_parameter`` will
+        :class:`~mutwo.core_events.Concurrence`, ``mutate_parameter`` will
         only be called once for each Event. So multiple references
         of the same event will be ignored. This behaviour ensures,
         that on a big scale level each item inside the
