@@ -1044,7 +1044,7 @@ class Concurrence(core_events.abc.Compound, typing.Generic[T]):
             is a sequence of `Concurrence`. This parameter is
             available so that users can convert her/his parallel structure in
             meaningful ways (for instance to imitate the ``.chordify``
-            `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`
+            `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`_
             which transforms polyphonic music to a chord structure).
             If ``None`` `slice_tuple_to_event` is set to
             :class:`Concurrence`. Default to ``None``.
