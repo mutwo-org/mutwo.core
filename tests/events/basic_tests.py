@@ -1372,6 +1372,16 @@ class ConcurrenceTest(unittest.TestCase, CompoundTest):
             core_events.Consecution([]),
         )
 
+    def test_sequentialize_no_time_event(self):
+        # This test fixes a rare bug that was triggered in case 'sequentialize'
+        # was called on an event that has children with duration 0.
+        self.assertEqual(
+            core_events.Concurrence([core_events.Chronon(0)]).sequentialize(),
+            core_events.Consecution(
+                [core_events.Concurrence([core_events.Chronon(0)])]
+            ),
+        )
+
     def test_sequentialize_chronon(self):
         e = core_events.Concurrence([core_events.Chronon(3), core_events.Chronon(1)])
         e_sequentialized = core_events.Consecution(

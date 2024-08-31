@@ -783,7 +783,13 @@ class Concurrence(core_events.abc.Compound, typing.Generic[T]):
         # Slice all child events
         slices = []
         for e in self:
-            slices.append(list(e.split_at(*abst_list, ignore_invalid_split_point=True)))
+            try:
+                slice_list = list(
+                    e.split_at(*abst_list, ignore_invalid_split_point=True)
+                )
+            except core_utilities.NoSplitTimeError:  # empty absolute_time_list
+                slice_list = [e.copy()]
+            slices.append(slice_list)
 
         # Ensure all slices have the same amount of entries,
         # because we use 'zip' later and if one of them is
