@@ -29,7 +29,7 @@ The most often used classes are:
     - :class:`mutwo.core_events.Consecution`: a sequence of other events
     - :class:`mutwo.core_events.Concurrence`: a simultaneous set of other events
 
-Further more complex Event classes with more relevant attributes
+Further more complex event classes with more relevant attributes
 can be generated through inheriting from basic classes.
 """
 
