@@ -371,28 +371,29 @@ class Consecution(core_events.abc.Compound, typing.Generic[T]):
         if event_index is None:
             raise core_utilities.SplitUnavailableChildError(absolute_time)
 
-        # Only try to split child event at the requested time if there isn't
+        # Don't split child event at the requested time if there is
         # a segregation already anyway
-        elif abstf != abstf_tuple[event_index]:
-            try:
-                end = abstf_tuple[event_index + 1]
-            except IndexError:
-                end = durf
+        elif abstf == abstf_tuple[event_index]:
+            return event_index
 
-            difference = end - abstf
-            split_event = self[event_index].split_at(difference)
-            split_event_count = len(split_event)
-            match split_event_count:
-                case 1:
-                    pass
-                case 2:
-                    self[event_index] = split_event[0]
-                    self.insert(event_index, split_event[1])
-                case _:
-                    raise RuntimeError("Unexpected event count!")
+        try:
+            end = abstf_tuple[event_index + 1]
+        except IndexError:
+            end = durf
 
-            return event_index + 1
-        return event_index
+        difference = end - abstf
+        split_event = self[event_index].split_at(difference)
+        split_event_count = len(split_event)
+        match split_event_count:
+            case 1:
+                pass
+            case 2:
+                self[event_index] = split_event[0]
+                self.insert(event_index, split_event[1])
+            case _:
+                raise RuntimeError("Unexpected event count!")
+
+        return event_index + 1
 
     # ###################################################################### #
     #                        private   properties                            #
@@ -609,32 +610,29 @@ class Consecution(core_events.abc.Compound, typing.Generic[T]):
         abstf_tuple, durf = self._abstf_tuple_and_dur
         if start_in_floats >= durf:
             self.append(event_to_squash_in)
-        else:
-            try:
-                insert_index = abstf_tuple.index(start)
-            # There is an event on the given point which need to be
-            # split.
-            except ValueError:
-                active_event_index = Consecution._get_index_at_from_absolute_time_tuple(
-                    start_in_floats,
-                    abstf_tuple,
-                    durf,
-                )
-                split_position = start_in_floats - abstf_tuple[active_event_index]
-                if (
-                    split_position > 0
-                    and split_position < self[active_event_index].duration
-                ):
-                    split_active_event = self[active_event_index].split_at(
-                        split_position
-                    )
-                    self[active_event_index] = split_active_event[1]
-                    self.insert(active_event_index, split_active_event[0])
-                    active_event_index += 1
+            return self
+        try:
+            insert_index = abstf_tuple.index(start)
+        # There is an event on the given point which need to be
+        # split.
+        except ValueError:
+            active_event_index = Consecution._get_index_at_from_absolute_time_tuple(
+                start_in_floats,
+                abstf_tuple,
+                durf,
+            )
+            split_position = start_in_floats - abstf_tuple[active_event_index]
+            if (
+                split_position > 0
+                and split_position < self[active_event_index].duration
+            ):
+                split_active_event = self[active_event_index].split_at(split_position)
+                self[active_event_index] = split_active_event[1]
+                self.insert(active_event_index, split_active_event[0])
+                active_event_index += 1
 
-                insert_index = active_event_index
-
-            self.insert(insert_index, event_to_squash_in)
+            insert_index = active_event_index
+        self.insert(insert_index, event_to_squash_in)
         return self
 
     def slide_in(
