@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - new method `Envelope.curve_shape_at`, see [here](https://github.com/mutwo-org/mutwo.core/commit/ff3c0d510b8f5cbb6297a539dcb7d4e73879b001)
 - new method `Envelope.point_at`, see [here](https://github.com/mutwo-org/mutwo.core/commit/8ae9f406ccd1846874ac7d6fa4c0992e2209d369)
 - new method `Envelope.time_range_to_point_tuple`, see [here](https://github.com/mutwo-org/mutwo.core/commit/f42c5facd0eebc397c0de85d4aaa12c3015d6acb)
-- conciste `__str__` for mutwo events, see [here](https://github.com/mutwo-org/mutwo.core/commit/178f0e0815f069391d9b2ca25b10fee2278af444)
+- concise `__str__` for mutwo events, see [here](https://github.com/mutwo-org/mutwo.core/commit/178f0e0815f069391d9b2ca25b10fee2278af444)
 - `MutwoObject` as base class for all mutwo objects, see [here](https://github.com/mutwo-org/mutwo.core/commit/64e33e06c452f4b0bd6589e808745f055b52d0c9) and [here](https://github.com/mutwo-org/mutwo.core/commit/8343f8eaefd5a3bdc8befd24aa87720f7630fda2)
 - general `core_parameters.abc.Parameter` class, see [here](https://github.com/mutwo-org/mutwo.core/commit/c711348bd4d5253f84047ee3459fc6b68760596f)
 - `core_utilities.str_to_number_parser`, see [here](https://github.com/mutwo-org/mutwo.core/commit/9840711eb53ee8fe0e5eb723c7050ef97388bbb5)
