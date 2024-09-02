@@ -450,7 +450,7 @@ class Event(core_utilities.MutwoObject, abc.ABC):
         """Time-based slicing of the respective event.
 
         :param start: Duration when the cut out shall start.
-        :param end: Duration when the cut up shall end.
+        :param end: Duration when the cut out shall end.
 
         **Example:**
 
