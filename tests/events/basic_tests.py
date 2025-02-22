@@ -107,6 +107,14 @@ class CompoundTest(EventTest):
             core_events.Chronon(1),
         )
 
+    def test_squash_in_invalid_start_value(self):
+        self.assertRaises(
+            core_utilities.InvalidStartValueError,
+            self.event.squash_in,
+            self.event.duration + 0.01,
+            core_events.Chronon(1),
+        )
+
     def test_split_child_at(self):
         self.assertRaises(
             core_utilities.InvalidAbsoluteTime, self.event.split_child_at, -1
