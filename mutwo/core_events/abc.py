@@ -37,8 +37,10 @@ class Event(core_utilities.MutwoObject, abc.ABC):
 
     :param tempo: The tempo of the event. In cooperation with the events
         `duration`, this tells how long an event lasts.
+    :type tempo: typing.Optional[core_parameters.abc.Tempo]
     :param tag: The name of the event. This can be used to find the event
         inside a :class:`Compound`.
+    :type tag: typing.Optional[str]
     """
 
     # It looks tempting to drop the 'tempo' attribute of events.
