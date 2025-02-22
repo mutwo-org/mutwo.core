@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build_test:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.12
     steps:
       - checkout
       - run: sudo apt-get update && sudo apt-get upgrade
@@ -21,7 +21,7 @@ jobs:
             deactivate
   pypi_publish:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.12
     steps:
       - checkout  # checkout source code to working directory
       - run:
