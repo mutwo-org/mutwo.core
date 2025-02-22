@@ -35,7 +35,8 @@ __all__ = ("Event", "Compound")
 class Event(core_utilities.MutwoObject, abc.ABC):
     """Abstract Event-Object
 
-    :param tempo: An envelope which describes the dynamic tempo of an event.
+    :param tempo: The tempo of the event. In cooperation with the events
+        `duration`, this tells how long an event lasts.
     :param tag: The name of the event. This can be used to find the event
         inside a :class:`Compound`.
     """
