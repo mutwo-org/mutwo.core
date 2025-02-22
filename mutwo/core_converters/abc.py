@@ -191,10 +191,10 @@ class SymmetricalEventConverter(EventConverter):
         depth: int = 0,
     ) -> core_events.Concurrence:
         """Convert instance of :class:`mutwo.core_events.Concurrence`."""
-        sim: core_events.Concurrence = concurrence.empty_copy()
+        cnc: core_events.Concurrence = concurrence.empty_copy()
         for e in concurrence:
-            sim.append(self._convert_event(e, absolute_time, depth + 1))
-        return sim
+            cnc.append(self._convert_event(e, absolute_time, depth + 1))
+        return cnc
 
     def _convert_consecution(
         self,
