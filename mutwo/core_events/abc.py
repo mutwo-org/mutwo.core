@@ -1030,6 +1030,9 @@ class Compound(Event, abc.ABC, list[T], typing.Generic[T]):
         :param start: Absolute time where the event shall be inserted.
         :param event_to_squash_in: the event that shall be squashed into
             the present event.
+        :raises: `core_utilities.InvalidStartValueError` if start is larger
+            than the duration of the event and
+            `core_utilities.InvalidAbsoluteTime` if `start` is smaller than 0.
 
         Unlike `Compound.slide_in` the events duration won't change.
         If there is already an event at `start` this event will be shortened
