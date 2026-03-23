@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2024
+# Copyright (C) 2020-2025
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ This module defines the public API of parameters.
 Most other mutwo classes rely on this API. This means
 when someone creates a new class inheriting from any of the
 abstract parameter classes which are defined in this module,
-she or he can make use of all other mutwo modules with this
+they can make use of all other mutwo modules with this
 newly created parameter class.
 """
 

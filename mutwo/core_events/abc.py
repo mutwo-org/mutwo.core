@@ -969,8 +969,8 @@ class Compound(Event, abc.ABC, list[T], typing.Generic[T]):
         :param event_type_to_examine: Defines which events shall be compared.
             If one only wants to process the leaves, this should perhaps be
             :class:`mutwo.core_events.Chronon`.
-        :param event_to_remove: `True` if the second (left) event shall be removed
-            and `False` if the first (right) event shall be removed.
+        :param event_to_remove: `True` if the second (right) event shall be removed
+            and `False` if the first (left) event shall be removed.
         """
 
         # Nothing to tie if no child events exist

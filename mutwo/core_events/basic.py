@@ -1,6 +1,6 @@
 # This file is part of mutwo, ecosystem for time-based arts.
 #
-# Copyright (C) 2020-2024
+# Copyright (C) 2020-2026
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -854,11 +854,10 @@ class Concurrence(core_events.abc.Compound, typing.Generic[T]):
         start = core_parameters.abc.Duration.from_any(start)
         self._assert_valid_absolute_time(start)
         self._assert_start_in_range(start)
-
         for e in self:
             try:
                 e.squash_in(start, event_to_squash_in)  # type: ignore
-            # Simple events don't have a 'squash_in' method.
+            # Chronon doesn't have a 'squash_in' method.
             except AttributeError:
                 raise core_utilities.ImpossibleToSquashInError(self, event_to_squash_in)
         return self
@@ -874,7 +873,7 @@ class Concurrence(core_events.abc.Compound, typing.Generic[T]):
         for e in self:
             try:
                 e.slide_in(start, event_to_slide_in)  # type: ignore
-            # Simple events don't have a 'slide_in' method.
+            # Chronon doesn't have a 'slide_in' method.
             except AttributeError:
                 raise core_utilities.ImpossibleToSlideInError(self, event_to_slide_in)
         return self
@@ -1035,18 +1034,18 @@ class Concurrence(core_events.abc.Compound, typing.Generic[T]):
             typing.Callable[[tuple[core_events.abc.Event, ...]], core_events.abc.Event]
         ] = None,
     ) -> core_events.Consecution:
-        """Convert parallel structure to a consuential structure.
+        """Convert parallel structure to a sequential structure.
 
         :param slice_tuple_to_event: In order to sequentialize the event
             `mutwo` splits each child event into small 'event slices'. These
             'event slices' are simply events created by the `split_at` method.
             Each of those parallel slice groups need to be bound together to
-            one new event. These new events are consuentially ordered to result
-            in a new consuential structure. The simplest and default way to
+            one new event. These new events are sequentially ordered to result
+            in a new sequential structure. The simplest and default way to
             archive this is by simply putting all event parts into a new
             :class:`Concurrence`, so the resulting :class:`Consecution`
             is a sequence of `Concurrence`. This parameter is
-            available so that users can convert her/his parallel structure in
+            available so that users can convert their parallel structure in
             meaningful ways (for instance to imitate the ``.chordify``
             `method from music21 <https://web.mit.edu/music21/doc/usersGuide/usersGuide_09_chordify.html>`_
             which transforms polyphonic music to a chord structure).
