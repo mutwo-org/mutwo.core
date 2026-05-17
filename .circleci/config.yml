@@ -5,7 +5,10 @@ jobs:
     docker:
       - image: cimg/python:3.12
     steps:
-      - checkout
+      - run:
+          name: Clone repo
+          command: |
+            git clone https://github.com/mutwo-org/mutwo.core.git .
       - run: sudo apt-get update && sudo apt-get upgrade
       - run:
           name: Run tests
@@ -23,7 +26,10 @@ jobs:
     docker:
       - image: cimg/python:3.12
     steps:
-      - checkout  # checkout source code to working directory
+      - run:
+          name: Clone repo
+          command: |
+            git clone https://github.com/mutwo-org/mutwo.core.git .
       - run:
           command: |  # create whl, install twine and publish to PyPI
             pip3 install virtualenv
